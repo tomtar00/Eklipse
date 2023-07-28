@@ -1,0 +1,10 @@
+[submodule "Eklipse/vendor/imgui"]
+	path = Eklipse/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "Eklipse/vendor/GLFW"]
+	path = Eklipse/vendor/GLFW
+	url = https://github.com/tomtar00/GLFW.git
+[submodule "Eklipse/vendor/spdlog"]
+	path = Eklipse/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
