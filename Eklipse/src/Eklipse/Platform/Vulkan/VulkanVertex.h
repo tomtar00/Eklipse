@@ -6,9 +6,9 @@ namespace Eklipse
 {
 	struct VulkanVertex : Vertex
 	{
-		VulkanVertex(glm::vec2 pos, glm::vec3 color) : Vertex(pos, color) {}
+		VulkanVertex(glm::vec2 pos, glm::vec3 color, glm::vec2 texCoord) : Vertex(pos, color, texCoord) {}
 
 		static VkVertexInputBindingDescription GetBindingDescription();
-		static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+		static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions();
 	};
 }

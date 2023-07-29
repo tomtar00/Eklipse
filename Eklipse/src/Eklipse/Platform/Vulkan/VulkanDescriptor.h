@@ -12,10 +12,10 @@ namespace Eklipse
 		VkDescriptorSetLayout& UniformLayout();
 
 	private:
-		void CreateDescriptorSetUniformLayout();
+		void CreateDescriptorSetLayout();
 
 	private:
-		VkDescriptorSetLayout m_descriptorSetUniformLayout;
+		VkDescriptorSetLayout m_uniformDescriptorSetLayout;
 	};
 
 	class VulkanDescriptorPool
@@ -27,11 +27,11 @@ namespace Eklipse
 		std::vector<VkDescriptorSet>& DescriptorSets();
 
 	private:
-		void CreateDescriptorUniformPool(uint32_t descriptorCount);
-		void CreateDescriptorUniformSets(uint32_t descriptorCount);
+		void CreateDescriptorPool(uint32_t descriptorCount);
+		void CreateUniformDescriptorSets(uint32_t descriptorCount);
 
 	private:
-		VkDescriptorPool m_descriptorUniformPool;
+		VkDescriptorPool m_descriptorPool;
 		std::vector<VkDescriptorSet> m_descriptorSets;
 	};
 }

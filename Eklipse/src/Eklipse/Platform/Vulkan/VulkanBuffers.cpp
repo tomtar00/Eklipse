@@ -14,6 +14,14 @@ namespace Eklipse
 	/////////////////////////////////////////////////
 	// BUFFER ///////////////////////////////////////
 	/////////////////////////////////////////////////
+
+	void VulkanBuffer::Shutdown()
+	{
+		VkDevice device = VulkanAPI::Get().Devices().Device();
+		vkDestroyBuffer(device, m_buffer, nullptr);
+		vkFreeMemory(device, m_bufferMemory, nullptr);
+	}
+
 	VkBuffer& VulkanBuffer::Buffer()
 	{
 		return m_buffer;
@@ -59,36 +67,13 @@ namespace Eklipse
 
 	void VulkanBuffer::Copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 	{
-		VkDevice device = VulkanAPI::Get().Devices().Device();
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = VulkanAPI::Get().TransferCommandPool().Pool();
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		VkCommandBuffer commandBuffer = VulkanAPI::Get().CommandPool().BeginSingleCommands();
 
 		VkBufferCopy copyRegion{};
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		VkQueue graphicsQueue = VulkanAPI::Get().GraphicsQueue();
-		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue);
+		VulkanAPI::Get().CommandPool().EndSingleCommands(commandBuffer);
 	}
 
 	uint32_t VulkanBuffer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -115,45 +100,29 @@ namespace Eklipse
 
 	const std::vector<VulkanVertex> VulkanVertexBuffer::vertices =
 	{
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 	};
 
 	void VulkanVertexBuffer::Init()
 	{
 		CreateVertexBuffer();
 	}
-	void VulkanVertexBuffer::Shutdown()
-	{
-		VkDevice device = VulkanAPI::Get().Devices().Device();
-		vkDestroyBuffer(device, m_buffer, nullptr);
-		vkFreeMemory(device, m_bufferMemory, nullptr);
-	}
 	void VulkanVertexBuffer::CreateVertexBuffer()
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		Create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-			stagingBuffer, stagingBufferMemory);
-
-		VkDevice device = VulkanAPI::Get().Devices().Device();
-		void* data;
-		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device, stagingBufferMemory);
-
 		Create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_bufferMemory);
 
-		Copy(stagingBuffer, m_buffer, bufferSize);
+		VulkanStagingBuffer stagingBuffer;
+		stagingBuffer.Init(bufferSize, vertices.data());
 
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
-		vkFreeMemory(device, stagingBufferMemory, nullptr);
+		Copy(stagingBuffer.Buffer(), m_buffer, bufferSize);
+
+		stagingBuffer.Shutdown();
 	}
 
 	/////////////////////////////////////////////////
@@ -168,12 +137,6 @@ namespace Eklipse
 	void VulkanIndexBuffer::Init()
 	{
 		CreateIndexBuffer();
-	}
-	void VulkanIndexBuffer::Shutdown()
-	{
-		VkDevice device = VulkanAPI::Get().Devices().Device();
-		vkDestroyBuffer(device, m_buffer, nullptr);
-		vkFreeMemory(device, m_bufferMemory, nullptr);
 	}
 	void VulkanIndexBuffer::CreateIndexBuffer()
 	{
@@ -198,6 +161,27 @@ namespace Eklipse
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
+	}
+
+	/////////////////////////////////////////////////
+	// STAGING BUFFER ///////////////////////////////
+	/////////////////////////////////////////////////
+
+	void VulkanStagingBuffer::Init(VkDeviceSize bufferSize, const void* data)
+	{
+		Create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			m_buffer, m_bufferMemory
+		);
+
+		VkDevice device = VulkanAPI::Get().Devices().Device();
+		vkMapMemory(device, m_bufferMemory, 0, bufferSize, 0, &m_data);
+		memcpy(m_data, data, (size_t)bufferSize);
+		vkUnmapMemory(device, m_bufferMemory);
+	}
+	void* VulkanStagingBuffer::Data()
+	{
+		return m_data;
 	}
 
 	/////////////////////////////////////////////////
@@ -258,12 +242,6 @@ namespace Eklipse
 
 		VkDevice device = VulkanAPI::Get().Devices().Device();
 		vkMapMemory(device, m_bufferMemory, 0, bufferSize, 0, &m_data);
-	}
-	void VulkanUniformBuffer::Shutdown()
-	{
-		VkDevice device = VulkanAPI::Get().Devices().Device();
-		vkDestroyBuffer(device, m_buffer, nullptr);
-		vkFreeMemory(device, m_bufferMemory, nullptr);
 	}
 	void* VulkanUniformBuffer::Data()
 	{

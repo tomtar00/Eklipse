@@ -23,7 +23,8 @@ project "Eklipse"
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
-		"%{Include.ImGui}"
+		"%{Include.ImGui}",
+		"%{Include.stb_image}"
 	}
 	libdirs
 	{

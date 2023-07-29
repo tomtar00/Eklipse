@@ -3,39 +3,31 @@
 
 namespace Eklipse
 {
-	class VulkanDrawCommandPool
-	{
-	public:
-		void InitPool();
-		void InitBuffers(uint32_t);
-		void Shutdown();
-
-		void RecordCommandBuffer(uint32_t bufferIndex, uint32_t imageIndex);
-
-		VkCommandPool& Pool();
-		VkCommandBuffer* Buffers();
-
-	private:
-		void CreateCommandPool();
-		void CreateCommandBuffers(uint32_t numBuffers);
-
-	private:
-		VkCommandPool m_commandPool{};
-		std::vector<VkCommandBuffer> m_commandBuffers{};
-	};
-
-	class VulkanTransferCommandPool
+	class VulkanCommandPool
 	{
 	public:
 		void Init();
+		void InitDrawBuffers(uint32_t);
 		void Shutdown();
 
-		VkCommandPool& Pool();
+		void RecordDrawCommandBuffer(uint32_t bufferIndex, uint32_t imageIndex);
+
+		VkCommandBuffer BeginSingleCommands();
+		void EndSingleCommands(VkCommandBuffer commandBuffer);
+
+		VkCommandPool& DrawPool();
+		VkCommandPool& TransferPool();
+		VkCommandBuffer* DrawBuffers();
 
 	private:
-		void CreateCommandPool();
+		void CreateDrawCommandPool();
+		void CreateTransferCommandPool();
+		void CreateDrawCommandBuffers(uint32_t numBuffers);
 
 	private:
-		VkCommandPool m_commandPool{};
+		VkCommandPool m_drawCommandPool{};
+		std::vector<VkCommandBuffer> m_drawCommandBuffers{};
+
+		VkCommandPool m_transferCommandPool{};
 	};
 }

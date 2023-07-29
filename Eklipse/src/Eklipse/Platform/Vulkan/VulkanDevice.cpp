@@ -73,6 +73,7 @@ namespace Eklipse
         }
 
         VkPhysicalDeviceFeatures deviceFeatures{};
+        deviceFeatures.samplerAnisotropy = VK_TRUE;
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -81,7 +82,7 @@ namespace Eklipse
         createInfo.pEnabledFeatures = &deviceFeatures;
 
         createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
+        createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();     
 
         if (g_validationLayersEnabled)
         {
@@ -143,10 +144,14 @@ namespace Eklipse
             swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
+        VkPhysicalDeviceFeatures supportedFeatures;
+        vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
         if (!deviceFeatures.geometryShader ||
             !VulkanAPI::Get().FindQueueFamilies(device).isComplete() ||
             !extensionsSupported ||
-            !swapChainAdequate)
+            !swapChainAdequate ||
+            !supportedFeatures.samplerAnisotropy)
         {
             return 0;
         }

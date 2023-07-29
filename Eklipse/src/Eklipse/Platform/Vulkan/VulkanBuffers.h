@@ -8,8 +8,12 @@ namespace Eklipse
 	class VulkanBuffer
 	{
 	public:
+		void Shutdown();
+
 		VkBuffer& Buffer();
 		VkDeviceMemory& Memory();
+
+		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	protected:
 		static void Create(
@@ -19,8 +23,7 @@ namespace Eklipse
 			VkBuffer& buffer, 
 			VkDeviceMemory& bufferMemory
 		);
-		static void Copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		static void Copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);		
 
 		VkBuffer m_buffer;
 		VkDeviceMemory m_bufferMemory;
@@ -30,7 +33,6 @@ namespace Eklipse
 	{
 	public:
 		void Init();
-		void Shutdown();	
 
 		static const std::vector<VulkanVertex> vertices;
 
@@ -42,7 +44,6 @@ namespace Eklipse
 	{
 	public:
 		void Init();
-		void Shutdown();
 
 		static const std::vector<uint16_t> indices;
 
@@ -50,12 +51,20 @@ namespace Eklipse
 		void CreateIndexBuffer();
 	};
 
+	class VulkanStagingBuffer : public VulkanBuffer
+	{
+	public:
+		void Init(VkDeviceSize bufferSize, const void* data);
+		void* Data();
+
+	private:
+		void* m_data;
+	};
+
 	class VulkanUniformBuffer : public VulkanBuffer
 	{
 	public:
 		void Init(VkDeviceSize bufferSize);
-		void Shutdown();
-
 		void* Data();
 
 	private:

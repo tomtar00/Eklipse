@@ -28,8 +28,7 @@ namespace Eklipse
 	VkQueue& VulkanAPI::PresentQueue()							{ return m_presentQueue;}
 	VulkanDevice& VulkanAPI::Devices()							{ return m_device; }
 	VulkanSwapChain& VulkanAPI::SwapChain()						{ return m_swapChain; }
-	VulkanDrawCommandPool& VulkanAPI::DrawCommandPool()			{ return m_drawCommandPool; }
-	VulkanTransferCommandPool& VulkanAPI::TransferCommandPool() { return m_transferCommandPool; }
+	VulkanCommandPool& VulkanAPI::CommandPool()					{ return m_commandPool; }
 	VulkanVertexBuffer& VulkanAPI::VertexBuffer()				{ return m_vertexBuffer; }
 	VulkanIndexBuffer& VulkanAPI::IndexBuffer()					{ return m_indexBuffer; }
 	VulkanPipeline& VulkanAPI::Pipeline()						{ return m_pipeline; }
@@ -37,6 +36,7 @@ namespace Eklipse
 	VulkanUniformBufferPool& VulkanAPI::UniformBufferPool()		{ return m_uniformBufferPool; }
 	VulkanDescriptorPool& VulkanAPI::DescriptorPool()			{ return m_descriptorPool; }
 	VulkanValidationLayers& VulkanAPI::ValidationLayers()		{ return m_validationLayers; }
+	VulkanTexture& VulkanAPI::Texture()							{ return m_texture; }
 
 	VulkanAPI::VulkanAPI() : m_currentFrame(0), GraphicsAPI()
 	{
@@ -65,12 +65,12 @@ namespace Eklipse
 		m_descriptorLayout.Init();
 		m_pipeline.Init();
 		m_swapChain.InitFramebuffers();
-		m_transferCommandPool.Init();
-		m_drawCommandPool.InitPool();
+		m_commandPool.Init();
+		m_texture.Load("textures/image.png");
 		m_vertexBuffer.Init();
 		m_indexBuffer.Init();
 		m_uniformBufferPool.Init(MAX_FRAMES_IN_FLIGHT);
-		m_drawCommandPool.InitBuffers(MAX_FRAMES_IN_FLIGHT);
+		m_commandPool.InitDrawBuffers(MAX_FRAMES_IN_FLIGHT);
 		m_descriptorPool.Init(MAX_FRAMES_IN_FLIGHT);
 
 		CreateSyncObjects();
@@ -87,6 +87,7 @@ namespace Eklipse
 		}
 
 		m_swapChain.Shutdown();
+		m_texture.Shutdown();
 		m_uniformBufferPool.Shutdown();
 		m_descriptorPool.Shutdown();
 		m_descriptorLayout.Shutdown();
@@ -101,8 +102,7 @@ namespace Eklipse
 			vkDestroyFence(m_device.Device(), m_inFlightFences[i], nullptr);
 		}
 
-		m_transferCommandPool.Shutdown();
-		m_drawCommandPool.Shutdown();
+		m_commandPool.Shutdown();
 		m_device.Shutdown();
 		m_validationLayers.Shutdown();
 
@@ -135,12 +135,12 @@ namespace Eklipse
 
 		vkResetFences(m_device.Device(), 1, &m_inFlightFences[m_currentFrame]);
 
-		m_drawCommandPool.RecordCommandBuffer(m_currentFrame, imageIndex);
+		m_commandPool.RecordDrawCommandBuffer(m_currentFrame, imageIndex);
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_drawCommandPool.Buffers()[m_currentFrame];
+		submitInfo.pCommandBuffers = &m_commandPool.DrawBuffers()[m_currentFrame];
 
 		VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
