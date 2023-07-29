@@ -54,6 +54,7 @@ namespace Eklipse
 		VulkanDescriptorPool& DescriptorPool();
 		VulkanValidationLayers& ValidationLayers();
 		VulkanTexture& Texture();
+		VulkanDepthImage& DepthImage();
 
 	public:
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -93,6 +94,7 @@ namespace Eklipse
 		VulkanUniformBufferPool m_uniformBufferPool{};
 		VulkanDescriptorPool m_descriptorPool{};
 		VulkanTexture m_texture{};
+		VulkanDepthImage m_depthImage{};
 
 		VulkanPipeline m_pipeline{};
 		VulkanValidationLayers m_validationLayers{};	

@@ -59,6 +59,18 @@ namespace Eklipse
         vkDestroyImage(device, m_image, nullptr);
         vkFreeMemory(device, m_imageMemory, nullptr);
     }
+    VkImage& VulkanImage::Image()
+    {
+        return m_image;
+    }
+    VkDeviceMemory& VulkanImage::Memory()
+    {
+        return m_imageMemory;
+    }
+    VkImageView& VulkanImage::ImageView()
+    {
+        return m_imageView;
+    }
     void VulkanImage::TransitionImageLayout(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
     {
         VkCommandBuffer commandBuffer = VulkanAPI::Get().CommandPool().BeginSingleCommands();
@@ -143,32 +155,34 @@ namespace Eklipse
 
         VulkanAPI::Get().CommandPool().EndSingleCommands(commandBuffer);
     }
-    VkImage& VulkanImage::Image()
+    void VulkanImage::CreateImage(VkDeviceSize imageSize, uint32_t width, uint32_t height, const void* data)
     {
-        return m_image;
-    }
-    VkDeviceMemory& VulkanImage::Memory()
-    {
-        return m_imageMemory;
-    }
+        VulkanStagingBuffer stagingBuffer;
+        stagingBuffer.Init(imageSize, data);
 
-    VkImageView& VulkanImage::ImageView()
-    {
-        return m_imageView;
-    }
+        Init(width, height,
+            VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
 
-    void VulkanImage::CreateImageView(VkFormat format)
-    {
-        m_imageView = CreateImageView(m_image, format);
+        TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        CopyBufferToImage(stagingBuffer.Buffer(), width, height);
+        TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        stagingBuffer.Shutdown();
     }
-    VkImageView VulkanImage::CreateImageView(VkImage image, VkFormat format)
+    void VulkanImage::CreateImageView(VkFormat format, VkImageAspectFlags aspectFlags)
+    {
+        m_imageView = CreateImageView(m_image, format, aspectFlags);
+    }
+    VkImageView VulkanImage::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
     {
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = image;
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format = format;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.aspectMask = aspectFlags;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -196,8 +210,8 @@ namespace Eklipse
 
         EK_ASSERT(pixels, "Failed to load texture image from location: {0}", path);
 
-        CreateImage(imageSize, texWidth, texHeight, pixels);
-        m_image.CreateImageView(VK_FORMAT_R8G8B8A8_SRGB);
+        m_image.CreateImage(imageSize, texWidth, texHeight, pixels);
+        m_image.CreateImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
         CreateSampler();
 
         stbi_image_free(pixels);
@@ -216,22 +230,7 @@ namespace Eklipse
     {
         return m_textureSampler;
     }
-    void VulkanTexture::CreateImage(VkDeviceSize imageSize, uint32_t width, uint32_t height, const void* data)
-    {
-        VulkanStagingBuffer stagingBuffer;
-        stagingBuffer.Init(imageSize, data);
-
-        m_image.Init(width, height,
-            VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-        );
-
-        m_image.TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        m_image.CopyBufferToImage(stagingBuffer.Buffer(), width, height);
-        m_image.TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        stagingBuffer.Shutdown();
-    }
+    
     void VulkanTexture::CreateSampler()
     {
         VkSamplerCreateInfo samplerInfo{};
@@ -265,5 +264,54 @@ namespace Eklipse
         {
             throw std::runtime_error("failed to create texture sampler!");
         }
+    }
+
+    /////////////////////////////////////////////////
+    // DEPTH IMAGE //////////////////////////////////
+    /////////////////////////////////////////////////
+
+    void VulkanDepthImage::Init()
+    {
+        CreateDepthImage();
+    }
+    void VulkanDepthImage::CreateDepthImage()
+    {
+        VkFormat depthFormat = FindDepthFormat();
+
+        VkExtent2D extent = VulkanAPI::Get().SwapChain().Extent();
+        VulkanImage::Init(extent.width, extent.height, depthFormat, 
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        CreateImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    }
+    VkFormat VulkanDepthImage::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+    {
+        VkPhysicalDevice physicalDevice = VulkanAPI::Get().Devices().PhysicalDevice();
+        for (VkFormat format : candidates) 
+        {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) 
+            {
+                return format;
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) 
+            {
+                return format;
+            }
+        }
+    }
+    VkFormat VulkanDepthImage::FindDepthFormat()
+    {
+        return FindSupportedFormat(
+            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
+    }
+    bool VulkanDepthImage::HasStencilComponent(VkFormat format)
+    {
+        return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 }

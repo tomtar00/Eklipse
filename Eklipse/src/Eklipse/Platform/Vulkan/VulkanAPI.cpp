@@ -37,6 +37,7 @@ namespace Eklipse
 	VulkanDescriptorPool& VulkanAPI::DescriptorPool()			{ return m_descriptorPool; }
 	VulkanValidationLayers& VulkanAPI::ValidationLayers()		{ return m_validationLayers; }
 	VulkanTexture& VulkanAPI::Texture()							{ return m_texture; }
+	VulkanDepthImage& VulkanAPI::DepthImage()					{ return m_depthImage; }
 
 	VulkanAPI::VulkanAPI() : m_currentFrame(0), GraphicsAPI()
 	{
@@ -64,8 +65,9 @@ namespace Eklipse
 		m_swapChain.InitChainViews();
 		m_descriptorLayout.Init();
 		m_pipeline.Init();
-		m_swapChain.InitFramebuffers();
 		m_commandPool.Init();
+		m_depthImage.Init();
+		m_swapChain.InitFramebuffers();
 		m_texture.Load("textures/image.png");
 		m_vertexBuffer.Init();
 		m_indexBuffer.Init();
@@ -86,6 +88,7 @@ namespace Eklipse
 			return;
 		}
 
+		m_depthImage.Shutdown();
 		m_swapChain.Shutdown();
 		m_texture.Shutdown();
 		m_uniformBufferPool.Shutdown();
@@ -237,7 +240,10 @@ namespace Eklipse
 		WaitIdle();
 
 		m_swapChain.Shutdown();
+		m_depthImage.Shutdown();
+
 		m_swapChain.InitChainViews();
+		m_depthImage.Init();
 		m_swapChain.InitFramebuffers();
 	}
 	std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
