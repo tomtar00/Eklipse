@@ -32,23 +32,23 @@ namespace Eklipse
 	class VulkanVertexBuffer : public VulkanBuffer
 	{
 	public:
-		void Init();
+		void Init(const std::vector<VulkanVertex>& vertices);
 
-		static const std::vector<VulkanVertex> vertices;
+		std::vector<VulkanVertex> vertices;
 
 	private:
-		void CreateVertexBuffer();
+		void CreateVertexBuffer(const std::vector<VulkanVertex>& vertices);
 	};
 
 	class VulkanIndexBuffer : public VulkanBuffer
 	{
 	public:
-		void Init();
+		void Init(const std::vector<uint32_t>& indices);
 
-		static const std::vector<uint16_t> indices;
+		std::vector<uint32_t> indices;
 
 	private:
-		void CreateIndexBuffer();
+		void CreateIndexBuffer(const std::vector<uint32_t>& indices);
 	};
 
 	class VulkanStagingBuffer : public VulkanBuffer

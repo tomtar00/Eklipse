@@ -24,7 +24,8 @@ project "Eklipse"
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
 		"%{Include.ImGui}",
-		"%{Include.stb_image}"
+		"%{Include.stb_image}",
+		"%{Include.tiny_obj_loader}"
 	}
 	libdirs
 	{

@@ -98,24 +98,25 @@ namespace Eklipse
 	// VERTEX BUFFER ////////////////////////////////
 	/////////////////////////////////////////////////
 
-	const std::vector<VulkanVertex> VulkanVertexBuffer::vertices =
-	{
-		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+	//const std::vector<VulkanVertex> VulkanVertexBuffer::vertices =
+	//{
+	//	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+	//	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+	//	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	//	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
 
-		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-	};
+	//	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+	//	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+	//	{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	//	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+	//};
 
-	void VulkanVertexBuffer::Init()
+	void VulkanVertexBuffer::Init(const std::vector<VulkanVertex>& vertices)
 	{
-		CreateVertexBuffer();
+		this->vertices = vertices;
+		CreateVertexBuffer(vertices);
 	}
-	void VulkanVertexBuffer::CreateVertexBuffer()
+	void VulkanVertexBuffer::CreateVertexBuffer(const std::vector<VulkanVertex>& vertices)
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -134,17 +135,18 @@ namespace Eklipse
 	// INDEX BUFFER /////////////////////////////////
 	/////////////////////////////////////////////////
 
-	const std::vector<uint16_t> VulkanIndexBuffer::indices =
+	/*const std::vector<uint16_t> VulkanIndexBuffer::indices =
 	{
 		0, 1, 2, 2, 3, 0,
 		4, 5, 6, 6, 7, 4
-	};
+	};*/
 
-	void VulkanIndexBuffer::Init()
+	void VulkanIndexBuffer::Init(const std::vector<uint32_t>& indices)
 	{
-		CreateIndexBuffer();
+		this->indices = indices;
+		CreateIndexBuffer(indices);
 	}
-	void VulkanIndexBuffer::CreateIndexBuffer()
+	void VulkanIndexBuffer::CreateIndexBuffer(const std::vector<uint32_t>& indices)
 	{
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 

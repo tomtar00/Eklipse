@@ -1,13 +1,11 @@
-
 #pragma once
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "VulkanCommandPool.h"
-#include "VulkanBuffers.h"
 #include "VulkanDescriptor.h"
 #include "VulkanPipeline.h"
 #include "VulkanValidationLayers.h"
-#include "VulkanTexture.h"
+#include "VulkanModel.h"
 
 #include <Eklipse/Renderer/GraphicsAPI.h>
 #include <vulkan/vulkan.h>
@@ -46,15 +44,14 @@ namespace Eklipse
 		VulkanDevice& Devices();
 		VulkanSwapChain& SwapChain();
 		VulkanCommandPool& CommandPool();
-		VulkanVertexBuffer& VertexBuffer();
-		VulkanIndexBuffer& IndexBuffer();
 		VulkanPipeline& Pipeline();
 		VulkanDescriptorSetLayout& DescriptorLayout();
 		VulkanUniformBufferPool& UniformBufferPool();
 		VulkanDescriptorPool& DescriptorPool();
 		VulkanValidationLayers& ValidationLayers();
-		VulkanTexture& Texture();
 		VulkanDepthImage& DepthImage();
+
+		VulkanModel& Model();
 
 	public:
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -87,16 +84,13 @@ namespace Eklipse
 		VulkanDevice m_device{};
 		VulkanSwapChain m_swapChain{};
 		VulkanCommandPool m_commandPool{};
-
-		VulkanVertexBuffer m_vertexBuffer{};
-		VulkanIndexBuffer m_indexBuffer{};
 		VulkanDescriptorSetLayout m_descriptorLayout{};
 		VulkanUniformBufferPool m_uniformBufferPool{};
 		VulkanDescriptorPool m_descriptorPool{};
-		VulkanTexture m_texture{};
 		VulkanDepthImage m_depthImage{};
-
 		VulkanPipeline m_pipeline{};
 		VulkanValidationLayers m_validationLayers{};	
+
+		VulkanModel m_model{};
 	};
 }

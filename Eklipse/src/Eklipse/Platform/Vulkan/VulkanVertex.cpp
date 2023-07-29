@@ -36,4 +36,9 @@ namespace Eklipse
 
 		return attributeDescriptions;
 	}
+
+	bool VulkanVertex::operator==(const VulkanVertex& other) const
+	{
+		return pos == other.pos && color == other.color && texCoord == other.texCoord;
+	}
 }

@@ -141,8 +141,8 @@ namespace Eklipse
 			// Textures
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = VulkanAPI::Get().Texture().Image().ImageView();
-			imageInfo.sampler = VulkanAPI::Get().Texture().Sampler();
+			imageInfo.imageView = VulkanAPI::Get().Model().Texture().Image().ImageView();
+			imageInfo.sampler = VulkanAPI::Get().Model().Texture().Sampler();
 
 			VkWriteDescriptorSet samplerWrite{};
 			samplerWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

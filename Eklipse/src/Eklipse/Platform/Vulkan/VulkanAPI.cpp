@@ -29,15 +29,17 @@ namespace Eklipse
 	VulkanDevice& VulkanAPI::Devices()							{ return m_device; }
 	VulkanSwapChain& VulkanAPI::SwapChain()						{ return m_swapChain; }
 	VulkanCommandPool& VulkanAPI::CommandPool()					{ return m_commandPool; }
-	VulkanVertexBuffer& VulkanAPI::VertexBuffer()				{ return m_vertexBuffer; }
-	VulkanIndexBuffer& VulkanAPI::IndexBuffer()					{ return m_indexBuffer; }
 	VulkanPipeline& VulkanAPI::Pipeline()						{ return m_pipeline; }
 	VulkanDescriptorSetLayout& VulkanAPI::DescriptorLayout()	{ return m_descriptorLayout; }
 	VulkanUniformBufferPool& VulkanAPI::UniformBufferPool()		{ return m_uniformBufferPool; }
 	VulkanDescriptorPool& VulkanAPI::DescriptorPool()			{ return m_descriptorPool; }
 	VulkanValidationLayers& VulkanAPI::ValidationLayers()		{ return m_validationLayers; }
-	VulkanTexture& VulkanAPI::Texture()							{ return m_texture; }
 	VulkanDepthImage& VulkanAPI::DepthImage()					{ return m_depthImage; }
+
+	VulkanModel& VulkanAPI::Model()
+	{
+		return m_model;
+	}
 
 	VulkanAPI::VulkanAPI() : m_currentFrame(0), GraphicsAPI()
 	{
@@ -68,9 +70,10 @@ namespace Eklipse
 		m_commandPool.Init();
 		m_depthImage.Init();
 		m_swapChain.InitFramebuffers();
-		m_texture.Load("textures/image.png");
-		m_vertexBuffer.Init();
-		m_indexBuffer.Init();
+		
+		// load model
+		m_model.Load("models/viking_room.obj", "textures/viking_room.png");
+
 		m_uniformBufferPool.Init(MAX_FRAMES_IN_FLIGHT);
 		m_commandPool.InitDrawBuffers(MAX_FRAMES_IN_FLIGHT);
 		m_descriptorPool.Init(MAX_FRAMES_IN_FLIGHT);
@@ -90,12 +93,17 @@ namespace Eklipse
 
 		m_depthImage.Shutdown();
 		m_swapChain.Shutdown();
-		m_texture.Shutdown();
+
+		//m_texture.Shutdown();
+
 		m_uniformBufferPool.Shutdown();
 		m_descriptorPool.Shutdown();
 		m_descriptorLayout.Shutdown();
-		m_vertexBuffer.Shutdown();
-		m_indexBuffer.Shutdown();
+
+		//m_vertexBuffer.Shutdown();
+		//m_indexBuffer.Shutdown();
+		m_model.Shutdown();
+
 		m_pipeline.Shutdown();
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

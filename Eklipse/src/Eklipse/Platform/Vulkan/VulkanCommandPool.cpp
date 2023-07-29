@@ -78,17 +78,17 @@ namespace Eklipse
 		scissor.extent = extent;
 		vkCmdSetScissor(m_drawCommandBuffers[bufferIndex], 0, 1, &scissor);
 
-		VkBuffer vertexBuffers[] = { VulkanAPI::Get().VertexBuffer().Buffer() };
+		VkBuffer vertexBuffers[] = { VulkanAPI::Get().Model().VertexBuffer().Buffer() };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(m_drawCommandBuffers[bufferIndex], 0, 1, vertexBuffers, offsets);
 
-		VkBuffer indexBuffer = VulkanAPI::Get().IndexBuffer().Buffer();
-		vkCmdBindIndexBuffer(m_drawCommandBuffers[bufferIndex], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		VkBuffer indexBuffer = VulkanAPI::Get().Model().IndexBuffer().Buffer();
+		vkCmdBindIndexBuffer(m_drawCommandBuffers[bufferIndex], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		
 		VkPipelineLayout pipelineLayout = VulkanAPI::Get().Pipeline().Layout();
 		VkDescriptorSet& descriptorSet = VulkanAPI::Get().DescriptorPool().DescriptorSets()[bufferIndex];
 		vkCmdBindDescriptorSets(m_drawCommandBuffers[bufferIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-		vkCmdDrawIndexed(m_drawCommandBuffers[bufferIndex], static_cast<uint32_t>(VulkanIndexBuffer::indices.size()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(m_drawCommandBuffers[bufferIndex], static_cast<uint32_t>(VulkanAPI::Get().Model().IndexBuffer().indices.size()), 1, 0, 0, 0);
 		
 		vkCmdEndRenderPass(m_drawCommandBuffers[bufferIndex]);
 
