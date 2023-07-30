@@ -99,7 +99,7 @@ namespace Eklipse
         for (size_t i = 0; i < m_swapChainImages.size(); i++)
         {
             m_swapChainImageViews[i] = VulkanImage::CreateImageView(
-                m_swapChainImages[i], m_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
+                m_swapChainImages[i], m_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1
             );
         }
     }
