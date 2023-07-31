@@ -40,6 +40,7 @@ namespace Eklipse
 		VkSurfaceKHR& Surface();
 		VkQueue& GraphicsQueue();
 		VkQueue& PresentQueue();
+		VkSampleCountFlagBits& MsaaSamples();
 
 		VulkanDevice& Devices();
 		VulkanSwapChain& SwapChain();
@@ -50,6 +51,7 @@ namespace Eklipse
 		VulkanDescriptorPool& DescriptorPool();
 		VulkanValidationLayers& ValidationLayers();
 		VulkanDepthImage& DepthImage();
+		VulkanColorImage& ColorImage();
 
 		VulkanModel& Model();
 
@@ -60,6 +62,7 @@ namespace Eklipse
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		VkSampleCountFlagBits GetMaxUsableSampleCount();
 
 	private:
 		void CreateInstance();
@@ -77,6 +80,7 @@ namespace Eklipse
 		VkQueue m_presentQueue{};
 		VkInstance m_instance{};
 		VkSurfaceKHR m_surface{};
+		VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 		std::vector<VkSemaphore> m_imageAvailableSemaphores{};
 		std::vector<VkSemaphore> m_renderFinishedSemaphores{};
 		std::vector<VkFence> m_inFlightFences{};
@@ -88,6 +92,7 @@ namespace Eklipse
 		VulkanUniformBufferPool m_uniformBufferPool{};
 		VulkanDescriptorPool m_descriptorPool{};
 		VulkanDepthImage m_depthImage{};
+		VulkanColorImage m_colorImage{};
 		VulkanPipeline m_pipeline{};
 		VulkanValidationLayers m_validationLayers{};	
 

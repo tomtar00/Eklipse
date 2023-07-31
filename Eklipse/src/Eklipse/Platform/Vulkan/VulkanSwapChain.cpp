@@ -109,9 +109,10 @@ namespace Eklipse
 
         for (size_t i = 0; i < m_swapChainImageViews.size(); i++)
         {
-            std::array<VkImageView, 2> attachments = {
-                m_swapChainImageViews[i],
-                VulkanAPI::Get().DepthImage().ImageView()
+            std::array<VkImageView, 3> attachments = {
+                VulkanAPI::Get().ColorImage().ImageView(),
+                VulkanAPI::Get().DepthImage().ImageView(),
+                m_swapChainImageViews[i]
             };
 
             VkFramebufferCreateInfo framebufferInfo{};

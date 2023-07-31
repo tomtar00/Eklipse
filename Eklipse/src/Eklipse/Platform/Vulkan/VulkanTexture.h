@@ -7,7 +7,7 @@ namespace Eklipse
 	{	
 	public:
 		void Init(uint32_t width, uint32_t height, uint32_t mipLevels,
-			VkFormat format, VkImageTiling tiling,
+			VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
 			VkImageUsageFlags usage, VkMemoryPropertyFlags properties
 		);
 		void Shutdown();
@@ -53,7 +53,7 @@ namespace Eklipse
 	class VulkanDepthImage : public VulkanImage
 	{
 	public:
-		void Init();
+		void Init(VkSampleCountFlagBits numSamples);
 
 		static VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates,
 			VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -61,6 +61,15 @@ namespace Eklipse
 		static bool HasStencilComponent(VkFormat format);
 
 	private:
-		void CreateDepthImage();
+		void CreateDepthImage(VkSampleCountFlagBits numSamples);
+	};
+
+	class VulkanColorImage : public VulkanImage
+	{
+	public:
+		void Init(VkSampleCountFlagBits numSamples);
+
+	private:
+		void CreateColorImage(VkSampleCountFlagBits numSamples);
 	};
 }

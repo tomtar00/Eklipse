@@ -26,6 +26,7 @@ namespace Eklipse
 	VkSurfaceKHR& VulkanAPI::Surface()							{ return m_surface; }
 	VkQueue& VulkanAPI::GraphicsQueue()							{ return m_graphicsQueue; }
 	VkQueue& VulkanAPI::PresentQueue()							{ return m_presentQueue;}
+	VkSampleCountFlagBits& VulkanAPI::MsaaSamples()				{ return m_msaaSamples; }
 	VulkanDevice& VulkanAPI::Devices()							{ return m_device; }
 	VulkanSwapChain& VulkanAPI::SwapChain()						{ return m_swapChain; }
 	VulkanCommandPool& VulkanAPI::CommandPool()					{ return m_commandPool; }
@@ -35,6 +36,7 @@ namespace Eklipse
 	VulkanDescriptorPool& VulkanAPI::DescriptorPool()			{ return m_descriptorPool; }
 	VulkanValidationLayers& VulkanAPI::ValidationLayers()		{ return m_validationLayers; }
 	VulkanDepthImage& VulkanAPI::DepthImage()					{ return m_depthImage; }
+	VulkanColorImage& VulkanAPI::ColorImage()					{ return m_colorImage; }
 
 	VulkanModel& VulkanAPI::Model()
 	{
@@ -64,11 +66,15 @@ namespace Eklipse
 
 		m_validationLayers.Init();
 		m_device.Init();
+
+		m_msaaSamples = GetMaxUsableSampleCount();
+
 		m_swapChain.InitChainViews();
 		m_descriptorLayout.Init();
 		m_pipeline.Init();
 		m_commandPool.Init();
-		m_depthImage.Init();
+		m_colorImage.Init(m_msaaSamples);
+		m_depthImage.Init(m_msaaSamples);
 		m_swapChain.InitFramebuffers();
 		
 		// load model
@@ -91,6 +97,7 @@ namespace Eklipse
 			return;
 		}
 
+		m_colorImage.Shutdown();
 		m_depthImage.Shutdown();
 		m_swapChain.Shutdown();
 
@@ -249,9 +256,11 @@ namespace Eklipse
 
 		m_swapChain.Shutdown();
 		m_depthImage.Shutdown();
+		m_colorImage.Shutdown();
 
 		m_swapChain.InitChainViews();
-		m_depthImage.Init();
+		m_colorImage.Init(m_msaaSamples);
+		m_depthImage.Init(m_msaaSamples);
 		m_swapChain.InitFramebuffers();
 	}
 	std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
@@ -425,5 +434,20 @@ namespace Eklipse
 		}
 
 		return indices;
+	}
+	VkSampleCountFlagBits VulkanAPI::GetMaxUsableSampleCount()
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(m_device.PhysicalDevice(), &physicalDeviceProperties);
+
+		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+		return VK_SAMPLE_COUNT_1_BIT;
 	}
 }

@@ -13,7 +13,7 @@ namespace Eklipse
 	/////////////////////////////////////////////////
 
 	void VulkanImage::Init(uint32_t width, uint32_t height, uint32_t mipLevels,
-		VkFormat format, VkImageTiling tiling,
+		VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
 		VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
 	{
 		VkImageCreateInfo imageInfo{};
@@ -29,7 +29,7 @@ namespace Eklipse
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = numSamples;
 		imageInfo.mipLevels = mipLevels;
 
 		VkDevice device = VulkanAPI::Get().Devices().Device();
@@ -163,7 +163,7 @@ namespace Eklipse
 		stagingBuffer.Init(imageSize, data);
 
 		Init(width, height, mipLevels,
-			VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+			VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
@@ -376,18 +376,20 @@ namespace Eklipse
 	// DEPTH IMAGE //////////////////////////////////
 	/////////////////////////////////////////////////
 
-	void VulkanDepthImage::Init()
+	void VulkanDepthImage::Init(VkSampleCountFlagBits numSamples)
 	{
-		CreateDepthImage();
+		CreateDepthImage(numSamples);
 	}
-	void VulkanDepthImage::CreateDepthImage()
+	void VulkanDepthImage::CreateDepthImage(VkSampleCountFlagBits numSamples)
 	{
 		VkFormat depthFormat = FindDepthFormat();
 
 		VkExtent2D extent = VulkanAPI::Get().SwapChain().Extent();
-		VulkanImage::Init(extent.width, extent.height, 1, depthFormat,
+		VulkanImage::Init(extent.width, extent.height, 1, 
+			numSamples, depthFormat,
 			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
 		CreateImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 	}
 	VkFormat VulkanDepthImage::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
@@ -419,5 +421,27 @@ namespace Eklipse
 	bool VulkanDepthImage::HasStencilComponent(VkFormat format)
 	{
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+	}
+	
+	/////////////////////////////////////////////////
+	// COLOR IMAGE //////////////////////////////////
+	/////////////////////////////////////////////////
+	
+	void VulkanColorImage::Init(VkSampleCountFlagBits numSamples)
+	{
+		CreateColorImage(numSamples);
+	}
+
+	void VulkanColorImage::CreateColorImage(VkSampleCountFlagBits numSamples)
+	{
+		VkFormat colorFormat = VulkanAPI::Get().SwapChain().Format();
+
+		VkExtent2D extent = VulkanAPI::Get().SwapChain().Extent();
+		VulkanImage::Init(extent.width, extent.height, 1,
+			numSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, 
+			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+		CreateImageView(colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 	}
 }
