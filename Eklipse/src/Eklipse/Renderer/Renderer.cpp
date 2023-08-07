@@ -2,28 +2,45 @@
 #include "Renderer.h"
 
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
+#include <Eklipse/Core/Application.h>
 
 namespace Eklipse
 {
-	Renderer::Renderer() : m_graphicsAPI(nullptr) {}
+	Renderer::Renderer() : m_graphicsAPI(nullptr), m_scene(nullptr) 
+	{
+		s_instance = this;
+	}
 	Renderer::~Renderer()
 	{
 		delete m_graphicsAPI;
 	}
 
-	void Renderer::Update()
+	Renderer& Renderer::Get()
 	{
+		return *s_instance;
+	}
+
+	void Renderer::Update(float deltaTime)
+	{
+		m_scene->m_camera.OnUpdate(m_graphicsAPI->GetAspectRatio());
+
+		for (auto& model : m_scene->m_geometry)
+		{
+			model.OnUpdate(m_scene->m_camera.m_viewProj);
+		}
+
+		// TODO: split method for better abstraction
 		m_graphicsAPI->DrawFrame();
 	}
 
 	void Renderer::PostMainLoop()
 	{
-		m_graphicsAPI->WaitIdle();
+		m_graphicsAPI->OnPostLoop();
 	}
 
 	ApiType Renderer::GetAPI()
 	{
-		return m_graphicsAPI->GetApiType();
+		return m_apiType;
 	}
 
 	void Renderer::SetAPI(ApiType apiType)
@@ -36,9 +53,9 @@ namespace Eklipse
 
 		if (m_graphicsAPI != nullptr)
 		{
-			if (apiType == m_graphicsAPI->GetApiType() && m_graphicsAPI->IsInitialized())
+			if (apiType == m_apiType && m_graphicsAPI->IsInitialized())
 			{
-				EK_CORE_WARN("{0} API already set and initialized!", (int)apiType);
+				EK_CORE_WARN("{0} API already set and initialized!", STRINGIFY(apiType));
 				return;
 			}
 
@@ -49,8 +66,7 @@ namespace Eklipse
 				delete m_graphicsAPI;
 
 				EK_ASSERT((m_graphicsAPI == nullptr),
-					"When switching api, old api ({0}) was not deleted", 
-					(int)m_graphicsAPI->GetApiType());
+					"When switching api, old api ({0}) was not deleted", STRINGIFY(apiType));
 			}
 		}		
 
@@ -59,20 +75,24 @@ namespace Eklipse
 		{
 			case ApiType::Vulkan:
 			{
-				m_graphicsAPI = new VulkanAPI();				
+				m_graphicsAPI = new Vulkan::VulkanAPI();				
 				break;
 			}
 			default:
 			{
-				EK_ASSERT(false, "API {0} not implemented!", (int)apiType);
+				EK_ASSERT(false, "API {0} not implemented!", STRINGIFY(apiType));
 				break;
 			}
 		}
-		m_graphicsAPI->SetApiType(apiType);
+		
+		m_apiType = apiType;
 
+		m_scene = Application::Get().GetScene();
 		if (!m_graphicsAPI->IsInitialized())
-			m_graphicsAPI->Init();
+		{
+			m_graphicsAPI->Init(m_scene);
+		}
 		else
-			EK_ASSERT(false, "API {0} not initialized!", (int)apiType);
+			EK_ASSERT(false, "API {0} not initialized!", STRINGIFY(apiType));
 	}
 }

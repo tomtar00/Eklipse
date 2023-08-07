@@ -23,7 +23,7 @@ namespace Eklipse
 
 		void SetEventCallback(const std::function<void(Event&)>& callback) { m_data.EventCallback = callback; }
 
-		virtual void Update() {}
+		virtual void Update(float deltaTime) {}
 		virtual void GetFramebufferSize(int& width, int& height) {}
 
 		static Window* Create(WindowData& data);

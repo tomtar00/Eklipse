@@ -1,33 +1,31 @@
 #pragma once
 #include "Pipeline.h"
+#include <Eklipse/Scene/Scene.h>
 
 namespace Eklipse
 {
-	enum class ApiType
-	{
-		None,
-		Vulkan
-	};
-
 	class GraphicsAPI
 	{
 	public:
 		GraphicsAPI();
 		virtual ~GraphicsAPI() {};
 
-		virtual void Init() {};
-		virtual void Shutdown() {};
+		virtual void Init(Scene* scene) = 0;
+		virtual void Shutdown() = 0;
 
 		virtual void DrawFrame() = 0;
-		virtual void WaitIdle() = 0;
+		virtual void OnPostLoop() = 0;
 
+		virtual float GetAspectRatio() = 0;
+
+		Scene* GetScene();
 		bool IsInitialized();
-		ApiType GetApiType();
-		void SetApiType(ApiType apiType);
 
 	protected:
-		ApiType m_apiType;
-		Pipeline m_pipeline;
+		Scene* m_scene;
 		bool m_initialized = false;
+
+		// TODO: more like... render pipeline (raster / raytracing)
+		//Pipeline m_pipeline;
 	};
 }

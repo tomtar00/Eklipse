@@ -29,8 +29,8 @@ namespace Eklipse
 	#define EK_CORE_WARN(...)		SPDLOG_LOGGER_WARN(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	#define EK_CORE_ERROR(...)		SPDLOG_LOGGER_ERROR(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	#define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), __VA_ARGS__)
-	//#define EK_CORE_ERROR(...)		SPDLOG_LOGGER_ERROR(Eklipse::Log::coreLogger(), "File: {0}:{1} ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-	//#define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), "File: {0}:{1} CRITICAL ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
+	// #define EK_CORE_ERROR(...)		SPDLOG_LOGGER_ERROR(Eklipse::Log::coreLogger(), "File: {0}:{1} ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
+	// #define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), "File: {0}:{1} CRITICAL ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
 	
 	#define EK_TRACE(...)			SPDLOG_LOGGER_TRACE(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_DEBUG(...)			SPDLOG_LOGGER_DEBUG(Eklipse::Log::clientLogger(), __VA_ARGS__)

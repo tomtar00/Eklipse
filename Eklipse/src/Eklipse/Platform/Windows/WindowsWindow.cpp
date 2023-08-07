@@ -1,9 +1,11 @@
 #include "precompiled.h"
 #include "WindowsWindow.h"
 
-#include "Eklipse/Events/ApplicationEvent.h"
-#include "Eklipse/Events/KeyEvent.h"
-#include "Eklipse/Events/MouseEvent.h"
+#include <Eklipse/Events/ApplicationEvent.h>
+#include <Eklipse/Events/KeyEvent.h>
+#include <Eklipse/Events/MouseEvent.h>
+
+#include <Eklipse/Utils/Stats.h>
 
 #define GLFW_INCLUDE_VULKAN
 
@@ -158,10 +160,14 @@ namespace Eklipse
 		glfwTerminate();
 	}
 
-	void WindowsWindow::Update()
+	void WindowsWindow::Update(float deltaTime)
 	{
+		std::stringstream title;
+		title << m_data.title << " FPS: " << Stats::Get().fps;
+		glfwSetWindowTitle(m_window, title.str().c_str());
 		glfwPollEvents();
 	}
+
 	GLFWwindow* WindowsWindow::GetGlfwWindow()
 	{
 		return m_window;

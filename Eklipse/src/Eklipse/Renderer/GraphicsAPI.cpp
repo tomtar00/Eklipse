@@ -4,19 +4,16 @@
 namespace Eklipse
 {
     GraphicsAPI::GraphicsAPI() : 
-        m_apiType(ApiType::None) {}
+        m_initialized(false),
+        m_scene(nullptr) {}
+
+    Scene* GraphicsAPI::GetScene()
+    {
+        return m_scene;
+    }
 
     bool GraphicsAPI::IsInitialized()
     {
         return m_initialized;
-    }
-    ApiType GraphicsAPI::GetApiType()
-    {
-        return m_apiType;
-    }
-
-    void GraphicsAPI::SetApiType(ApiType apiType)
-    {
-        m_apiType = apiType;
     }
 }

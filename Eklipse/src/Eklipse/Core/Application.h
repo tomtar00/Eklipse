@@ -8,6 +8,7 @@
 #include <Eklipse/Events/Event.h>
 #include <Eklipse/Events/ApplicationEvent.h>
 #include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Scene/Scene.h>
 
 namespace Eklipse
 {
@@ -25,10 +26,13 @@ namespace Eklipse
 		public:
 			Application();
 			Application(ApplicationInfo& info);
+			~Application();
 
 			static Application& Get();
+
 			ApplicationInfo& GetInfo();
 			Window* GetWindow() const;
+			Scene* GetScene();
 
 			void Init();
 			void Run();
@@ -45,6 +49,7 @@ namespace Eklipse
 		LayerStack m_layerStack;
 		Renderer m_renderer;
 		Timer m_timer;
+		Scene m_scene;
 
 		bool m_running;
 		bool m_minimized;

@@ -3,19 +3,31 @@
 
 namespace Eklipse
 {
+	enum class ApiType
+	{
+		None,
+		Vulkan
+	};
+
 	class Renderer
 	{
 	public:
 		Renderer();
 		~Renderer();
 
-		void Update();
+		Renderer& Get();
+
+		void Update(float deltaTime);
 		void PostMainLoop();
 
 		ApiType GetAPI();
 		void SetAPI(ApiType api);
 
 	private:
+		inline static Renderer* s_instance = nullptr;
+
+		ApiType m_apiType;
+		Scene* m_scene;
 		GraphicsAPI* m_graphicsAPI = nullptr;
 	};
 }

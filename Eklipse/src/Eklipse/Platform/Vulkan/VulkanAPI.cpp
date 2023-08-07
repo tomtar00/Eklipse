@@ -1,453 +1,385 @@
 #include "precompiled.h"
+#include "_globals.h"
 #include "VulkanAPI.h"
 
 #include <Eklipse/Core/Application.h>
+#include <Eklipse/Renderer/Settings.h>
 
 #ifdef EK_PLATFORM_WINDOWS
-#include <GLFW/glfw3.h>
-#include <Eklipse/Platform/Windows/WindowsWindow.h>
+	#include <GLFW/glfw3.h>
+	#include <Eklipse/Platform/Windows/WindowsWindow.h>
 #endif
+
+#include "VkUtils.h"
+#include "VkValidationLayers.h"
+#include "VkDevice.h"
+#include "VkSwapChain.h"
+#include "VkCommads.h"
+#include "VkPipeline.h"
+#include "VkDescriptor.h"
+#include "VkBuffers.h"
+#include "VkImage.h"
+#include <Eklipse/ImGui/ImGuiLayer.h>
 
 namespace Eklipse
 {
-	const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-
-	bool QueueFamilyIndices::isComplete()
+	namespace Vulkan
 	{
-		return has_graphicsFamily && has_presentFamily;
-	}
+		const uint32_t g_maxFramesInFlight = 2;
 
-	VulkanAPI& VulkanAPI::Get()
-	{ 
-		EK_ASSERT(s_instance, "Vulkan API instance not initialized!");
-		return *s_instance; 
-	}
-	VkInstance& VulkanAPI::Instance()							{ return m_instance; }
-	VkSurfaceKHR& VulkanAPI::Surface()							{ return m_surface; }
-	VkQueue& VulkanAPI::GraphicsQueue()							{ return m_graphicsQueue; }
-	VkQueue& VulkanAPI::PresentQueue()							{ return m_presentQueue;}
-	VkSampleCountFlagBits& VulkanAPI::MsaaSamples()				{ return m_msaaSamples; }
-	VulkanDevice& VulkanAPI::Devices()							{ return m_device; }
-	VulkanSwapChain& VulkanAPI::SwapChain()						{ return m_swapChain; }
-	VulkanCommandPool& VulkanAPI::CommandPool()					{ return m_commandPool; }
-	VulkanPipeline& VulkanAPI::Pipeline()						{ return m_pipeline; }
-	VulkanDescriptorSetLayout& VulkanAPI::DescriptorLayout()	{ return m_descriptorLayout; }
-	VulkanUniformBufferPool& VulkanAPI::UniformBufferPool()		{ return m_uniformBufferPool; }
-	VulkanDescriptorPool& VulkanAPI::DescriptorPool()			{ return m_descriptorPool; }
-	VulkanValidationLayers& VulkanAPI::ValidationLayers()		{ return m_validationLayers; }
-	VulkanDepthImage& VulkanAPI::DepthImage()					{ return m_depthImage; }
-	VulkanColorImage& VulkanAPI::ColorImage()					{ return m_colorImage; }
+		VkInstance			g_instance				= VK_NULL_HANDLE;
+		VkSurfaceKHR		g_surface				= VK_NULL_HANDLE;
+		VmaAllocator		g_allocator				= VK_NULL_HANDLE;
 
-	VulkanModel& VulkanAPI::Model()
-	{
-		return m_model;
-	}
+		VkQueue				g_graphicsQueue			= VK_NULL_HANDLE;
+		VkQueue				g_computeQueue			= VK_NULL_HANDLE;
+		VkQueue				g_presentQueue			= VK_NULL_HANDLE;
 
-	VulkanAPI::VulkanAPI() : m_currentFrame(0), GraphicsAPI()
-	{
-		s_instance = this;
-		m_initialized = false;
-	}
-	VulkanAPI::~VulkanAPI()
-	{
-		Shutdown();
-	}
+		QueueFamilyIndices	g_queueFamilyIndices;
 
-	void VulkanAPI::Init()
-	{
-		if (m_initialized)
+		ColorImage			g_colorImage;
+		DepthImage			g_depthImage;
+
+		VulkanAPI::VulkanAPI() : m_currentFrameInFlightIndex(0), GraphicsAPI()
 		{
-			EK_CORE_WARN("VulkanAPI already initialized!");
-			return;
+			s_instance = this;
 		}
-
-		CreateInstance();
-		CreateSurface();
-
-		m_validationLayers.Init();
-		m_device.Init();
-
-		m_msaaSamples = GetMaxUsableSampleCount();
-
-		m_swapChain.InitChainViews();
-		m_descriptorLayout.Init();
-		m_pipeline.Init();
-		m_commandPool.Init();
-		m_colorImage.Init(m_msaaSamples);
-		m_depthImage.Init(m_msaaSamples);
-		m_swapChain.InitFramebuffers();
-		
-		// load model
-		m_model.Load("models/viking_room.obj", "textures/viking_room.png");
-
-		m_uniformBufferPool.Init(MAX_FRAMES_IN_FLIGHT);
-		m_commandPool.InitDrawBuffers(MAX_FRAMES_IN_FLIGHT);
-		m_descriptorPool.Init(MAX_FRAMES_IN_FLIGHT);
-
-		CreateSyncObjects();
-
-		EK_CORE_INFO("Vulkan initialized");
-		m_initialized = true;
-	}
-	void VulkanAPI::Shutdown()
-	{
-		if (!m_initialized)
+		VulkanAPI::~VulkanAPI()
 		{
-			EK_CORE_WARN("VulkanAPI has already shut down!");
-			return;
+			Shutdown();
 		}
-
-		m_colorImage.Shutdown();
-		m_depthImage.Shutdown();
-		m_swapChain.Shutdown();
-
-		//m_texture.Shutdown();
-
-		m_uniformBufferPool.Shutdown();
-		m_descriptorPool.Shutdown();
-		m_descriptorLayout.Shutdown();
-
-		//m_vertexBuffer.Shutdown();
-		//m_indexBuffer.Shutdown();
-		m_model.Shutdown();
-
-		m_pipeline.Shutdown();
-
-		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		VulkanAPI& VulkanAPI::Get()
 		{
-			vkDestroySemaphore(m_device.Device(), m_imageAvailableSemaphores[i], nullptr);
-			vkDestroySemaphore(m_device.Device(), m_renderFinishedSemaphores[i], nullptr);
-			vkDestroyFence(m_device.Device(), m_inFlightFences[i], nullptr);
+			return *s_instance;
 		}
-
-		m_commandPool.Shutdown();
-		m_device.Shutdown();
-		m_validationLayers.Shutdown();
-
-		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-		vkDestroyInstance(m_instance, nullptr);
-
-		EK_CORE_INFO("Shutdown vulkan");
-		m_initialized = false;
-	}
-	void VulkanAPI::DrawFrame()
-	{
-		vkWaitForFences(m_device.Device(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
-
-		VkSwapchainKHR& swapChain = m_swapChain.SwapChain();
-
-		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(m_device.Device(), swapChain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		void VulkanAPI::Init(Scene* scene)
 		{
-			RecreateSwapChain();
-			return;
-		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-		{
-			throw std::runtime_error("failed to acquire swap chain image!");
-		}
-
-		m_uniformBufferPool.Update(m_currentFrame);
-
-		vkResetFences(m_device.Device(), 1, &m_inFlightFences[m_currentFrame]);
-
-		m_commandPool.RecordDrawCommandBuffer(m_currentFrame, imageIndex);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_commandPool.DrawBuffers()[m_currentFrame];
-
-		VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame] };
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-
-		VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		VkPresentInfoKHR presentInfo{};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-		VkSwapchainKHR swapChains[] = { swapChain };
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &imageIndex;
-		presentInfo.pResults = nullptr;
-
-		if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to submit draw command buffer!");
-		}
-
-		result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
-
-		bool& framebufferResized = Application::Get().GetWindow()->GetData().framebufferResized;
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
-		{
-			framebufferResized = false;
-			RecreateSwapChain();
-		}
-		else if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to present swap chain image!");
-		}
-
-		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-	}
-	void VulkanAPI::WaitIdle()
-	{
-		vkDeviceWaitIdle(m_device.Device());
-	}
-
-	void VulkanAPI::CreateInstance()
-	{
-		if (g_validationLayersEnabled && !m_validationLayers.CheckSupport())
-		{
-			throw std::runtime_error("validation layers requested, but not available!");
-		}
-
-		VkApplicationInfo appInfo{};
-		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "Vulkan Test";
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "Eklipse";
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_0;
-
-		VkInstanceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		createInfo.pApplicationInfo = &appInfo;
-
-		auto extensions = GetRequiredExtensions();
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-		createInfo.ppEnabledExtensionNames = extensions.data();
-
-		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (g_validationLayersEnabled)
-		{
-			m_validationLayers.PopulateCreateInfo(debugCreateInfo, &createInfo);
-		}
-		else
-		{
-			createInfo.enabledLayerCount = 0;
-			createInfo.pNext = nullptr;
-		}
-
-		if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create instance!");
-		}
-	}
-	void VulkanAPI::RecreateSwapChain()
-	{
-		while (Application::Get().GetWindow()->GetData().minimized)
-		{
-			glfwWaitEvents();
-		}
-
-		WaitIdle();
-
-		m_swapChain.Shutdown();
-		m_depthImage.Shutdown();
-		m_colorImage.Shutdown();
-
-		m_swapChain.InitChainViews();
-		m_colorImage.Init(m_msaaSamples);
-		m_depthImage.Init(m_msaaSamples);
-		m_swapChain.InitFramebuffers();
-	}
-	std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
-	{
-#ifdef EK_PLATFORM_WINDOWS
-		uint32_t glfwExtensionCount = 0;
-		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-		if (g_validationLayersEnabled)
-		{
-			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		}
-		return extensions;
-#else
-		EK_ASSERT(false, "Platform not supported!");
-#endif
-	}
-	void VulkanAPI::CreateSurface()
-	{
-#ifdef EK_PLATFORM_WINDOWS
-		WindowsWindow* windowsWindow = static_cast<WindowsWindow*>(Application::Get().GetWindow());
-		GLFWwindow* window = windowsWindow->GetGlfwWindow();
-		bool success = glfwCreateWindowSurface(m_instance, window, nullptr, &m_surface) == VK_SUCCESS;
-		EK_ASSERT(success, "Failed to create window surface!");
-#else
-		EK_ASSERT(false, "Platform not supported!");
-#endif
-	}
-	void VulkanAPI::CreateSyncObjects()
-	{
-		m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-
-		VkSemaphoreCreateInfo semaphoreInfo{};
-		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-		VkFenceCreateInfo fenceInfo{};
-		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		VkDevice device = m_device.Device();
-		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-				vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-				vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+			if (m_initialized)
 			{
-				throw std::runtime_error("failed to create semaphores!");
+				EK_CORE_WARN("VulkanAPI already initialized!");
+				return;
+			}		
+
+			CreateInstance();
+			CreateSurface();
+
+			SetupValidationLayers();
+
+			PickPhysicalDevice();
+			g_queueFamilyIndices = FindQueueFamilies(g_physicalDevice);
+			vkGetPhysicalDeviceMemoryProperties(g_physicalDevice, &g_physicalDeviceMemoryProps);
+
+			CreateLogicalDevice();
+
+			// TODO: Pick default graphics settings
+			RendererSettings::msaaSamples = GetMaxUsableSampleCount();
+
+			VmaAllocatorCreateInfo allocatorCreateInfo = {};
+			allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+			allocatorCreateInfo.physicalDevice = g_physicalDevice;
+			allocatorCreateInfo.device = g_logicalDevice;
+			allocatorCreateInfo.instance = g_instance;
+			vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
+
+			SetupSwapchain();
+			SetupDescriptorSetLayouts();
+			SetupPipelines();
+			SetupCommandPool();
+			SetupCommandBuffers();
+
+			g_colorImage.Setup(RendererSettings::msaaSamples);
+			g_depthImage.Setup(RendererSettings::msaaSamples);
+
+			SetupFramebuffers();
+
+			SetupDescriptorPool();
+
+			m_scene = scene;
+			m_modelManager.Setup(scene);
+
+			CreateSyncObjects();
+
+			EK_CORE_INFO("Vulkan initialized");
+			m_initialized = true;
+		}
+		void VulkanAPI::Shutdown()
+		{
+			if (!m_initialized)
+			{
+				EK_CORE_WARN("VulkanAPI has already shut down!");
+				return;
 			}
-		}
-	}
 
-	VkSurfaceFormatKHR VulkanAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
-	{
-		for (const auto& availableFormat : availableFormats)
-		{
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			m_modelManager.Dispose();
+
+			g_colorImage.Dispose();
+			g_depthImage.Dispose();
+			DisposeSwapchain();
+
+			DisposeDescriptorPool();
+			DisposeDescriptorSetLayouts();
+			DisposePipelines();
+
+			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
-				return availableFormat;
+				vkDestroySemaphore(g_logicalDevice, m_imageAvailableSemaphores[i], nullptr);
+				vkDestroySemaphore(g_logicalDevice, m_renderFinishedSemaphores[i], nullptr);
+				vkDestroyFence(g_logicalDevice, m_inFlightFences[i], nullptr);
+
+				vkDestroySemaphore(g_logicalDevice, m_computeFinishedSemaphores[i], nullptr);
+				vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
 			}
-		}
 
-		return availableFormats[0];
-	}
-	VkPresentModeKHR VulkanAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-	{
-		for (const auto& availablePresentMode : availablePresentModes)
+			DisposeCommandPool();
+			DisposeValidationLayers();
+
+			vmaDestroyAllocator(g_allocator);
+
+			DisposeDevice();
+			vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
+			vkDestroyInstance(g_instance, nullptr);
+
+			EK_CORE_INFO("Shutdown vulkan");
+			m_initialized = false;
+		}
+		void VulkanAPI::DrawFrame()
 		{
-			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+			// BeginComputeStage();
+			// {
+			// 	RecordComputeCommandBuffer(m_currentFrameInFlightIndex);
+			// }
+			// SubmitComputeStage();
+
+			uint32_t imageIndex = BeginDrawStage();
 			{
-				return availablePresentMode;
+				BeginRenderPass(m_currentFrameInFlightIndex, imageIndex);
+				// DRAWING //////////////////////////////////////////////
+				{
+					for (auto& modelAdapter : m_modelManager.m_models)
+					{
+						modelAdapter.Bind(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
+						modelAdapter.Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
+					}
+
+					//Eklipse::ImGuiLayer::Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
+				}
+				/////////////////////////////////////////////////////////
+				EndRenderPass(m_currentFrameInFlightIndex, imageIndex);
 			}
-		}
+			SubmitDrawStage(imageIndex);
 
-		return VK_PRESENT_MODE_FIFO_KHR;
-	}
-	VkExtent2D VulkanAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
-	{
-		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-		{
-			return capabilities.currentExtent;
+			m_currentFrameInFlightIndex = (m_currentFrameInFlightIndex + 1) % g_maxFramesInFlight;
 		}
-		else
+		void VulkanAPI::BeginComputeStage()
 		{
-			int width, height;
-			Application::Get().GetWindow()->GetFramebufferSize(width, height);
+			vkWaitForFences(g_logicalDevice, 1, &m_computeInFlightFences[m_currentFrameInFlightIndex], VK_TRUE, UINT64_MAX);
+			vkResetFences(g_logicalDevice, 1, &m_computeInFlightFences[m_currentFrameInFlightIndex]);
+		}
+		void VulkanAPI::SubmitComputeStage()
+		{
+			VkSubmitInfo submitInfo{};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &g_computeCommandBuffers[m_currentFrameInFlightIndex];
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = &m_computeFinishedSemaphores[m_currentFrameInFlightIndex];
 
-			VkExtent2D actualExtent =
+			if (vkQueueSubmit(g_computeQueue, 1, &submitInfo, m_computeInFlightFences[m_currentFrameInFlightIndex]) != VK_SUCCESS)
 			{
-				static_cast<uint32_t>(width),
-				static_cast<uint32_t>(height)
+				throw std::runtime_error("failed to submit compute command buffer!");
 			};
-
-			actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-			actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-			return actualExtent;
 		}
-	}
-	VkShaderModule VulkanAPI::CreateShaderModule(const std::vector<char>& code)
-	{
-		VkShaderModuleCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = code.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(m_device.Device(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+		uint32_t VulkanAPI::BeginDrawStage()
 		{
-			throw std::runtime_error("failed to create shader module!");
-		}
+			vkWaitForFences(g_logicalDevice, 1, &m_inFlightFences[m_currentFrameInFlightIndex], VK_TRUE, UINT64_MAX);
 
-		return shaderModule;
-	}
-	SwapChainSupportDetails VulkanAPI::QuerySwapChainSupport(VkPhysicalDevice device)
-	{
-		SwapChainSupportDetails details;
+			uint32_t imageIndex;
+			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrameInFlightIndex], VK_NULL_HANDLE, &imageIndex);
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.capabilities);
-
-		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, nullptr);
-		if (formatCount != 0)
-		{
-			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, details.formats.data());
-		}
-
-		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, nullptr);
-		if (presentModeCount != 0)
-		{
-			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, details.presentModes.data());
-		}
-
-		return details;
-	}
-	QueueFamilyIndices VulkanAPI::FindQueueFamilies(VkPhysicalDevice device)
-	{
-		QueueFamilyIndices indices{};
-
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		int i = 0;
-		for (const auto& queueFamily : queueFamilies)
-		{
-			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
 			{
-				indices.graphicsFamily = i;
-				indices.has_graphicsFamily = true;
+				RecreateSwapChain();
+				return imageIndex; // TODO: fix
+			}
+			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+			{
+				throw std::runtime_error("failed to acquire swap chain image!");
 			}
 
-			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_surface, &presentSupport);
+			vkResetFences(g_logicalDevice, 1, &m_inFlightFences[m_currentFrameInFlightIndex]);
+			return imageIndex;
+		}
+		void VulkanAPI::SubmitDrawStage(uint32_t imageIndex)
+		{
+			VkSubmitInfo submitInfo{};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &g_drawCommandBuffers[m_currentFrameInFlightIndex];
 
-			if (presentSupport)
+			VkSemaphore waitSemaphores[] = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[m_currentFrameInFlightIndex] };
+			VkPipelineStageFlags waitStages[] = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+			submitInfo.waitSemaphoreCount = 1;
+			submitInfo.pWaitSemaphores = waitSemaphores;
+			submitInfo.pWaitDstStageMask = waitStages;
+
+			VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrameInFlightIndex] };
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = signalSemaphores;
+
+			VkResult result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrameInFlightIndex]);
+			HANDLE_VK_RESULT(result, "DRAW FRAME QUEUE SUBMIT");
+
+			VkPresentInfoKHR presentInfo{};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pWaitSemaphores = signalSemaphores;
+
+			VkSwapchainKHR swapChains[] = { g_swapChain };
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = swapChains;
+			presentInfo.pImageIndices = &imageIndex;
+			presentInfo.pResults = nullptr;
+
+			result = vkQueuePresentKHR(g_presentQueue, &presentInfo);
+
+			bool& framebufferResized = Application::Get().GetWindow()->GetData().framebufferResized;
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
 			{
-				indices.presentFamily = i;
-				indices.has_presentFamily = true;
+				framebufferResized = false;
+				RecreateSwapChain();
 			}
-
-			i++;
+			else if (result != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to present swap chain image!");
+			}
+		}
+		void VulkanAPI::OnPostLoop()
+		{
+			vkDeviceWaitIdle(g_logicalDevice);
 		}
 
-		return indices;
-	}
-	VkSampleCountFlagBits VulkanAPI::GetMaxUsableSampleCount()
-	{
-		VkPhysicalDeviceProperties physicalDeviceProperties;
-		vkGetPhysicalDeviceProperties(m_device.PhysicalDevice(), &physicalDeviceProperties);
+		float VulkanAPI::GetAspectRatio()
+		{
+			return g_swapChainExtent.width / g_swapChainExtent.height;
+		}
 
-		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
-		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
-		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
-		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
-		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
-		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+		void VulkanAPI::CreateInstance()
+		{
+			VkResult res;
+			if (g_validationLayersEnabled)
+			{
+				res = CheckValidationLayersSupport();
+				HANDLE_VK_RESULT(res, "VALIDATION LAYERS SUPPORT");
+			}
 
-		return VK_SAMPLE_COUNT_1_BIT;
+			VkApplicationInfo appInfo{};
+			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+			appInfo.pApplicationName = "Eklipse App";
+			appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+			appInfo.pEngineName = "Eklipse";
+			appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+			appInfo.apiVersion = VK_API_VERSION_1_3;
+
+			VkInstanceCreateInfo createInfo{};
+			createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+			createInfo.pApplicationInfo = &appInfo;
+
+			auto extensions = GetRequiredExtensions();
+			createInfo.enabledExtensionCount = extensions.size();
+			createInfo.ppEnabledExtensionNames = extensions.data();
+
+			VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+			if (g_validationLayersEnabled)
+			{
+				PopulateInstanceCreateInfo(debugCreateInfo, &createInfo);
+			}
+			else
+			{
+				createInfo.enabledLayerCount = 0;
+				createInfo.pNext = nullptr;
+			}
+
+			res = vkCreateInstance(&createInfo, nullptr, &g_instance);
+			HANDLE_VK_RESULT(res, "CREATE INSTANCE");
+		}
+		void VulkanAPI::RecreateSwapChain()
+		{
+			while (Application::Get().GetWindow()->GetData().minimized)
+			{
+				glfwWaitEvents();
+			}
+
+			vkDeviceWaitIdle(g_logicalDevice);
+
+			DisposeSwapchain();
+			g_depthImage.Dispose();
+			g_colorImage.Dispose();
+
+			SetupSwapchain();
+			g_colorImage.Setup(RendererSettings::msaaSamples);
+			g_depthImage.Setup(RendererSettings::msaaSamples);
+			SetupFramebuffers();
+		}
+		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
+		{
+	#ifdef EK_PLATFORM_WINDOWS
+			uint32_t glfwExtensionCount = 0;
+			const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+			std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+			if (g_validationLayersEnabled)
+			{
+				extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+			}
+			return extensions;
+	#else
+			EK_ASSERT(false, "Platform not supported!");
+	#endif
+		}
+		void VulkanAPI::CreateSurface()
+		{
+	#ifdef EK_PLATFORM_WINDOWS
+			WindowsWindow* windowsWindow = static_cast<WindowsWindow*>(Application::Get().GetWindow());
+			GLFWwindow* window = windowsWindow->GetGlfwWindow();
+			bool success = glfwCreateWindowSurface(g_instance, window, nullptr, &g_surface) == VK_SUCCESS;
+			EK_ASSERT(success, "Failed to create window surface!");
+	#else
+			EK_ASSERT(false, "Platform not supported!");
+	#endif
+		}
+		void VulkanAPI::CreateSyncObjects()
+		{
+			m_imageAvailableSemaphores.resize(g_maxFramesInFlight);
+			m_renderFinishedSemaphores.resize(g_maxFramesInFlight);
+			m_inFlightFences.resize(g_maxFramesInFlight);
+
+			m_computeFinishedSemaphores.resize(g_maxFramesInFlight);
+			m_computeInFlightFences.resize(g_maxFramesInFlight);
+
+			VkSemaphoreCreateInfo semaphoreInfo{};
+			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+			VkFenceCreateInfo fenceInfo{};
+			fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+			VkDevice device = g_logicalDevice;
+			for (int i = 0; i < g_maxFramesInFlight; i++)
+			{
+				if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+					vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+					vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+				{
+					throw std::runtime_error("failed to create semaphores!");
+				}
+
+				if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_computeFinishedSemaphores[i]) != VK_SUCCESS ||
+					vkCreateFence(device, &fenceInfo, nullptr, &m_computeInFlightFences[i]) != VK_SUCCESS) 
+				{
+					throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+				}
+			}
+		}
 	}
 }

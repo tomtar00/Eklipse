@@ -1,6 +1,6 @@
 #include "precompiled.h"
 
-namespace Enigne
+namespace Eklipse
 {
     std::vector<char> ReadFileFromPath(const std::string& filename)
     {

@@ -1,9 +1,12 @@
 #include "precompiled.h"
 #include "Application.h"
 
-#include "Eklipse/Events/ApplicationEvent.h"
-#include "Eklipse/Events/KeyEvent.h"
-#include "Eklipse/Events/MouseEvent.h"
+#include <Eklipse/Events/ApplicationEvent.h>
+#include <Eklipse/Events/KeyEvent.h>
+#include <Eklipse/Events/MouseEvent.h>
+
+#include <Eklipse/Utils/Stats.h>
+#include <Eklipse/ImGui/ImGuiLayer.h>
 
 namespace Eklipse
 {
@@ -24,6 +27,10 @@ namespace Eklipse
 	{
 		Init();
 	}
+	Application::~Application()
+	{
+		m_scene.Dispose();
+	}
 	Application& Application::Get()
 	{
 		return *s_instance;
@@ -36,16 +43,23 @@ namespace Eklipse
 	{
 		return m_window;
 	}
+	Scene* Application::GetScene()
+	{
+		return &m_scene;
+	}
 	void Application::Init()
 	{
 		s_instance = this;
 
 		WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
 		m_window = Window::Create(data);
-
 		m_window->SetEventCallback(CAPTURE_EVENT_FN(OnEventReceived));
 
+		m_scene.Load();
+
 		m_renderer.SetAPI(ApiType::Vulkan);
+
+		//PushLayer(new ImGuiLayer(m_window));
 	}
 
 	void Application::OnEventReceived(Event& event)
@@ -84,17 +98,22 @@ namespace Eklipse
 	{
 		EK_CORE_INFO("Running engine...");
 
+		float dt = 0;
 		while (m_running)
 		{
 			m_timer.Record();
+			dt = m_timer.DeltaTime();
 
-			for (auto layer : m_layerStack)
+			m_window->Update(dt);
+
+			for (auto& layer : m_layerStack)
 			{
-				layer->Update(m_timer.DeltaTime());
+				layer->Update(dt);
 			}
 
-			m_renderer.Update();
-			m_window->Update();
+			m_renderer.Update(dt);
+
+			Stats::Get().Update(dt);
 		}
 
 		m_renderer.PostMainLoop();

@@ -13,7 +13,7 @@ namespace Eklipse
 
 		GLFWwindow* GetGlfwWindow();
 
-		void Update() override;
+		void Update(float deltaTime) override;
 
 	private:
 		void Init();

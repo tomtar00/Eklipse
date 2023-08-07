@@ -25,7 +25,8 @@ project "Eklipse"
 		"%{Include.Vulkan}",
 		"%{Include.ImGui}",
 		"%{Include.stb_image}",
-		"%{Include.tiny_obj_loader}"
+		"%{Include.tiny_obj_loader}",
+		"%{Include.vk_mem_alloc}"
 	}
 	libdirs
 	{
