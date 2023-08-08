@@ -1,23 +1,37 @@
 #pragma once
+
+#include <imgui.h>
 #include <Eklipse/Core/Layer.h>
-#include <vulkan/vulkan.h>
-#include <Eklipse/Platform/Windows/WindowsWindow.h>
+#include <Eklipse/Core/Window.h>
 
 namespace Eklipse
 {
+	class ImGuiPanel
+	{
+	public:
+		virtual void OnGUI() = 0;
+	};
+
 	class ImGuiLayer : public Eklipse::Layer
 	{
 	public:
-		ImGuiLayer(Window* window) { m_window = dynamic_cast<WindowsWindow*>(window); }
+		ImGuiLayer() = delete;
+		ImGuiLayer(Window* window) : m_window(window) {};
 		~ImGuiLayer() {}
-
-		static void Draw(VkCommandBuffer cmd);
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void Update(float deltaTime) override;
 
-		VkDescriptorPool m_imguiPool;
-		WindowsWindow* m_window;
+	public:
+		virtual void Init() = 0;
+		virtual void Shutdown() = 0;
+		virtual void NewFrame() = 0;
+		void AddPanel(ImGuiPanel& panel);
+	
+	protected:
+		ImGuiIO m_io;
+		Window* m_window;
+		std::vector<ImGuiPanel*> m_panels;
 	};
 }

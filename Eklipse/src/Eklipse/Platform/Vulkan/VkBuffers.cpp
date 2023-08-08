@@ -4,7 +4,7 @@
 #include "VkUtils.h"
 #include "VkCommads.h"
 
-#include "_globals.h"
+#include "Vk.h"
 
 #include <vulkan/vulkan.h>
 

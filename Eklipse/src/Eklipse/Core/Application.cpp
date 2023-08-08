@@ -47,6 +47,7 @@ namespace Eklipse
 	{
 		return &m_scene;
 	}
+
 	void Application::Init()
 	{
 		s_instance = this;
@@ -56,10 +57,9 @@ namespace Eklipse
 		m_window->SetEventCallback(CAPTURE_EVENT_FN(OnEventReceived));
 
 		m_scene.Load();
-
+		
 		m_renderer.SetAPI(ApiType::Vulkan);
-
-		//PushLayer(new ImGuiLayer(m_window));
+		PushLayer(m_debugLayer);
 	}
 
 	void Application::OnEventReceived(Event& event)

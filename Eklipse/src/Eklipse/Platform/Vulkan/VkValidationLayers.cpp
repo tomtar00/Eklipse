@@ -1,7 +1,7 @@
 #include "precompiled.h"
-#include "VkValidationLayers.h"
-#include "_globals.h"
+#include "Vk.h"
 #include "VkUtils.h"
+#include "VkValidationLayers.h"
 
 namespace Eklipse
 {

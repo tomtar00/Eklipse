@@ -1,6 +1,6 @@
 #include "precompiled.h"
+#include "Vk.h"
 #include "VkDevice.h"
-#include "_globals.h"
 #include "VkUtils.h"
 
 namespace Eklipse

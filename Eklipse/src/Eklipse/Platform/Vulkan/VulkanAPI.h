@@ -2,6 +2,7 @@
 #include <Eklipse/Renderer/GraphicsAPI.h>
 #include <vulkan/vulkan.h>
 #include "VkModel.h"
+#include "VkImGuiLayer.h"
 
 namespace Eklipse
 {
@@ -10,7 +11,7 @@ namespace Eklipse
 		class VulkanAPI : public GraphicsAPI
 		{
 		public:
-			VulkanAPI();
+			VulkanAPI(VkImGuiLayer* vkGui);
 			~VulkanAPI() override;
 
 			void Init(Scene* scene) override;
@@ -38,6 +39,7 @@ namespace Eklipse
 
 		private:
 			inline static VulkanAPI* s_instance = nullptr;
+			VkImGuiLayer* m_vkGui;
 
 			ModelManager m_modelManager;
 

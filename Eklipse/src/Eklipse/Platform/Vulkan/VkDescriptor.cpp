@@ -1,7 +1,7 @@
 #include "precompiled.h"
 #include "VkDescriptor.h"
 
-#include "_globals.h"
+#include "Vk.h"
 #include "VkUtils.h"
 #include "VkBuffers.h"
 

@@ -10,6 +10,9 @@
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Scene/Scene.h>
 
+#include <Eklipse/ImGui/ImGuiLayer.h>
+#include <Eklipse/ImGui/DebugPanel.h>
+
 namespace Eklipse
 {
 	struct EK_API ApplicationInfo
@@ -23,30 +26,35 @@ namespace Eklipse
 
 	class EK_API Application
 	{
-		public:
-			Application();
-			Application(ApplicationInfo& info);
-			~Application();
+	public:
+		Application();
+		Application(ApplicationInfo& info);
+		~Application();
 
-			static Application& Get();
+		static Application& Get();
 
-			ApplicationInfo& GetInfo();
-			Window* GetWindow() const;
-			Scene* GetScene();
+		ApplicationInfo& GetInfo();
+		Window* GetWindow() const;
+		Scene* GetScene();
 
-			void Init();
-			void Run();
-			void PushLayer(Layer* layer);
+		void Init();
+		void Run();
+		void PushLayer(Layer* layer);
 
-			void OnEventReceived(Event& event);
-			void OnWindowClose(WindowCloseEvent& event);
-			void OnWindowResized(WindowResizeEvent& event);
+		void OnEventReceived(Event& event);
+		void OnWindowClose(WindowCloseEvent& event);
+		void OnWindowResized(WindowResizeEvent& event);
+
+		ImGuiLayer* m_debugLayer;
+		DebugPanel m_debugPanel;
+
 	private:
 		inline static Application* s_instance = nullptr;
 		ApplicationInfo m_appInfo{};
 
 		Window* m_window;
 		LayerStack m_layerStack;
+
 		Renderer m_renderer;
 		Timer m_timer;
 		Scene m_scene;

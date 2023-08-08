@@ -17,7 +17,7 @@ namespace Eklipse
 			model.Load("models/viking_room.obj", "textures/viking_room.png");
 			
 			model.m_transform.position = { i, i, i };
-			model.m_transform.rotation = { i, i, i };
+			model.m_transform.rotation = { i * 90, i * 90, i * 90 };
 			model.m_transform.scale = { 1, 1, 1 };
 
 			m_geometry.push_back(model);

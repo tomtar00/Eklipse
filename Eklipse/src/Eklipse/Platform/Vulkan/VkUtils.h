@@ -1,6 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
+#define HANDLE_VK_RESULT(res, name) EK_ASSERT(res == VK_SUCCESS, "Vulkan result not successfull at {0}. Result code = {1}", name, (int)res);
+
 namespace Eklipse
 {
 	namespace Vulkan
@@ -21,8 +23,6 @@ namespace Eklipse
 			std::vector<VkSurfaceFormatKHR> formats;
 			std::vector<VkPresentModeKHR> presentModes;
 		};
-
-		void HANDLE_VK_RESULT(VkResult result, const char* name);
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

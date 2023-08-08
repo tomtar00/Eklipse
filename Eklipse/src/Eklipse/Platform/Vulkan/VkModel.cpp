@@ -1,9 +1,8 @@
 #include <precompiled.h>
+#include "Vk.h"
 #include "VkModel.h"
-#include "_globals.h"
 
 #include <vk_mem_alloc.h>
-
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>

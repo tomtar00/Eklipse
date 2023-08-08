@@ -1,5 +1,5 @@
 #include "precompiled.h"
-#include "_globals.h"
+#include "Vk.h"
 #include "VulkanAPI.h"
 
 #include <Eklipse/Core/Application.h>
@@ -40,12 +40,13 @@ namespace Eklipse
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
 
-		VulkanAPI::VulkanAPI() : m_currentFrameInFlightIndex(0), GraphicsAPI()
+		VulkanAPI::VulkanAPI(VkImGuiLayer* vkGui) : m_currentFrameInFlightIndex(0), m_vkGui(vkGui), GraphicsAPI()
 		{
 			s_instance = this;
 		}
 		VulkanAPI::~VulkanAPI()
 		{
+			m_vkGui->Shutdown();
 			Shutdown();
 		}
 		VulkanAPI& VulkanAPI::Get()
@@ -161,7 +162,7 @@ namespace Eklipse
 						modelAdapter.Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
 					}
 
-					//Eklipse::ImGuiLayer::Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
+					m_vkGui->Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
 				}
 				/////////////////////////////////////////////////////////
 				EndRenderPass(m_currentFrameInFlightIndex, imageIndex);
@@ -260,7 +261,7 @@ namespace Eklipse
 
 		float VulkanAPI::GetAspectRatio()
 		{
-			return g_swapChainExtent.width / g_swapChainExtent.height;
+			return (float)g_swapChainExtent.width / (float)g_swapChainExtent.height;
 		}
 
 		void VulkanAPI::CreateInstance()

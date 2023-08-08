@@ -1,5 +1,5 @@
 #include "precompiled.h"
-#include "_globals.h"
+#include "Vk.h"
 
 #include "VkSwapChain.h"
 #include "VkUtils.h"

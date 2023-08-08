@@ -1,10 +1,9 @@
 #include "precompiled.h"
+#include "Vk.h"
 #include "VkImage.h"
 #include "VkUtils.h"
 #include "VkBuffers.h"
 #include "VkCommads.h"
-
-#include "_globals.h"
 
 #include <stb_image.h>
 

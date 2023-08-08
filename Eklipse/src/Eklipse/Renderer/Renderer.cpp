@@ -1,6 +1,7 @@
 #include "precompiled.h"
 #include "Renderer.h"
 
+#include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
 #include <Eklipse/Core/Application.h>
 
@@ -62,6 +63,9 @@ namespace Eklipse
 			// shutdown old api
 			if (m_graphicsAPI->IsInitialized())
 			{
+				Application::Get().m_debugLayer->Shutdown();
+				delete Application::Get().m_debugLayer;
+
 				m_graphicsAPI->Shutdown();
 				delete m_graphicsAPI;
 
@@ -75,7 +79,9 @@ namespace Eklipse
 		{
 			case ApiType::Vulkan:
 			{
-				m_graphicsAPI = new Vulkan::VulkanAPI();				
+				Vulkan::VkImGuiLayer* vkGui = new Vulkan::VkImGuiLayer(Application::Get().GetWindow());
+				Application::Get().m_debugLayer = vkGui;
+				m_graphicsAPI = new Vulkan::VulkanAPI(vkGui);
 				break;
 			}
 			default:
@@ -91,6 +97,8 @@ namespace Eklipse
 		if (!m_graphicsAPI->IsInitialized())
 		{
 			m_graphicsAPI->Init(m_scene);
+			Application::Get().m_debugLayer->Init();
+			Application::Get().m_debugLayer->AddPanel(Application::Get().m_debugPanel);
 		}
 		else
 			EK_ASSERT(false, "API {0} not initialized!", STRINGIFY(apiType));

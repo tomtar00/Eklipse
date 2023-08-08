@@ -1,5 +1,5 @@
 #include <precompiled.h>
-#include "_globals.h"
+#include "Vk.h"
 
 #include "VkUtils.h"
 
@@ -10,11 +10,6 @@ namespace Eklipse
 		bool QueueFamilyIndices::isComplete()
 		{
 			return has_graphicsAndComputeFamily && has_presentFamily;
-		}
-
-		void HANDLE_VK_RESULT(VkResult result, const char* name)
-		{
-			EK_ASSERT(result == VK_SUCCESS, "Vulkan result not successfull at {0}. Result code = {1}", name, (int)result);
 		}
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
