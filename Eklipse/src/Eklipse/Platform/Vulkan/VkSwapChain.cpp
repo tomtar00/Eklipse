@@ -6,6 +6,7 @@
 #include "VkImage.h"
 
 #include <Eklipse/Core/Application.h>
+#include <Eklipse/Renderer/Settings.h>
 
 namespace Eklipse
 {
@@ -14,6 +15,7 @@ namespace Eklipse
         VkSwapchainKHR				g_swapChain = VK_NULL_HANDLE;
         VkFormat					g_swapChainImageFormat;
         VkExtent2D					g_swapChainExtent;
+        uint32_t                    g_swapChainImageCount;
         std::vector<VkImage>		g_swapChainImages;
         std::vector<VkImageView>	g_swapChainImageViews;
         std::vector<VkFramebuffer>	g_swapChainFramebuffers;
@@ -30,17 +32,17 @@ namespace Eklipse
                 VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
                 VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, width, height);
 
-                uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+                g_swapChainImageCount = swapChainSupport.capabilities.minImageCount + 1;
 
-                if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+                if (swapChainSupport.capabilities.maxImageCount > 0 && g_swapChainImageCount > swapChainSupport.capabilities.maxImageCount)
                 {
-                    imageCount = swapChainSupport.capabilities.maxImageCount;
+                    g_swapChainImageCount = swapChainSupport.capabilities.maxImageCount;
                 }
 
                 VkSwapchainCreateInfoKHR createInfo{};
                 createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
                 createInfo.surface = g_surface;
-                createInfo.minImageCount = imageCount;
+                createInfo.minImageCount = g_swapChainImageCount;
                 createInfo.imageFormat = surfaceFormat.format;
                 createInfo.imageColorSpace = surfaceFormat.colorSpace;
                 createInfo.imageExtent = extent;
@@ -76,10 +78,10 @@ namespace Eklipse
                 res = vkCreateSwapchainKHR(g_logicalDevice, &createInfo, nullptr, &g_swapChain);
                 HANDLE_VK_RESULT(res, "CREATE SWAPCHAIN");
 
-                res = vkGetSwapchainImagesKHR(g_logicalDevice, g_swapChain, &imageCount, nullptr);
+                res = vkGetSwapchainImagesKHR(g_logicalDevice, g_swapChain, &g_swapChainImageCount, nullptr);
                 HANDLE_VK_RESULT(res, "GET SWAPCHAIN IMAGES COUNT");
-                g_swapChainImages.resize(imageCount);
-                res = vkGetSwapchainImagesKHR(g_logicalDevice, g_swapChain, &imageCount, g_swapChainImages.data());
+                g_swapChainImages.resize(g_swapChainImageCount);
+                res = vkGetSwapchainImagesKHR(g_logicalDevice, g_swapChain, &g_swapChainImageCount, g_swapChainImages.data());
                 HANDLE_VK_RESULT(res, "GET SWAPCHAIN IMAGES");
 
                 g_swapChainImageFormat = surfaceFormat.format;
@@ -105,17 +107,30 @@ namespace Eklipse
 
             for (size_t i = 0; i < g_swapChainImageViews.size(); i++)
             {
-                std::array<VkImageView, 3> attachments = 
+                std::vector<VkImageView> attachments;
+
+                if (RendererSettings::msaaSamples != VK_SAMPLE_COUNT_1_BIT)
                 {
-                    g_colorImage.m_imageView,
-                    g_depthImage.m_imageView,
-                    g_swapChainImageViews[i]
-                };
+                    attachments =
+                    {
+                        g_colorImage.m_imageView,
+                        g_depthImage.m_imageView,
+                        g_swapChainImageViews[i]
+                    };
+                }
+                else
+                {
+                    attachments =
+                    {
+                        g_swapChainImageViews[i],
+                        g_depthImage.m_imageView
+                    };
+                }
 
                 VkFramebufferCreateInfo framebufferInfo{};
                 framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
                 framebufferInfo.renderPass = g_renderPass;
-                framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                framebufferInfo.attachmentCount = attachments.size();
                 framebufferInfo.pAttachments = attachments.data();
                 framebufferInfo.width = g_swapChainExtent.width;
                 framebufferInfo.height = g_swapChainExtent.height;

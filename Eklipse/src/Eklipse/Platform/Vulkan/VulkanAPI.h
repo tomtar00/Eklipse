@@ -11,7 +11,7 @@ namespace Eklipse
 		class VulkanAPI : public GraphicsAPI
 		{
 		public:
-			VulkanAPI(VkImGuiLayer* vkGui);
+			VulkanAPI();
 			~VulkanAPI() override;
 
 			void Init(Scene* scene) override;
@@ -39,8 +39,6 @@ namespace Eklipse
 
 		private:
 			inline static VulkanAPI* s_instance = nullptr;
-			VkImGuiLayer* m_vkGui;
-
 			ModelManager m_modelManager;
 
 			uint32_t m_currentFrameInFlightIndex;

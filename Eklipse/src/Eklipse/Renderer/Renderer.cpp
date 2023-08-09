@@ -52,6 +52,7 @@ namespace Eklipse
 			return;
 		}
 
+		std::vector<GuiLayerConfigInfo> guiLayerConfigs;
 		if (m_graphicsAPI != nullptr)
 		{
 			if (apiType == m_apiType && m_graphicsAPI->IsInitialized())
@@ -63,8 +64,12 @@ namespace Eklipse
 			// shutdown old api
 			if (m_graphicsAPI->IsInitialized())
 			{
-				Application::Get().m_debugLayer->Shutdown();
-				delete Application::Get().m_debugLayer;
+				for (auto& guiLayer : Application::Get().m_guiLayers)
+				{
+					guiLayerConfigs.push_back(guiLayer->GetConfig());
+					guiLayer->Shutdown();
+					delete guiLayer;
+				}
 
 				m_graphicsAPI->Shutdown();
 				delete m_graphicsAPI;
@@ -79,9 +84,14 @@ namespace Eklipse
 		{
 			case ApiType::Vulkan:
 			{
-				Vulkan::VkImGuiLayer* vkGui = new Vulkan::VkImGuiLayer(Application::Get().GetWindow());
-				Application::Get().m_debugLayer = vkGui;
-				m_graphicsAPI = new Vulkan::VulkanAPI(vkGui);
+				int i = 0;
+				for (auto& guiLayer : Application::Get().m_guiLayers)
+				{
+					guiLayer = new Vulkan::VkImGuiLayer(Application::Get().GetWindow(), guiLayerConfigs[i]);
+					i++;
+				}
+
+				m_graphicsAPI = new Vulkan::VulkanAPI();
 				break;
 			}
 			default:
@@ -97,8 +107,10 @@ namespace Eklipse
 		if (!m_graphicsAPI->IsInitialized())
 		{
 			m_graphicsAPI->Init(m_scene);
-			Application::Get().m_debugLayer->Init();
-			Application::Get().m_debugLayer->AddPanel(Application::Get().m_debugPanel);
+			for (auto& guiLayer : Application::Get().m_guiLayers)
+			{
+				guiLayer->Init();
+			}
 		}
 		else
 			EK_ASSERT(false, "API {0} not initialized!", STRINGIFY(apiType));

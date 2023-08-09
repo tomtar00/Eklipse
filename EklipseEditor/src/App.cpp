@@ -1,6 +1,28 @@
 #pragma once
 #include <Eklipse.h>
-#include <iostream>
+
+#include <Eklipse/ImGui/ImGuiLayer.h>
+
+class HierarchyPanel : public Eklipse::ImGuiPanel
+{
+public:
+	void OnGUI()
+	{
+		ImGui::Begin("Hierarchy");
+		ImGui::Text("hihi");
+		ImGui::End();
+	}
+};
+class LogsPanel : public Eklipse::ImGuiPanel
+{
+public:
+	void OnGUI()
+	{
+		ImGui::Begin("Logs");
+		ImGui::Text("Lolologs");
+		ImGui::End();
+	}
+};
 
 class EditorLayer : public Eklipse::Layer 
 {
@@ -26,8 +48,28 @@ class EklipseEditor : public Eklipse::Application
 public: 
 	EklipseEditor(Eklipse::ApplicationInfo& info) : Application(info)
 	{
+		Eklipse::GuiLayerConfigInfo guiLayerCreateInfo{};
+		guiLayerCreateInfo.enabled = &GUILayerEnabled;
+		guiLayerCreateInfo.dockingEnabled = true;
+		guiLayerCreateInfo.dockLayouts =
+		{
+			{ "Hierarchy", ImGuiDir_Left, 0.2f },
+			{ "Logs", ImGuiDir_Down, 0.2f }
+		};
+		guiLayerCreateInfo.panels =
+		{
+			&m_hierarchyPanel, &m_logsPanel
+		};
+
+		//PushGuiLayer(guiLayerCreateInfo);
+
 		PushLayer(new EditorLayer());
 	}
+
+private:
+	bool GUILayerEnabled = true;
+	HierarchyPanel m_hierarchyPanel;
+	LogsPanel m_logsPanel;
 };
 
 Eklipse::Application* Eklipse::CreateApplication()

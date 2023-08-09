@@ -11,14 +11,12 @@ namespace Eklipse
 		class VkImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:
-			VkImGuiLayer(Window* window);
+			VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo);
 
-			void Draw(VkCommandBuffer cmd);
-
-		public:
 			virtual void Init() override;
 			virtual void Shutdown() override;
 			virtual void NewFrame() override;
+			virtual void Draw(void* data) override;
 
 		private:
 			GLFWwindow* m_glfwWindow;

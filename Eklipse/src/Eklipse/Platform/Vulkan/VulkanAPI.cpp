@@ -40,13 +40,12 @@ namespace Eklipse
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
 
-		VulkanAPI::VulkanAPI(VkImGuiLayer* vkGui) : m_currentFrameInFlightIndex(0), m_vkGui(vkGui), GraphicsAPI()
+		VulkanAPI::VulkanAPI() : m_currentFrameInFlightIndex(0), GraphicsAPI()
 		{
 			s_instance = this;
 		}
 		VulkanAPI::~VulkanAPI()
 		{
-			m_vkGui->Shutdown();
 			Shutdown();
 		}
 		VulkanAPI& VulkanAPI::Get()
@@ -73,7 +72,7 @@ namespace Eklipse
 			CreateLogicalDevice();
 
 			// TODO: Pick default graphics settings
-			RendererSettings::msaaSamples = GetMaxUsableSampleCount();
+			// RendererSettings::msaaSamples = GetMaxUsableSampleCount();
 
 			VmaAllocatorCreateInfo allocatorCreateInfo = {};
 			allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
@@ -162,7 +161,10 @@ namespace Eklipse
 						modelAdapter.Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
 					}
 
-					m_vkGui->Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
+					for (auto& guiLayer : Application::Get().m_guiLayers)
+					{
+						guiLayer->Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
+					};
 				}
 				/////////////////////////////////////////////////////////
 				EndRenderPass(m_currentFrameInFlightIndex, imageIndex);

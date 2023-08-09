@@ -12,7 +12,7 @@ namespace Eklipse
         static bool test = false;
         static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-        ImGui::Begin("Debug");
+        ImGui::Begin("Left");
 
         // ImGui::Text("This is some useful text.");
         // ImGui::Checkbox("Test", &test);
@@ -64,4 +64,11 @@ namespace Eklipse
 
         ImGui::End();
 	}
+
+    void DebugPanel2::OnGUI()
+    {
+        ImGui::Begin("Down");
+        ImGui::Text("This is some useful text.");
+        ImGui::End();
+    }
 }

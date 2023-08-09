@@ -8,4 +8,10 @@ namespace Eklipse
 	public:
 		virtual void OnGUI() override;
 	};
+
+	class DebugPanel2 : public ImGuiPanel
+	{
+	public:
+		virtual void OnGUI() override;
+	};
 }

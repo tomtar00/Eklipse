@@ -10,22 +10,22 @@
 
 namespace Eklipse
 {
-	namespace Vulkan
-	{
-        VkRenderPass        g_renderPass                = VK_NULL_HANDLE;
-        VkPipeline          g_graphicsPipeline          = VK_NULL_HANDLE;
-        VkPipelineLayout    g_graphicsPipelineLayout    = VK_NULL_HANDLE;
+    namespace Vulkan
+    {
+        VkRenderPass        g_renderPass = VK_NULL_HANDLE;
+        VkPipeline          g_graphicsPipeline = VK_NULL_HANDLE;
+        VkPipelineLayout    g_graphicsPipelineLayout = VK_NULL_HANDLE;
         //VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
         //VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
         //VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
         //VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
 
-		void CreateGraphicsPipeline(const char* vertShaderRelPath, const char* fragShaderRelPath, 
-			VkPipelineLayout& pipelineLayout, VkPipeline& pipeline, VkRenderPass& renderPass, 
-			std::vector<VkVertexInputBindingDescription> vertBindingDesc, 
-			std::vector<VkVertexInputAttributeDescription> vertAttribteDesc,
+        void CreateGraphicsPipeline(const char* vertShaderRelPath, const char* fragShaderRelPath,
+            VkPipelineLayout& pipelineLayout, VkPipeline& pipeline, VkRenderPass& renderPass,
+            std::vector<VkVertexInputBindingDescription> vertBindingDesc,
+            std::vector<VkVertexInputAttributeDescription> vertAttribteDesc,
             VkDescriptorSetLayout* descSetLayouts)
-		{
+        {
             auto vertShaderCode = Eklipse::ReadFileFromPath(vertShaderRelPath);
             VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
             VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -157,7 +157,7 @@ namespace Eklipse
 
             vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
             vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
-		}
+        }
         void CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout& pipelineLayout,
             VkPipeline& pipeline, VkDescriptorSetLayout* descSetLayout)
         {
@@ -190,15 +190,17 @@ namespace Eklipse
         }
         void CreateRenderPass(VkRenderPass& renderPass)
         {
+            bool msaaEnabled = RendererSettings::msaaSamples != VK_SAMPLE_COUNT_1_BIT;
+
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = g_swapChainImageFormat;
-            colorAttachment.samples = (VkSampleCountFlagBits)RendererSettings::msaaSamples;
+            colorAttachment.samples = RendererSettings::msaaSamples;
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            colorAttachment.finalLayout = msaaEnabled ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
             VkAttachmentReference colorAttachmentRef{};
             colorAttachmentRef.attachment = 0;
@@ -206,7 +208,7 @@ namespace Eklipse
 
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = FindDepthFormat();
-            depthAttachment.samples = (VkSampleCountFlagBits)RendererSettings::msaaSamples;
+            depthAttachment.samples = RendererSettings::msaaSamples;
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -218,33 +220,39 @@ namespace Eklipse
             depthAttachmentRef.attachment = 1;
             depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            VkAttachmentDescription colorAttachmentResolve{};
-            colorAttachmentResolve.format = g_swapChainImageFormat;
-            colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-            colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-            VkAttachmentReference colorAttachmentResolveRef{};
-            colorAttachmentResolveRef.attachment = 2;
-            colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            std::vector<VkAttachmentDescription> attachments =
+            {
+                colorAttachment,
+                depthAttachment
+            };
 
             VkSubpassDescription subpass{};
             subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpass.colorAttachmentCount = 1;
             subpass.pColorAttachments = &colorAttachmentRef;
             subpass.pDepthStencilAttachment = &depthAttachmentRef;
-            subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
-            std::array<VkAttachmentDescription, 3> attachments =
+            VkAttachmentReference colorAttachmentResolveRef{};
+            VkAttachmentDescription colorAttachmentResolve{};
+
+            if (msaaEnabled)
             {
-                colorAttachment,
-                depthAttachment,
-                colorAttachmentResolve
-            };
+                colorAttachmentResolve.format = g_swapChainImageFormat;
+                colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+                colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+                colorAttachmentResolveRef.attachment = 2;
+                colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                attachments.push_back(colorAttachmentResolve);
+
+                subpass.pResolveAttachments = &colorAttachmentResolveRef;
+            }       
 
             VkRenderPassCreateInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -267,7 +275,7 @@ namespace Eklipse
             VkResult res = vkCreateRenderPass(g_logicalDevice, &renderPassInfo, nullptr, &renderPass);
             HANDLE_VK_RESULT(res, "CREATE RENDER PASS");
         }
-        
+
         void SetupPipelines()
         {
             CreateRenderPass(g_renderPass);
@@ -304,5 +312,5 @@ namespace Eklipse
             //vkDestroyPipeline(g_logicalDevice, g_computePipeline, nullptr);
             //vkDestroyPipelineLayout(g_logicalDevice, g_computePipelineLayout, nullptr);
         }
-	}
+    }
 }

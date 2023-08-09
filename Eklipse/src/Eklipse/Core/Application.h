@@ -40,13 +40,14 @@ namespace Eklipse
 		void Init();
 		void Run();
 		void PushLayer(Layer* layer);
+		void PushGuiLayer(GuiLayerConfigInfo configInfo);
 
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
 
-		ImGuiLayer* m_debugLayer;
-		DebugPanel m_debugPanel;
+		std::vector<ImGuiLayer*> m_guiLayers;
+		bool DebugLayerEnabled;
 
 	private:
 		inline static Application* s_instance = nullptr;
@@ -54,6 +55,8 @@ namespace Eklipse
 
 		Window* m_window;
 		LayerStack m_layerStack;
+		DebugPanel m_debugPanel;
+		DebugPanel2 m_debugPanel2; // TODO: delete
 
 		Renderer m_renderer;
 		Timer m_timer;
