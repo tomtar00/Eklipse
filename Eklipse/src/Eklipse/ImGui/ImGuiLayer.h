@@ -1,9 +1,9 @@
 #pragma once
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/Core/Window.h>
-#include <imgui_internal.h>
 
 namespace Eklipse
 {
@@ -32,7 +32,7 @@ namespace Eklipse
 	{
 	public:
 		ImGuiLayer() = delete;
-		ImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) : m_window(window), m_config(configInfo), m_first_time(true) {};
+		ImGuiLayer(Window* window, GuiLayerConfigInfo configInfo);
 		~ImGuiLayer() {}
 
 		virtual void OnAttach() override;
@@ -45,11 +45,17 @@ namespace Eklipse
 		virtual void NewFrame() = 0;
 		virtual void Draw(void* data) = 0;
 
+		virtual void GetImage(float width, float height) = 0;
+
 		void AddPanel(ImGuiPanel& panel);
 		GuiLayerConfigInfo GetConfig();
 		void SetConfig(GuiLayerConfigInfo configInfo);
 	
-	protected:
+		inline static ImGuiContext* s_ctx = nullptr;
+
+	protected:		
+		inline static bool s_initialized = false;
+
 		GuiLayerConfigInfo m_config;
 		Window* m_window;
 

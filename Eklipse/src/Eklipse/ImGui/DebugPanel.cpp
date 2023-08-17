@@ -1,4 +1,5 @@
 #include "precompiled.h"
+#ifdef EK_INCLUDE_DEBUG_LAYER
 #include "DebugPanel.h"
 
 #include <Eklipse/Core/Application.h>
@@ -64,11 +65,5 @@ namespace Eklipse
 
         ImGui::End();
 	}
-
-    void DebugPanel2::OnGUI()
-    {
-        ImGui::Begin("Down");
-        ImGui::Text("This is some useful text.");
-        ImGui::End();
-    }
 }
+#endif

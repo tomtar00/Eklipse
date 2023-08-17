@@ -33,6 +33,7 @@ namespace Eklipse
 		extern ColorImage g_colorImage;
 		extern DepthImage g_depthImage;
 
+		extern uint32_t g_currentFrame;
 		extern VkSwapchainKHR g_swapChain;
 		extern VkFormat g_swapChainImageFormat;
 		extern VkExtent2D g_swapChainExtent;
@@ -54,9 +55,9 @@ namespace Eklipse
 		extern VkRenderPass g_renderPass;
 		extern VkPipeline g_graphicsPipeline;
 		extern VkPipelineLayout g_graphicsPipelineLayout;
-		//extern VkPipeline g_particlePipeline;
-		//extern VkPipelineLayout g_particlePipelineLayout;
-		//extern VkPipeline g_computePipeline;
-		//extern VkPipelineLayout g_computePipelineLayout;
+		extern VkPipeline g_particlePipeline;
+		extern VkPipelineLayout g_particlePipelineLayout;
+		extern VkPipeline g_computePipeline;
+		extern VkPipelineLayout g_computePipelineLayout;
 	}
 }

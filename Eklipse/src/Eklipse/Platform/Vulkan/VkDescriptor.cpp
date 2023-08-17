@@ -80,95 +80,32 @@ namespace Eklipse
 			return attributeDescriptions;
 		}
 
-		void SetupDescriptorSetLayouts()
+		VkDescriptorSetLayout CreateDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings)
 		{
-			VkResult res;
+			VkDescriptorSetLayoutCreateInfo layoutInfo{};
+			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutInfo.bindingCount = bindings.size();
+			layoutInfo.pBindings = bindings.data();
 
-			// Graphics
-			{
-				VkDescriptorSetLayoutBinding bindings[2];
+			VkDescriptorSetLayout layout;
+			VkResult res = vkCreateDescriptorSetLayout(g_logicalDevice, &layoutInfo, nullptr, &layout);
+			HANDLE_VK_RESULT(res, "CREATE DESCRIPTOR SET LAYOUT");
 
-				// Uniform buffers binding
-				bindings[0].binding = 0;
-				bindings[0].descriptorCount = 1;
-				bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-				bindings[0].pImmutableSamplers = nullptr;
-
-				// Image sampler binding
-				bindings[1].binding = 1;
-				bindings[1].descriptorCount = 1;
-				bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-				bindings[1].pImmutableSamplers = nullptr;
-
-				VkDescriptorSetLayoutCreateInfo layoutInfo{};
-				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-				layoutInfo.bindingCount = 2;
-				layoutInfo.pBindings = bindings;
-
-				res = vkCreateDescriptorSetLayout(g_logicalDevice, &layoutInfo, nullptr, &g_graphicsDescriptorSetLayout);
-				HANDLE_VK_RESULT(res, "CREATE GRAPHICS DESCRIPTOR SET LAYOUT");
-			}
-
-			// Compute
-			{
-				VkDescriptorSetLayoutBinding layoutBindings[3];
-
-				layoutBindings[0].binding = 0;
-				layoutBindings[0].descriptorCount = 1;
-				layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				layoutBindings[0].pImmutableSamplers = nullptr;
-				layoutBindings[0].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-				layoutBindings[1].binding = 1;
-				layoutBindings[1].descriptorCount = 1;
-				layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				layoutBindings[1].pImmutableSamplers = nullptr;
-				layoutBindings[1].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-				layoutBindings[2].binding = 2;
-				layoutBindings[2].descriptorCount = 1;
-				layoutBindings[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				layoutBindings[2].pImmutableSamplers = nullptr;
-				layoutBindings[2].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-				VkDescriptorSetLayoutCreateInfo layoutInfo{};
-				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-				layoutInfo.bindingCount = 3;
-				layoutInfo.pBindings = layoutBindings;
-
-				res = vkCreateDescriptorSetLayout(g_logicalDevice, &layoutInfo, nullptr, &g_computeDescriptorSetLayout);
-				HANDLE_VK_RESULT(res, "CREATE COMPUTE DESCRIPTOR SET LAYOUT");
-			}
+			return layout;
 		}
-		void DisposeDescriptorSetLayouts()
+		VkDescriptorPool CreateDescriptorPool(std::vector<VkDescriptorPoolSize> poolSizes, int maxSets)
 		{
-			vkDestroyDescriptorSetLayout(g_logicalDevice, g_graphicsDescriptorSetLayout, nullptr);
-			vkDestroyDescriptorSetLayout(g_logicalDevice, g_computeDescriptorSetLayout, nullptr);
-		}
-		
-		void SetupDescriptorPool()
-		{
-			VkDescriptorPoolSize poolSizes[3] =
-			{
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
-			};
-
 			VkDescriptorPoolCreateInfo poolInfo{};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			poolInfo.maxSets = 100;
-			poolInfo.poolSizeCount = 3;
-			poolInfo.pPoolSizes = poolSizes;
+			poolInfo.maxSets = maxSets;
+			poolInfo.poolSizeCount = poolSizes.size();
+			poolInfo.pPoolSizes = poolSizes.data();
 
-			VkResult res = vkCreateDescriptorPool(g_logicalDevice, &poolInfo, nullptr, &g_descriptorPool);
+			VkDescriptorPool pool;
+			VkResult res = vkCreateDescriptorPool(g_logicalDevice, &poolInfo, nullptr, &pool);
 			HANDLE_VK_RESULT(res, "CREATE DESCRIPTOR POOL");
-		}
-		void DisposeDescriptorPool()
-		{
-			vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
+
+			return pool;
 		}
 	}
 }

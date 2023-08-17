@@ -1,7 +1,8 @@
 #pragma once
 #include <Eklipse.h>
-
 #include <Eklipse/ImGui/ImGuiLayer.h>
+
+#define EK_EDITOR
 
 class HierarchyPanel : public Eklipse::ImGuiPanel
 {
@@ -9,7 +10,7 @@ public:
 	void OnGUI()
 	{
 		ImGui::Begin("Hierarchy");
-		ImGui::Text("hihi");
+		ImGui::Text("This is hierarchy");
 		ImGui::End();
 	}
 };
@@ -19,7 +20,20 @@ public:
 	void OnGUI()
 	{
 		ImGui::Begin("Logs");
-		ImGui::Text("Lolologs");
+		ImGui::Text("These are log messages");
+		ImGui::End();
+	}
+};
+class ViewPanel : public Eklipse::ImGuiPanel
+{
+public:
+	void OnGUI()
+	{
+		ImGui::Begin("View");
+		
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		Eklipse::Application::Get().m_guiLayer->GetImage(viewportPanelSize.x, viewportPanelSize.y);
+
 		ImGui::End();
 	}
 };
@@ -50,18 +64,21 @@ public:
 	{
 		Eklipse::GuiLayerConfigInfo guiLayerCreateInfo{};
 		guiLayerCreateInfo.enabled = &GUILayerEnabled;
+		guiLayerCreateInfo.menuBarEnabled = true;
 		guiLayerCreateInfo.dockingEnabled = true;
 		guiLayerCreateInfo.dockLayouts =
 		{
-			{ "Hierarchy", ImGuiDir_Left, 0.2f },
-			{ "Logs", ImGuiDir_Down, 0.2f }
+			{ "Hierarchy",	ImGuiDir_Left,	0.2f },
+			{ "Logs",		ImGuiDir_Down,	0.3f },
+			{ "View",		ImGuiDir_Right, 1.0f }
 		};
 		guiLayerCreateInfo.panels =
 		{
-			&m_hierarchyPanel, &m_logsPanel
+			&m_hierarchyPanel, &m_logsPanel, &m_viewPanel
 		};
 
-		//PushGuiLayer(guiLayerCreateInfo);
+		Eklipse::ImGuiLayer::s_ctx = ImGui::CreateContext();
+		SetGuiLayer(guiLayerCreateInfo);
 
 		PushLayer(new EditorLayer());
 	}
@@ -70,6 +87,7 @@ private:
 	bool GUILayerEnabled = true;
 	HierarchyPanel m_hierarchyPanel;
 	LogsPanel m_logsPanel;
+	ViewPanel m_viewPanel;
 };
 
 Eklipse::Application* Eklipse::CreateApplication()

@@ -21,7 +21,8 @@ project "EklipseEditor"
 		"%{Include.glfw}",
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
-		"%{Include.ImGui}"
+		"%{Include.ImGui}",
+		"%{Include.vk_mem_alloc}"
 	}
 	libdirs
 	{

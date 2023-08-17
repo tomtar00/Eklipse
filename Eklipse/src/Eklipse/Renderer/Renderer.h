@@ -21,7 +21,7 @@ namespace Eklipse
 		void PostMainLoop();
 
 		ApiType GetAPI();
-		void SetAPI(ApiType api);
+		void SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn);
 
 	private:
 		inline static Renderer* s_instance = nullptr;

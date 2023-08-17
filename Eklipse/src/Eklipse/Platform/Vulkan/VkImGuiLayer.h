@@ -18,9 +18,12 @@ namespace Eklipse
 			virtual void NewFrame() override;
 			virtual void Draw(void* data) override;
 
+			virtual void GetImage(float width, float height) override;
+
 		private:
 			GLFWwindow* m_glfwWindow;
 			VkDescriptorPool m_imguiPool;
+			VkDescriptorSet m_imageDescrSet;
 		};
 	}
 }

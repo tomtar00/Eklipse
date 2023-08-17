@@ -12,10 +12,7 @@ namespace Eklipse
 		std::vector<VkVertexInputBindingDescription> GetParticleBindingDescription();
 		std::vector<VkVertexInputAttributeDescription> GetParticleAttributeDescriptions();
 
-		void SetupDescriptorSetLayouts();
-		void DisposeDescriptorSetLayouts();
-
-		void SetupDescriptorPool();
-		void DisposeDescriptorPool();
+		VkDescriptorSetLayout CreateDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings);
+		VkDescriptorPool CreateDescriptorPool(std::vector<VkDescriptorPoolSize> poolSizes, int maxSets);
 	}
 }

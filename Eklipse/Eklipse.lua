@@ -60,7 +60,11 @@ project "Eklipse"
 		}
 
 	filter "configurations:Debug"
-		defines "EK_DEBUG"
+		defines 
+		{
+			"EK_DEBUG",
+			"EK_INCLUDE_DEBUG_LAYER"
+		}
 		runtime "Debug"
 		symbols "On"
 

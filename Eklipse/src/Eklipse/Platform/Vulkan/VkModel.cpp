@@ -38,13 +38,6 @@ namespace Eklipse
 		}
 		void ModelAdapter::Bind(VkCommandBuffer commandBuffer)
 		{
-			// ModelViewProjUBO ubo{};
-			// glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			// glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			// glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 10.0f);
-			// proj[1][1] *= -1;
-			// ubo.mvp = proj * view * model;
-
 			m_uniformBuffer.UpdateData(&m_model.m_ubo, sizeof(m_model.m_ubo));
 
 			VkBuffer vertexBuffer = m_vertexBuffer.m_buffer;

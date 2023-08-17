@@ -15,13 +15,13 @@ namespace Eklipse
         VkRenderPass        g_renderPass = VK_NULL_HANDLE;
         VkPipeline          g_graphicsPipeline = VK_NULL_HANDLE;
         VkPipelineLayout    g_graphicsPipelineLayout = VK_NULL_HANDLE;
-        //VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
-        //VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
-        //VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
-        //VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
+        VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
+        VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
+        VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
+        VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
 
-        void CreateGraphicsPipeline(const char* vertShaderRelPath, const char* fragShaderRelPath,
-            VkPipelineLayout& pipelineLayout, VkPipeline& pipeline, VkRenderPass& renderPass,
+        VkPipeline CreateGraphicsPipeline(const char* vertShaderRelPath, const char* fragShaderRelPath,
+            VkPipelineLayout& pipelineLayout, VkRenderPass renderPass,
             std::vector<VkVertexInputBindingDescription> vertBindingDesc,
             std::vector<VkVertexInputAttributeDescription> vertAttribteDesc,
             VkDescriptorSetLayout* descSetLayouts)
@@ -152,14 +152,16 @@ namespace Eklipse
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             pipelineInfo.basePipelineIndex = -1;
 
+            VkPipeline pipeline;
             res = vkCreateGraphicsPipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
             HANDLE_VK_RESULT(res, "CREATE GRAPHICS PIPELINES");
 
             vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
             vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
+
+            return pipeline;
         }
-        void CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout& pipelineLayout,
-            VkPipeline& pipeline, VkDescriptorSetLayout* descSetLayout)
+        VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout* descSetLayout)
         {
             auto computeShaderCode = Eklipse::ReadFileFromPath(shaderRelPath);
             VkShaderModule computeShaderModule = CreateShaderModule(computeShaderCode);
@@ -183,12 +185,15 @@ namespace Eklipse
             pipelineInfo.layout = pipelineLayout;
             pipelineInfo.stage = computeShaderStageInfo;
 
+            VkPipeline pipeline;
             res = vkCreateComputePipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
             HANDLE_VK_RESULT(res, "CREATE COMPUTE PIPELINES");
 
             vkDestroyShaderModule(g_logicalDevice, computeShaderModule, nullptr);
+
+            return pipeline;
         }
-        void CreateRenderPass(VkRenderPass& renderPass)
+        VkRenderPass CreateRenderPass()
         {
             bool msaaEnabled = RendererSettings::msaaSamples != VK_SAMPLE_COUNT_1_BIT;
 
@@ -272,45 +277,11 @@ namespace Eklipse
             renderPassInfo.dependencyCount = 1;
             renderPassInfo.pDependencies = &dependency;
 
+            VkRenderPass renderPass;
             VkResult res = vkCreateRenderPass(g_logicalDevice, &renderPassInfo, nullptr, &renderPass);
             HANDLE_VK_RESULT(res, "CREATE RENDER PASS");
-        }
 
-        void SetupPipelines()
-        {
-            CreateRenderPass(g_renderPass);
-
-            // Graphics pipelines
-            {
-                CreateGraphicsPipeline("shaders/vert.spv", "shaders/frag.spv",
-                    g_graphicsPipelineLayout, g_graphicsPipeline, g_renderPass,
-                    GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
-                    &g_graphicsDescriptorSetLayout);
-
-                // CreateGraphicsPipeline("shaders/particle-vert.spv", "shaders/particle-frag.spv",
-                //     g_particlePipelineLayout, g_particlePipeline, g_renderPass,
-                //     GetParticleBindingDescription(), GetParticleAttributeDescriptions(),
-                //     &g_graphicsDescriptorSetLayout);
-            }
-
-            // Compute pipelines
-            // {
-            //     CreateComputePipeline("shaders/particle-comp.spv", g_computePipelineLayout, 
-            //         g_computePipeline, &g_computeDescriptorSetLayout);
-            // }
-        }
-        void DisposePipelines()
-        {
-            vkDestroyRenderPass(g_logicalDevice, g_renderPass, nullptr);
-
-            vkDestroyPipeline(g_logicalDevice, g_graphicsPipeline, nullptr);
-            vkDestroyPipelineLayout(g_logicalDevice, g_graphicsPipelineLayout, nullptr);
-
-            //vkDestroyPipeline(g_logicalDevice, g_particlePipeline, nullptr);
-            //vkDestroyPipelineLayout(g_logicalDevice, g_particlePipelineLayout, nullptr);
-            //
-            //vkDestroyPipeline(g_logicalDevice, g_computePipeline, nullptr);
-            //vkDestroyPipelineLayout(g_logicalDevice, g_computePipelineLayout, nullptr);
+            return renderPass;
         }
     }
 }

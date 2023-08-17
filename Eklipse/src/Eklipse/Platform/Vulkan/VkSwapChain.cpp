@@ -20,92 +20,88 @@ namespace Eklipse
         std::vector<VkImageView>	g_swapChainImageViews;
         std::vector<VkFramebuffer>	g_swapChainFramebuffers;
 
-		void SetupSwapchain()
-		{
-			// Create swapchain
-			{
-                int width, height;
-                Eklipse::Application::Get().GetWindow()->GetFramebufferSize(width, height);
-
-                SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(g_physicalDevice);
-                VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-                VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
-                VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, width, height);
-
-                g_swapChainImageCount = swapChainSupport.capabilities.minImageCount + 1;
-
-                if (swapChainSupport.capabilities.maxImageCount > 0 && g_swapChainImageCount > swapChainSupport.capabilities.maxImageCount)
-                {
-                    g_swapChainImageCount = swapChainSupport.capabilities.maxImageCount;
-                }
-
-                VkSwapchainCreateInfoKHR createInfo{};
-                createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-                createInfo.surface = g_surface;
-                createInfo.minImageCount = g_swapChainImageCount;
-                createInfo.imageFormat = surfaceFormat.format;
-                createInfo.imageColorSpace = surfaceFormat.colorSpace;
-                createInfo.imageExtent = extent;
-                createInfo.imageArrayLayers = 1;
-                createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-                uint32_t queueFamilyIndices[] = 
-                { 
-                    g_queueFamilyIndices.graphicsAndComputeFamily, 
-                    g_queueFamilyIndices.presentFamily 
-                };
-
-                if (g_queueFamilyIndices.graphicsAndComputeFamily != g_queueFamilyIndices.presentFamily)
-                {
-                    createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-                    createInfo.queueFamilyIndexCount = 2;
-                    createInfo.pQueueFamilyIndices = queueFamilyIndices;
-                }
-                else
-                {
-                    createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-                    createInfo.queueFamilyIndexCount = 0;
-                    createInfo.pQueueFamilyIndices = nullptr;
-                }
-
-                createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-                createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-                createInfo.presentMode = presentMode;
-                createInfo.clipped = VK_TRUE;
-                createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-                VkResult res;
-                res = vkCreateSwapchainKHR(g_logicalDevice, &createInfo, nullptr, &g_swapChain);
-                HANDLE_VK_RESULT(res, "CREATE SWAPCHAIN");
-
-                res = vkGetSwapchainImagesKHR(g_logicalDevice, g_swapChain, &g_swapChainImageCount, nullptr);
-                HANDLE_VK_RESULT(res, "GET SWAPCHAIN IMAGES COUNT");
-                g_swapChainImages.resize(g_swapChainImageCount);
-                res = vkGetSwapchainImagesKHR(g_logicalDevice, g_swapChain, &g_swapChainImageCount, g_swapChainImages.data());
-                HANDLE_VK_RESULT(res, "GET SWAPCHAIN IMAGES");
-
-                g_swapChainImageFormat = surfaceFormat.format;
-                g_swapChainExtent = extent;
-			}
-
-            // Create image views
-            {
-                g_swapChainImageViews.resize(g_swapChainImages.size());
-
-                for (size_t i = 0; i < g_swapChainImages.size(); i++)
-                {
-                    g_swapChainImageViews[i] = ICreateImageView
-                    (
-                        g_swapChainImages[i], g_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1
-                    );
-                }
-            }
-		}
-        void SetupFramebuffers()
+        VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount, 
+            VkFormat& imageFormat, VkExtent2D& extent, std::vector<VkImage>& images)
         {
-            g_swapChainFramebuffers.resize(g_swapChainImageViews.size());
+            SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(g_physicalDevice);
+            VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+            VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+            extent = ChooseSwapExtent(swapChainSupport.capabilities, frameWidth, frameHeight);
 
-            for (size_t i = 0; i < g_swapChainImageViews.size(); i++)
+            minImageCount = swapChainSupport.capabilities.minImageCount + 1;
+            if (swapChainSupport.capabilities.maxImageCount > 0 && minImageCount > swapChainSupport.capabilities.maxImageCount)
+            {
+                minImageCount = swapChainSupport.capabilities.maxImageCount;
+            }
+
+            VkSwapchainCreateInfoKHR createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+            createInfo.surface = g_surface;
+            createInfo.minImageCount = minImageCount;
+            createInfo.imageFormat = surfaceFormat.format;
+            createInfo.imageColorSpace = surfaceFormat.colorSpace;
+            createInfo.imageExtent = extent;
+            createInfo.imageArrayLayers = 1;
+            createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+            uint32_t queueFamilyIndices[] =
+            {
+                g_queueFamilyIndices.graphicsAndComputeFamily,
+                g_queueFamilyIndices.presentFamily
+            };
+
+            if (g_queueFamilyIndices.graphicsAndComputeFamily != g_queueFamilyIndices.presentFamily)
+            {
+                createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+                createInfo.queueFamilyIndexCount = 2;
+                createInfo.pQueueFamilyIndices = queueFamilyIndices;
+            }
+            else
+            {
+                createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                createInfo.queueFamilyIndexCount = 0;
+                createInfo.pQueueFamilyIndices = nullptr;
+            }
+
+            createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+            createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+            createInfo.presentMode = presentMode;
+            createInfo.clipped = VK_TRUE;
+            createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+            VkSwapchainKHR swapchain;
+            VkResult res;
+            res = vkCreateSwapchainKHR(g_logicalDevice, &createInfo, nullptr, &swapchain);
+            HANDLE_VK_RESULT(res, "CREATE SWAPCHAIN");
+
+            res = vkGetSwapchainImagesKHR(g_logicalDevice, swapchain, &minImageCount, nullptr);
+            HANDLE_VK_RESULT(res, "GET SWAPCHAIN IMAGES COUNT");
+
+            images.resize(minImageCount);
+            res = vkGetSwapchainImagesKHR(g_logicalDevice, swapchain, &minImageCount, images.data());
+            HANDLE_VK_RESULT(res, "GET SWAPCHAIN IMAGES");
+
+            imageFormat = surfaceFormat.format;
+            return swapchain;
+        }
+
+        void CreateSwapChainImageViews(std::vector<VkImageView>& imageViews, std::vector<VkImage>& images)
+        {
+            imageViews.resize(images.size());
+            for (size_t i = 0; i < images.size(); i++)
+            {
+                imageViews[i] = ICreateImageView
+                (
+                    images[i], g_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1
+                );
+            }
+        }
+
+        void CreateFrameBuffers(std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent)
+        {
+            framebuffers.resize(imageViews.size());
+
+            for (size_t i = 0; i < imageViews.size(); i++)
             {
                 std::vector<VkImageView> attachments;
 
@@ -115,28 +111,28 @@ namespace Eklipse
                     {
                         g_colorImage.m_imageView,
                         g_depthImage.m_imageView,
-                        g_swapChainImageViews[i]
+                        imageViews[i]
                     };
                 }
                 else
                 {
                     attachments =
                     {
-                        g_swapChainImageViews[i],
+                        imageViews[i],
                         g_depthImage.m_imageView
                     };
                 }
 
                 VkFramebufferCreateInfo framebufferInfo{};
                 framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-                framebufferInfo.renderPass = g_renderPass;
+                framebufferInfo.renderPass = renderPass;
                 framebufferInfo.attachmentCount = attachments.size();
                 framebufferInfo.pAttachments = attachments.data();
-                framebufferInfo.width = g_swapChainExtent.width;
-                framebufferInfo.height = g_swapChainExtent.height;
+                framebufferInfo.width = extent.width;
+                framebufferInfo.height = extent.height;
                 framebufferInfo.layers = 1;
 
-                VkResult res = vkCreateFramebuffer(g_logicalDevice, &framebufferInfo, nullptr, &g_swapChainFramebuffers[i]);
+                VkResult res = vkCreateFramebuffer(g_logicalDevice, &framebufferInfo, nullptr, &framebuffers[i]);
                 HANDLE_VK_RESULT(res, "CREATE FRAMEBUFFER");
             }
         }
@@ -151,6 +147,21 @@ namespace Eklipse
                 vkDestroyImageView(g_logicalDevice, imageView, nullptr);
             }
             vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
+        }
+
+        void DestroyFrameBuffers(std::vector<VkFramebuffer>& buffers)
+        {
+            for (auto framebuffer : buffers)
+            {
+                vkDestroyFramebuffer(g_logicalDevice, framebuffer, nullptr);
+            }
+        }
+        void DestroyImageViews(std::vector<VkImageView>& imageViews)
+        {
+            for (auto imageView : imageViews)
+            {
+                vkDestroyImageView(g_logicalDevice, imageView, nullptr);
+            }
         }
 	}
 }

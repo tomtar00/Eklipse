@@ -2,7 +2,7 @@
 #include "VkBuffers.h"
 #include "VulkanAPI.h"
 #include "VkUtils.h"
-#include "VkCommads.h"
+#include "VkCommands.h"
 
 #include "Vk.h"
 

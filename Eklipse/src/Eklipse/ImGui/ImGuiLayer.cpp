@@ -4,34 +4,37 @@
 
 namespace Eklipse
 {
+	ImGuiLayer::ImGuiLayer(Window* window, GuiLayerConfigInfo configInfo)
+		: m_window(window), m_config(configInfo), 
+		m_first_time(true) {};
+
 	void ImGuiLayer::OnAttach()
 	{
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		EK_ASSERT(s_ctx, "Set ImGui context (s_ctx) before push ImGui layer.")
+		ImGui::SetCurrentContext(s_ctx);
 
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (m_config.dockingEnabled)
 		{
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
 
-		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());
+		EK_CORE_DEBUG("{0} imgui layer attached", typeid(*this).name());
 	}
 	void ImGuiLayer::OnDetach()
 	{
 		ImGui::DestroyContext();
 
-		EK_CORE_INFO("{0} imgui layer detached", typeid(*this).name());
+		EK_CORE_DEBUG("{0} imgui layer detached", typeid(*this).name());
 	}
 	void ImGuiLayer::Update(float deltaTime)
 	{
-		if (!(&m_config.enabled)) return;
+		if (!(*m_config.enabled)) return;
 
 		NewFrame();
 		ImGui::NewFrame();
-
 		ImGuiIO& io = ImGui::GetIO();
-		
+
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
 		if (m_config.menuBarEnabled) window_flags |= ImGuiWindowFlags_MenuBar;
@@ -70,6 +73,9 @@ namespace Eklipse
 				{
 					auto dock_id = ImGui::DockBuilderSplitNode(dockspace_id, layout.dir, layout.ratio, nullptr, &dockspace_id);
 					ImGui::DockBuilderDockWindow(layout.name, dock_id);
+
+					ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
+					node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
 				}
 				ImGui::DockBuilderFinish(dockspace_id);
 			}
@@ -81,8 +87,6 @@ namespace Eklipse
 		{
 			panel->OnGUI();
 		}
-
-		ImGui::Render();
 	}
 
 	void ImGuiLayer::AddPanel(ImGuiPanel& panel)

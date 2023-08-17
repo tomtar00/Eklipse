@@ -10,6 +10,9 @@ namespace Eklipse
 	Renderer::Renderer() : m_graphicsAPI(nullptr), m_scene(nullptr) 
 	{
 		s_instance = this;
+
+		// TODO: Pick default graphics settings
+		// RendererSettings::msaaSamples = GetMaxUsableSampleCount();
 	}
 	Renderer::~Renderer()
 	{
@@ -32,6 +35,7 @@ namespace Eklipse
 
 		// TODO: split method for better abstraction
 		m_graphicsAPI->DrawFrame();
+		m_graphicsAPI->DrawGUI();
 	}
 
 	void Renderer::PostMainLoop()
@@ -44,7 +48,7 @@ namespace Eklipse
 		return m_apiType;
 	}
 
-	void Renderer::SetAPI(ApiType apiType)
+	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
 	{
 		if (apiType == ApiType::None)
 		{
@@ -52,30 +56,24 @@ namespace Eklipse
 			return;
 		}
 
-		std::vector<GuiLayerConfigInfo> guiLayerConfigs;
 		if (m_graphicsAPI != nullptr)
 		{
 			if (apiType == m_apiType && m_graphicsAPI->IsInitialized())
 			{
-				EK_CORE_WARN("{0} API already set and initialized!", STRINGIFY(apiType));
+				EK_CORE_WARN("{0} API already set and initialized!", (int)apiType);
 				return;
 			}
 
 			// shutdown old api
 			if (m_graphicsAPI->IsInitialized())
 			{
-				for (auto& guiLayer : Application::Get().m_guiLayers)
-				{
-					guiLayerConfigs.push_back(guiLayer->GetConfig());
-					guiLayer->Shutdown();
-					delete guiLayer;
-				}
+				shutdownFn();
 
 				m_graphicsAPI->Shutdown();
 				delete m_graphicsAPI;
 
 				EK_ASSERT((m_graphicsAPI == nullptr),
-					"When switching api, old api ({0}) was not deleted", STRINGIFY(apiType));
+					"When switching api, old api ({0}) was not deleted", (int)apiType);
 			}
 		}		
 
@@ -84,19 +82,12 @@ namespace Eklipse
 		{
 			case ApiType::Vulkan:
 			{
-				int i = 0;
-				for (auto& guiLayer : Application::Get().m_guiLayers)
-				{
-					guiLayer = new Vulkan::VkImGuiLayer(Application::Get().GetWindow(), guiLayerConfigs[i]);
-					i++;
-				}
-
 				m_graphicsAPI = new Vulkan::VulkanAPI();
 				break;
 			}
 			default:
 			{
-				EK_ASSERT(false, "API {0} not implemented!", STRINGIFY(apiType));
+				EK_ASSERT(false, "API {0} not implemented!", (int)apiType);
 				break;
 			}
 		}
@@ -107,12 +98,9 @@ namespace Eklipse
 		if (!m_graphicsAPI->IsInitialized())
 		{
 			m_graphicsAPI->Init(m_scene);
-			for (auto& guiLayer : Application::Get().m_guiLayers)
-			{
-				guiLayer->Init();
-			}
+			initFn();
 		}
 		else
-			EK_ASSERT(false, "API {0} not initialized!", STRINGIFY(apiType));
+			EK_ASSERT(false, "API {0} not initialized!", (int)apiType);
 	}
 }

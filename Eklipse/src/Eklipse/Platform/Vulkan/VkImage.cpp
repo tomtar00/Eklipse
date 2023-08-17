@@ -3,7 +3,7 @@
 #include "VkImage.h"
 #include "VkUtils.h"
 #include "VkBuffers.h"
-#include "VkCommads.h"
+#include "VkCommands.h"
 
 #include <stb_image.h>
 
@@ -30,6 +30,37 @@ namespace Eklipse
 			HANDLE_VK_RESULT(res, "CREATE IMAGE VIEW");
 
 			return imageView;
+		}
+
+		VkSampler ICreateSampler(float mipLevels)
+		{
+			VkSamplerCreateInfo samplerInfo{};
+			samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			samplerInfo.magFilter = VK_FILTER_LINEAR;
+			samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+			samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+			samplerInfo.anisotropyEnable = VK_TRUE;
+			samplerInfo.maxAnisotropy = g_physicalDeviceProps.limits.maxSamplerAnisotropy;
+
+			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+			samplerInfo.unnormalizedCoordinates = VK_FALSE;
+			samplerInfo.compareEnable = VK_FALSE;
+			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			samplerInfo.minLod = 0.0f; // Optional
+			samplerInfo.maxLod = mipLevels;
+			samplerInfo.mipLodBias = 0.0f; // Optional
+
+			VkSampler sampler;
+			VkResult res = vkCreateSampler(g_logicalDevice, &samplerInfo, nullptr, &sampler);
+			HANDLE_VK_RESULT(res, "CREATE SAMPLER");
+
+			return sampler;
 		}
 
 		/////////////////////////////////////////////////
@@ -229,7 +260,7 @@ namespace Eklipse
 			vkGetPhysicalDeviceFormatProperties(g_physicalDevice, VK_FORMAT_R8G8B8A8_SRGB, &formatProperties);
 			if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			{
-				throw std::runtime_error("texture image format does not support linear blitting!");
+				EK_ASSERT(false, "texture image format does not support linear blitting!");
 			}
 
 			VkCommandBuffer commandBuffer = BeginSingleCommands();
@@ -316,33 +347,7 @@ namespace Eklipse
 		}
 		void Texture::CreateSampler()
 		{
-			VkSamplerCreateInfo samplerInfo{};
-			samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-			samplerInfo.magFilter = VK_FILTER_LINEAR;
-			samplerInfo.minFilter = VK_FILTER_LINEAR;
-
-			samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-
-			VkPhysicalDeviceProperties properties{};
-			vkGetPhysicalDeviceProperties(g_physicalDevice, &properties);
-
-			samplerInfo.anisotropyEnable = VK_TRUE;
-			samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-
-			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-			samplerInfo.unnormalizedCoordinates = VK_FALSE;
-			samplerInfo.compareEnable = VK_FALSE;
-			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			samplerInfo.minLod = 0.0f; // Optional
-			samplerInfo.maxLod = static_cast<float>(m_mipLevels);
-			samplerInfo.mipLodBias = 0.0f; // Optional
-
-			VkResult res = vkCreateSampler(g_logicalDevice, &samplerInfo, nullptr, &m_sampler);
-			HANDLE_VK_RESULT(res, "CREATE SAMPLER");
+			m_sampler = ICreateSampler(static_cast<float>(m_mipLevels));
 		}
 	}
 }

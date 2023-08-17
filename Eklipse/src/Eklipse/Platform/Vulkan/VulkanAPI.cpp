@@ -14,12 +14,11 @@
 #include "VkValidationLayers.h"
 #include "VkDevice.h"
 #include "VkSwapChain.h"
-#include "VkCommads.h"
+#include "VkCommands.h"
 #include "VkPipeline.h"
 #include "VkDescriptor.h"
 #include "VkBuffers.h"
 #include "VkImage.h"
-#include <Eklipse/ImGui/ImGuiLayer.h>
 
 namespace Eklipse
 {
@@ -37,12 +36,15 @@ namespace Eklipse
 
 		QueueFamilyIndices	g_queueFamilyIndices;
 
+		uint32_t			g_currentFrame;
+
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
 
-		VulkanAPI::VulkanAPI() : m_currentFrameInFlightIndex(0), GraphicsAPI()
+		VulkanAPI::VulkanAPI() : GraphicsAPI()
 		{
 			s_instance = this;
+			g_currentFrame = 0;
 		}
 		VulkanAPI::~VulkanAPI()
 		{
@@ -60,19 +62,15 @@ namespace Eklipse
 				return;
 			}		
 
+			// COMMON //////////////////////////////////////////
+
 			CreateInstance();
 			CreateSurface();
-
 			SetupValidationLayers();
-
 			PickPhysicalDevice();
 			g_queueFamilyIndices = FindQueueFamilies(g_physicalDevice);
 			vkGetPhysicalDeviceMemoryProperties(g_physicalDevice, &g_physicalDeviceMemoryProps);
-
 			CreateLogicalDevice();
-
-			// TODO: Pick default graphics settings
-			// RendererSettings::msaaSamples = GetMaxUsableSampleCount();
 
 			VmaAllocatorCreateInfo allocatorCreateInfo = {};
 			allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
@@ -81,18 +79,60 @@ namespace Eklipse
 			allocatorCreateInfo.instance = g_instance;
 			vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
 
-			SetupSwapchain();
-			SetupDescriptorSetLayouts();
-			SetupPipelines();
-			SetupCommandPool();
-			SetupCommandBuffers();
+			// GEOMETRY //////////////////////////////////////////
+
+			int width, height;
+			Application::Get().GetWindow()->GetFramebufferSize(width, height);
+			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
+			CreateSwapChainImageViews(g_swapChainImageViews, g_swapChainImages);
+
+			g_graphicsDescriptorSetLayout = CreateDescriptorSetLayout({
+				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
+				{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
+			});
+
+			g_renderPass = CreateRenderPass();
+			g_graphicsPipeline = CreateGraphicsPipeline(
+				"shaders/vert.spv", "shaders/frag.spv",
+				g_graphicsPipelineLayout, g_renderPass,
+				GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
+				&g_graphicsDescriptorSetLayout
+			);
+
+			g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+			CreateCommandBuffers(g_computeCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
 			g_colorImage.Setup(RendererSettings::msaaSamples);
 			g_depthImage.Setup(RendererSettings::msaaSamples);
 
-			SetupFramebuffers();
+			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent);
+			g_descriptorPool = CreateDescriptorPool({
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
+				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
+			}, 100);
 
-			SetupDescriptorPool();
+			// PARTICLES ////////////////////////////////////////
+
+			g_computeDescriptorSetLayout = CreateDescriptorSetLayout({
+				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+				{ 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+				{ 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
+			});
+
+			g_particlePipeline = CreateGraphicsPipeline(
+				"shaders/particle-vert.spv", "shaders/particle-frag.spv",
+				g_particlePipelineLayout, g_renderPass,
+				GetParticleBindingDescription(), GetParticleAttributeDescriptions(),
+				&g_graphicsDescriptorSetLayout
+			);
+
+			g_computePipeline = CreateComputePipeline(
+				"shaders/particle-comp.spv", g_computePipelineLayout,
+		        &g_computeDescriptorSetLayout
+			);
+
+			///////////////////////////////////////////////////
 
 			m_scene = scene;
 			m_modelManager.Setup(scene);
@@ -112,25 +152,46 @@ namespace Eklipse
 
 			m_modelManager.Dispose();
 
+			// GEOMETRY //////////////////////////////////////////
+
 			g_colorImage.Dispose();
 			g_depthImage.Dispose();
-			DisposeSwapchain();
 
-			DisposeDescriptorPool();
-			DisposeDescriptorSetLayouts();
-			DisposePipelines();
+			DestroyFrameBuffers(g_swapChainFramebuffers);
+			DestroyImageViews(g_swapChainImageViews);
+			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
+
+			vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
+			vkDestroyDescriptorSetLayout(g_logicalDevice, g_graphicsDescriptorSetLayout, nullptr);
+
+			vkDestroyRenderPass(g_logicalDevice, g_renderPass, nullptr);
+			vkDestroyPipeline(g_logicalDevice, g_graphicsPipeline, nullptr);
+			vkDestroyPipelineLayout(g_logicalDevice, g_graphicsPipelineLayout, nullptr);
 
 			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
 				vkDestroySemaphore(g_logicalDevice, m_imageAvailableSemaphores[i], nullptr);
 				vkDestroySemaphore(g_logicalDevice, m_renderFinishedSemaphores[i], nullptr);
-				vkDestroyFence(g_logicalDevice, m_inFlightFences[i], nullptr);
+				vkDestroyFence(g_logicalDevice, m_renderInFlightFences[i], nullptr);
 
 				vkDestroySemaphore(g_logicalDevice, m_computeFinishedSemaphores[i], nullptr);
 				vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
 			}
 
-			DisposeCommandPool();
+			DisposeCommandPool(); // TODO: finish
+
+			// PARTICLES //////////////////////////////////////////
+
+			vkDestroyDescriptorSetLayout(g_logicalDevice, g_computeDescriptorSetLayout, nullptr);
+
+			vkDestroyPipeline(g_logicalDevice, g_particlePipeline, nullptr);
+			vkDestroyPipelineLayout(g_logicalDevice, g_particlePipelineLayout, nullptr);
+
+			vkDestroyPipeline(g_logicalDevice, g_computePipeline, nullptr);
+			vkDestroyPipelineLayout(g_logicalDevice, g_computePipelineLayout, nullptr);
+
+			// COMMON /////////////////////////////////////////////
+
 			DisposeValidationLayers();
 
 			vmaDestroyAllocator(g_allocator);
@@ -144,92 +205,67 @@ namespace Eklipse
 		}
 		void VulkanAPI::DrawFrame()
 		{
-			// BeginComputeStage();
+			// vkWaitForFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
+			// vkResetFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame]);
 			// {
-			// 	RecordComputeCommandBuffer(m_currentFrameInFlightIndex);
+			// 	RecordComputeCommandBuffer();
 			// }
-			// SubmitComputeStage();
+			// VkSubmitInfo submitInfo{};
+			// submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			// submitInfo.commandBufferCount = 1;
+			// submitInfo.pCommandBuffers = &g_computeCommandBuffers[g_currentFrame];
+			// submitInfo.signalSemaphoreCount = 1;
+			// submitInfo.pSignalSemaphores = &m_computeFinishedSemaphores[g_currentFrame];
+			// 
+			// VkResult res = vkQueueSubmit(g_computeQueue, 1, &submitInfo, m_computeInFlightFences[g_currentFrame]);
+			// HANDLE_VK_RESULT(res, "COMPUTE QUEUE SUBMIT");
 
-			uint32_t imageIndex = BeginDrawStage();
-			{
-				BeginRenderPass(m_currentFrameInFlightIndex, imageIndex);
-				// DRAWING //////////////////////////////////////////////
-				{
-					for (auto& modelAdapter : m_modelManager.m_models)
-					{
-						modelAdapter.Bind(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
-						modelAdapter.Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
-					}
-
-					for (auto& guiLayer : Application::Get().m_guiLayers)
-					{
-						guiLayer->Draw(g_drawCommandBuffers[m_currentFrameInFlightIndex]);
-					};
-				}
-				/////////////////////////////////////////////////////////
-				EndRenderPass(m_currentFrameInFlightIndex, imageIndex);
-			}
-			SubmitDrawStage(imageIndex);
-
-			m_currentFrameInFlightIndex = (m_currentFrameInFlightIndex + 1) % g_maxFramesInFlight;
-		}
-		void VulkanAPI::BeginComputeStage()
-		{
-			vkWaitForFences(g_logicalDevice, 1, &m_computeInFlightFences[m_currentFrameInFlightIndex], VK_TRUE, UINT64_MAX);
-			vkResetFences(g_logicalDevice, 1, &m_computeInFlightFences[m_currentFrameInFlightIndex]);
-		}
-		void VulkanAPI::SubmitComputeStage()
-		{
-			VkSubmitInfo submitInfo{};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &g_computeCommandBuffers[m_currentFrameInFlightIndex];
-			submitInfo.signalSemaphoreCount = 1;
-			submitInfo.pSignalSemaphores = &m_computeFinishedSemaphores[m_currentFrameInFlightIndex];
-
-			if (vkQueueSubmit(g_computeQueue, 1, &submitInfo, m_computeInFlightFences[m_currentFrameInFlightIndex]) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to submit compute command buffer!");
-			};
-		}
-		uint32_t VulkanAPI::BeginDrawStage()
-		{
-			vkWaitForFences(g_logicalDevice, 1, &m_inFlightFences[m_currentFrameInFlightIndex], VK_TRUE, UINT64_MAX);
+			vkWaitForFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
 
 			uint32_t imageIndex;
-			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrameInFlightIndex], VK_NULL_HANDLE, &imageIndex);
+			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 			if (result == VK_ERROR_OUT_OF_DATE_KHR)
 			{
 				RecreateSwapChain();
-				return imageIndex; // TODO: fix
+				return;
 			}
-			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-			{
-				throw std::runtime_error("failed to acquire swap chain image!");
-			}
+			EK_ASSERT(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR, "Failed to aquire swap chain image!");
 
-			vkResetFences(g_logicalDevice, 1, &m_inFlightFences[m_currentFrameInFlightIndex]);
-			return imageIndex;
-		}
-		void VulkanAPI::SubmitDrawStage(uint32_t imageIndex)
-		{
+			vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
+
+			BeginRenderPass(imageIndex);
+			{
+				// DRAWING //////////////////////////////////////////////
+				
+				for (auto& modelAdapter : m_modelManager.m_models)
+				{
+					modelAdapter.Bind(g_drawCommandBuffers[g_currentFrame]);
+					modelAdapter.Draw(g_drawCommandBuffers[g_currentFrame]);
+				}
+
+				Application::Get().m_guiLayer->Draw(g_drawCommandBuffers[g_currentFrame]);
+				
+				/////////////////////////////////////////////////////////
+			}
+			EndRenderPass(imageIndex);
+
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &g_drawCommandBuffers[m_currentFrameInFlightIndex];
+			submitInfo.pCommandBuffers = &g_drawCommandBuffers[g_currentFrame];
 
-			VkSemaphore waitSemaphores[] = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[m_currentFrameInFlightIndex] };
+			VkSemaphore waitSemaphores[] = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
 			VkPipelineStageFlags waitStages[] = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			submitInfo.waitSemaphoreCount = 1;
 			submitInfo.pWaitSemaphores = waitSemaphores;
 			submitInfo.pWaitDstStageMask = waitStages;
 
-			VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrameInFlightIndex] };
+			VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[g_currentFrame] };
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphores;
 
-			VkResult result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrameInFlightIndex]);
+			result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_renderInFlightFences[g_currentFrame]);
 			HANDLE_VK_RESULT(result, "DRAW FRAME QUEUE SUBMIT");
 
 			VkPresentInfoKHR presentInfo{};
@@ -251,10 +287,12 @@ namespace Eklipse
 				framebufferResized = false;
 				RecreateSwapChain();
 			}
-			else if (result != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to present swap chain image!");
-			}
+			else EK_ASSERT(result != VK_SUCCESS, "Failed to present swap chain image!");
+
+			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
+		}
+		void VulkanAPI::DrawGUI()
+		{
 		}
 		void VulkanAPI::OnPostLoop()
 		{
@@ -355,7 +393,7 @@ namespace Eklipse
 		{
 			m_imageAvailableSemaphores.resize(g_maxFramesInFlight);
 			m_renderFinishedSemaphores.resize(g_maxFramesInFlight);
-			m_inFlightFences.resize(g_maxFramesInFlight);
+			m_renderInFlightFences.resize(g_maxFramesInFlight);
 
 			m_computeFinishedSemaphores.resize(g_maxFramesInFlight);
 			m_computeInFlightFences.resize(g_maxFramesInFlight);
@@ -370,18 +408,18 @@ namespace Eklipse
 			VkDevice device = g_logicalDevice;
 			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
-				if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-					vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-					vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
-				{
-					throw std::runtime_error("failed to create semaphores!");
-				}
+				VkResult res;
+				res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+				HANDLE_VK_RESULT(res, "CREATE IMAGE SEMAPHORE");
+				res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+				HANDLE_VK_RESULT(res, "CREATE RENDER SEMAPHORE");
+				res = vkCreateFence(device, &fenceInfo, nullptr, &m_renderInFlightFences[i]);
+				HANDLE_VK_RESULT(res, "CREATE RENDER FENCE");
 
-				if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_computeFinishedSemaphores[i]) != VK_SUCCESS ||
-					vkCreateFence(device, &fenceInfo, nullptr, &m_computeInFlightFences[i]) != VK_SUCCESS) 
-				{
-					throw std::runtime_error("failed to create compute synchronization objects for a frame!");
-				}
+				res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_computeFinishedSemaphores[i]);
+				HANDLE_VK_RESULT(res, "CREATE COMPUTE SEMAPHORE");
+				res = vkCreateFence(device, &fenceInfo, nullptr, &m_computeInFlightFences[i]);
+				HANDLE_VK_RESULT(res, "CREATE COMPUTE FENCE");
 			}
 		}
 	}

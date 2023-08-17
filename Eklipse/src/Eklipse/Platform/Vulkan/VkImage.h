@@ -9,6 +9,7 @@ namespace Eklipse
 	namespace Vulkan
 	{
 		VkImageView ICreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+		VkSampler ICreateSampler(float mipLevels);
 
 		class Image
 		{

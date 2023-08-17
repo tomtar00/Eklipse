@@ -1,3 +1,4 @@
+#ifdef EK_INCLUDE_DEBUG_LAYER
 #pragma once
 #include "ImGuiLayer.h"
 
@@ -8,10 +9,5 @@ namespace Eklipse
 	public:
 		virtual void OnGUI() override;
 	};
-
-	class DebugPanel2 : public ImGuiPanel
-	{
-	public:
-		virtual void OnGUI() override;
-	};
 }
+#endif

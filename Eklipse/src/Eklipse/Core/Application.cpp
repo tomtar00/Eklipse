@@ -15,8 +15,6 @@ namespace Eklipse
 		: appName(info.appName), windowWidth(info.windowWidth),
 		windowHeight(info.windowHeight)	{}
 
-	#define CAPTURE_EVENT_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(args...); }
-
 	Application::Application() : 
 		m_running(true), m_minimized(false)
 	{
@@ -49,38 +47,43 @@ namespace Eklipse
 		return &m_scene;
 	}
 
+	void Application::SetAPI(ApiType api)
+	{
+		m_renderer.SetAPI(api, 
+		[this]()
+		{
+			if (m_guiLayer != nullptr)
+				m_guiLayer->Shutdown();
+		},
+		[this]()
+		{
+			if (m_guiLayer != nullptr)
+				m_guiLayer->Init();
+		});
+	}
+
 	void Application::Init()
 	{
 		s_instance = this;
 
 		WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
 		m_window = Window::Create(data);
-		m_window->SetEventCallback(CAPTURE_EVENT_FN(OnEventReceived));
+		m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
 		m_scene.Load();
 
-		m_renderer.SetAPI(ApiType::Vulkan);
-
-		// push debug layer
-		GuiLayerConfigInfo debugLayerCreateInfo{};
-		debugLayerCreateInfo.enabled = &DebugLayerEnabled;
-		debugLayerCreateInfo.dockingEnabled = true;
-		debugLayerCreateInfo.dockLayouts =
-		{
-			{ "Left", ImGuiDir_Left, 0.2f },
-			{ "Down", ImGuiDir_Down, 0.2f }
-		};
-		debugLayerCreateInfo.panels = { &m_debugPanel, &m_debugPanel2 };
-		PushGuiLayer(debugLayerCreateInfo);
+		m_guiLayer = nullptr;
+		IMGUI_CHECKVERSION();
+		SetAPI(ApiType::Vulkan);
 	}
 
 	void Application::OnEventReceived(Event& event)
 	{
-		EK_CORE_TRACE("{0}", event.ToString());
+		EK_CORE_TRACE(event.ToString());
 
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_EVENT_FN(OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_EVENT_FN(OnWindowResized));
+		dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized));
 
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
@@ -106,31 +109,45 @@ namespace Eklipse
 		if (ImGuiLayer* l = dynamic_cast<ImGuiLayer*>(layer))
 		{
 			EK_CORE_WARN("Tried to add gui layer as normal layer");
+			delete layer;
 			return;
 		}
 
 		m_layerStack.PushLayer(layer);
 	}
-	void Application::PushGuiLayer(GuiLayerConfigInfo configInfo)
+	void Application::SetGuiLayer(GuiLayerConfigInfo configInfo)
 	{
-		ImGuiLayer* layer = nullptr;
+		delete m_guiLayer;
 		switch (m_renderer.GetAPI())
 		{
 			case ApiType::Vulkan:
 			{
-				layer = new Vulkan::VkImGuiLayer(m_window, configInfo);
+				m_guiLayer = new Vulkan::VkImGuiLayer(m_window, configInfo);
 				break;
 			}
 		}
-		EK_ASSERT(layer, "GUI API {0} not implemented!", STRINGIFY(apiType));
-		m_layerStack.PushLayer(layer);
-		m_guiLayers.push_back(layer);
-		layer->Init();
+		EK_ASSERT(m_guiLayer, "GUI API {0} not implemented!", (int)m_renderer.GetAPI());
+		m_layerStack.PushLayer(m_guiLayer);
+		m_guiLayer->Init();
 	}
 
 	void Application::Run()
 	{
 		EK_CORE_INFO("Running engine...");
+
+//#ifndef EK_EDITOR
+//		bool enable = true;
+//		GuiLayerConfigInfo debugLayerCreateInfo{};
+//		debugLayerCreateInfo.enabled = &enable;
+//		debugLayerCreateInfo.menuBarEnabled = false;
+//		debugLayerCreateInfo.dockingEnabled = false;
+//		ImGuiLayer::s_ctx = ImGui::CreateContext();
+//		SetGuiLayer(debugLayerCreateInfo);
+//#endif
+
+#ifdef EK_INCLUDE_DEBUG_LAYER
+		m_guiLayer->AddPanel(m_debugPanel);
+#endif
 
 		float dt = 0;
 		while (m_running)
@@ -152,9 +169,6 @@ namespace Eklipse
 
 		m_renderer.PostMainLoop();
 
-		for (auto& guiLayer : m_guiLayers)
-		{
-			guiLayer->Shutdown();
-		}
+		m_guiLayer->Shutdown();
 	}
 }
