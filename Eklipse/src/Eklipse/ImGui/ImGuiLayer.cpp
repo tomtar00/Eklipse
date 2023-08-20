@@ -10,7 +10,7 @@ namespace Eklipse
 
 	void ImGuiLayer::OnAttach()
 	{
-		EK_ASSERT(s_ctx, "Set ImGui context (s_ctx) before push ImGui layer.")
+		EK_ASSERT(s_ctx, "Set ImGui context (s_ctx) before pushing ImGui layer.")
 		ImGui::SetCurrentContext(s_ctx);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -69,14 +69,18 @@ namespace Eklipse
 				ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
 				ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
-				for (auto& layout : m_config.dockLayouts)
+				ImGuiID out_id = -1;
+				ImGuiID node_id = dockspace_id;
+				for (int i = 0; i < m_config.dockLayouts.size() - 1; i++)
 				{
-					auto dock_id = ImGui::DockBuilderSplitNode(dockspace_id, layout.dir, layout.ratio, nullptr, &dockspace_id);
-					ImGui::DockBuilderDockWindow(layout.name, dock_id);
+					m_config.dockLayouts[i].id = ImGui::DockBuilderSplitNode(node_id, 
+						m_config.dockLayouts[i].dir, m_config.dockLayouts[i].ratio, nullptr, &out_id);
+					node_id = out_id;
 
-					ImGuiDockNode* node = ImGui::DockBuilderGetNode(dock_id);
-					node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
+					ImGui::DockBuilderDockWindow(m_config.dockLayouts[i].name, m_config.dockLayouts[i].id);
 				}
+				ImGui::DockBuilderDockWindow(m_config.dockLayouts[m_config.dockLayouts.size() - 1].name, node_id);
+
 				ImGui::DockBuilderFinish(dockspace_id);
 			}
 		}

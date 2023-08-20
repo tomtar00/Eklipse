@@ -9,13 +9,28 @@
 #include "Vk.h"
 #include "VkUtils.h"
 #include "VkCommands.h"
+#include "VkSwapChain.h"
+#include "VkPipeline.h"
+#include "VkDescriptor.h"
 
 namespace Eklipse
 {
 	namespace Vulkan
 	{
+		VkRenderPass					g_imguiRenderPass			= VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer>	g_imguiCommandBuffers{};
+		std::vector<VkFramebuffer>		g_imguiFrameBuffers{};
+
+		VkExtent2D						g_viewportExtent;
+		VkRenderPass					g_viewportRenderPass		= VK_NULL_HANDLE;
+		VkPipeline						g_viewportPipeline			= VK_NULL_HANDLE;
+		VkPipelineLayout				g_viewportPipelineLayout	= VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer>	g_viewportCommandBuffers{};
+		std::vector<Image>				g_viewportImages{};
+		std::vector<VkFramebuffer>		g_viewportFrameBuffers{};
+
 		VkImGuiLayer::VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) : 
-			m_imguiPool(VK_NULL_HANDLE), Eklipse::ImGuiLayer(window, configInfo)
+			m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(window, configInfo)
 		{
 			m_glfwWindow = dynamic_cast<WindowsWindow*>(window)->GetGlfwWindow();
 			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in VK ImGui Layer!");
@@ -25,8 +40,9 @@ namespace Eklipse
 			if (s_initialized) return;
 				s_initialized = true;
 
-			VkDescriptorPoolSize pool_sizes[] =
-			{
+			g_viewportExtent = { 512, 512 }; // TODO: replace with some actual values
+
+			m_imguiPool = CreateDescriptorPool({
 				{ VK_DESCRIPTOR_TYPE_SAMPLER,					1000 },
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	1000 },
 				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,				1000 },
@@ -38,17 +54,14 @@ namespace Eklipse
 				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,	1000 },
 				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,	1000 },
 				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,			1000 }
-			};
+			}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
-			VkDescriptorPoolCreateInfo pool_info = {};
-			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			pool_info.maxSets = 1000;
-			pool_info.poolSizeCount = std::size(pool_sizes);
-			pool_info.pPoolSizes = pool_sizes;
+			CreateCommandBuffers(g_imguiCommandBuffers, g_maxFramesInFlight, g_commandPool);
+			g_imguiRenderPass = CreateImGuiRenderPass();
+			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);	
 
-			VkResult res = vkCreateDescriptorPool(g_logicalDevice, &pool_info, nullptr, &m_imguiPool);
-			HANDLE_VK_RESULT(res, "IMGUI CREATE POOL");
+			CreateCommandBuffers(g_viewportCommandBuffers, g_maxFramesInFlight, g_commandPool);
+			g_viewportRenderPass = CreateViewportRenderPass();
 
 			ImGui_ImplGlfw_InitForVulkan(m_glfwWindow, true);
 
@@ -63,7 +76,18 @@ namespace Eklipse
 			init_info.MSAASamples = RendererSettings::msaaSamples;
 			init_info.CheckVkResultFn = [](VkResult res) { HANDLE_VK_RESULT(res, "IMGUI") };
 
-			ImGui_ImplVulkan_Init(&init_info, g_renderPass);
+			ImGui_ImplVulkan_Init(&init_info, g_imguiRenderPass);
+
+			m_imageDescrSets.resize(g_swapChainImageCount);
+			g_viewportImages.resize(g_swapChainImageCount);
+			SetupViewportImages();
+
+			g_viewportPipeline = CreateGraphicsPipeline(
+				"shaders/vert.spv", "shaders/frag.spv",
+				g_viewportPipelineLayout, g_viewportRenderPass,
+				GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
+				&g_graphicsDescriptorSetLayout
+			);
 
 			auto cmd = BeginSingleCommands();
 			ImGui_ImplVulkan_CreateFontsTexture(cmd);
@@ -78,7 +102,21 @@ namespace Eklipse
 			if (!s_initialized) return;
 			s_initialized = false;
 
+			// imgui layer
+			FreeCommandBuffers(g_imguiCommandBuffers, g_commandPool);
+			vkDestroyRenderPass(g_logicalDevice, g_imguiRenderPass, nullptr);
+			DestroyFrameBuffers(g_imguiFrameBuffers);
+
+			// viewport
+			FreeCommandBuffers(g_viewportCommandBuffers, g_commandPool);
+			vkDestroyRenderPass(g_logicalDevice, g_viewportRenderPass, nullptr);
+
+			vkDestroyPipeline(g_logicalDevice, g_viewportPipeline, nullptr);
+			vkDestroyPipelineLayout(g_logicalDevice, g_viewportPipelineLayout, nullptr);
+			DestroyViewportImages();
+
 			vkDestroyDescriptorPool(g_logicalDevice, m_imguiPool, nullptr);
+
 			ImGui_ImplVulkan_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 
@@ -98,8 +136,48 @@ namespace Eklipse
 		}
 		void VkImGuiLayer::GetImage(float width, float height)
 		{
-			m_imageDescrSet = ImGui_ImplVulkan_AddTexture(g_viewportSamplers[g_currentFrame], g_viewportImageViews[g_currentFrame], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			ImGui::Image(m_imageDescrSet, ImVec2{width, height});
+			if (width != g_viewportExtent.width || height != g_viewportExtent.height)
+			{
+				vkDeviceWaitIdle(g_logicalDevice);
+
+				DestroyViewportImages();
+				g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+				SetupViewportImages();
+			}
+
+			ImGui::Image(m_imageDescrSets[g_imageIndex], ImVec2{width, height});
+		}
+		void VkImGuiLayer::SetupViewportImages()
+		{
+			std::vector<VkImageView> views;
+			views.resize(g_swapChainImageCount);
+			
+			for (int i = 0; i < g_swapChainImageCount; i++)
+			{
+				g_viewportImages[i].CreateImage(g_viewportExtent.width, g_viewportExtent.height,
+					1, RendererSettings::msaaSamples, g_swapChainImageFormat, VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+				);
+				//g_viewportImages[i].TransitionImageLayout(g_swapChainImageFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+				//	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
+
+				g_viewportImages[i].CreateImageView(g_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+				g_viewportImages[i].CreateSampler(1);
+				views[i] = g_viewportImages[i].m_imageView;
+
+				m_imageDescrSets[i] = ImGui_ImplVulkan_AddTexture(g_viewportImages[i].m_sampler, g_viewportImages[i].m_imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			}
+			CreateFrameBuffers(g_viewportFrameBuffers, views, g_viewportRenderPass, g_viewportExtent, false);
+		}
+		void VkImGuiLayer::DestroyViewportImages()
+		{
+			vkFreeDescriptorSets(g_logicalDevice, m_imguiPool, m_imageDescrSets.size(), m_imageDescrSets.data());
+			DestroyFrameBuffers(g_viewportFrameBuffers);
+			for (auto& image : g_viewportImages)
+			{
+				image.Dispose();
+			}
 		}
 	}
 }

@@ -18,6 +18,8 @@ namespace Eklipse
 		char* name;
 		ImGuiDir_ dir;
 		float ratio;
+
+		ImGuiID id;
 	};
 	struct EK_API GuiLayerConfigInfo
 	{

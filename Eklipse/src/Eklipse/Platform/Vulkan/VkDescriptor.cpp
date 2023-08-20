@@ -93,10 +93,11 @@ namespace Eklipse
 
 			return layout;
 		}
-		VkDescriptorPool CreateDescriptorPool(std::vector<VkDescriptorPoolSize> poolSizes, int maxSets)
+		VkDescriptorPool CreateDescriptorPool(std::vector<VkDescriptorPoolSize> poolSizes, int maxSets, VkDescriptorPoolCreateFlags flags)
 		{
 			VkDescriptorPoolCreateInfo poolInfo{};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = flags;
 			poolInfo.maxSets = maxSets;
 			poolInfo.poolSizeCount = poolSizes.size();
 			poolInfo.pPoolSizes = poolSizes.data();

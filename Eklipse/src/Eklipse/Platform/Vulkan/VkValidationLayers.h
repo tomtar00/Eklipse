@@ -14,6 +14,6 @@ namespace Eklipse
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData
 		);
-		void DisposeValidationLayers();
+		void DestroyValidationLayers();
 	}
 }

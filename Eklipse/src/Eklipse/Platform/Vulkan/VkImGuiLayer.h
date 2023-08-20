@@ -21,9 +21,13 @@ namespace Eklipse
 			virtual void GetImage(float width, float height) override;
 
 		private:
+			void SetupViewportImages();
+			void DestroyViewportImages();
+
+		private:
 			GLFWwindow* m_glfwWindow;
 			VkDescriptorPool m_imguiPool;
-			VkDescriptorSet m_imageDescrSet;
+			std::vector<VkDescriptorSet> m_imageDescrSets;
 		};
 	}
 }

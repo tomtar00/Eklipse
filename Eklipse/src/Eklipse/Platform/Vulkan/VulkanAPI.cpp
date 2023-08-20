@@ -37,6 +37,7 @@ namespace Eklipse
 		QueueFamilyIndices	g_queueFamilyIndices;
 
 		uint32_t			g_currentFrame;
+		uint32_t			g_imageIndex;
 
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
@@ -79,12 +80,14 @@ namespace Eklipse
 			allocatorCreateInfo.instance = g_instance;
 			vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
 
+			g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+
 			// GEOMETRY //////////////////////////////////////////
 
 			int width, height;
 			Application::Get().GetWindow()->GetFramebufferSize(width, height);
 			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
-			CreateSwapChainImageViews(g_swapChainImageViews, g_swapChainImages);
+			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 
 			g_graphicsDescriptorSetLayout = CreateDescriptorSetLayout({
 				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
@@ -99,38 +102,39 @@ namespace Eklipse
 				&g_graphicsDescriptorSetLayout
 			);
 
-			g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-			CreateCommandBuffers(g_computeCommandBuffers, g_maxFramesInFlight, g_commandPool);
+			CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
 			g_colorImage.Setup(RendererSettings::msaaSamples);
 			g_depthImage.Setup(RendererSettings::msaaSamples);
 
-			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent);
+			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			g_descriptorPool = CreateDescriptorPool({
 				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
 				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
-			}, 100);
+			}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
 			// PARTICLES ////////////////////////////////////////
 
-			g_computeDescriptorSetLayout = CreateDescriptorSetLayout({
-				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-				{ 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-				{ 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
-			});
-
-			g_particlePipeline = CreateGraphicsPipeline(
-				"shaders/particle-vert.spv", "shaders/particle-frag.spv",
-				g_particlePipelineLayout, g_renderPass,
-				GetParticleBindingDescription(), GetParticleAttributeDescriptions(),
-				&g_graphicsDescriptorSetLayout
-			);
-
-			g_computePipeline = CreateComputePipeline(
-				"shaders/particle-comp.spv", g_computePipelineLayout,
-		        &g_computeDescriptorSetLayout
-			);
+			//CreateCommandBuffers(g_computeCommandBuffers, g_maxFramesInFlight, g_commandPool);
+			//
+			//g_computeDescriptorSetLayout = CreateDescriptorSetLayout({
+			//	{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+			//	{ 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+			//	{ 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
+			//});
+			//
+			//g_particlePipeline = CreateGraphicsPipeline(
+			//	"shaders/particle-vert.spv", "shaders/particle-frag.spv",
+			//	g_particlePipelineLayout, g_renderPass,
+			//	GetParticleBindingDescription(), GetParticleAttributeDescriptions(),
+			//	&g_graphicsDescriptorSetLayout
+			//);
+			//
+			//g_computePipeline = CreateComputePipeline(
+			//	"shaders/particle-comp.spv", g_computePipelineLayout,
+		    //    &g_computeDescriptorSetLayout
+			//);
 
 			///////////////////////////////////////////////////
 
@@ -178,21 +182,24 @@ namespace Eklipse
 				vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
 			}
 
-			DisposeCommandPool(); // TODO: finish
+			FreeCommandBuffers(g_drawCommandBuffers, g_commandPool);
 
 			// PARTICLES //////////////////////////////////////////
 
-			vkDestroyDescriptorSetLayout(g_logicalDevice, g_computeDescriptorSetLayout, nullptr);
-
-			vkDestroyPipeline(g_logicalDevice, g_particlePipeline, nullptr);
-			vkDestroyPipelineLayout(g_logicalDevice, g_particlePipelineLayout, nullptr);
-
-			vkDestroyPipeline(g_logicalDevice, g_computePipeline, nullptr);
-			vkDestroyPipelineLayout(g_logicalDevice, g_computePipelineLayout, nullptr);
+			//vkDestroyDescriptorSetLayout(g_logicalDevice, g_computeDescriptorSetLayout, nullptr);
+			//
+			//vkDestroyPipeline(g_logicalDevice, g_particlePipeline, nullptr);
+			//vkDestroyPipelineLayout(g_logicalDevice, g_particlePipelineLayout, nullptr);
+			//
+			//vkDestroyPipeline(g_logicalDevice, g_computePipeline, nullptr);
+			//vkDestroyPipelineLayout(g_logicalDevice, g_computePipelineLayout, nullptr);
+			//
+			//FreeCommandBuffers(g_computeCommandBuffers, g_commandPool);
 
 			// COMMON /////////////////////////////////////////////
 
-			DisposeValidationLayers();
+			DestroyValidationLayers();
+			vkDestroyCommandPool(g_logicalDevice, g_commandPool, nullptr);
 
 			vmaDestroyAllocator(g_allocator);
 
@@ -222,61 +229,73 @@ namespace Eklipse
 
 			vkWaitForFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
 
-			uint32_t imageIndex;
-			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, &imageIndex);
+			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, &g_imageIndex);
 
 			if (result == VK_ERROR_OUT_OF_DATE_KHR)
 			{
 				RecreateSwapChain();
 				return;
 			}
-			EK_ASSERT(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR, "Failed to aquire swap chain image!");
+			EK_ASSERT((result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR), "Failed to aquire swap chain image!");
 
 			vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
 
-			BeginRenderPass(imageIndex);
+			/*
+			VkCommandBuffer drawCommandBuffer = g_drawCommandBuffers[g_currentFrame];
+			BeginRenderPass(g_renderPass, drawCommandBuffer, g_swapChainFramebuffers[g_imageIndex], g_swapChainExtent);
 			{
-				// DRAWING //////////////////////////////////////////////
-				
+				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);				
+			}
+			EndRenderPass(drawCommandBuffer);	
+			*/
+
+			VkCommandBuffer viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
+			BeginRenderPass(g_viewportRenderPass, viewportCommandBuffer, g_viewportFrameBuffers[g_imageIndex], g_viewportExtent);
+			{
+				vkCmdBindPipeline(viewportCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
+
 				for (auto& modelAdapter : m_modelManager.m_models)
 				{
-					modelAdapter.Bind(g_drawCommandBuffers[g_currentFrame]);
-					modelAdapter.Draw(g_drawCommandBuffers[g_currentFrame]);
+					modelAdapter.Bind(viewportCommandBuffer);
+					modelAdapter.Draw(viewportCommandBuffer);
 				}
-
-				Application::Get().m_guiLayer->Draw(g_drawCommandBuffers[g_currentFrame]);
-				
-				/////////////////////////////////////////////////////////
 			}
-			EndRenderPass(imageIndex);
+			EndRenderPass(viewportCommandBuffer);
+
+			VkCommandBuffer imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
+			BeginRenderPass(g_imguiRenderPass, imguiCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
+			{
+				vkCmdBindPipeline(imguiCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
+
+				Application::Get().m_guiLayer->Draw(imguiCommandBuffer);
+			}
+			EndRenderPass(imguiCommandBuffer);
+
+			std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
+			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
+			std::array<VkCommandBuffer, 2> commandBuffers = { /*drawCommandBuffer,*/ viewportCommandBuffer, imguiCommandBuffer };
 
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &g_drawCommandBuffers[g_currentFrame];
-
-			VkSemaphore waitSemaphores[] = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
-			VkPipelineStageFlags waitStages[] = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-			submitInfo.waitSemaphoreCount = 1;
-			submitInfo.pWaitSemaphores = waitSemaphores;
-			submitInfo.pWaitDstStageMask = waitStages;
-
-			VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[g_currentFrame] };
-			submitInfo.signalSemaphoreCount = 1;
-			submitInfo.pSignalSemaphores = signalSemaphores;
+			submitInfo.commandBufferCount = commandBuffers.size();
+			submitInfo.pCommandBuffers = commandBuffers.data();
+			submitInfo.waitSemaphoreCount = waitSemaphores.size();
+			submitInfo.pWaitSemaphores = waitSemaphores.data();
+			submitInfo.pWaitDstStageMask = waitStages.data();
+			submitInfo.signalSemaphoreCount = signalSemaphores.size();
+			submitInfo.pSignalSemaphores = signalSemaphores.data();
 
 			result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_renderInFlightFences[g_currentFrame]);
 			HANDLE_VK_RESULT(result, "DRAW FRAME QUEUE SUBMIT");
 
 			VkPresentInfoKHR presentInfo{};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = signalSemaphores;
-
-			VkSwapchainKHR swapChains[] = { g_swapChain };
+			presentInfo.waitSemaphoreCount = signalSemaphores.size();
+			presentInfo.pWaitSemaphores = signalSemaphores.data();
 			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &imageIndex;
+			presentInfo.pSwapchains = &g_swapChain;
+			presentInfo.pImageIndices = &g_imageIndex;
 			presentInfo.pResults = nullptr;
 
 			result = vkQueuePresentKHR(g_presentQueue, &presentInfo);
@@ -287,12 +306,13 @@ namespace Eklipse
 				framebufferResized = false;
 				RecreateSwapChain();
 			}
-			else EK_ASSERT(result != VK_SUCCESS, "Failed to present swap chain image!");
+			else EK_ASSERT(result == VK_SUCCESS, "Failed to present swap chain image!");
 
 			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
 		}
 		void VulkanAPI::DrawGUI()
 		{
+
 		}
 		void VulkanAPI::OnPostLoop()
 		{
@@ -301,7 +321,8 @@ namespace Eklipse
 
 		float VulkanAPI::GetAspectRatio()
 		{
-			return (float)g_swapChainExtent.width / (float)g_swapChainExtent.height;
+			return (float)g_viewportExtent.width / (float)g_viewportExtent.height;
+			//return (float)g_swapChainExtent.width / (float)g_swapChainExtent.height;
 		}
 
 		void VulkanAPI::CreateInstance()
@@ -352,14 +373,24 @@ namespace Eklipse
 
 			vkDeviceWaitIdle(g_logicalDevice);
 
-			DisposeSwapchain();
+			DestroyFrameBuffers(g_imguiFrameBuffers);
+			DestroyFrameBuffers(g_swapChainFramebuffers);
+			DestroyImageViews(g_swapChainImageViews);
+			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
+
 			g_depthImage.Dispose();
 			g_colorImage.Dispose();
 
-			SetupSwapchain();
+			int width, height;
+			Application::Get().GetWindow()->GetFramebufferSize(width, height);
+			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
+			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
+
 			g_colorImage.Setup(RendererSettings::msaaSamples);
 			g_depthImage.Setup(RendererSettings::msaaSamples);
-			SetupFramebuffers();
+
+			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
+			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
 		}
 		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
 		{

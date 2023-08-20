@@ -63,13 +63,7 @@ namespace Eklipse
 			return sampler;
 		}
 
-		/////////////////////////////////////////////////
-		// IMAGE ////////////////////////////////////////
-		/////////////////////////////////////////////////
-
-		void Image::CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, 
-			VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, 
-			VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+		VkImage ICreateImage(VmaAllocation& allocation, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
 		{
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -88,11 +82,26 @@ namespace Eklipse
 
 			VmaAllocationCreateInfo vmaAllocInfo = {};
 			vmaAllocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-			vmaAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+			//vmaAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 			vmaAllocInfo.priority = 1.0f;
 
-			VkResult res = vmaCreateImage(g_allocator, &imageInfo, &vmaAllocInfo, &m_image, &m_allocation, nullptr);
+			VkImage image;
+			VkResult res = vmaCreateImage(g_allocator, &imageInfo, &vmaAllocInfo, &image, &allocation, nullptr);
 			HANDLE_VK_RESULT(res, "CREATE IMAGE");
+
+			return image;
+		}
+
+		/////////////////////////////////////////////////
+		// IMAGE ////////////////////////////////////////
+		/////////////////////////////////////////////////
+
+		void Image::CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, 
+			VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, 
+			VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+		{
+			m_image = ICreateImage(m_allocation, width, height, mipLevels, numSamples,
+				format, tiling, usage, properties);
 		}
 		void Image::Dispose()
 		{
@@ -125,6 +134,10 @@ namespace Eklipse
 		void Image::CreateImageView(VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
 		{
 			m_imageView = ICreateImageView(m_image, format, aspectFlags, mipLevels);
+		}
+		void Image::CreateSampler(int mipLevels)
+		{
+			m_sampler = ICreateSampler(static_cast<float>(mipLevels));
 		}
 		void Image::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height)
 		{
@@ -191,9 +204,17 @@ namespace Eklipse
 				sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 				destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			}
+			else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+			{
+				barrier.srcAccessMask = 0;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+				sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+				destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			}
 			else
 			{
-				EK_ASSERT(false, "Unsuported layout transition from {0} to {1}", STRINGIFY(oldLayout), STRINGIFY(newLayout));
+				EK_ASSERT(false, "Unsuported layout transition from {0} to {1}", int(oldLayout), int(newLayout));
 			}
 
 			vkCmdPipelineBarrier(
@@ -252,7 +273,7 @@ namespace Eklipse
 			stbi_image_free(data.pixels);
 
 			CreateImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_mipLevels);
-			CreateSampler();
+			CreateSampler(m_mipLevels);
 		}
 		void Texture::GenerateMipMaps(uint32_t mipLevels, uint32_t width, uint32_t height)
 		{
@@ -344,10 +365,6 @@ namespace Eklipse
 			);
 
 			EndSingleCommands(commandBuffer);
-		}
-		void Texture::CreateSampler()
-		{
-			m_sampler = ICreateSampler(static_cast<float>(m_mipLevels));
 		}
 	}
 }

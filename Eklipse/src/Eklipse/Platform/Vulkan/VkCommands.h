@@ -8,10 +8,10 @@ namespace Eklipse
 		VkCommandPool CreateCommandPool(int queueFamilyIndex, VkCommandPoolCreateFlagBits flags);
 		void CreateCommandBuffers(std::vector<VkCommandBuffer>& buffers, int numBuffers, VkCommandPool pool);
 
-		void DisposeCommandPool();
+		void FreeCommandBuffers(std::vector<VkCommandBuffer>& buffers, VkCommandPool pool);
 
-		void BeginRenderPass(uint32_t imageIndex);
-		void EndRenderPass(uint32_t imageIndex);
+		void BeginRenderPass(VkRenderPass renderPass, VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent);
+		void EndRenderPass(VkCommandBuffer commandBuffer);
 		void RecordComputeCommandBuffer();
 
 		VkCommandBuffer BeginSingleCommands();

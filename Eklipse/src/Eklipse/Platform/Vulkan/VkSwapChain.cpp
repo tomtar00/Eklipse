@@ -85,43 +85,71 @@ namespace Eklipse
             return swapchain;
         }
 
-        void CreateSwapChainImageViews(std::vector<VkImageView>& imageViews, std::vector<VkImage>& images)
+        void CreateImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
+            VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
+            VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+        {
+            allocations.resize(numImages);
+            images.resize(numImages);
+            for (int i = 0; i < numImages; i++)
+            {
+                images[i] = ICreateImage(allocations[i], width, height, mipLevels, numSamples,
+                    format, tiling, usage, properties);
+            }
+        }
+        void CreateImageViews(std::vector<VkImageView>& imageViews, std::vector<VkImage>& images, VkFormat format)
         {
             imageViews.resize(images.size());
             for (size_t i = 0; i < images.size(); i++)
             {
                 imageViews[i] = ICreateImageView
                 (
-                    images[i], g_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1
+                    images[i], format, VK_IMAGE_ASPECT_COLOR_BIT, 1
                 );
             }
         }
-
-        void CreateFrameBuffers(std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent)
+        void CreateSamplers(std::vector<VkSampler>& samplers, int numSamplers)
+        {
+            samplers.resize(numSamplers);
+            for (int i = 0; i < numSamplers; i++)
+            {
+                samplers[i] = ICreateSampler(0.0f);
+            }
+        }
+        void CreateFrameBuffers(std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool attachOnlyView = false)
         {
             framebuffers.resize(imageViews.size());
-
             for (size_t i = 0; i < imageViews.size(); i++)
             {
                 std::vector<VkImageView> attachments;
 
-                if (RendererSettings::msaaSamples != VK_SAMPLE_COUNT_1_BIT)
+                if (attachOnlyView)
                 {
                     attachments =
                     {
-                        g_colorImage.m_imageView,
-                        g_depthImage.m_imageView,
                         imageViews[i]
                     };
                 }
                 else
                 {
-                    attachments =
+                    if (RendererSettings::msaaSamples != VK_SAMPLE_COUNT_1_BIT)
                     {
-                        imageViews[i],
-                        g_depthImage.m_imageView
-                    };
-                }
+                        attachments =
+                        {
+                            g_colorImage.m_imageView,
+                            g_depthImage.m_imageView,
+                            imageViews[i]
+                        };
+                    }
+                    else
+                    {
+                        attachments =
+                        {
+                            imageViews[i],
+                            g_depthImage.m_imageView
+                        };
+                    }
+                }        
 
                 VkFramebufferCreateInfo framebufferInfo{};
                 framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -136,24 +164,13 @@ namespace Eklipse
                 HANDLE_VK_RESULT(res, "CREATE FRAMEBUFFER");
             }
         }
-        void DisposeSwapchain()
-        {
-            for (auto framebuffer : g_swapChainFramebuffers)
-            {
-                vkDestroyFramebuffer(g_logicalDevice, framebuffer, nullptr);
-            }
-            for (auto imageView : g_swapChainImageViews)
-            {
-                vkDestroyImageView(g_logicalDevice, imageView, nullptr);
-            }
-            vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
-        }
 
-        void DestroyFrameBuffers(std::vector<VkFramebuffer>& buffers)
+        void DestroyImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations)
         {
-            for (auto framebuffer : buffers)
+            int i = 0;
+            for (auto image : images)
             {
-                vkDestroyFramebuffer(g_logicalDevice, framebuffer, nullptr);
+                vmaDestroyImage(g_allocator, image, allocations[i++]);
             }
         }
         void DestroyImageViews(std::vector<VkImageView>& imageViews)
@@ -163,5 +180,19 @@ namespace Eklipse
                 vkDestroyImageView(g_logicalDevice, imageView, nullptr);
             }
         }
-	}
+        void DestroySamplers(std::vector<VkSampler>& samplers)
+        {
+            for (auto sampler : samplers)
+            {
+                vkDestroySampler(g_logicalDevice, sampler, nullptr);
+            }
+        }
+        void DestroyFrameBuffers(std::vector<VkFramebuffer>& buffers)
+        {
+            for (auto framebuffer : buffers)
+            {
+                vkDestroyFramebuffer(g_logicalDevice, framebuffer, nullptr);
+            }
+        }
+    }
 }

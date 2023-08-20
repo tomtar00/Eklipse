@@ -15,5 +15,7 @@ namespace Eklipse
 			VkDescriptorSetLayout* descSetLayout);
 
 		VkRenderPass CreateRenderPass();
+		VkRenderPass CreateViewportRenderPass();
+		VkRenderPass CreateImGuiRenderPass();
 	}
 }

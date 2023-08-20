@@ -85,28 +85,28 @@ namespace Eklipse
 			{
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
 				{
-					EK_CORE_TRACE("Valition layer: {0}", pCallbackData->pMessage);
+					EK_CORE_TRACE("{0}", pCallbackData->pMessage);
 					break;
 				}
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
 				{
-					EK_CORE_INFO("Valition layer: {0}", pCallbackData->pMessage);
+					EK_CORE_INFO("{0}", pCallbackData->pMessage);
 					break;
 				}
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
 				{
-					EK_CORE_WARN("Valition layer: {0}", pCallbackData->pMessage);
+					EK_CORE_WARN("{0}", pCallbackData->pMessage);
 					break;
 				}
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 				{
-					EK_CORE_ERROR("Valition layer: {0}", pCallbackData->pMessage);
+					EK_CORE_ERROR("{0}", pCallbackData->pMessage);
 					break;
 				}
 			}
 			return VK_FALSE;
 		}
-		void DisposeValidationLayers()
+		void DestroyValidationLayers()
 		{
 			if (!g_validationLayersEnabled) return;
 
