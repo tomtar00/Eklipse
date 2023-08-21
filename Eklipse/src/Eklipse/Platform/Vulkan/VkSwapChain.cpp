@@ -87,14 +87,14 @@ namespace Eklipse
 
         void CreateImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
             VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
-            VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+            VkImageUsageFlags usage)
         {
             allocations.resize(numImages);
             images.resize(numImages);
             for (int i = 0; i < numImages; i++)
             {
                 images[i] = ICreateImage(allocations[i], width, height, mipLevels, numSamples,
-                    format, tiling, usage, properties);
+                    format, tiling, usage);
             }
         }
         void CreateImageViews(std::vector<VkImageView>& imageViews, std::vector<VkImage>& images, VkFormat format)

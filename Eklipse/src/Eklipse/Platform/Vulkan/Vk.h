@@ -50,6 +50,7 @@ namespace Eklipse
 		//
 
 		// viewport
+		extern uint32_t g_viewportImageIndex;
 		extern VkExtent2D g_viewportExtent;
 		extern VkRenderPass g_viewportRenderPass;
 		extern VkPipeline g_viewportPipeline;

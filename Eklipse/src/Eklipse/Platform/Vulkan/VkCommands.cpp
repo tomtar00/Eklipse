@@ -147,6 +147,8 @@ namespace Eklipse
 
 			vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 			vkQueueWaitIdle(g_graphicsQueue);
+
+			vkFreeCommandBuffers(g_logicalDevice, g_commandPool, 1, &commandBuffer);
 		}
 	}
 }

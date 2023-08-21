@@ -38,6 +38,7 @@ namespace Eklipse
 
 		uint32_t			g_currentFrame;
 		uint32_t			g_imageIndex;
+		uint32_t			g_viewportImageIndex;
 
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
@@ -244,13 +245,13 @@ namespace Eklipse
 			VkCommandBuffer drawCommandBuffer = g_drawCommandBuffers[g_currentFrame];
 			BeginRenderPass(g_renderPass, drawCommandBuffer, g_swapChainFramebuffers[g_imageIndex], g_swapChainExtent);
 			{
-				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);				
+				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
 			}
-			EndRenderPass(drawCommandBuffer);	
+			EndRenderPass(drawCommandBuffer);
 			*/
 
 			VkCommandBuffer viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
-			BeginRenderPass(g_viewportRenderPass, viewportCommandBuffer, g_viewportFrameBuffers[g_imageIndex], g_viewportExtent);
+			BeginRenderPass(g_viewportRenderPass, viewportCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
 			{
 				vkCmdBindPipeline(viewportCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
 
@@ -379,7 +380,7 @@ namespace Eklipse
 			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 
 			g_depthImage.Dispose();
-			g_colorImage.Dispose();
+			g_colorImage.Dispose();	
 
 			int width, height;
 			Application::Get().GetWindow()->GetFramebufferSize(width, height);
@@ -391,6 +392,8 @@ namespace Eklipse
 
 			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
+
+			Application::Get().m_guiLayer->RecreateViewport(512, 512);
 		}
 		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
 		{

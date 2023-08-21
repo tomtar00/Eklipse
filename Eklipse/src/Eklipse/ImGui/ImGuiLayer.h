@@ -47,7 +47,8 @@ namespace Eklipse
 		virtual void NewFrame() = 0;
 		virtual void Draw(void* data) = 0;
 
-		virtual void GetImage(float width, float height) = 0;
+		virtual void DrawViewport(float width, float height) = 0;
+		virtual void RecreateViewport(float width, float height) = 0;
 
 		void AddPanel(ImGuiPanel& panel);
 		GuiLayerConfigInfo GetConfig();

@@ -21,7 +21,7 @@ namespace Eklipse
 		std::vector<VkCommandBuffer>	g_imguiCommandBuffers{};
 		std::vector<VkFramebuffer>		g_imguiFrameBuffers{};
 
-		VkExtent2D						g_viewportExtent;
+		VkExtent2D						g_viewportExtent			= { 512, 512 };
 		VkRenderPass					g_viewportRenderPass		= VK_NULL_HANDLE;
 		VkPipeline						g_viewportPipeline			= VK_NULL_HANDLE;
 		VkPipelineLayout				g_viewportPipelineLayout	= VK_NULL_HANDLE;
@@ -39,8 +39,6 @@ namespace Eklipse
 		{
 			if (s_initialized) return;
 				s_initialized = true;
-
-			g_viewportExtent = { 512, 512 }; // TODO: replace with some actual values
 
 			m_imguiPool = CreateDescriptorPool({
 				{ VK_DESCRIPTOR_TYPE_SAMPLER,					1000 },
@@ -134,18 +132,23 @@ namespace Eklipse
 			ImGui::Render();
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), (VkCommandBuffer)data);
 		}
-		void VkImGuiLayer::GetImage(float width, float height)
+		void VkImGuiLayer::DrawViewport(float width, float height)
 		{
 			if (width != g_viewportExtent.width || height != g_viewportExtent.height)
 			{
-				vkDeviceWaitIdle(g_logicalDevice);
-
-				DestroyViewportImages();
-				g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-				SetupViewportImages();
+				RecreateViewport(width, height);
 			}
 
-			ImGui::Image(m_imageDescrSets[g_imageIndex], ImVec2{width, height});
+			g_viewportImageIndex = (g_viewportImageIndex + 1) % g_swapChainImageCount;
+			ImGui::Image(m_imageDescrSets[g_viewportImageIndex], ImVec2{width, height});
+		}
+		void VkImGuiLayer::RecreateViewport(float width, float height)
+		{
+			vkDeviceWaitIdle(g_logicalDevice);
+
+			DestroyViewportImages();
+			g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+			SetupViewportImages();
 		}
 		void VkImGuiLayer::SetupViewportImages()
 		{
@@ -156,11 +159,10 @@ namespace Eklipse
 			{
 				g_viewportImages[i].CreateImage(g_viewportExtent.width, g_viewportExtent.height,
 					1, RendererSettings::msaaSamples, g_swapChainImageFormat, VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-				);
-				//g_viewportImages[i].TransitionImageLayout(g_swapChainImageFormat, VK_IMAGE_LAYOUT_UNDEFINED,
-				//	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+
+				g_viewportImages[i].TransitionImageLayout(g_swapChainImageFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
 
 				g_viewportImages[i].CreateImageView(g_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 				g_viewportImages[i].CreateSampler(1);

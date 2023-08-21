@@ -18,7 +18,8 @@ namespace Eklipse
 			virtual void NewFrame() override;
 			virtual void Draw(void* data) override;
 
-			virtual void GetImage(float width, float height) override;
+			virtual void DrawViewport(float width, float height) override;
+			virtual void RecreateViewport(float width, float height) override;
 
 		private:
 			void SetupViewportImages();
