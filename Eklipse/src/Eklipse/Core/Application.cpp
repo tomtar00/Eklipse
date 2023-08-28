@@ -8,20 +8,21 @@
 #include <Eklipse/Utils/Stats.h>
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
+#include <Eklipse/Platform/OpenGL/GlImGuiLayer.h>
 
 namespace Eklipse
 {
 	ApplicationInfo::ApplicationInfo(const ApplicationInfo& info)
 		: appName(info.appName), windowWidth(info.windowWidth),
-		windowHeight(info.windowHeight)	{}
+		windowHeight(info.windowHeight) {}
 
-	Application::Application() : 
+	Application::Application() :
 		m_running(true), m_minimized(false)
 	{
 		Init();
 	}
-	Application::Application(ApplicationInfo& info) : 
-		m_running(true) , m_minimized(false),
+	Application::Application(ApplicationInfo& info) :
+		m_running(true), m_minimized(false),
 		m_appInfo(info)
 	{
 		Init();
@@ -49,17 +50,17 @@ namespace Eklipse
 
 	void Application::SetAPI(ApiType api)
 	{
-		m_renderer.SetAPI(api, 
-		[this]()
-		{
-			if (m_guiLayer != nullptr)
-				m_guiLayer->Shutdown();
-		},
-		[this]()
-		{
-			if (m_guiLayer != nullptr)
-				m_guiLayer->Init();
-		});
+		Renderer::SetAPI(api,
+			[this]()
+			{
+				if (m_guiLayer != nullptr)
+					m_guiLayer->Shutdown();
+			},
+			[this]()
+			{
+				if (m_guiLayer != nullptr)
+					m_guiLayer->Init();
+			});
 	}
 
 	void Application::Init()
@@ -74,7 +75,9 @@ namespace Eklipse
 
 		m_guiLayer = nullptr;
 		IMGUI_CHECKVERSION();
-		SetAPI(ApiType::Vulkan);
+
+		SetAPI(ApiType::OpenGL);
+		Renderer::Init();
 	}
 
 	void Application::OnEventReceived(Event& event)
@@ -98,10 +101,10 @@ namespace Eklipse
 	{
 		m_running = false;
 	}
-
 	void Application::OnWindowResized(WindowResizeEvent& event)
 	{
-		
+		m_appInfo.windowWidth = event.GetWidth();
+		m_appInfo.windowHeight = event.GetHeight();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -113,20 +116,12 @@ namespace Eklipse
 			return;
 		}
 
-		m_layerStack.PushLayer(layer);
+		Ref<Layer> layerRef(layer);
+		m_layerStack.PushLayer(layerRef);
 	}
 	void Application::SetGuiLayer(GuiLayerConfigInfo configInfo)
 	{
-		delete m_guiLayer;
-		switch (m_renderer.GetAPI())
-		{
-			case ApiType::Vulkan:
-			{
-				m_guiLayer = new Vulkan::VkImGuiLayer(m_window, configInfo);
-				break;
-			}
-		}
-		EK_ASSERT(m_guiLayer, "GUI API {0} not implemented!", (int)m_renderer.GetAPI());
+		m_guiLayer = ImGuiLayer::Create(m_window, configInfo);
 		m_layerStack.PushLayer(m_guiLayer);
 		m_guiLayer->Init();
 	}
@@ -135,15 +130,15 @@ namespace Eklipse
 	{
 		EK_CORE_INFO("Running engine...");
 
-//#ifndef EK_EDITOR
-//		bool enable = true;
-//		GuiLayerConfigInfo debugLayerCreateInfo{};
-//		debugLayerCreateInfo.enabled = &enable;
-//		debugLayerCreateInfo.menuBarEnabled = false;
-//		debugLayerCreateInfo.dockingEnabled = false;
-//		ImGuiLayer::s_ctx = ImGui::CreateContext();
-//		SetGuiLayer(debugLayerCreateInfo);
-//#endif
+		//#ifndef EK_EDITOR
+		//		bool enable = true;
+		//		GuiLayerConfigInfo debugLayerCreateInfo{};
+		//		debugLayerCreateInfo.enabled = &enable;
+		//		debugLayerCreateInfo.menuBarEnabled = false;
+		//		debugLayerCreateInfo.dockingEnabled = false;
+		//		ImGuiLayer::s_ctx = ImGui::CreateContext();
+		//		SetGuiLayer(debugLayerCreateInfo);
+		//#endif
 
 #ifdef EK_INCLUDE_DEBUG_LAYER
 		m_guiLayer->AddPanel(m_debugPanel);
@@ -155,6 +150,8 @@ namespace Eklipse
 			m_timer.Record();
 			dt = m_timer.DeltaTime();
 
+			Stats::Get().Update(dt);
+
 			m_window->Update(dt);
 
 			for (auto& layer : m_layerStack)
@@ -162,13 +159,10 @@ namespace Eklipse
 				layer->Update(dt);
 			}
 
-			m_renderer.Update(dt);
-
-			Stats::Get().Update(dt);
+			Renderer::Update(dt);
 		}
 
-		m_renderer.PostMainLoop();
-
-		m_guiLayer->Shutdown();
+		Renderer::Shutdown();
+		m_layerStack.Shutdown();
 	}
 }

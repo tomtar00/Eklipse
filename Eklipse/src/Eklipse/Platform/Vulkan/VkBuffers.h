@@ -1,5 +1,5 @@
 #pragma once
-#include "VkBuffers.h"
+#include "VKBuffers.h"
 
 #include <vulkan/vulkan.h>
 #include <Eklipse/Renderer/Buffers.h>
@@ -14,46 +14,55 @@ namespace Eklipse
 			VkBuffer& buffer, VmaAllocation& allocation, VmaAllocationCreateFlags vmaFlags);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-		class Buffer : public Eklipse::Buffer
+		class VKBuffer
 		{
 		public:
-			virtual void Dispose() override;
-
 			VkBuffer m_buffer{};
 			VmaAllocation m_allocation{};
 		};
 
-		class VertexBuffer : public Buffer
+		class VKVertexBuffer : public Eklipse::VertexBuffer, public VKBuffer
 		{
 		public:
-			void Setup(const void* data, uint64_t size) override;
+			VKVertexBuffer(std::vector<Vertex> vertices);
+			virtual void Bind() const override;
+			virtual void Unbind() const override;
+			virtual void Dispose() const override;
 		};
 
-		class IndexBuffer : public Buffer
+		class VKIndexBuffer : public Eklipse::IndexBuffer, public VKBuffer
 		{
 		public:
-			void Setup(const void* data, uint64_t size) override;
+			VKIndexBuffer(std::vector<uint32_t> indices);
+			virtual void Bind() const override;
+			virtual void Unbind() const override;
+			virtual void Dispose() const override;
+			virtual uint32_t GetCount() const override;
 		};
 
-		class UniformBuffer : public Buffer
+		class VKUniformBuffer : public Eklipse::UniformBuffer, public VKBuffer
 		{
 		public:
-			void Setup(size_t size);
-			void Dispose() override;
-			void UpdateData(const void* data, size_t size);
+			VKUniformBuffer(uint32_t size, uint32_t binding);
+
+			virtual void Dispose() const override;
+			virtual void SetData(const void* data, uint32_t size, uint32_t offset) override;
+			virtual void* GetBuffer() const override;
 		};
 
-		class StagingBuffer : public Buffer
+		class VKStagingBuffer : public VKBuffer
 		{
 		public:
 			void Setup(const void* data, uint64_t size);
+			void Dispose();
 			void* m_data;
 		};	
 
-		class StorageBuffer : public Buffer
+		class VKStorageBuffer : public VKBuffer
 		{
 		public:
-			void Setup(StagingBuffer& stagingBuffer, VkDeviceSize bufferSize);
+			void Setup(VKStagingBuffer& stagingBuffer, VkDeviceSize bufferSize);
+			void Dispose();
 		};
 	}
 }

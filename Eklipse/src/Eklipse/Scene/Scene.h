@@ -1,7 +1,7 @@
 #pragma once
-#include "Model.h"
 #include "Camera.h"
 #include <vector>
+#include "Entity.h"
 
 namespace Eklipse
 {
@@ -12,6 +12,6 @@ namespace Eklipse
 		void Dispose();
 
 		Camera m_camera;
-		std::vector<Model> m_geometry;
+		std::vector<Entity> m_entities;
 	};
 }

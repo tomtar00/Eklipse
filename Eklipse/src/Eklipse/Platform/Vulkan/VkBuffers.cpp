@@ -1,10 +1,10 @@
 #include "precompiled.h"
-#include "VkBuffers.h"
+#include "VKBuffers.h"
 #include "VulkanAPI.h"
-#include "VkUtils.h"
-#include "VkCommands.h"
+#include "VKUtils.h"
+#include "VKCommands.h"
 
-#include "Vk.h"
+#include "VK.h"
 
 #include <vulkan/vulkan.h>
 
@@ -40,53 +40,76 @@ namespace Eklipse
 		}
 
 		/////////////////////////////////////////////////
-		// BUFFER ///////////////////////////////////////
-		/////////////////////////////////////////////////
-
-		void Buffer::Dispose()
-		{
-			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
-		}
-
-		/////////////////////////////////////////////////
 		// VERTEX BUFFER ////////////////////////////////
 		/////////////////////////////////////////////////
 
-		void VertexBuffer::Setup(const void* data, uint64_t size)
+		VKVertexBuffer::VKVertexBuffer(std::vector<Vertex> vertices)
 		{
+			size_t size = sizeof(vertices[0]) * vertices.size();
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
 
-			StagingBuffer stagingBuffer;
-			stagingBuffer.Setup(data, size);
+			VKStagingBuffer stagingBuffer;
+			stagingBuffer.Setup(vertices.data(), size);
 
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
 
 			stagingBuffer.Dispose();
+		}
+		void VKVertexBuffer::Bind() const
+		{
+			VkDeviceSize offsets = { 0 };
+			vkCmdBindVertexBuffers(g_currentCommandBuffer, 0, 1, &m_buffer, &offsets);
+		}
+		void VKVertexBuffer::Unbind() const
+		{
+			vmaUnmapMemory(g_allocator, m_allocation);
+		}
+		void VKVertexBuffer::Dispose() const
+		{
+			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
 
 		/////////////////////////////////////////////////
 		// INDEX BUFFER /////////////////////////////////
 		/////////////////////////////////////////////////
 
-		void IndexBuffer::Setup(const void* data, uint64_t size)
+		VKIndexBuffer::VKIndexBuffer(std::vector<uint32_t> indices)
 		{
+			m_count = indices.size();
+			size_t size = sizeof(indices[0]) * m_count;
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
 
-			StagingBuffer stagingBuffer;
-			stagingBuffer.Setup(data, size);
+			VKStagingBuffer stagingBuffer;
+			stagingBuffer.Setup(indices.data(), size);
 
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
 
 			stagingBuffer.Dispose();
+		}
+		void VKIndexBuffer::Bind() const
+		{
+			vkCmdBindIndexBuffer(g_currentCommandBuffer, m_buffer, 0, VK_INDEX_TYPE_UINT32);
+		}
+		void VKIndexBuffer::Unbind() const
+		{
+			vmaUnmapMemory(g_allocator, m_allocation);
+		}
+		void VKIndexBuffer::Dispose() const
+		{
+			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
+		}
+		uint32_t VKIndexBuffer::GetCount() const
+		{
+			return m_count;
 		}
 
 		/////////////////////////////////////////////////
 		// UNIFORM BUFFER ///////////////////////////////
 		/////////////////////////////////////////////////
 
-		void UniformBuffer::Setup(size_t size)
+		VKUniformBuffer::VKUniformBuffer(uint32_t size, uint32_t binding)
 		{
 			CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -99,23 +122,27 @@ namespace Eklipse
 			VkResult res = vmaMapMemory(g_allocator, m_allocation, &allocInfo.pMappedData);
 			HANDLE_VK_RESULT(res, "MAP UNIFORM DATA");
 		}
-		void UniformBuffer::Dispose()
+		void VKUniformBuffer::Dispose() const
 		{
 			vmaUnmapMemory(g_allocator, m_allocation);
-			Buffer::Dispose();
+			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
-		void UniformBuffer::UpdateData(const void* data, size_t size)
+		void VKUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset = 0)
 		{
 			VmaAllocationInfo allocInfo;
 			vmaGetAllocationInfo(g_allocator, m_allocation, &allocInfo);
 			memcpy(allocInfo.pMappedData, data, size);
+		}
+		void* VKUniformBuffer::GetBuffer() const
+		{
+			return m_buffer;
 		}
 
 		/////////////////////////////////////////////////
 		// STAGING BUFFER ///////////////////////////////
 		/////////////////////////////////////////////////
 
-		void StagingBuffer::Setup(const void* data, uint64_t size)
+		void VKStagingBuffer::Setup(const void* data, uint64_t size)
 		{
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -126,18 +153,26 @@ namespace Eklipse
 			memcpy(m_data, data, (size_t)size);
 			vmaUnmapMemory(g_allocator, m_allocation);
 		}
+		void VKStagingBuffer::Dispose()
+		{
+			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
+		}
 
 		/////////////////////////////////////////////////
 		// SHADER STORAGE BUFFER ////////////////////////
 		/////////////////////////////////////////////////
 
-		void StorageBuffer::Setup(StagingBuffer& stagingBuffer, VkDeviceSize bufferSize)
+		void VKStorageBuffer::Setup(VKStagingBuffer& stagingBuffer, VkDeviceSize bufferSize)
 		{
 			CreateBuffer(bufferSize,
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
 
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, bufferSize);
+		}
+		void VKStorageBuffer::Dispose()
+		{
+			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
 	}
 }

@@ -1,9 +1,9 @@
 #include "precompiled.h"
-#include "Vk.h"
+#include "VK.h"
 
-#include "VkPipeline.h"
-#include "VkUtils.h"
-#include "VkDescriptor.h"
+#include "VKPipeline.h"
+#include "VKUtils.h"
+#include "VKDescriptor.h"
 
 #include <Eklipse/Utils/File.h>
 #include <Eklipse/Renderer/Settings.h>
@@ -12,9 +12,9 @@ namespace Eklipse
 {
     namespace Vulkan
     {
-        VkRenderPass        g_renderPass = VK_NULL_HANDLE;
-        VkPipeline          g_graphicsPipeline = VK_NULL_HANDLE;
-        VkPipelineLayout    g_graphicsPipelineLayout = VK_NULL_HANDLE;
+        VkRenderPass        g_renderPass                = VK_NULL_HANDLE;
+        VkPipeline          g_graphicsPipeline          = VK_NULL_HANDLE;
+        VkPipelineLayout    g_graphicsPipelineLayout    = VK_NULL_HANDLE;
         VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
         VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
         VkPipeline          g_computePipeline           = VK_NULL_HANDLE;

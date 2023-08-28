@@ -8,15 +8,15 @@ namespace Eklipse
 	{
 	public:
 		LayerStack() = default;
-		~LayerStack();
 
-		void PushLayer(Layer* layer);
-		void PopLayer(Layer* layer);
+		void PushLayer(Ref<Layer> layer);
+		void PopLayer(Ref<Layer> layer);
+		void Shutdown();
 
-		std::vector<Layer*>::iterator begin() { return m_layers.begin(); }
-		std::vector<Layer*>::iterator end() { return m_layers.end(); }
+		std::vector<Ref<Layer>>::iterator begin() { return m_layers.begin(); }
+		std::vector<Ref<Layer>>::iterator end() { return m_layers.end(); }
+
 	private:
-		std::vector<Layer*> m_layers;
+		std::vector<Ref<Layer>> m_layers;
 	};
-
 }

@@ -4,28 +4,31 @@
 
 namespace Eklipse 
 {
-	LayerStack::~LayerStack()
+	bool operator==(const Ref<Layer>& lhs, const Ref<Layer>& rhs)
 	{
-		for (Layer* layer : m_layers)
-		{
-			layer->OnDetach();
-			delete layer;
-		}
+		return lhs == rhs;
 	}
 
-	void LayerStack::PushLayer(Layer* layer)
+	void LayerStack::PushLayer(Ref<Layer> layer)
 	{
 		layer->OnAttach();
 		m_layers.emplace_back(layer);
 	}
 
-	void LayerStack::PopLayer(Layer* layer)
+	void LayerStack::PopLayer(Ref<Layer> layer)
 	{
 		auto it = std::find(m_layers.begin(), m_layers.end(), layer);
 		if (it != m_layers.end())
 		{
 			layer->OnDetach();
 			m_layers.erase(it);
+		}
+	}
+	void LayerStack::Shutdown()
+	{
+		for (auto& layer : *this)
+		{
+			layer->OnDetach();
 		}
 	}
 }

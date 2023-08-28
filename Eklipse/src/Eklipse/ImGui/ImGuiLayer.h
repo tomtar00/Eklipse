@@ -35,7 +35,7 @@ namespace Eklipse
 	public:
 		ImGuiLayer() = delete;
 		ImGuiLayer(Window* window, GuiLayerConfigInfo configInfo);
-		~ImGuiLayer() {}
+		virtual ~ImGuiLayer() {}
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -54,6 +54,8 @@ namespace Eklipse
 		GuiLayerConfigInfo GetConfig();
 		void SetConfig(GuiLayerConfigInfo configInfo);
 	
+		static Ref<ImGuiLayer> Create(Window* window, GuiLayerConfigInfo configInfo);
+
 		inline static ImGuiContext* s_ctx = nullptr;
 
 	protected:		

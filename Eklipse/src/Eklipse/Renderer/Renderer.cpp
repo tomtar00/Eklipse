@@ -1,51 +1,44 @@
 #include "precompiled.h"
 #include "Renderer.h"
 
+#include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
-#include <Eklipse/Core/Application.h>
+#include <Eklipse/Platform/OpenGL/OpenGLAPI.h>
 
 namespace Eklipse
 {
-	Renderer::Renderer() : m_graphicsAPI(nullptr), m_scene(nullptr) 
-	{
-		s_instance = this;
+	ApiType				Renderer::s_apiType;
+	Scene*				Renderer::s_scene;
+	ShaderLibrary		Renderer::s_shaderLibrary;
+	Ref<GraphicsAPI>	Renderer::s_graphicsAPI;
 
-		// TODO: Pick default graphics settings
-		// RendererSettings::msaaSamples = GetMaxUsableSampleCount();
-	}
-	Renderer::~Renderer()
+	void Renderer::Init()
 	{
-		delete m_graphicsAPI;
+		s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
 	}
-
-	Renderer& Renderer::Get()
-	{
-		return *s_instance;
-	}
-
 	void Renderer::Update(float deltaTime)
 	{
-		m_scene->m_camera.OnUpdate(m_graphicsAPI->GetAspectRatio());
-
-		for (auto& model : m_scene->m_geometry)
+		s_scene->m_camera.UpdateViewProjectionMatrix(s_graphicsAPI->GetAspectRatio());
+		for (auto& model : s_scene->m_entities)
 		{
-			model.OnUpdate(m_scene->m_camera.m_viewProj);
+			model.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
 
-		// TODO: split method for better abstraction
-		m_graphicsAPI->DrawFrame();
-		m_graphicsAPI->DrawGUI();
+		s_graphicsAPI->BeginFrame();
+		s_graphicsAPI->DrawFrame();
+		s_graphicsAPI->EndFrame();
 	}
 
-	void Renderer::PostMainLoop()
+	void Renderer::Shutdown()
 	{
-		m_graphicsAPI->OnPostLoop();
+		s_graphicsAPI->Shutdown();
+		s_shaderLibrary.Dispose();
 	}
 
 	ApiType Renderer::GetAPI()
 	{
-		return m_apiType;
+		return s_apiType;
 	}
 
 	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
@@ -56,51 +49,41 @@ namespace Eklipse
 			return;
 		}
 
-		if (m_graphicsAPI != nullptr)
+		if (s_graphicsAPI != nullptr)
 		{
-			if (apiType == m_apiType && m_graphicsAPI->IsInitialized())
+			if (apiType == s_apiType && s_graphicsAPI->IsInitialized())
 			{
 				EK_CORE_WARN("{0} API already set and initialized!", (int)apiType);
 				return;
 			}
 
 			// shutdown old api
-			if (m_graphicsAPI->IsInitialized())
+			if (s_graphicsAPI->IsInitialized())
 			{
 				shutdownFn();
 
-				m_graphicsAPI->Shutdown();
-				delete m_graphicsAPI;
+				s_graphicsAPI->Shutdown();
 
-				EK_ASSERT((m_graphicsAPI == nullptr),
+				EK_ASSERT((s_graphicsAPI == nullptr),
 					"When switching api, old api ({0}) was not deleted", (int)apiType);
 			}
-		}		
+		}
 
 		// init new api
-		switch (apiType)
-		{
-			case ApiType::Vulkan:
-			{
-				m_graphicsAPI = new Vulkan::VulkanAPI();
-				break;
-			}
-			default:
-			{
-				EK_ASSERT(false, "API {0} not implemented!", (int)apiType);
-				break;
-			}
-		}
-		
-		m_apiType = apiType;
+		s_apiType = apiType;
+		s_graphicsAPI = GraphicsAPI::Create();
 
-		m_scene = Application::Get().GetScene();
-		if (!m_graphicsAPI->IsInitialized())
+		s_scene = Application::Get().GetScene();
+		if (!s_graphicsAPI->IsInitialized())
 		{
-			m_graphicsAPI->Init(m_scene);
+			s_graphicsAPI->Init(s_scene);
 			initFn();
 		}
 		else
 			EK_ASSERT(false, "API {0} not initialized!", (int)apiType);
+	}
+	ShaderLibrary& Renderer::GetShaderLibrary()
+	{
+		return s_shaderLibrary;
 	}
 }

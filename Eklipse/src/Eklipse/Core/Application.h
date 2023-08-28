@@ -48,7 +48,7 @@ namespace Eklipse
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
 
-		ImGuiLayer* m_guiLayer;
+		Ref<ImGuiLayer> m_guiLayer;
 
 	private:
 		inline static Application* s_instance = nullptr;
@@ -61,7 +61,6 @@ namespace Eklipse
 		DebugPanel m_debugPanel;
 #endif
 
-		Renderer m_renderer;
 		Timer m_timer;
 		Scene m_scene;
 

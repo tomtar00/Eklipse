@@ -1,7 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "VkImage.h"
-#include "VkUtils.h"
+#include "VKImage.h"
+#include "VKUtils.h"
 
 #include <vk_mem_alloc.h>
 
@@ -67,6 +67,7 @@ namespace Eklipse
 		extern std::vector<VkDescriptorSet> g_computeDescriptorSets;
 
 		extern VkCommandPool g_commandPool;
+		extern VkCommandBuffer g_currentCommandBuffer;
 		extern std::vector<VkCommandBuffer> g_drawCommandBuffers;
 		extern std::vector<VkCommandBuffer> g_computeCommandBuffers;
 

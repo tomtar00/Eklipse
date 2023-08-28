@@ -2,16 +2,20 @@
 #include "ImGuiLayer.h"
 #include <imgui_internal.h>
 
+#include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
+#include <Eklipse/Platform/OpenGL/GLImGuiLayer.h>
+
 namespace Eklipse
 {
 	ImGuiLayer::ImGuiLayer(Window* window, GuiLayerConfigInfo configInfo)
-		: m_window(window), m_config(configInfo), 
+		: m_window(window), m_config(configInfo),
 		m_first_time(true) {};
 
 	void ImGuiLayer::OnAttach()
 	{
 		EK_ASSERT(s_ctx, "Set ImGui context (s_ctx) before pushing ImGui layer.")
-		ImGui::SetCurrentContext(s_ctx);
+			ImGui::SetCurrentContext(s_ctx);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (m_config.dockingEnabled)
@@ -73,7 +77,7 @@ namespace Eklipse
 				ImGuiID node_id = dockspace_id;
 				for (int i = 0; i < m_config.dockLayouts.size() - 1; i++)
 				{
-					m_config.dockLayouts[i].id = ImGui::DockBuilderSplitNode(node_id, 
+					m_config.dockLayouts[i].id = ImGui::DockBuilderSplitNode(node_id,
 						m_config.dockLayouts[i].dir, m_config.dockLayouts[i].ratio, nullptr, &out_id);
 					node_id = out_id;
 
@@ -104,5 +108,16 @@ namespace Eklipse
 	void ImGuiLayer::SetConfig(GuiLayerConfigInfo configInfo)
 	{
 		m_config = configInfo;
+	}
+	Ref<ImGuiLayer> ImGuiLayer::Create(Window* window, GuiLayerConfigInfo configInfo)
+	{
+		auto apiType = Renderer::GetAPI();
+		switch (apiType)
+		{
+			case ApiType::Vulkan: return CreateRef<Vulkan::VkImGuiLayer>(window, configInfo);
+			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiLayer>(window, configInfo);
+		}
+		EK_ASSERT(false, "API {0} not implemented for ImGui Layer creation", int(apiType));
+		return nullptr;
 	}
 }

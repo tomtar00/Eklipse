@@ -5,7 +5,7 @@
 
 namespace Eklipse
 {
-    void Camera::OnUpdate(float aspectRatio)
+    void Camera::UpdateViewProjectionMatrix(float aspectRatio)
     {
         glm::mat4 projection = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
         projection[1][1] *= -1;

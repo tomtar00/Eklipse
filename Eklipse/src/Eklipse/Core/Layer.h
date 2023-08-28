@@ -8,7 +8,7 @@ namespace Eklipse
 	{
 	public:
 		Layer() = default;
-		virtual ~Layer() {}
+		virtual ~Layer() { }
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}

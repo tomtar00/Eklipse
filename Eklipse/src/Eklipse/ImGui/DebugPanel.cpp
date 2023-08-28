@@ -42,23 +42,23 @@ namespace Eklipse
         ImGui::SliderFloat("cam_rotz", &camera.m_transform.rotation.z, 0.0f, 360.0f);
 
         int i = 0;
-        for (auto& model : scene->m_geometry)
+        for (auto& entity : scene->m_entities)
         {
             ImGui::Text("Model");
             std::stringstream title;
             title << "model-" << i;
 
-            ImGui::SliderFloat((title.str() + "posx").c_str(), &model.m_transform.position.x, -10.0f, 10.0f);
-            ImGui::SliderFloat((title.str() + "posy").c_str(), &model.m_transform.position.y, -10.0f, 10.0f);
-            ImGui::SliderFloat((title.str() + "posz").c_str(), &model.m_transform.position.z, -10.0f, 10.0f);
+            ImGui::SliderFloat((title.str() + "posx").c_str(), &entity.m_transform.position.x, -10.0f, 10.0f);
+            ImGui::SliderFloat((title.str() + "posy").c_str(), &entity.m_transform.position.y, -10.0f, 10.0f);
+            ImGui::SliderFloat((title.str() + "posz").c_str(), &entity.m_transform.position.z, -10.0f, 10.0f);
 
-            ImGui::SliderFloat((title.str() + "rotx").c_str(), &model.m_transform.rotation.x, 0.0f, 360.0f);
-            ImGui::SliderFloat((title.str() + "roty").c_str(), &model.m_transform.rotation.y, 0.0f, 360.0f);
-            ImGui::SliderFloat((title.str() + "rotz").c_str(), &model.m_transform.rotation.z, 0.0f, 360.0f);
+            ImGui::SliderFloat((title.str() + "rotx").c_str(), &entity.m_transform.rotation.x, 0.0f, 360.0f);
+            ImGui::SliderFloat((title.str() + "roty").c_str(), &entity.m_transform.rotation.y, 0.0f, 360.0f);
+            ImGui::SliderFloat((title.str() + "rotz").c_str(), &entity.m_transform.rotation.z, 0.0f, 360.0f);
 
-            ImGui::SliderFloat((title.str() + "scalex").c_str(), &model.m_transform.scale.x, 0.1f, 2.0f);
-            ImGui::SliderFloat((title.str() + "scaley").c_str(), &model.m_transform.scale.y, 0.1f, 2.0f);
-            ImGui::SliderFloat((title.str() + "scalez").c_str(), &model.m_transform.scale.z, 0.1f, 2.0f);
+            ImGui::SliderFloat((title.str() + "scalex").c_str(), &entity.m_transform.scale.x, 0.1f, 2.0f);
+            ImGui::SliderFloat((title.str() + "scaley").c_str(), &entity.m_transform.scale.y, 0.1f, 2.0f);
+            ImGui::SliderFloat((title.str() + "scalez").c_str(), &entity.m_transform.scale.z, 0.1f, 2.0f);
 
             ++i;
         }

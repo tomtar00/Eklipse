@@ -12,6 +12,7 @@ namespace Eklipse
 		{
 		public:
 			VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo);
+			virtual ~VkImGuiLayer() {}
 
 			virtual void Init() override;
 			virtual void Shutdown() override;

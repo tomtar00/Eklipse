@@ -1,33 +1,33 @@
 #pragma once
 #include "GraphicsAPI.h"
+#include "Shader.h"
 
 namespace Eklipse
 {
 	enum class ApiType
 	{
 		None,
-		Vulkan
+		Vulkan,
+		OpenGL
 	};
 
 	class Renderer
 	{
 	public:
-		Renderer();
-		~Renderer();
+		static void Init();
 
-		Renderer& Get();
+		static void Update(float deltaTime);
+		static void Shutdown();
 
-		void Update(float deltaTime);
-		void PostMainLoop();
+		static ApiType GetAPI();
+		static void SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn);
 
-		ApiType GetAPI();
-		void SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn);
+		static ShaderLibrary& GetShaderLibrary();
 
 	private:
-		inline static Renderer* s_instance = nullptr;
-
-		ApiType m_apiType;
-		Scene* m_scene;
-		GraphicsAPI* m_graphicsAPI = nullptr;
+		static ApiType s_apiType;
+		static Scene* s_scene;
+		static ShaderLibrary s_shaderLibrary;
+		static Ref<GraphicsAPI> s_graphicsAPI;
 	};
 }

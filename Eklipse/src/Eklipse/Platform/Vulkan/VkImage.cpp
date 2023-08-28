@@ -1,9 +1,9 @@
 #include "precompiled.h"
-#include "Vk.h"
-#include "VkImage.h"
-#include "VkUtils.h"
-#include "VkBuffers.h"
-#include "VkCommands.h"
+#include "VK.h"
+#include "VKImage.h"
+#include "VKUtils.h"
+#include "VKBuffers.h"
+#include "VKCommands.h"
 
 #include <stb_image.h>
 
@@ -111,7 +111,7 @@ namespace Eklipse
 		}
 		void Image::AllocateOnGPU(VkDeviceSize imageSize, uint32_t width, uint32_t height, uint32_t mipLevels, const void* data)
 		{
-			StagingBuffer stagingBuffer;
+			VKStagingBuffer stagingBuffer;
 			stagingBuffer.Setup(data, imageSize);
 
 			CreateImage(width, height, mipLevels,

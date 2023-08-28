@@ -6,7 +6,7 @@ namespace Eklipse
 	class Camera
 	{
 	public:
-		void OnUpdate(float aspectRatio);
+		void UpdateViewProjectionMatrix(float aspectRatio);
 
 		Transform m_transform;
 		glm::mat4 m_viewProj;

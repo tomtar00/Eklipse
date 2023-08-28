@@ -1,9 +1,9 @@
 #include "precompiled.h"
 #include "Vk.h"
 
-#include "VkSwapChain.h"
-#include "VkUtils.h"
-#include "VkImage.h"
+#include "VKSwapChain.h"
+#include "VKUtils.h"
+#include "VKImage.h"
 
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Renderer/Settings.h>

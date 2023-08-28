@@ -14,14 +14,16 @@ namespace Eklipse
 
 		for (int i = -1; i <= 1; i++)
 		{
-			Model model{};
-			model.Load("models/viking_room.obj", "textures/viking_room.png");
+			Entity entity{"Entity " + i};
+			Mesh mesh{"models/viking_room.obj", "textures/viking_room.png" };
+			entity.m_mesh = mesh;
+			//entity.m_components.push_back(mesh);
 			
-			model.m_transform.position = { i, i, i };
-			model.m_transform.rotation = { i * 90, i * 180, i * 90 };
-			model.m_transform.scale = { 1, 1, 1 };
+			entity.m_transform.position = { i, i, i };
+			entity.m_transform.rotation = { i * 90, i * 180, i * 90 };
+			entity.m_transform.scale = { 1, 1, 1 };
 
-			m_geometry.push_back(model);
+			m_entities.push_back(entity);
 		}
 
 		EK_CORE_TRACE("Scene loaded");

@@ -1,7 +1,7 @@
 #include <precompiled.h>
-#include "Vk.h"
+#include "VK.h"
 
-#include "VkUtils.h"
+#include "VKUtils.h"
 
 namespace Eklipse
 {

@@ -11,9 +11,9 @@
 
 namespace Eklipse
 {
-	#pragma region GLFW callbacks
+#pragma region GLFW callbacks
 
-	#define PROPAGATE_EVENT(x) ((WindowData*)glfwGetWindowUserPointer(window))->EventCallback(x)
+#define PROPAGATE_EVENT(x) ((WindowData*)glfwGetWindowUserPointer(window))->EventCallback(x)
 
 	void GlfwErrorCallback(int error, const char* description)
 	{
@@ -59,24 +59,24 @@ namespace Eklipse
 	{
 		switch (action)
 		{
-			case GLFW_PRESS:
-			{
-				KeyPressedEvent event(key, 0);
-				PROPAGATE_EVENT(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				KeyReleasedEvent event(key);
-				PROPAGATE_EVENT(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(key, 1);
-				PROPAGATE_EVENT(event);
-				break;
-			}
+		case GLFW_PRESS:
+		{
+			KeyPressedEvent event(key, 0);
+			PROPAGATE_EVENT(event);
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			KeyReleasedEvent event(key);
+			PROPAGATE_EVENT(event);
+			break;
+		}
+		case GLFW_REPEAT:
+		{
+			KeyPressedEvent event(key, 1);
+			PROPAGATE_EVENT(event);
+			break;
+		}
 		}
 	}
 
@@ -84,18 +84,18 @@ namespace Eklipse
 	{
 		switch (action)
 		{
-			case GLFW_PRESS:
-			{
-				MouseButtonPressedEvent event(button);
-				PROPAGATE_EVENT(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				MouseButtonReleasedEvent event(button);
-				PROPAGATE_EVENT(event);
-				break;
-			}
+		case GLFW_PRESS:
+		{
+			MouseButtonPressedEvent event(button);
+			PROPAGATE_EVENT(event);
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			MouseButtonReleasedEvent event(button);
+			PROPAGATE_EVENT(event);
+			break;
+		}
 		}
 	}
 	void GlfwScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
@@ -108,7 +108,7 @@ namespace Eklipse
 		MouseMovedEvent event(xPos, yPos);
 		PROPAGATE_EVENT(event);
 	}
-	#pragma endregion
+#pragma endregion
 
 	Window* Window::Create(WindowData& data)
 	{
@@ -133,7 +133,7 @@ namespace Eklipse
 			int initialized = glfwInit();
 			EK_ASSERT(initialized, "Failed to intialize GLFW!");
 
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 
 			s_glfwInitialized = true;
 		}
@@ -173,4 +173,3 @@ namespace Eklipse
 		return m_window;
 	}
 }
-

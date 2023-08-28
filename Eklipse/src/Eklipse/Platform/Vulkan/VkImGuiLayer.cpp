@@ -6,30 +6,30 @@
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
-#include "Vk.h"
-#include "VkUtils.h"
-#include "VkCommands.h"
-#include "VkSwapChain.h"
-#include "VkPipeline.h"
-#include "VkDescriptor.h"
+#include "VK.h"
+#include "VKUtils.h"
+#include "VKCommands.h"
+#include "VKSwapChain.h"
+#include "VKPipeline.h"
+#include "VKDescriptor.h"
 
 namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VkRenderPass					g_imguiRenderPass			= VK_NULL_HANDLE;
+		VkRenderPass					g_imguiRenderPass = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer>	g_imguiCommandBuffers{};
 		std::vector<VkFramebuffer>		g_imguiFrameBuffers{};
 
-		VkExtent2D						g_viewportExtent			= { 512, 512 };
-		VkRenderPass					g_viewportRenderPass		= VK_NULL_HANDLE;
-		VkPipeline						g_viewportPipeline			= VK_NULL_HANDLE;
-		VkPipelineLayout				g_viewportPipelineLayout	= VK_NULL_HANDLE;
+		VkExtent2D						g_viewportExtent = { 512, 512 };
+		VkRenderPass					g_viewportRenderPass = VK_NULL_HANDLE;
+		VkPipeline						g_viewportPipeline = VK_NULL_HANDLE;
+		VkPipelineLayout				g_viewportPipelineLayout = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer>	g_viewportCommandBuffers{};
 		std::vector<Image>				g_viewportImages{};
 		std::vector<VkFramebuffer>		g_viewportFrameBuffers{};
 
-		VkImGuiLayer::VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) : 
+		VkImGuiLayer::VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) :
 			m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(window, configInfo)
 		{
 			m_glfwWindow = dynamic_cast<WindowsWindow*>(window)->GetGlfwWindow();
@@ -38,7 +38,7 @@ namespace Eklipse
 		void VkImGuiLayer::Init()
 		{
 			if (s_initialized) return;
-				s_initialized = true;
+			s_initialized = true;
 
 			m_imguiPool = CreateDescriptorPool({
 				{ VK_DESCRIPTOR_TYPE_SAMPLER,					1000 },
@@ -52,11 +52,11 @@ namespace Eklipse
 				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,	1000 },
 				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,	1000 },
 				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,			1000 }
-			}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+				}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
 			CreateCommandBuffers(g_imguiCommandBuffers, g_maxFramesInFlight, g_commandPool);
 			g_imguiRenderPass = CreateImGuiRenderPass();
-			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);	
+			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
 
 			CreateCommandBuffers(g_viewportCommandBuffers, g_maxFramesInFlight, g_commandPool);
 			g_viewportRenderPass = CreateViewportRenderPass();
@@ -140,7 +140,7 @@ namespace Eklipse
 			}
 
 			g_viewportImageIndex = (g_viewportImageIndex + 1) % g_swapChainImageCount;
-			ImGui::Image(m_imageDescrSets[g_viewportImageIndex], ImVec2{width, height});
+			ImGui::Image(m_imageDescrSets[g_viewportImageIndex], ImVec2{ width, height });
 		}
 		void VkImGuiLayer::RecreateViewport(float width, float height)
 		{
@@ -154,7 +154,7 @@ namespace Eklipse
 		{
 			std::vector<VkImageView> views;
 			views.resize(g_swapChainImageCount);
-			
+
 			for (int i = 0; i < g_swapChainImageCount; i++)
 			{
 				g_viewportImages[i].CreateImage(g_viewportExtent.width, g_viewportExtent.height,

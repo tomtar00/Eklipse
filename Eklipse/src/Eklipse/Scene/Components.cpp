@@ -1,5 +1,5 @@
 #include "precompiled.h"
-#include "Model.h"
+#include "Components.h"
 
 #include <glm/gtx/hash.hpp>
 
@@ -24,7 +24,20 @@ namespace std
 
 namespace Eklipse
 {
-	void Model::Load(const char* modelPath, const char* texturePath)
+    Mesh::Mesh(const char* modelPath, const char* texturePath)
+    {
+        Load(modelPath, texturePath);
+    }
+    void Mesh::Begin()
+    {
+    }
+    void Mesh::Update(float deltaTime)
+    {
+    }
+    void Mesh::End()
+    {
+    }
+    void Mesh::Load(const char* modelPath, const char* texturePath)
 	{
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
@@ -44,14 +57,14 @@ namespace Eklipse
             {
                 Vertex vertex;
 
-                vertex.pos = 
+                vertex.pos =
                 {
                     attrib.vertices[3 * index.vertex_index + 0],
                     attrib.vertices[3 * index.vertex_index + 1],
                     attrib.vertices[3 * index.vertex_index + 2]
                 };
 
-                vertex.texCoord = 
+                vertex.texCoord =
                 {
                     attrib.texcoords[2 * index.texcoord_index + 0],
                     1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
@@ -77,15 +90,4 @@ namespace Eklipse
             EK_CORE_INFO("Loaded texture from path {0}. Width: {1} Height: {2}", texturePath, m_textureData.width, m_textureData.height);
         }
 	}
-    void Model::OnUpdate(glm::mat4 viewProjMatrix)
-    {
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), m_transform.position);
-        model = glm::rotate(model, glm::radians(m_transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, m_transform.scale);
-
-        glm::mat4 mvp = viewProjMatrix * model;
-        m_ubo.mvp = mvp;
-    }
 }

@@ -1,6 +1,6 @@
 #include <precompiled.h>
-#include "Vk.h"
-#include "VkModel.h"
+#include "VK.h"
+#include "VKEntity.h"
 
 #include <vk_mem_alloc.h>
 
@@ -11,51 +11,38 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		ModelAdapter::ModelAdapter(Model& model) : m_model(model) 
+		VkEntityWrapper::VkEntityWrapper(Entity& entity) : m_entity(entity)
 		{
-			m_uniformBuffer.Setup(sizeof(model.m_ubo));
-
-			m_vertexBuffer.Setup(
-				model.m_vertices.data(),
-				sizeof(model.m_vertices[0]) * model.m_vertices.size()
-			);
-
-			m_indexBuffer.Setup(
-				model.m_indices.data(),
-				sizeof(model.m_indices[0]) * model.m_indices.size()
-			);
-
-			m_texture.Load(model.m_textureData);
+			m_vertexBuffer = VertexBuffer::Create(entity.m_mesh.m_vertices);
+			m_indexBuffer = IndexBuffer::Create(entity.m_mesh.m_indices);
+			m_uniformBuffer = UniformBuffer::Create(sizeof(entity.m_ubo), 0);
+			m_texture.Load(entity.m_mesh.m_textureData);
 
 			AllocateDescriptorSet();
 		}
-		void ModelAdapter::Dispose()
+		void VkEntityWrapper::Dispose()
 		{
-			m_uniformBuffer.Dispose();
-			m_vertexBuffer.Dispose();
-			m_indexBuffer.Dispose();
+			m_vertexBuffer->Dispose();
+			m_indexBuffer->Dispose();
+			m_uniformBuffer->Dispose();
 			m_texture.Dispose();
 		}
-		void ModelAdapter::Bind(VkCommandBuffer commandBuffer)
+		void VkEntityWrapper::Bind(VkCommandBuffer commandBuffer)
 		{
-			m_uniformBuffer.UpdateData(&m_model.m_ubo, sizeof(m_model.m_ubo));
+			m_vertexBuffer->Bind();
+			m_indexBuffer->Bind();
 
-			VkBuffer vertexBuffer = m_vertexBuffer.m_buffer;
-			VkDeviceSize offsets = { 0 };
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offsets);
-
-			VkBuffer indexBuffer = m_indexBuffer.m_buffer;
-			vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			m_uniformBuffer->SetData(&m_entity.m_ubo, sizeof(m_entity.m_ubo));
 
 			VkDescriptorSet descriptorSet = m_descriptorSet;
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 		}
-		void ModelAdapter::Draw(VkCommandBuffer commandBuffer)
+		void VkEntityWrapper::Draw(VkCommandBuffer commandBuffer)
 		{
-			uint32_t indexBufferSize = m_model.m_indices.size();
-			vkCmdDrawIndexed(commandBuffer, indexBufferSize, 1, 0, 0, 0);
+			uint32_t numIndices = m_indexBuffer->GetCount();
+			vkCmdDrawIndexed(commandBuffer, numIndices, 1, 0, 0, 0);
 		}
-		void ModelAdapter::AllocateDescriptorSet()
+		void VkEntityWrapper::AllocateDescriptorSet()
 		{
 			VkDescriptorSetAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -70,9 +57,9 @@ namespace Eklipse
 
 			// Uniform buffer
 			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = m_uniformBuffer.m_buffer;
+			bufferInfo.buffer = (VkBuffer)m_uniformBuffer->GetBuffer();
 			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(m_model.m_ubo);
+			bufferInfo.range = sizeof(m_entity.m_ubo);
 
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[0].dstSet = m_descriptorSet;
@@ -101,19 +88,19 @@ namespace Eklipse
 			vkUpdateDescriptorSets(g_logicalDevice, 2, descriptorWrites, 0, nullptr);
 		}
 
-		void ModelManager::Setup(Scene* scene)
+		void VkEntityManager::Setup(Scene* scene)
 		{
-			for (auto& model : scene->m_geometry)
+			for (auto& model : scene->m_entities)
 			{
-				ModelAdapter adapter{ model };
-				m_models.push_back(adapter);
+				VkEntityWrapper wrapper{ model };
+				m_wrappers.push_back(wrapper);
 			}
 		}
-		void ModelManager::Dispose()
+		void VkEntityManager::Dispose()
 		{
-			for (auto& adapter : m_models)
+			for (auto& wrapper : m_wrappers)
 			{
-				adapter.Dispose();
+				wrapper.Dispose();
 			}
 		}
 	}

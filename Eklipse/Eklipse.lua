@@ -24,6 +24,7 @@ project "Eklipse"
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
 		"%{Include.ImGui}",
+		"%{Include.Glad}",
 		"%{Include.stb_image}",
 		"%{Include.tiny_obj_loader}",
 		"%{Include.vk_mem_alloc}"
@@ -39,9 +40,11 @@ project "Eklipse"
 		"glfw3.lib",
 		"glfw3_mt.lib",
 		"glfw3dll.lib",
+
 		"vulkan-1",
 
-		"ImGui"
+		"ImGui",
+		"Glad"
 	}
 
 	filter "system:windows"

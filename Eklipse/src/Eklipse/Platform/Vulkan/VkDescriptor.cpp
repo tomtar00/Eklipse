@@ -1,9 +1,9 @@
 #include "precompiled.h"
-#include "VkDescriptor.h"
-
-#include "Vk.h"
-#include "VkUtils.h"
-#include "VkBuffers.h"
+#include "VKDescriptor.h"
+		   
+#include "VK.h"
+#include "VKUtils.h"
+#include "VKBuffers.h"
 
 #include <Eklipse/Renderer/Vertex.h>
 

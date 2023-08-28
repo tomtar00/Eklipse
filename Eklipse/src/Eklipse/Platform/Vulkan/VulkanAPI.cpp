@@ -1,24 +1,24 @@
 #include "precompiled.h"
-#include "Vk.h"
+#include "VK.h"
 #include "VulkanAPI.h"
 
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Renderer/Settings.h>
 
 #ifdef EK_PLATFORM_WINDOWS
-	#include <GLFW/glfw3.h>
-	#include <Eklipse/Platform/Windows/WindowsWindow.h>
+#include <GLFW/glfw3.h>
+#include <Eklipse/Platform/Windows/WindowsWindow.h>
 #endif
 
-#include "VkUtils.h"
-#include "VkValidationLayers.h"
-#include "VkDevice.h"
-#include "VkSwapChain.h"
-#include "VkCommands.h"
-#include "VkPipeline.h"
-#include "VkDescriptor.h"
-#include "VkBuffers.h"
-#include "VkImage.h"
+#include "VKUtils.h"
+#include "VKValidationLayers.h"
+#include "VKDevice.h"
+#include "VKSwapChain.h"
+#include "VKCommands.h"
+#include "VKPipeline.h"
+#include "VKDescriptor.h"
+#include "VKBuffers.h"
+#include "VKImage.h"
 
 namespace Eklipse
 {
@@ -43,14 +43,12 @@ namespace Eklipse
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
 
+		VkCommandBuffer		g_currentCommandBuffer	= VK_NULL_HANDLE;
+
 		VulkanAPI::VulkanAPI() : GraphicsAPI()
 		{
 			s_instance = this;
 			g_currentFrame = 0;
-		}
-		VulkanAPI::~VulkanAPI()
-		{
-			Shutdown();
 		}
 		VulkanAPI& VulkanAPI::Get()
 		{
@@ -62,7 +60,7 @@ namespace Eklipse
 			{
 				EK_CORE_WARN("VulkanAPI already initialized!");
 				return;
-			}		
+			}
 
 			// COMMON //////////////////////////////////////////
 
@@ -75,6 +73,10 @@ namespace Eklipse
 			CreateLogicalDevice();
 
 			VmaAllocatorCreateInfo allocatorCreateInfo = {};
+			VmaVulkanFunctions func = {};
+			func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+			func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+			allocatorCreateInfo.pVulkanFunctions = &func;
 			allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 			allocatorCreateInfo.physicalDevice = g_physicalDevice;
 			allocatorCreateInfo.device = g_logicalDevice;
@@ -93,7 +95,7 @@ namespace Eklipse
 			g_graphicsDescriptorSetLayout = CreateDescriptorSetLayout({
 				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
 				{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-			});
+				});
 
 			g_renderPass = CreateRenderPass();
 			g_graphicsPipeline = CreateGraphicsPipeline(
@@ -113,7 +115,7 @@ namespace Eklipse
 				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
 				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
-			}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+				}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
 			// PARTICLES ////////////////////////////////////////
 
@@ -134,18 +136,18 @@ namespace Eklipse
 			//
 			//g_computePipeline = CreateComputePipeline(
 			//	"shaders/particle-comp.spv", g_computePipelineLayout,
-		    //    &g_computeDescriptorSetLayout
+			//    &g_computeDescriptorSetLayout
 			//);
 
 			///////////////////////////////////////////////////
-
-			m_scene = scene;
-			m_modelManager.Setup(scene);
 
 			CreateSyncObjects();
 
 			EK_CORE_INFO("Vulkan initialized");
 			m_initialized = true;
+
+			m_scene = scene;
+			m_entityManager.Setup(scene);
 		}
 		void VulkanAPI::Shutdown()
 		{
@@ -155,7 +157,9 @@ namespace Eklipse
 				return;
 			}
 
-			m_modelManager.Dispose();
+			vkDeviceWaitIdle(g_logicalDevice);
+
+			m_entityManager.Dispose();
 
 			// GEOMETRY //////////////////////////////////////////
 
@@ -208,26 +212,11 @@ namespace Eklipse
 			vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
 			vkDestroyInstance(g_instance, nullptr);
 
-			EK_CORE_INFO("Shutdown vulkan");
+			EK_CORE_INFO("Shutdown Vulkan");
 			m_initialized = false;
 		}
-		void VulkanAPI::DrawFrame()
+		void VulkanAPI::BeginFrame()
 		{
-			// vkWaitForFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
-			// vkResetFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame]);
-			// {
-			// 	RecordComputeCommandBuffer();
-			// }
-			// VkSubmitInfo submitInfo{};
-			// submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			// submitInfo.commandBufferCount = 1;
-			// submitInfo.pCommandBuffers = &g_computeCommandBuffers[g_currentFrame];
-			// submitInfo.signalSemaphoreCount = 1;
-			// submitInfo.pSignalSemaphores = &m_computeFinishedSemaphores[g_currentFrame];
-			// 
-			// VkResult res = vkQueueSubmit(g_computeQueue, 1, &submitInfo, m_computeInFlightFences[g_currentFrame]);
-			// HANDLE_VK_RESULT(res, "COMPUTE QUEUE SUBMIT");
-
 			vkWaitForFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
 
 			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, &g_imageIndex);
@@ -240,38 +229,9 @@ namespace Eklipse
 			EK_ASSERT((result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR), "Failed to aquire swap chain image!");
 
 			vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
-
-			/*
-			VkCommandBuffer drawCommandBuffer = g_drawCommandBuffers[g_currentFrame];
-			BeginRenderPass(g_renderPass, drawCommandBuffer, g_swapChainFramebuffers[g_imageIndex], g_swapChainExtent);
-			{
-				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
-			}
-			EndRenderPass(drawCommandBuffer);
-			*/
-
-			VkCommandBuffer viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
-			BeginRenderPass(g_viewportRenderPass, viewportCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
-			{
-				vkCmdBindPipeline(viewportCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
-
-				for (auto& modelAdapter : m_modelManager.m_models)
-				{
-					modelAdapter.Bind(viewportCommandBuffer);
-					modelAdapter.Draw(viewportCommandBuffer);
-				}
-			}
-			EndRenderPass(viewportCommandBuffer);
-
-			VkCommandBuffer imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
-			BeginRenderPass(g_imguiRenderPass, imguiCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
-			{
-				vkCmdBindPipeline(imguiCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
-
-				Application::Get().m_guiLayer->Draw(imguiCommandBuffer);
-			}
-			EndRenderPass(imguiCommandBuffer);
-
+		}
+		void VulkanAPI::EndFrame()
+		{
 			std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
 			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
@@ -287,7 +247,7 @@ namespace Eklipse
 			submitInfo.signalSemaphoreCount = signalSemaphores.size();
 			submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-			result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_renderInFlightFences[g_currentFrame]);
+			VkResult result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_renderInFlightFences[g_currentFrame]);
 			HANDLE_VK_RESULT(result, "DRAW FRAME QUEUE SUBMIT");
 
 			VkPresentInfoKHR presentInfo{};
@@ -311,13 +271,55 @@ namespace Eklipse
 
 			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
 		}
-		void VulkanAPI::DrawGUI()
+		void VulkanAPI::DrawFrame()
 		{
+			// vkWaitForFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
+			// vkResetFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame]);
+			// {
+			// 	RecordComputeCommandBuffer();
+			// }
+			// VkSubmitInfo submitInfo{};
+			// submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			// submitInfo.commandBufferCount = 1;
+			// submitInfo.pCommandBuffers = &g_computeCommandBuffers[g_currentFrame];
+			// submitInfo.signalSemaphoreCount = 1;
+			// submitInfo.pSignalSemaphores = &m_computeFinishedSemaphores[g_currentFrame];
+			//
+			// VkResult res = vkQueueSubmit(g_computeQueue, 1, &submitInfo, m_computeInFlightFences[g_currentFrame]);
+			// HANDLE_VK_RESULT(res, "COMPUTE QUEUE SUBMIT");
 
-		}
-		void VulkanAPI::OnPostLoop()
-		{
-			vkDeviceWaitIdle(g_logicalDevice);
+			
+
+			/*
+			VkCommandBuffer drawCommandBuffer = g_drawCommandBuffers[g_currentFrame];
+			BeginRenderPass(g_renderPass, drawCommandBuffer, g_swapChainFramebuffers[g_imageIndex], g_swapChainExtent);
+			{
+				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
+			}
+			EndRenderPass(drawCommandBuffer);
+			*/
+
+			g_currentCommandBuffer = viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
+			BeginRenderPass(g_viewportRenderPass, viewportCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
+			{
+				vkCmdBindPipeline(viewportCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
+
+				for (auto& wrapper : m_entityManager.m_wrappers)
+				{
+					wrapper.Bind(viewportCommandBuffer);
+					wrapper.Draw(viewportCommandBuffer);
+				}
+			}
+			EndRenderPass(viewportCommandBuffer);
+
+			g_currentCommandBuffer = imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
+			BeginRenderPass(g_imguiRenderPass, imguiCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
+			{
+				vkCmdBindPipeline(imguiCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
+
+				Application::Get().m_guiLayer->Draw(imguiCommandBuffer);
+			}
+			EndRenderPass(imguiCommandBuffer);
 		}
 
 		float VulkanAPI::GetAspectRatio()
@@ -380,7 +382,7 @@ namespace Eklipse
 			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 
 			g_depthImage.Dispose();
-			g_colorImage.Dispose();	
+			g_colorImage.Dispose();
 
 			int width, height;
 			Application::Get().GetWindow()->GetFramebufferSize(width, height);
@@ -397,7 +399,7 @@ namespace Eklipse
 		}
 		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
 		{
-	#ifdef EK_PLATFORM_WINDOWS
+#ifdef EK_PLATFORM_WINDOWS
 			uint32_t glfwExtensionCount = 0;
 			const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -408,20 +410,20 @@ namespace Eklipse
 				extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 			}
 			return extensions;
-	#else
+#else
 			EK_ASSERT(false, "Platform not supported!");
-	#endif
+#endif
 		}
 		void VulkanAPI::CreateSurface()
 		{
-	#ifdef EK_PLATFORM_WINDOWS
+#ifdef EK_PLATFORM_WINDOWS
 			WindowsWindow* windowsWindow = static_cast<WindowsWindow*>(Application::Get().GetWindow());
 			GLFWwindow* window = windowsWindow->GetGlfwWindow();
 			bool success = glfwCreateWindowSurface(g_instance, window, nullptr, &g_surface) == VK_SUCCESS;
 			EK_ASSERT(success, "Failed to create window surface!");
-	#else
+#else
 			EK_ASSERT(false, "Platform not supported!");
-	#endif
+#endif
 		}
 		void VulkanAPI::CreateSyncObjects()
 		{
