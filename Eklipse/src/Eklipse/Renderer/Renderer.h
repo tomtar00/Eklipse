@@ -1,6 +1,7 @@
 #pragma once
 #include "GraphicsAPI.h"
 #include "Shader.h"
+#include "Framebuffer.h"
 
 namespace Eklipse
 {
@@ -29,5 +30,7 @@ namespace Eklipse
 		static Scene* s_scene;
 		static ShaderLibrary s_shaderLibrary;
 		static Ref<GraphicsAPI> s_graphicsAPI;
+
+		static Ref<Framebuffer> s_framebuffer;
 	};
 }

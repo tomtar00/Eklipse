@@ -12,6 +12,7 @@ namespace Eklipse
 	Scene*				Renderer::s_scene;
 	ShaderLibrary		Renderer::s_shaderLibrary;
 	Ref<GraphicsAPI>	Renderer::s_graphicsAPI;
+	Ref<Framebuffer>	Renderer::s_framebuffer;
 
 	void Renderer::Init()
 	{
@@ -25,9 +26,11 @@ namespace Eklipse
 			model.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
 
+		s_framebuffer->Bind();
 		s_graphicsAPI->BeginFrame();
 		s_graphicsAPI->DrawFrame();
 		s_graphicsAPI->EndFrame();
+		s_framebuffer->Unbind();
 	}
 
 	void Renderer::Shutdown()
@@ -78,6 +81,17 @@ namespace Eklipse
 		{
 			s_graphicsAPI->Init(s_scene);
 			initFn();
+
+			// TEMP ///
+			FramebufferInfo fbInfo;
+			fbInfo.width = 512;
+			fbInfo.height = 512;
+			fbInfo.colorAttachmentInfos = {
+				{FramebufferTextureFormat::RGBA8}
+			};
+			fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
+			s_framebuffer = Framebuffer::Create(fbInfo);
+			//////////
 		}
 		else
 			EK_ASSERT(false, "API {0} not initialized!", (int)apiType);
