@@ -5,11 +5,25 @@
 
 namespace Eklipse
 {
-	int Entity::s_idCounter = 0;
-
 	Entity::Entity(std::string name) : m_name(name)
 	{
 		m_id = s_idCounter++;
+
+		m_vertexArray = VertexArray::Create();
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(m_mesh.m_vertices);
+
+		BufferLayout layout = {
+			{ "inPosition", ShaderDataType::Float3, false },
+			{ "inColor",	ShaderDataType::Float3, false },
+			{ "inTexCoord", ShaderDataType::Float2, false }
+		};
+
+		vertexBuffer->SetLayout(layout);
+		m_vertexArray->AddVertexBuffer(vertexBuffer);
+		m_vertexArray->SetIndexBuffer(IndexBuffer::Create(m_mesh.m_indices));
+
+		m_uniformBuffer = UniformBuffer::Create(sizeof(m_ubo), 0);
+		//m_texture = Texture3D::Create();
 	}
 	void Entity::UpdateModelMatrix(glm::mat4 viewProjMatrix)
 	{

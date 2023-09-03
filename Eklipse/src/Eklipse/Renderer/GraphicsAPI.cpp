@@ -8,13 +8,7 @@
 namespace Eklipse
 {
 	GraphicsAPI::GraphicsAPI() :
-		m_initialized(false),
-		m_scene(nullptr) {}
-
-	Scene* GraphicsAPI::GetScene()
-	{
-		return m_scene;
-	}
+		m_initialized(false) {}
 
 	bool GraphicsAPI::IsInitialized()
 	{

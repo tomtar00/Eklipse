@@ -33,7 +33,7 @@ namespace EklipseEditor
 		};
 
 		Eklipse::ImGuiLayer::s_ctx = ImGui::CreateContext();
-		SetGuiLayer(guiLayerCreateInfo);
+		//SetGuiLayer(guiLayerCreateInfo);
 
 		PushLayer(new EditorLayer());
 	}

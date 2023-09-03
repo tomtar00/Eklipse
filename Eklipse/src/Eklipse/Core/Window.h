@@ -1,15 +1,16 @@
 #pragma once
 
 #include "Eklipse/Events/Event.h"
+#include <GLFW/glfw3.h>
 
 namespace Eklipse
 {
 	struct WindowData
 	{
-		int width = 0, height = 0;
-		char* title = "";
-		bool minimized;
-		bool framebufferResized;
+		int width{ 0 }, height{ 0 };
+		char* title{ "" };
+		bool minimized{ false };
+		bool framebufferResized{ false };
 
 		std::function<void(Event&)> EventCallback;
 	};
@@ -17,19 +18,24 @@ namespace Eklipse
 	class Window
 	{
 	public:
-		virtual ~Window() {}
+		static Ref<Window> Create(WindowData& data);
 
-		WindowData& GetData() { return m_data; }
+		Window(WindowData& data) : m_data(data) {}
+		virtual ~Window() = default;
+		virtual void Shutdown() = 0;
 
-		void SetEventCallback(const std::function<void(Event&)>& callback) { m_data.EventCallback = callback; }
+		void GetFramebufferSize(int& width, int& height);
+		inline void SetEventCallback(const std::function<void(Event&)>& callback) { m_data.EventCallback = callback; }
+		inline WindowData& GetData() { return m_data; }
 
-		virtual void Update(float deltaTime) {}
-		virtual void GetFramebufferSize(int& width, int& height) {}
+		virtual void Update(float deltaTime) = 0;
+		virtual void SetWindowHint(int hint, int value) = 0;
+		virtual void SwapBuffers() = 0;
 
-		static Window* Create(WindowData& data);
+		// platform dependent
+		inline virtual GLFWwindow* GetGlfwWindow() { return nullptr; };
 
 	protected:
 		WindowData m_data;
-		inline static bool s_glfwInitialized = false;
 	};
 }

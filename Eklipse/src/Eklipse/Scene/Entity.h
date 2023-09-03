@@ -3,6 +3,7 @@
 #include "Transform.h"
 #include "Components.h"
 #include <Eklipse/Renderer/UBO.h>
+#include <Eklipse/Renderer/VertexArray.h>
 
 namespace Eklipse
 {
@@ -13,15 +14,20 @@ namespace Eklipse
 
 		void UpdateModelMatrix(glm::mat4 viewProjMatrix);
 
-		//std::vector<Component> m_components;
-		Mesh m_mesh;
+	private:
+		inline static int s_idCounter = 0;
+		
+	public:
+		uint32_t m_id;
+		std::string m_name;
 
 		Transform m_transform;
 		ModelViewProjUBO m_ubo;
+		Ref<VertexArray> m_vertexArray;
+		Ref<UniformBuffer> m_uniformBuffer;
+		Ref<Texture> m_texture;
 
-		std::string m_name;
-		uint32_t m_id;
-	private:
-		static int s_idCounter;
+		//std::vector<Component> m_components;
+		Mesh m_mesh;
 	};
 }

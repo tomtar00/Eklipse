@@ -12,15 +12,16 @@ namespace Eklipse
 	public:
 		WindowsWindow(WindowData& spec);
 		virtual ~WindowsWindow();
+		virtual void Shutdown() override;
 
-		GLFWwindow* GetGlfwWindow();
+		virtual GLFWwindow* GetGlfwWindow() override;
+		virtual void Update(float deltaTime) override;
 
-		void Update(float deltaTime) override;
+		virtual void SetWindowHint(int attrib, int value) override;
+		virtual void SwapBuffers() override;
 
 	private:
-		void Init();
-		void Shutdown();
-
+		inline static bool s_glfwInitialized = false;
 		GLFWwindow* m_window;
 	};
 }

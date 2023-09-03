@@ -1,27 +1,22 @@
 #pragma once
-#include <Eklipse/Renderer/VertexArray.h>
 
-#include <glad/glad.h>
+#include <Eklipse/Renderer/VertexArray.h>
 
 namespace Eklipse
 {
-	namespace OpenGL
+	namespace Vulkan
 	{
-		class GLVertexArray : public Eklipse::VertexArray
+		class VKVertexArray : public Eklipse::VertexArray
 		{
 		public:
-			GLVertexArray();
-			virtual ~GLVertexArray();
+			VKVertexArray();
+			virtual ~VKVertexArray();
 
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
 
 			virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) override;
 			virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
-
-		private:
-			uint32_t m_id;
-			uint32_t m_vertexBufferIdx;
 		};
 	}
 }

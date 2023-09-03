@@ -2,7 +2,6 @@
 #include <Eklipse/Renderer/GraphicsAPI.h>
 #include <vulkan/vulkan.h>
 #include "VKImGuiLayer.h"
-#include "VKEntity.h"
 
 namespace Eklipse
 {
@@ -14,12 +13,17 @@ namespace Eklipse
 			VulkanAPI();
 			static VulkanAPI& Get();
 
-			void Init(Scene* scene) override;
+			void Init() override;
 			void Shutdown() override;
 
 			void BeginFrame() override;
 			void EndFrame() override;
-			void DrawFrame() override;
+			
+			virtual void BeginGeometryPass() override;
+			virtual void BeginGUIPass() override;
+			virtual void EndPass() override;
+
+			virtual void DrawIndexed(const Entity& entity) override;
 
 			float GetAspectRatio() override;
 		private:
@@ -33,10 +37,8 @@ namespace Eklipse
 		private:
 			inline static VulkanAPI* s_instance = nullptr;
 
-			VkEntityManager m_entityManager;
-
-			VkCommandBuffer viewportCommandBuffer;
-			VkCommandBuffer imguiCommandBuffer;
+			VkCommandBuffer m_viewportCommandBuffer;
+			VkCommandBuffer m_imguiCommandBuffer;
 
 			std::vector<VkSemaphore> m_imageAvailableSemaphores{};
 			std::vector<VkSemaphore> m_renderFinishedSemaphores{};

@@ -21,6 +21,7 @@ namespace Eklipse
 		static void Shutdown();
 
 		static ApiType GetAPI();
+		static void SetStartupAPI(ApiType apiType);
 		static void SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn);
 
 		static ShaderLibrary& GetShaderLibrary();

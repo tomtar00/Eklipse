@@ -18,16 +18,16 @@ namespace Eklipse
 		{
 			switch (severity)
 			{
-			case GL_DEBUG_SEVERITY_HIGH:         EK_CORE_ERROR(message); return;
-			case GL_DEBUG_SEVERITY_MEDIUM:       EK_CORE_WARN(message); return;
-			case GL_DEBUG_SEVERITY_LOW:          EK_CORE_WARN(message); return;
-			case GL_DEBUG_SEVERITY_NOTIFICATION: EK_CORE_TRACE(message); return;
+				case GL_DEBUG_SEVERITY_HIGH:         EK_CORE_ERROR(message); return;
+				case GL_DEBUG_SEVERITY_MEDIUM:       EK_CORE_WARN(message); return;
+				case GL_DEBUG_SEVERITY_LOW:          EK_CORE_WARN(message); return;
+				case GL_DEBUG_SEVERITY_NOTIFICATION: EK_CORE_TRACE(message); return;
 			}
 
 			EK_ASSERT(false, "Unknown severity level!");
 		}
 
-		OpenGLAPI::OpenGLAPI() : m_glfwWindow(nullptr)
+		OpenGLAPI::OpenGLAPI()
 		{
 			s_instance = this;
 		}
@@ -35,7 +35,7 @@ namespace Eklipse
 		{
 			return *s_instance;
 		}
-		void OpenGLAPI::Init(Scene* scene)
+		void OpenGLAPI::Init()
 		{
 			if (m_initialized)
 			{
@@ -43,10 +43,6 @@ namespace Eklipse
 				return;
 			}
 
-			m_glfwWindow = dynamic_cast<WindowsWindow*>(Application::Get().GetWindow())->GetGlfwWindow();
-			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window while GL API initialization!");
-
-			glfwMakeContextCurrent(m_glfwWindow);
 			int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 			EK_ASSERT(status, "Failed to initialize Glad!");
 
@@ -57,12 +53,16 @@ namespace Eklipse
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 #endif
 
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_LINE_SMOOTH);
+
 			std::stringstream ss;
 			ss << glGetString(GL_VERSION);
 			EK_CORE_INFO("OpenGL initialized - {0}", ss.str());
 			m_initialized = true;
-
-			m_entityManager.Setup(scene);
 		}
 		void OpenGLAPI::Shutdown()
 		{
@@ -72,31 +72,25 @@ namespace Eklipse
 				return;
 			}
 
-			m_entityManager.Dispose();
-
 			EK_CORE_INFO("Shutdown OpenGL");
 			m_initialized = false;
 		}
 		void OpenGLAPI::BeginFrame()
 		{
-			glViewport(0, 0, 1280, 720);
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-		}
-		void OpenGLAPI::DrawFrame()
-		{
-			Renderer::GetShaderLibrary().Get("geometry")->Bind();
-			for (auto& wrapper : m_entityManager.m_wrappers)
-			{
-				wrapper.Bind();
-				wrapper.Draw();
-			}
-
-			Application::Get().m_guiLayer->Draw(nullptr);
+			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		void OpenGLAPI::EndFrame()
 		{
-			glfwSwapBuffers(m_glfwWindow);
+			Application::Get().GetWindow()->SwapBuffers();
+		}
+		void OpenGLAPI::DrawIndexed(const Entity& entity)
+		{
+			entity.m_vertexArray->Bind();
+			entity.m_uniformBuffer->SetData(&entity.m_ubo, sizeof(entity.m_ubo));
+
+			uint32_t numIndices = entity.m_vertexArray->GetIndexBuffer()->GetCount();
+			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
 		}
 		float OpenGLAPI::GetAspectRatio()
 		{

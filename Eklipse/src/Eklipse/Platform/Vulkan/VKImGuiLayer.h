@@ -17,7 +17,7 @@ namespace Eklipse
 			virtual void Init() override;
 			virtual void Shutdown() override;
 			virtual void NewFrame() override;
-			virtual void Draw(void* data) override;
+			virtual void Draw() override;
 
 			virtual void DrawViewport(float width, float height) override;
 			virtual void RecreateViewport(float width, float height) override;

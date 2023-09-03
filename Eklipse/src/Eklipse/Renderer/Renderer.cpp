@@ -16,21 +16,40 @@ namespace Eklipse
 
 	void Renderer::Init()
 	{
-		s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
+		s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");	
 	}
 	void Renderer::Update(float deltaTime)
 	{
 		s_scene->m_camera.UpdateViewProjectionMatrix(s_graphicsAPI->GetAspectRatio());
-		for (auto& model : s_scene->m_entities)
+		for (auto& entity : s_scene->m_entities)
 		{
-			model.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
+			entity.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
 
 		s_framebuffer->Bind();
+		
 		s_graphicsAPI->BeginFrame();
-		s_graphicsAPI->DrawFrame();
-		s_graphicsAPI->EndFrame();
+
+		auto& geometryShader = s_shaderLibrary.Get("geometry");
+		geometryShader->Bind();
+
+		s_graphicsAPI->BeginGeometryPass();
+		for (auto& entity : s_scene->m_entities)
+		{
+			geometryShader->UploadMat4("mvp", entity.m_ubo.mvp);
+			s_graphicsAPI->DrawIndexed(entity);
+		}
+		s_graphicsAPI->EndPass();
+
+		geometryShader->Unbind();
+
+		/*s_graphicsAPI->BeginGUIPass();
+		Application::Get().m_guiLayer->Draw();
+		s_graphicsAPI->EndPass();*/
+
 		s_framebuffer->Unbind();
+
+		s_graphicsAPI->EndFrame();
 	}
 
 	void Renderer::Shutdown()
@@ -42,6 +61,11 @@ namespace Eklipse
 	ApiType Renderer::GetAPI()
 	{
 		return s_apiType;
+	}
+
+	void Renderer::SetStartupAPI(ApiType apiType)
+	{
+		s_apiType = apiType;
 	}
 
 	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
@@ -79,15 +103,15 @@ namespace Eklipse
 		s_scene = Application::Get().GetScene();
 		if (!s_graphicsAPI->IsInitialized())
 		{
-			s_graphicsAPI->Init(s_scene);
+			s_graphicsAPI->Init();
 			initFn();
 
 			// TEMP ///
 			FramebufferInfo fbInfo;
-			fbInfo.width = 512;
-			fbInfo.height = 512;
+			fbInfo.width = Application::Get().GetInfo().windowWidth;
+			fbInfo.height = Application::Get().GetInfo().windowHeight;
 			fbInfo.colorAttachmentInfos = {
-				{FramebufferTextureFormat::RGBA8}
+				{ FramebufferTextureFormat::RGBA8 }
 			};
 			fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
 			s_framebuffer = Framebuffer::Create(fbInfo);

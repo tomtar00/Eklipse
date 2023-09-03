@@ -125,12 +125,12 @@ namespace Eklipse
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 		}
-		void VkImGuiLayer::Draw(void* data)
+		void VkImGuiLayer::Draw()
 		{
 			if (!(*m_config.enabled)) return;
 
 			ImGui::Render();
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), (VkCommandBuffer)data);
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_currentCommandBuffer);
 		}
 		void VkImGuiLayer::DrawViewport(float width, float height)
 		{

@@ -7,24 +7,26 @@ namespace Eklipse
 	class GraphicsAPI
 	{
 	public:
+		static Ref<GraphicsAPI> Create();
 		GraphicsAPI();
 
-		virtual void Init(Scene* scene) = 0;
+		virtual void Init() = 0;
 		virtual void Shutdown() = 0;
 
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
-		virtual void DrawFrame() = 0;
+
+		virtual void BeginGeometryPass() = 0;
+		virtual void BeginGUIPass() = 0;
+		virtual void EndPass() = 0;
+
+		virtual void DrawIndexed(const Entity& entity) = 0;
 
 		virtual float GetAspectRatio() = 0;
-
-		Scene* GetScene();
+		
 		bool IsInitialized();
 
-		static Ref<GraphicsAPI> Create();
-
 	protected:
-		Scene* m_scene;
 		bool m_initialized = false;
 
 		// TODO: more like... render pipeline (raster / raytracing)

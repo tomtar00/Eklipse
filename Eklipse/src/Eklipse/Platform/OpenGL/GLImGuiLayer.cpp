@@ -15,7 +15,7 @@ namespace Eklipse
 
 		GLImGuiLayer::GLImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) : Eklipse::ImGuiLayer(window, configInfo)
 		{
-			m_glfwWindow = dynamic_cast<WindowsWindow*>(window)->GetGlfwWindow();
+			m_glfwWindow = window->GetGlfwWindow();
 			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in GL ImGui Layer!");
 		}
 		void GLImGuiLayer::Init()
@@ -39,7 +39,7 @@ namespace Eklipse
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 		}
-		void GLImGuiLayer::Draw(void* data)
+		void GLImGuiLayer::Draw()
 		{
 			if (!(*m_config.enabled)) return;
 

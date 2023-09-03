@@ -34,7 +34,7 @@ namespace Eklipse
 		static Application& Get();
 
 		ApplicationInfo& GetInfo();
-		Window* GetWindow() const;
+		Ref<Window> GetWindow() const;
 		Scene* GetScene();
 
 		void SetAPI(ApiType api);
@@ -54,7 +54,7 @@ namespace Eklipse
 		inline static Application* s_instance = nullptr;
 		ApplicationInfo m_appInfo{};
 
-		Window* m_window;
+		Ref<Window> m_window;
 		LayerStack m_layerStack;
 
 #ifdef EK_INCLUDE_DEBUG_LAYER

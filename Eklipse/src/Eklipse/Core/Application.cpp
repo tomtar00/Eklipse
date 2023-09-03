@@ -39,7 +39,7 @@ namespace Eklipse
 	{
 		return m_appInfo;
 	}
-	Window* Application::GetWindow() const
+	Ref<Window> Application::GetWindow() const
 	{
 		return m_window;
 	}
@@ -67,17 +67,19 @@ namespace Eklipse
 	{
 		s_instance = this;
 
+		Renderer::SetStartupAPI(ApiType::OpenGL);
+
 		WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
 		m_window = Window::Create(data);
 		m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
-		m_scene.Load();
-
 		m_guiLayer = nullptr;
 		IMGUI_CHECKVERSION();
 
-		SetAPI(ApiType::OpenGL);
+		SetAPI(Renderer::GetAPI());
 		Renderer::Init();
+
+		m_scene.Load();
 	}
 
 	void Application::OnEventReceived(Event& event)
@@ -121,7 +123,7 @@ namespace Eklipse
 	}
 	void Application::SetGuiLayer(GuiLayerConfigInfo configInfo)
 	{
-		m_guiLayer = ImGuiLayer::Create(m_window, configInfo);
+		m_guiLayer = ImGuiLayer::Create(m_window.get(), configInfo);
 		m_layerStack.PushLayer(m_guiLayer);
 		m_guiLayer->Init();
 	}
@@ -130,19 +132,19 @@ namespace Eklipse
 	{
 		EK_CORE_INFO("Running engine...");
 
-		//#ifndef EK_EDITOR
-		//		bool enable = true;
-		//		GuiLayerConfigInfo debugLayerCreateInfo{};
-		//		debugLayerCreateInfo.enabled = &enable;
-		//		debugLayerCreateInfo.menuBarEnabled = false;
-		//		debugLayerCreateInfo.dockingEnabled = false;
-		//		ImGuiLayer::s_ctx = ImGui::CreateContext();
-		//		SetGuiLayer(debugLayerCreateInfo);
-		//#endif
+		/*#ifndef EK_EDITOR
+				bool enable = true;
+				GuiLayerConfigInfo debugLayerCreateInfo{};
+				debugLayerCreateInfo.enabled = &enable;
+				debugLayerCreateInfo.menuBarEnabled = false;
+				debugLayerCreateInfo.dockingEnabled = false;
+				ImGuiLayer::s_ctx = ImGui::CreateContext();
+				SetGuiLayer(debugLayerCreateInfo);
+		#endif*/
 
-#ifdef EK_INCLUDE_DEBUG_LAYER
-		m_guiLayer->AddPanel(m_debugPanel);
-#endif
+//#ifdef EK_INCLUDE_DEBUG_LAYER
+//		m_guiLayer->AddPanel(m_debugPanel);
+//#endif
 
 		float dt = 0;
 		while (m_running)
@@ -163,6 +165,7 @@ namespace Eklipse
 		}
 
 		Renderer::Shutdown();
+		m_window->Shutdown();
 		m_layerStack.Shutdown();
 	}
 }

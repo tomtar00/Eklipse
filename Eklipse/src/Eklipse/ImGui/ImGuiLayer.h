@@ -45,7 +45,7 @@ namespace Eklipse
 		virtual void Init() = 0;
 		virtual void Shutdown() = 0;
 		virtual void NewFrame() = 0;
-		virtual void Draw(void* data) = 0;
+		virtual void Draw() = 0;
 
 		virtual void DrawViewport(float width, float height) = 0;
 		virtual void RecreateViewport(float width, float height) = 0;
