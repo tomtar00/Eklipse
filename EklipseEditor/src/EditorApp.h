@@ -6,6 +6,7 @@
 #include <Panels/EntitiesPanel.h>
 #include <Panels/ViewPanel.h>
 #include <Panels/LogsPanel.h>
+#include <Panels/DetailsPanel.h>
 
 #define EK_EDITOR
 
@@ -31,5 +32,6 @@ namespace EklipseEditor
 		EntitiesPanel m_entitiesPanel;
 		LogsPanel m_logsPanel;
 		ViewPanel m_viewPanel;
+		DetailsPanel m_detailsPanel;
 	};
 }

@@ -152,16 +152,14 @@ namespace Eklipse
 			m_timer.Record();
 			dt = m_timer.DeltaTime();
 
-			Stats::Get().Update(dt);
-
-			m_window->Update(dt);
-
 			for (auto& layer : m_layerStack)
 			{
 				layer->Update(dt);
 			}
 
 			Renderer::Update(dt);
+			Stats::Get().Update(dt);
+			m_window->Update(dt);
 		}
 
 		Renderer::Shutdown();

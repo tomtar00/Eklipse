@@ -14,9 +14,9 @@ namespace Eklipse
 
 		for (int i = -1; i <= 1; i++)
 		{
-			Entity entity{"Entity " + i};
 			Mesh mesh{"models/viking_room.obj", "textures/viking_room.png" };
-			entity.m_mesh = mesh;
+			std::string entityName = "Entity " + std::to_string(i+1);
+			Entity entity{entityName, mesh};
 			//entity.m_components.push_back(mesh);
 			
 			entity.m_transform.position = { i, i, i };

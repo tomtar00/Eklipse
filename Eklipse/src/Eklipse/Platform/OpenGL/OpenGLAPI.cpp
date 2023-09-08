@@ -1,6 +1,8 @@
 #include <precompiled.h>
 #include "OpenGLAPI.h"
 #include <glad/glad.h>
+
+#include "GL.h"
 #include <Eklipse/Core/Application.h>
 
 namespace Eklipse
@@ -78,7 +80,7 @@ namespace Eklipse
 		void OpenGLAPI::BeginFrame()
 		{
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
 		}
 		void OpenGLAPI::EndFrame()
 		{
@@ -94,7 +96,7 @@ namespace Eklipse
 		}
 		float OpenGLAPI::GetAspectRatio()
 		{
-			return 1.0f;
+			return (float)g_viewportSize.width / (float)g_viewportSize.height;
 		}
 	}
 }

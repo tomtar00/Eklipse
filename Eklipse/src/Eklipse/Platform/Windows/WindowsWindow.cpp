@@ -113,7 +113,9 @@ namespace Eklipse
 		}
 
 		if (Renderer::GetAPI() == ApiType::OpenGL)
+		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+		}
 		else
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 

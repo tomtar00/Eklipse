@@ -11,7 +11,7 @@ namespace Eklipse
 	namespace OpenGL
 	{
 		ViewportSize	g_viewportSize = { 512, 512 };
-		void* g_viewportTexture;
+		uint32_t g_viewportTexture;
 
 		GLImGuiLayer::GLImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) : Eklipse::ImGuiLayer(window, configInfo)
 		{
@@ -53,13 +53,15 @@ namespace Eklipse
 				RecreateViewport(width, height);
 			}
 
-			ImGui::Image(g_viewportTexture, ImVec2{ width, height });
+			ImGui::Image((ImTextureID)g_viewportTexture,
+				{width, height},
+				ImVec2(0, 1),
+				ImVec2(1, 0));
 		}
 		void GLImGuiLayer::RecreateViewport(float width, float height)
 		{
-			// destroy viewport
 			g_viewportSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-			// create viewport
+			g_framebuffer->Resize(g_viewportSize.width, g_viewportSize.height);
 		}
 	}
 }

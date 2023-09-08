@@ -68,7 +68,7 @@ namespace Eklipse
 		{
 			glGenBuffers(1, &m_id);
 			glBindBuffer(GL_UNIFORM_BUFFER, m_id);
-			glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_STATIC_DRAW);
+			glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 			glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_id);
 		}
 		void GLUniformBuffer::Dispose() const

@@ -60,12 +60,14 @@ namespace Eklipse
 					case ShaderDataType::Float4:
 					{
 						glEnableVertexAttribArray(m_vertexBufferIdx);
-						glVertexAttribPointer(m_vertexBufferIdx,
+						glVertexAttribPointer(
+							m_vertexBufferIdx,
 							element.GetComponentCount(),
 							ShaderDataTypeToOpenGLBaseType(element.type),
 							element.normalized ? GL_TRUE : GL_FALSE,
 							layout.GetStride(),
-							(const void*)element.offset);
+							(const void*)element.offset
+						);
 						m_vertexBufferIdx++;
 						break;
 					}
@@ -76,11 +78,13 @@ namespace Eklipse
 					case ShaderDataType::Bool:
 					{
 						glEnableVertexAttribArray(m_vertexBufferIdx);
-						glVertexAttribIPointer(m_vertexBufferIdx,
+						glVertexAttribIPointer(
+							m_vertexBufferIdx,
 							element.GetComponentCount(),
 							ShaderDataTypeToOpenGLBaseType(element.type),
 							layout.GetStride(),
-							(const void*)element.offset);
+							(const void*)element.offset
+						);
 						m_vertexBufferIdx++;
 						break;
 					}
@@ -91,12 +95,14 @@ namespace Eklipse
 						for (uint8_t i = 0; i < count; i++)
 						{
 							glEnableVertexAttribArray(m_vertexBufferIdx);
-							glVertexAttribPointer(m_vertexBufferIdx,
+							glVertexAttribPointer(
+								m_vertexBufferIdx,
 								count,
 								ShaderDataTypeToOpenGLBaseType(element.type),
 								element.normalized ? GL_TRUE : GL_FALSE,
 								layout.GetStride(),
-								(const void*)(element.offset + sizeof(float) * count * i));
+								(const void*)(element.offset + sizeof(float) * count * i)
+							);
 							glVertexAttribDivisor(m_vertexBufferIdx, 1);
 							m_vertexBufferIdx++;
 						}

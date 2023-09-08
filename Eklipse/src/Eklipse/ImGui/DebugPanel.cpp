@@ -8,23 +8,7 @@ namespace Eklipse
 {
 	void DebugPanel::OnGUI()
 	{
-        static float f = 0.0f;
-        static int counter = 0;
-        static bool test = false;
-        static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-        ImGui::Begin("Left");
-
-        // ImGui::Text("This is some useful text.");
-        // ImGui::Checkbox("Test", &test);
-        // 
-        // ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        // ImGui::ColorEdit3("clear color", (float*)&clear_color);
-        // 
-        // if (ImGui::Button("Button"))
-        //     counter++;
-        // ImGui::SameLine();
-        // ImGui::Text("counter = %d", counter);
+        ImGui::Begin("Debug");
 
         auto scene = Application::Get().GetScene();
         auto& camera = scene->m_camera;

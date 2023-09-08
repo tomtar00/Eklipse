@@ -1,4 +1,5 @@
 #pragma once
+#include "GLFramebuffer.h"
 
 namespace Eklipse
 {
@@ -10,6 +11,7 @@ namespace Eklipse
 		};
 
 		extern ViewportSize g_viewportSize;
-		extern void* g_viewportTexture;
+		extern uint32_t g_viewportTexture;
+		extern GLFramebuffer* g_framebuffer;
 	}
 }

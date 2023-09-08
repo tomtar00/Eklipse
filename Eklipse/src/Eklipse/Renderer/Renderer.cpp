@@ -17,6 +17,7 @@ namespace Eklipse
 	void Renderer::Init()
 	{
 		s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");	
+		s_shaderLibrary.Load("framebuffer", "shaders/framebuffer.vert", "shaders/framebuffer.frag");
 	}
 	void Renderer::Update(float deltaTime)
 	{
@@ -26,13 +27,11 @@ namespace Eklipse
 			entity.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
 
+		// === Record Scene Framebuffer
 		s_framebuffer->Bind();
-		
-		s_graphicsAPI->BeginFrame();
-
 		auto& geometryShader = s_shaderLibrary.Get("geometry");
 		geometryShader->Bind();
-
+		
 		s_graphicsAPI->BeginGeometryPass();
 		for (auto& entity : s_scene->m_entities)
 		{
@@ -42,12 +41,23 @@ namespace Eklipse
 		s_graphicsAPI->EndPass();
 
 		geometryShader->Unbind();
-
-		/*s_graphicsAPI->BeginGUIPass();
-		Application::Get().m_guiLayer->Draw();
-		s_graphicsAPI->EndPass();*/
-
 		s_framebuffer->Unbind();
+		// ===
+
+		s_graphicsAPI->BeginFrame();
+
+		// === Draw Scene Framebuffer To Render Target
+		/*auto& framebufferShader = s_shaderLibrary.Get("framebuffer");
+		framebufferShader->Bind();
+		s_framebuffer->Draw();
+		framebufferShader->Unbind();*/
+		// ===
+
+		// === ImGui
+		s_graphicsAPI->BeginGUIPass();
+		Application::Get().m_guiLayer->Draw();
+		s_graphicsAPI->EndPass();
+		// ===
 
 		s_graphicsAPI->EndFrame();
 	}
@@ -108,8 +118,8 @@ namespace Eklipse
 
 			// TEMP ///
 			FramebufferInfo fbInfo;
-			fbInfo.width = Application::Get().GetInfo().windowWidth;
-			fbInfo.height = Application::Get().GetInfo().windowHeight;
+			fbInfo.width = 512;
+			fbInfo.height = 512;
 			fbInfo.colorAttachmentInfos = {
 				{ FramebufferTextureFormat::RGBA8 }
 			};

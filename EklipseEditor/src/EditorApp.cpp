@@ -23,17 +23,18 @@ namespace EklipseEditor
 		guiLayerCreateInfo.dockingEnabled = true;
 		guiLayerCreateInfo.dockLayouts =
 		{
-			{ "Hierarchy",	ImGuiDir_Left,	0.2f },
+			{ "Hierarchy",	ImGuiDir_Left,	0.3f },
+			{ "Details",	ImGuiDir_Right, 0.3f },	
 			{ "Logs",		ImGuiDir_Down,	0.3f },
 			{ "View",		ImGuiDir_None,  0.5f }
 		};
 		guiLayerCreateInfo.panels =
 		{
-			&m_entitiesPanel, &m_logsPanel, &m_viewPanel
+			&m_entitiesPanel, &m_detailsPanel, &m_logsPanel, &m_viewPanel
 		};
 
 		Eklipse::ImGuiLayer::s_ctx = ImGui::CreateContext();
-		//SetGuiLayer(guiLayerCreateInfo);
+		SetGuiLayer(guiLayerCreateInfo);
 
 		PushLayer(new EditorLayer());
 	}
