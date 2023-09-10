@@ -1,10 +1,8 @@
 #pragma once
 #include <Eklipse.h>
 
-namespace EklipseEditor
+namespace Editor
 {
-	extern Eklipse::Entity* g_selectedEntity;
-
 	class EntitiesPanel : public Eklipse::ImGuiPanel
 	{
 		void OnGUI();

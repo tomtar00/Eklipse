@@ -11,7 +11,7 @@ namespace Eklipse
 		class VkImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:
-			VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo);
+			VkImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo);
 			virtual ~VkImGuiLayer() {}
 
 			virtual void Init() override;
@@ -20,7 +20,7 @@ namespace Eklipse
 			virtual void Draw() override;
 
 			virtual void DrawViewport(float width, float height) override;
-			virtual void RecreateViewport(float width, float height) override;
+			virtual void ResizeViewport(float width, float height) override;
 
 		private:
 			void SetupViewportImages();

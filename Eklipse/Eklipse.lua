@@ -1,6 +1,6 @@
 project "Eklipse"
 	location "../Eklipse"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
 	staticruntime "off"
 

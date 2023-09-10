@@ -41,8 +41,8 @@ namespace Eklipse
 
 		void Init();
 		void Run();
-		void PushLayer(Layer* layer);
-		void SetGuiLayer(GuiLayerConfigInfo configInfo);
+		void PushLayer(Ref<Layer> layer);
+		void SetGuiLayer(const GuiLayerConfigInfo& configInfo);
 
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
@@ -68,5 +68,5 @@ namespace Eklipse
 		bool m_minimized;
 	};
 
-	Application* CreateApplication();
+	Ref<Application> CreateApplication();
 }

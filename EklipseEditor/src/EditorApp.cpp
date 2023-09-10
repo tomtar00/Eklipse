@@ -1,53 +1,36 @@
-#pragma once
-#include "EditorApp.h"
+#include "EditorLayer.h"
+#include <Eklipse/Core/EntryPoint.h>
 
-namespace EklipseEditor
+#define EK_EDITOR
+
+namespace Editor
 {
-	void EditorLayer::OnAttach()
+	class EklipseEditor : public Eklipse::Application
 	{
-		EK_INFO("Editor layer attached");
-	}
-	void EditorLayer::OnDetach()
-	{
-		EK_INFO("Editor layer detached");
-	}
-	void EditorLayer::Update(float deltaTime)
-	{
-	}
-
-	EklipseEditor::EklipseEditor(Eklipse::ApplicationInfo& info) : Application(info)
-	{
-		Eklipse::GuiLayerConfigInfo guiLayerCreateInfo{};
-		guiLayerCreateInfo.enabled = &GUILayerEnabled;
-		guiLayerCreateInfo.menuBarEnabled = true;
-		guiLayerCreateInfo.dockingEnabled = true;
-		guiLayerCreateInfo.dockLayouts =
+	public:
+		EklipseEditor(Eklipse::ApplicationInfo& info) : Application(info)
 		{
-			{ "Hierarchy",	ImGuiDir_Left,	0.3f },
-			{ "Details",	ImGuiDir_Right, 0.3f },	
-			{ "Logs",		ImGuiDir_Down,	0.3f },
-			{ "View",		ImGuiDir_None,  0.5f }
-		};
-		guiLayerCreateInfo.panels =
-		{
-			&m_entitiesPanel, &m_detailsPanel, &m_logsPanel, &m_viewPanel
-		};
+			Eklipse::ImGuiLayer::s_ctx = ImGui::CreateContext();
 
-		Eklipse::ImGuiLayer::s_ctx = ImGui::CreateContext();
-		SetGuiLayer(guiLayerCreateInfo);
+			editorLayer = Eklipse::CreateRef<EditorLayer>();
+			PushLayer(editorLayer);
 
-		PushLayer(new EditorLayer());
-	}
+			SetGuiLayer(editorLayer->GetGuiInfo());
+		}
+
+	private:
+		Eklipse::Ref<EditorLayer> editorLayer;
+	};
 }
 
-Eklipse::Application* Eklipse::CreateApplication()
+Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication()
 {
 	EK_INFO("Starting editor...");
 
 	Eklipse::ApplicationInfo info{};
 	info.appName = "Eklipse Editor";
-	info.windowWidth = 1280;
-	info.windowHeight = 720;
+	info.windowWidth = 1600;
+	info.windowHeight = 900;
 
-	return new EklipseEditor::EklipseEditor(info);
+	return Eklipse::CreateRef<Editor::EklipseEditor>(info);
 }

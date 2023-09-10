@@ -7,8 +7,9 @@ namespace Eklipse
 	{
 		EK_CORE_TRACE("Begin scene load");
 
+		m_camera.m_name = "Main Camera";
 		m_camera.m_fov = 65.0f;
-		m_camera.m_transform.position = { 1.1f, 1.3f, 2.1f };
+		m_camera.m_transform.position = { 3.0f, 0.0f, 5.0f };
 		m_camera.m_transform.rotation = { 0, 261.0f, 0 };
 		m_camera.m_transform.scale = { 1, 1, 1 };
 

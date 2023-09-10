@@ -8,6 +8,7 @@ namespace Eklipse
 	{
 	public:
 		LayerStack() = default;
+		~LayerStack() {};
 
 		void PushLayer(Ref<Layer> layer);
 		void PopLayer(Ref<Layer> layer);

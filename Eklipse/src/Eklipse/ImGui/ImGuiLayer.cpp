@@ -23,13 +23,13 @@ namespace Eklipse
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
 
-		EK_CORE_DEBUG("{0} imgui layer attached", typeid(*this).name());
+		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());
 	}
 	void ImGuiLayer::OnDetach()
 	{
 		ImGui::DestroyContext();
 
-		EK_CORE_DEBUG("{0} imgui layer detached", typeid(*this).name());
+		EK_CORE_INFO("{0} imgui layer detached", typeid(*this).name());
 	}
 	void ImGuiLayer::Update(float deltaTime)
 	{
@@ -109,7 +109,7 @@ namespace Eklipse
 	{
 		m_config = configInfo;
 	}
-	Ref<ImGuiLayer> ImGuiLayer::Create(Window* window, GuiLayerConfigInfo configInfo)
+	Ref<ImGuiLayer> ImGuiLayer::Create(Window* window, const GuiLayerConfigInfo& configInfo)
 	{
 		auto apiType = Renderer::GetAPI();
 		switch (apiType)

@@ -12,13 +12,14 @@
 	#error Engine only supports Windows!
 #endif
 
-#define EK_ASSERT(x, ...) if (!x) {EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); exit(-1); }
 
 #define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(args...); }
 
 #define BIT(x) (1 << x)
 #define NAME_T(x) x
 #define STRINGIFY(x) #x
+
+#define EK_ASSERT(x, ...) if (!x) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
 
 namespace Eklipse
 {

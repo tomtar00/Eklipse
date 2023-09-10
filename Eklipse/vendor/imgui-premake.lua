@@ -12,6 +12,9 @@ project "ImGui"
 		"imgui/*.h",
 		"imgui/*.cpp",
 
+		"imgui/misc/cpp/*.h",
+		"imgui/misc/cpp/*.cpp",
+
 		"imgui/backends/imgui_impl_glfw.h",
 		"imgui/backends/imgui_impl_glfw.cpp",
 

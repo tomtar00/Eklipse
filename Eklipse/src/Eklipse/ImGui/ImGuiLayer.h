@@ -48,13 +48,13 @@ namespace Eklipse
 		virtual void Draw() = 0;
 
 		virtual void DrawViewport(float width, float height) = 0;
-		virtual void RecreateViewport(float width, float height) = 0;
+		virtual void ResizeViewport(float width, float height) = 0;
 
 		void AddPanel(ImGuiPanel& panel);
 		GuiLayerConfigInfo GetConfig();
 		void SetConfig(GuiLayerConfigInfo configInfo);
 	
-		static Ref<ImGuiLayer> Create(Window* window, GuiLayerConfigInfo configInfo);
+		static Ref<ImGuiLayer> Create(Window* window, const GuiLayerConfigInfo& configInfo);
 
 		inline static ImGuiContext* s_ctx = nullptr;
 

@@ -12,10 +12,10 @@ namespace Eklipse
 
 		m_coreLogger = spdlog::stderr_color_mt("EKLIPSE");
 		m_coreLogger->set_level(spdlog::level::trace);
-		EK_CORE_DEBUG("Eklipse logger initialized");
+		EK_CORE_INFO("Eklipse logger initialized");
 
 		m_clientLogger = spdlog::stderr_color_mt("APP");
 		m_clientLogger->set_level(spdlog::level::trace);
-		EK_CORE_DEBUG("App logger initialized");
+		EK_CORE_INFO("App logger initialized");
 	}
 }

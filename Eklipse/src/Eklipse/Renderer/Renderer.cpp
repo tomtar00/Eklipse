@@ -46,7 +46,7 @@ namespace Eklipse
 
 		s_graphicsAPI->BeginFrame();
 
-		// === Draw Scene Framebuffer To Render Target
+		// === Draw Scene Framebuffer To Screen
 		/*auto& framebufferShader = s_shaderLibrary.Get("framebuffer");
 		framebufferShader->Bind();
 		s_framebuffer->Draw();

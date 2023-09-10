@@ -1,7 +1,7 @@
 #include "ViewPanel.h"
 #include <Eklipse.h>
 
-namespace EklipseEditor
+namespace Editor
 {
 	void ViewPanel::OnGUI()
 	{

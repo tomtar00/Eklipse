@@ -7,7 +7,7 @@ namespace Eklipse
 	{
 		struct ViewportSize
 		{
-			uint32_t width, height;
+			uint32_t width{ 512 }, height{ 512 };
 		};
 
 		extern ViewportSize g_viewportSize;

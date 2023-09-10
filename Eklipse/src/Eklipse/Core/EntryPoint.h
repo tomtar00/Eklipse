@@ -2,7 +2,7 @@
 
 #ifdef EK_PLATFORM_WINDOWS
 
-extern Eklipse::Application* Eklipse::CreateApplication();
+extern Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication();
 
 int main(int argc, char** argv)
 {
@@ -10,7 +10,6 @@ int main(int argc, char** argv)
 
 	auto app = Eklipse::CreateApplication();
 	app->Run();
-	delete app;
 }
 
 #endif

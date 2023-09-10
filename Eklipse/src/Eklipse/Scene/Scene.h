@@ -1,7 +1,7 @@
 #pragma once
-#include "Camera.h"
 #include <vector>
 #include "Entity.h"
+#include "Camera.h"
 
 namespace Eklipse
 {

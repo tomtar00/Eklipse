@@ -1,20 +1,23 @@
 #include "EntitiesPanel.h"
+#include "../EditorLayer.h"
 
-namespace EklipseEditor
+namespace Editor
 {
-	Eklipse::Entity* g_selectedEntity = nullptr;
-
 	void EntitiesPanel::OnGUI()
 	{
 		ImGui::Begin("Hierarchy");
 		ImVec2 hierarchySize = ImGui::GetContentRegionAvail();
-		uint32_t elementIdCounter = 0;
 
+		auto& camera = Eklipse::Application::Get().GetScene()->m_camera;
+		if (ImGui::Button(camera.m_name.c_str(), {hierarchySize.x, 20}))
+		{
+			EditorLayer::Get()->GetDetailsPanel().Setup(&camera);
+		}
 		for (auto& entity : Eklipse::Application::Get().GetScene()->m_entities)
 		{
-			if (ImGui::Button(entity.m_name.c_str(), {hierarchySize.x, 20}))
+			if (ImGui::Button(entity.m_name.c_str(), { hierarchySize.x, 20 }))
 			{
-				g_selectedEntity = &entity;
+				EditorLayer::Get()->GetDetailsPanel().Setup(&entity);
 			}
 		}
 

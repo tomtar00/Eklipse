@@ -109,19 +109,17 @@ namespace Eklipse
 		m_appInfo.windowHeight = event.GetHeight();
 	}
 
-	void Application::PushLayer(Layer* layer)
+	void Application::PushLayer(Ref<Layer> layer)
 	{
-		if (ImGuiLayer* l = dynamic_cast<ImGuiLayer*>(layer))
+		if (ImGuiLayer* l = dynamic_cast<ImGuiLayer*>(layer.get()))
 		{
-			EK_CORE_WARN("Tried to add gui layer as normal layer");
-			delete layer;
+			EK_ASSERT(false, "Tried to add gui layer as normal layer");
 			return;
 		}
 
-		Ref<Layer> layerRef(layer);
-		m_layerStack.PushLayer(layerRef);
+		m_layerStack.PushLayer(layer);
 	}
-	void Application::SetGuiLayer(GuiLayerConfigInfo configInfo)
+	void Application::SetGuiLayer(const GuiLayerConfigInfo& configInfo)
 	{
 		m_guiLayer = ImGuiLayer::Create(m_window.get(), configInfo);
 		m_layerStack.PushLayer(m_guiLayer);
@@ -130,7 +128,7 @@ namespace Eklipse
 
 	void Application::Run()
 	{
-		EK_CORE_INFO("Running engine...");
+		EK_CORE_INFO("========== Starting Eklipse Engine ==========");
 
 		/*#ifndef EK_EDITOR
 				bool enable = true;
@@ -165,5 +163,7 @@ namespace Eklipse
 		Renderer::Shutdown();
 		m_window->Shutdown();
 		m_layerStack.Shutdown();
+
+		EK_CORE_INFO("========== Closing Eklipse Engine ==========");
 	}
 }

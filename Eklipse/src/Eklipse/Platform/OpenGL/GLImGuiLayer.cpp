@@ -13,7 +13,7 @@ namespace Eklipse
 		ViewportSize	g_viewportSize = { 512, 512 };
 		uint32_t g_viewportTexture;
 
-		GLImGuiLayer::GLImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) : Eklipse::ImGuiLayer(window, configInfo)
+		GLImGuiLayer::GLImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(window, configInfo)
 		{
 			m_glfwWindow = window->GetGlfwWindow();
 			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in GL ImGui Layer!");
@@ -50,15 +50,12 @@ namespace Eklipse
 		{
 			if (width != g_viewportSize.width || height != g_viewportSize.height)
 			{
-				RecreateViewport(width, height);
+				ResizeViewport(width, height);
 			}
 
-			ImGui::Image((ImTextureID)g_viewportTexture,
-				{width, height},
-				ImVec2(0, 1),
-				ImVec2(1, 0));
+			ImGui::Image((ImTextureID)g_viewportTexture, {width, height}, ImVec2(0, 1), ImVec2(1, 0));
 		}
-		void GLImGuiLayer::RecreateViewport(float width, float height)
+		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{
 			g_viewportSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 			g_framebuffer->Resize(g_viewportSize.width, g_viewportSize.height);

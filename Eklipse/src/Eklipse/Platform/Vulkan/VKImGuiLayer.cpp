@@ -29,7 +29,7 @@ namespace Eklipse
 		std::vector<Image>				g_viewportImages{};
 		std::vector<VkFramebuffer>		g_viewportFrameBuffers{};
 
-		VkImGuiLayer::VkImGuiLayer(Window* window, GuiLayerConfigInfo configInfo) :
+		VkImGuiLayer::VkImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo) :
 			m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(window, configInfo)
 		{
 			m_glfwWindow = dynamic_cast<WindowsWindow*>(window)->GetGlfwWindow();
@@ -93,7 +93,7 @@ namespace Eklipse
 
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-			EK_CORE_DEBUG("Vulkan ImGui layer initialized");
+			EK_CORE_INFO("Vulkan ImGui layer initialized");
 		}
 		void VkImGuiLayer::Shutdown()
 		{
@@ -118,7 +118,7 @@ namespace Eklipse
 			ImGui_ImplVulkan_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 
-			EK_CORE_DEBUG("Vulkan ImGui layer shut down");
+			EK_CORE_INFO("Vulkan ImGui layer shut down");
 		}
 		void VkImGuiLayer::NewFrame()
 		{
@@ -136,13 +136,13 @@ namespace Eklipse
 		{
 			if (width != g_viewportExtent.width || height != g_viewportExtent.height)
 			{
-				RecreateViewport(width, height);
+				ResizeViewport(width, height);
 			}
 
 			g_viewportImageIndex = (g_viewportImageIndex + 1) % g_swapChainImageCount;
 			ImGui::Image(m_imageDescrSets[g_viewportImageIndex], ImVec2{ width, height });
 		}
-		void VkImGuiLayer::RecreateViewport(float width, float height)
+		void VkImGuiLayer::ResizeViewport(float width, float height)
 		{
 			vkDeviceWaitIdle(g_logicalDevice);
 

@@ -10,6 +10,7 @@ namespace Eklipse
 	class Entity
 	{
 	public:
+		Entity() = default;
 		Entity(const std::string& name, Mesh& mesh);
 
 		void UpdateModelMatrix(glm::mat4 viewProjMatrix);

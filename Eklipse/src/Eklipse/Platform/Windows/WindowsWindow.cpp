@@ -132,13 +132,13 @@ namespace Eklipse
 		glfwSetScrollCallback(m_window, GlfwScrollCallback);
 		glfwSetCursorPosCallback(m_window, GlfwCursorPosCallback);
 
-		EK_CORE_DEBUG("Initialized window");
+		EK_CORE_INFO("Initialized window");
 	}
 
 	WindowsWindow::~WindowsWindow() {}
 	void WindowsWindow::Shutdown()
 	{
-		EK_CORE_DEBUG("Window shutdown");
+		EK_CORE_INFO("Window shutdown");
 		glfwDestroyWindow(m_window);
 		glfwTerminate();
 	}

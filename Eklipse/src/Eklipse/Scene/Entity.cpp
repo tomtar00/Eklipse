@@ -7,7 +7,6 @@ namespace Eklipse
 {
 	Entity::Entity(const std::string& name, Mesh& mesh) : m_name(name), m_mesh(mesh)
 	{
-		EK_CORE_INFO("NAME: {0}", m_name);
 		m_id = s_idCounter++;
 
 		m_vertexArray = VertexArray::Create();

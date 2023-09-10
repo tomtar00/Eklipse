@@ -1,7 +1,7 @@
 #pragma once
 #include <Eklipse.h>
 
-namespace EklipseEditor
+namespace Editor
 {
 	class LogsPanel : public Eklipse::ImGuiPanel
 	{

@@ -1,6 +1,6 @@
 #include "LogsPanel.h"
 
-namespace EklipseEditor
+namespace Editor
 {
 	void LogsPanel::OnGUI()
 	{

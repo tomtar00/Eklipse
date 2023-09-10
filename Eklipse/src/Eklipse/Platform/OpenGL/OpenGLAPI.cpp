@@ -74,7 +74,7 @@ namespace Eklipse
 				return;
 			}
 
-			EK_CORE_INFO("Shutdown OpenGL");
+			EK_CORE_INFO("OpenGL shutdown");
 			m_initialized = false;
 		}
 		void OpenGLAPI::BeginFrame()

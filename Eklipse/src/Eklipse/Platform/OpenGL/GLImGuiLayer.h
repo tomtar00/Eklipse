@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:
-			GLImGuiLayer(Window* window, GuiLayerConfigInfo configInfo);
+			GLImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo);
 			virtual ~GLImGuiLayer() {}
 
 			virtual void Init() override;
@@ -18,7 +18,7 @@ namespace Eklipse
 			virtual void Draw() override;
 
 			virtual void DrawViewport(float width, float height) override;
-			virtual void RecreateViewport(float width, float height) override;
+			virtual void ResizeViewport(float width, float height) override;
 
 		private:
 			GLFWwindow* m_glfwWindow;

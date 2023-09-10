@@ -41,12 +41,11 @@ namespace Eklipse
 				{
 					glBindTexture(GL_TEXTURE_2D, m_colorAttachments[i]);
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_framebufferInfo.width, m_framebufferInfo.height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorAttachments[i], 0);
 				}
 				glBindTexture(GL_TEXTURE_2D, 0);
@@ -58,42 +57,43 @@ namespace Eklipse
 			// Depth and stencil attachment
 			glGenTextures(1, &m_depthAttachment);
 			glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
+			glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, m_framebufferInfo.width, m_framebufferInfo.height);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_framebufferInfo.width, m_framebufferInfo.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
 			glBindTexture(GL_TEXTURE_2D, 0);
 
 			EK_ASSERT((m_colorAttachments.size() <= 4), "Too many colors attachemnts! ({0})", m_colorAttachments.size());
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers(m_colorAttachments.size(), buffers);
 
-			EK_ASSERT((glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE), "Framebuffer is incomplete!");
+			EK_ASSERT((glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE), "Framebuffer is incomplete! Code: {0}", glCheckFramebufferStatus(GL_FRAMEBUFFER));
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			// Rect
-			//float rectangleVertices[] =
-			//{
-			//	// Coords      // texCoords
-			//	 1.0f, -1.0f,  1.0f, 0.0f,
-			//	-1.0f, -1.0f,  0.0f, 0.0f,
-			//	-1.0f,  1.0f,  0.0f, 1.0f,
-
-			//	 1.0f,  1.0f,  1.0f, 1.0f,
-			//	 1.0f, -1.0f,  1.0f, 0.0f,
-			//	-1.0f,  1.0f,  0.0f, 1.0f
-			//};
-			//glGenVertexArrays(1, &m_rectVAO);
-			//glGenBuffers(1, &m_rectVBO);
-			//glBindVertexArray(m_rectVAO);
-			//glBindBuffer(GL_ARRAY_BUFFER, m_rectVBO);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
-			//glEnableVertexAttribArray(0);
-			//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-			//glEnableVertexAttribArray(1);
-			//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+			// float rectangleVertices[] =
+			// {
+			// 	// Coords      // texCoords
+			// 	 1.0f, -1.0f,  1.0f, 0.0f,
+			// 	-1.0f, -1.0f,  0.0f, 0.0f,
+			// 	-1.0f,  1.0f,  0.0f, 1.0f,
+			   
+			// 	 1.0f,  1.0f,  1.0f, 1.0f,
+			// 	 1.0f, -1.0f,  1.0f, 0.0f,
+			// 	-1.0f,  1.0f,  0.0f, 1.0f
+			// };
+			// glGenVertexArrays(1, &m_rectVAO);
+			// glGenBuffers(1, &m_rectVBO);
+			// glBindVertexArray(m_rectVAO);
+			// glBindBuffer(GL_ARRAY_BUFFER, m_rectVBO);
+			// glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
+			// glEnableVertexAttribArray(0);
+			// glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+			// glEnableVertexAttribArray(1);
+			// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 		}
 		void GLFramebuffer::Bind()
 		{

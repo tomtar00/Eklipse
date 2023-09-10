@@ -207,7 +207,7 @@ namespace Eklipse
 			vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
 			vkDestroyInstance(g_instance, nullptr);
 
-			EK_CORE_INFO("Shutdown Vulkan");
+			EK_CORE_INFO("Vulkan shutdown ");
 			m_initialized = false;
 		}
 		void VulkanAPI::BeginFrame()
@@ -366,7 +366,7 @@ namespace Eklipse
 			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
 
-			Application::Get().m_guiLayer->RecreateViewport(512, 512);
+			Application::Get().m_guiLayer->ResizeViewport(512, 512);
 		}
 		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
 		{
