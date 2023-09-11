@@ -19,7 +19,7 @@ namespace Editor
 			return;
 		}
 
-		if (!ImGui::InputText("EntityNameInput", &m_entityNameBuffer))
+		if (!ImGui::InputText("Entity Name", &m_entityNameBuffer))
 		{
 			if (m_entityNameBuffer.size() > 0)
 			{

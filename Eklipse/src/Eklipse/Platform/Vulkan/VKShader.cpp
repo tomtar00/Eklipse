@@ -21,5 +21,8 @@ namespace Eklipse
 		void VKShader::UploadMat4(const std::string& name, const glm::mat4& matrix)
 		{
 		}
+		void VKShader::UploadInt(const std::string& name, const int value)
+		{
+		}
 	}
 }

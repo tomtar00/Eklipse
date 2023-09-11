@@ -24,6 +24,8 @@ namespace Eklipse
 			uint32_t m_rectVAO;
 			uint32_t m_rectVBO;
 
+			GLenum m_texTarget;
+
 			std::vector<uint32_t> m_colorAttachments{};
 			uint32_t m_depthAttachment{0};
 		};

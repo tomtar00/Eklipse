@@ -23,7 +23,14 @@ namespace Eklipse
 		m_vertexArray->SetIndexBuffer(IndexBuffer::Create(m_mesh.m_indices));
 
 		m_uniformBuffer = UniformBuffer::Create(sizeof(m_ubo), 0);
-		//m_texture = Texture3D::Create();
+
+		TextureInfo texInfo{};
+		texInfo.width = m_mesh.m_textureData.width;
+		texInfo.height = m_mesh.m_textureData.height;
+		texInfo.imageFormat = ImageFormat::RGBA8; // size = 4
+		texInfo.mipMapLevel = 1;
+		m_texture = Texture2D::Create(texInfo);
+		m_texture->SetData(m_mesh.m_textureData.pixels, texInfo.width * texInfo.height * 4);
 	}
 	void Entity::UpdateModelMatrix(glm::mat4 viewProjMatrix)
 	{

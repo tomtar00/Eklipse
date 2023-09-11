@@ -71,7 +71,7 @@ namespace Eklipse
 			init_info.DescriptorPool = m_imguiPool;
 			init_info.MinImageCount = g_swapChainImageCount;
 			init_info.ImageCount = g_swapChainImageCount;
-			init_info.MSAASamples = RendererSettings::msaaSamples;
+			init_info.MSAASamples = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples();
 			init_info.CheckVkResultFn = [](VkResult res) { HANDLE_VK_RESULT(res, "IMGUI") };
 
 			ImGui_ImplVulkan_Init(&init_info, g_imguiRenderPass);
@@ -158,7 +158,7 @@ namespace Eklipse
 			for (int i = 0; i < g_swapChainImageCount; i++)
 			{
 				g_viewportImages[i].CreateImage(g_viewportExtent.width, g_viewportExtent.height,
-					1, RendererSettings::msaaSamples, g_swapChainImageFormat, VK_IMAGE_TILING_OPTIMAL,
+					1, (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples(), g_swapChainImageFormat, VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
 				g_viewportImages[i].TransitionImageLayout(g_swapChainImageFormat, VK_IMAGE_LAYOUT_UNDEFINED,

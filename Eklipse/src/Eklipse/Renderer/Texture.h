@@ -38,6 +38,7 @@ namespace Eklipse
 
 	class Texture2D : public Texture
 	{
+	public:
 		static Ref<Texture2D> Create(const std::string& texturePath);
 		static Ref<Texture2D> Create(const TextureInfo& textureInfo);
 	};

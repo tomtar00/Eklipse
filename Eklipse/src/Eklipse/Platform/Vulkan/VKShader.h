@@ -15,6 +15,7 @@ namespace Eklipse
 			virtual void Dispose() const override;
 
 			virtual void UploadMat4(const std::string& name, const glm::mat4& matrix) override;
+			virtual void UploadInt(const std::string& name, const int value) override;
 		};
 	}
 }

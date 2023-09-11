@@ -60,12 +60,13 @@ namespace Eklipse
 			glGenTextures(1, &m_id);
 			glBindTexture(GL_TEXTURE_2D, m_id);
 
-			glTexParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_textureInfo.width, m_textureInfo.height, 0, m_format, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 
 			stbi_image_free(data);
 		}
@@ -74,13 +75,16 @@ namespace Eklipse
 			m_format = ConvertToGLFormat(textureInfo.imageFormat);
 			m_internalFormat = ConvertToInternalGLFormat(textureInfo.imageFormat);
 
+			m_textureInfo.width = textureInfo.width;
+			m_textureInfo.height = textureInfo.height;
+
 			glGenTextures(1, &m_id);
 			glBindTexture(GL_TEXTURE_2D, m_id);
 
-			glTexParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 		GLTexture2D::~GLTexture2D()
 		{
@@ -90,8 +94,9 @@ namespace Eklipse
 		{
 			uint32_t singlePixelSize = m_format == GL_RGBA ? 4 : 3;
 			uint32_t dataSize = m_textureInfo.width * m_textureInfo.height * singlePixelSize;
-			EK_ASSERT(size == dataSize, "Data is smaller than the required size of the texture!");
+			EK_ASSERT((size == dataSize), "Data is nt equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
 			glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_textureInfo.width, m_textureInfo.height, 0, m_format, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 		void GLTexture2D::Bind() const
 		{

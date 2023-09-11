@@ -121,6 +121,7 @@ namespace Eklipse
 
 		m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title, nullptr, nullptr);
 		glfwMakeContextCurrent(m_window);
+		glfwSwapInterval(0);
 		glfwSetWindowUserPointer(m_window, &m_data);
 
 		glfwSetErrorCallback(GlfwErrorCallback);

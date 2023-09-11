@@ -8,8 +8,12 @@
 	#else 
 		#define EK_API __declspec(dllimport)
 	#endif
+
+	#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
+
 #else
 	#error Engine only supports Windows!
+	#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); exit(-1); }
 #endif
 
 
@@ -18,8 +22,6 @@
 #define BIT(x) (1 << x)
 #define NAME_T(x) x
 #define STRINGIFY(x) #x
-
-#define EK_ASSERT(x, ...) if (!x) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
 
 namespace Eklipse
 {

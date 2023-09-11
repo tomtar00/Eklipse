@@ -79,6 +79,9 @@ namespace Eklipse
 		}
 		void OpenGLAPI::BeginFrame()
 		{
+			int w, h;
+			Application::Get().GetWindow()->GetFramebufferSize(w, h);
+			glViewport(0, 0, w, h);
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
@@ -87,7 +90,8 @@ namespace Eklipse
 			Application::Get().GetWindow()->SwapBuffers();
 		}
 		void OpenGLAPI::DrawIndexed(const Entity& entity)
-		{
+		{	
+			entity.m_texture->Bind();
 			entity.m_vertexArray->Bind();
 			entity.m_uniformBuffer->SetData(&entity.m_ubo, sizeof(entity.m_ubo));
 

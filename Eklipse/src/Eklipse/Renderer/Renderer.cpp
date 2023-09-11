@@ -26,11 +26,13 @@ namespace Eklipse
 		{
 			entity.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
-
+		
 		// === Record Scene Framebuffer
 		s_framebuffer->Bind();
 		auto& geometryShader = s_shaderLibrary.Get("geometry");
 		geometryShader->Bind();
+
+		geometryShader->UploadInt("texSampler", 0);
 		
 		s_graphicsAPI->BeginGeometryPass();
 		for (auto& entity : s_scene->m_entities)
@@ -41,7 +43,9 @@ namespace Eklipse
 		s_graphicsAPI->EndPass();
 
 		geometryShader->Unbind();
+		
 		s_framebuffer->Unbind();
+		
 		// ===
 
 		s_graphicsAPI->BeginFrame();

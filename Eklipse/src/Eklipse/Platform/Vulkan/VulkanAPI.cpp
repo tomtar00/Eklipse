@@ -107,8 +107,8 @@ namespace Eklipse
 
 			CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
-			g_colorImage.Setup(RendererSettings::msaaSamples);
-			g_depthImage.Setup(RendererSettings::msaaSamples);
+			g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 
 			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			g_descriptorPool = CreateDescriptorPool({
@@ -360,8 +360,8 @@ namespace Eklipse
 			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
 			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 
-			g_colorImage.Setup(RendererSettings::msaaSamples);
-			g_depthImage.Setup(RendererSettings::msaaSamples);
+			g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 
 			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);

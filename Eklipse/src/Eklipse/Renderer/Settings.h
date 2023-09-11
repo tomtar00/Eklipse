@@ -2,8 +2,18 @@
 
 namespace Eklipse
 {
-	struct RendererSettings
+	class RendererSettings
 	{
-		inline static VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	public:
+		static void SetVsync(bool enabled);
+		static bool IsVsync();
+		
+		inline static int GetMsaaSamples() { return s_msaaSamples; }
+		static void SetMsaaSamples(int numSamples);
+
+	private:
+		inline static bool s_vsyncEnabled = false;
+		inline static int s_msaaSamples = 1;
+		inline static int s_mipMapLevel = 1;
 	};
 }
