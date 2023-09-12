@@ -45,7 +45,6 @@ namespace Eklipse
 		geometryShader->Unbind();
 		
 		s_framebuffer->Unbind();
-		
 		// ===
 
 		s_graphicsAPI->BeginFrame();

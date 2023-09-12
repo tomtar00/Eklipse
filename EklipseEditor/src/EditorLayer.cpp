@@ -14,10 +14,10 @@ namespace Editor
 		m_guiLayerCreateInfo.dockingEnabled = true;
 		m_guiLayerCreateInfo.dockLayouts =
 		{
-			{ "Hierarchy",	ImGuiDir_Left,	0.2f },
-			{ "Details",	ImGuiDir_Right, 0.25f },
-			{ "Logs",		ImGuiDir_Down,	0.2f },
-			{ "View",		ImGuiDir_None,  0.5f }
+			{ "Hierarchy",	ImGuiDir_Left,	0.2f	},
+			{ "Details",	ImGuiDir_Right, 0.25f	},
+			{ "Logs",		ImGuiDir_Down,	0.2f	},
+			{ "View",		ImGuiDir_None,  0.5f	}
 		};
 		m_guiLayerCreateInfo.panels =
 		{

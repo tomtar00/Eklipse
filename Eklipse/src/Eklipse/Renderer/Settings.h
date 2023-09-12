@@ -13,7 +13,7 @@ namespace Eklipse
 
 	private:
 		inline static bool s_vsyncEnabled = false;
-		inline static int s_msaaSamples = 1;
+		inline static int s_msaaSamples = 2;
 		inline static int s_mipMapLevel = 1;
 	};
 }
