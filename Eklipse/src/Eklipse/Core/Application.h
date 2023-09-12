@@ -43,6 +43,7 @@ namespace Eklipse
 		void Run();
 		void PushLayer(Ref<Layer> layer);
 		void SetGuiLayer(const GuiLayerConfigInfo& configInfo);
+		void DrawGUI();
 
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);

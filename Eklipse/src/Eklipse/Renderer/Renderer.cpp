@@ -12,12 +12,17 @@ namespace Eklipse
 	Scene*				Renderer::s_scene;
 	ShaderLibrary		Renderer::s_shaderLibrary;
 	Ref<GraphicsAPI>	Renderer::s_graphicsAPI;
-	Ref<Framebuffer>	Renderer::s_framebuffer;
+	Ref<Viewport>		Renderer::s_viewport;
+
+	static Ref<Shader> s_geometryShader;
+	static Ref<Shader> s_framebufferShader;
 
 	void Renderer::Init()
 	{
-		s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");	
-		s_shaderLibrary.Load("framebuffer", "shaders/framebuffer.vert", "shaders/framebuffer.frag");
+		s_scene = Application::Get().GetScene();
+
+		s_geometryShader = s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
+		s_framebufferShader = s_shaderLibrary.Load("framebuffer", "shaders/framebuffer.vert", "shaders/framebuffer.frag");
 	}
 	void Renderer::Update(float deltaTime)
 	{
@@ -27,42 +32,42 @@ namespace Eklipse
 			entity.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
 		
-		// === Record Scene Framebuffer
-		s_framebuffer->Bind();
-		auto& geometryShader = s_shaderLibrary.Get("geometry");
-		geometryShader->Bind();
+		// =============== Record Scene
+		s_viewport->Bind();
 
-		geometryShader->UploadInt("texSampler", 0);
+		s_geometryShader->Bind();
+		s_geometryShader->UploadInt("texSampler", 0);
 		
 		s_graphicsAPI->BeginGeometryPass();
 		for (auto& entity : s_scene->m_entities)
 		{
-			geometryShader->UploadMat4("mvp", entity.m_ubo.mvp);
+			s_geometryShader->UploadMat4("mvp", entity.m_ubo.mvp);
 			s_graphicsAPI->DrawIndexed(entity);
 		}
 		s_graphicsAPI->EndPass();
 
-		geometryShader->Unbind();
+		s_geometryShader->Unbind();
 		
-		s_framebuffer->Unbind();
-		// ===
+		s_viewport->Unbind();
+		// ==============================
 
+		///////////////////////////////// FRAME
 		s_graphicsAPI->BeginFrame();
 
-		// === Draw Scene Framebuffer To Screen
-		/*auto& framebufferShader = s_shaderLibrary.Get("framebuffer");
-		framebufferShader->Bind();
-		s_framebuffer->Draw();
-		framebufferShader->Unbind();*/
-		// ===
+		// =============== Draw Scene
+		s_framebufferShader->Bind();
+		s_viewport->Draw();
+		s_framebufferShader->Unbind();
+		// ==============================
 
-		// === ImGui
+		// =============== Draw ImGui
 		s_graphicsAPI->BeginGUIPass();
-		Application::Get().m_guiLayer->Draw();
+		Application::Get().DrawGUI();
 		s_graphicsAPI->EndPass();
-		// ===
+		// ==============================
 
 		s_graphicsAPI->EndFrame();
+		////////////////////////////////
 	}
 
 	void Renderer::Shutdown()
@@ -97,37 +102,32 @@ namespace Eklipse
 				return;
 			}
 
-			// shutdown old api
 			if (s_graphicsAPI->IsInitialized())
 			{
 				shutdownFn();
-
 				s_graphicsAPI->Shutdown();
-
-				EK_ASSERT((s_graphicsAPI == nullptr),
-					"When switching api, old api ({0}) was not deleted", (int)apiType);
 			}
 		}
 
-		// init new api
 		s_apiType = apiType;
 		s_graphicsAPI = GraphicsAPI::Create();
 
-		s_scene = Application::Get().GetScene();
 		if (!s_graphicsAPI->IsInitialized())
 		{
 			s_graphicsAPI->Init();
 			initFn();
 
 			// TEMP ///
-			FramebufferInfo fbInfo;
+			ViewportCreateInfo vCreateInfo{};
+			vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
+
+			FramebufferInfo fbInfo{};
 			fbInfo.width = 512;
 			fbInfo.height = 512;
-			fbInfo.colorAttachmentInfos = {
-				{ FramebufferTextureFormat::RGBA8 }
-			};
+			fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
 			fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
-			s_framebuffer = Framebuffer::Create(fbInfo);
+
+			s_viewport = Viewport::Create(vCreateInfo);
 			//////////
 		}
 		else

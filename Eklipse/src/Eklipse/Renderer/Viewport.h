@@ -4,10 +4,23 @@
 
 namespace Eklipse
 {
+	enum ViewportFlags
+	{
+		VIEWPORT_NONE				= 0, 
+		VIEWPORT_BLIT_FRAMEBUFFER	= BIT(1)
+	};
+	struct ViewportCreateInfo
+	{
+		ViewportFlags flags;
+		FramebufferInfo framebufferInfo;
+	};
+
 	class Viewport
 	{
 	public:
-		static Ref<Viewport> Create();
+		static Ref<Viewport> Create(ViewportCreateInfo& info);
+
+		Viewport(ViewportCreateInfo& info) : m_createInfo(info) {}
 		virtual ~Viewport() = default;
 
 		void Draw();
@@ -20,6 +33,7 @@ namespace Eklipse
 		virtual void DrawFullscreen() = 0;
 
 	protected:
+		ViewportCreateInfo m_createInfo;
 		Ref<Framebuffer> m_framebuffer;
 	};
 }

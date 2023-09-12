@@ -2,6 +2,7 @@
 #include "GraphicsAPI.h"
 #include "Shader.h"
 #include "Framebuffer.h"
+#include "Viewport.h"
 
 namespace Eklipse
 {
@@ -32,6 +33,6 @@ namespace Eklipse
 		static ShaderLibrary s_shaderLibrary;
 		static Ref<GraphicsAPI> s_graphicsAPI;
 
-		static Ref<Framebuffer> s_framebuffer;
+		static Ref<Viewport> s_viewport;
 	};
 }

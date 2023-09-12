@@ -7,23 +7,26 @@
 
 namespace Eklipse
 {
-	Ref<Viewport> Viewport::Create()
+	Ref<Viewport> Viewport::Create(ViewportCreateInfo& info)
 	{
 		auto apiType = Renderer::GetAPI();
 		switch (apiType)
 		{
-		case ApiType::Vulkan: return CreateRef<Vulkan::VKViewport>();
-		case ApiType::OpenGL: return CreateRef<OpenGL::GLViewport>();
+		case ApiType::Vulkan: return CreateRef<Vulkan::VKViewport>(info);
+		case ApiType::OpenGL: return CreateRef<OpenGL::GLViewport>(info);
 		}
 		EK_ASSERT(false, "API {0} not implemented for RenderTarget creation", int(apiType));
 		return nullptr;
 	}
 	void Viewport::Draw()
 	{
-#ifdef EK_EDITOR
-		DrawViewport();
-#else
-		DrawFullscreen();
-#endif
+		if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+		{
+			DrawViewport();
+		}
+		else
+		{
+			DrawFullscreen();
+		}
 	}
 }

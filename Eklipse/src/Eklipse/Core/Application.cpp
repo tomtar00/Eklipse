@@ -126,6 +126,11 @@ namespace Eklipse
 		m_guiLayer->Init();
 	}
 
+	void Application::DrawGUI()
+	{
+		m_guiLayer->Draw();
+	}
+
 	void Application::Run()
 	{
 		EK_CORE_INFO("========== Starting Eklipse Engine ==========");

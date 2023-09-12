@@ -1,15 +1,15 @@
 #pragma once
 #include <Eklipse/Renderer/Viewport.h>
-#include "GLFramebuffer.h"
 
 namespace Eklipse
 {
-	namespace OpenGL
+	namespace Vulkan
 	{
-		class GLViewport : public Eklipse::Viewport
+		class VKViewport : public Eklipse::Viewport
 		{
 		public:
-			GLViewport(ViewportCreateInfo& info);
+			VKViewport();
+			~VKViewport();
 
 			virtual void Bind() override;
 			virtual void Unbind() override;
@@ -18,9 +18,6 @@ namespace Eklipse
 		protected:
 			virtual void DrawViewport() override;
 			virtual void DrawFullscreen() override;
-
-		private:
-			Ref<GLFramebuffer> m_blitFramebuffer;
 		};
 	}
 }
