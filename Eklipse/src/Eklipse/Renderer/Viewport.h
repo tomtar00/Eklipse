@@ -7,7 +7,8 @@ namespace Eklipse
 	enum ViewportFlags
 	{
 		VIEWPORT_NONE				= 0, 
-		VIEWPORT_BLIT_FRAMEBUFFER	= BIT(1)
+		VIEWPORT_BLIT_FRAMEBUFFER	= BIT(1),
+		VIEWPORT_FULLSCREEN			= BIT(2)
 	};
 	struct ViewportCreateInfo
 	{

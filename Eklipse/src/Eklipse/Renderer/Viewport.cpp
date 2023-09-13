@@ -20,13 +20,13 @@ namespace Eklipse
 	}
 	void Viewport::Draw()
 	{
-		if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+		if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
 		{
-			DrawViewport();
+			DrawFullscreen();
 		}
 		else
 		{
-			DrawFullscreen();
+			DrawViewport();
 		}
 	}
 }

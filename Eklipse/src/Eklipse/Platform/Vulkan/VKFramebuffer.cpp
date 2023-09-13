@@ -12,6 +12,10 @@ namespace Eklipse
 		VKFramebuffer::~VKFramebuffer()
 		{
 		}
+		void* VKFramebuffer::GetMainColorAttachment()
+		{
+			return nullptr;
+		}
 		void VKFramebuffer::Build()
 		{
 		}
@@ -19,9 +23,6 @@ namespace Eklipse
 		{
 		}
 		void VKFramebuffer::Unbind()
-		{
-		}
-		void VKFramebuffer::Draw()
 		{
 		}
 		void VKFramebuffer::Resize(uint32_t width, uint32_t height)

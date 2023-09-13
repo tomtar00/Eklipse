@@ -8,7 +8,7 @@ namespace Eklipse
 		class VKViewport : public Eklipse::Viewport
 		{
 		public:
-			VKViewport();
+			VKViewport(ViewportCreateInfo& info);
 			~VKViewport();
 
 			virtual void Bind() override;

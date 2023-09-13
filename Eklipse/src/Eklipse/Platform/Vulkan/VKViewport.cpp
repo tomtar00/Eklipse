@@ -5,7 +5,7 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKViewport::VKViewport()
+		VKViewport::VKViewport(ViewportCreateInfo& info) : Viewport(info)
 		{
 		
 		}

@@ -1,5 +1,6 @@
 #include "precompiled.h"
 #include "Renderer.h"
+#include "Settings.h"
 
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
@@ -124,8 +125,11 @@ namespace Eklipse
 			FramebufferInfo fbInfo{};
 			fbInfo.width = 512;
 			fbInfo.height = 512;
+			fbInfo.numSamples = RendererSettings::GetMsaaSamples();
 			fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
 			fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
+
+			vCreateInfo.framebufferInfo = fbInfo;
 
 			s_viewport = Viewport::Create(vCreateInfo);
 			//////////

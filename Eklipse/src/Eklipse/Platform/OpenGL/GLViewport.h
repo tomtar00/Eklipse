@@ -10,6 +10,7 @@ namespace Eklipse
 		{
 		public:
 			GLViewport(ViewportCreateInfo& info);
+			~GLViewport();
 
 			virtual void Bind() override;
 			virtual void Unbind() override;
@@ -20,6 +21,8 @@ namespace Eklipse
 			virtual void DrawFullscreen() override;
 
 		private:
+			uint32_t m_rectVAO;
+			uint32_t m_rectVBO;
 			Ref<GLFramebuffer> m_blitFramebuffer;
 		};
 	}

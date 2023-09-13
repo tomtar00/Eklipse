@@ -20,5 +20,6 @@
 #include <chrono>
 #include <random>
 #include <stacktrace>
+#include <optional>
 
 #include "Eklipse/Utils/Log.h"

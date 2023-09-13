@@ -2,8 +2,6 @@
 #include "GLFramebuffer.h"
 #include "GL.h"
 
-#include <Eklipse/Renderer/Settings.h>
-
 namespace Eklipse
 {
 	namespace OpenGL
@@ -22,24 +20,25 @@ namespace Eklipse
 			glDeleteFramebuffers(1, &m_id);
 			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
 			glDeleteTextures(1, &m_depthAttachment);
-
-			/*glDeleteBuffers(1, &m_rectVBO);
-			glDeleteVertexArrays(1, &m_rectVAO);*/
+		}
+		void* GLFramebuffer::GetMainColorAttachment()
+		{
+			return &m_colorAttachments[0];
 		}
 		void GLFramebuffer::Build()
 		{
 			glGenFramebuffers(1, &m_id);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-			int msaaSamples = RendererSettings::GetMsaaSamples();
+			int msaaSamples = m_framebufferInfo.numSamples;
 			bool multiSampled = msaaSamples > 1;
 			m_texTarget = multiSampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 			
 			// TODO: maybe use renderbuffers for better performance (no shader read)
 
-			// Color attachments
 			if (m_framebufferInfo.colorAttachmentInfos.size() > 0)
 			{
+				// Color attachments
 				m_colorAttachments.resize(m_framebufferInfo.colorAttachmentInfos.size());
 				glGenTextures(m_colorAttachments.size(), m_colorAttachments.data());
 
@@ -65,9 +64,7 @@ namespace Eklipse
 				glBindTexture(m_texTarget, 0);
 			}
 
-			// TODO: change
-			g_viewportTexture = m_colorAttachments[0];
-
+			
 			// Depth and stencil attachment
 			glGenTextures(1, &m_depthAttachment);
 			glBindTexture(m_texTarget, m_depthAttachment);
@@ -86,7 +83,7 @@ namespace Eklipse
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment, 0);
-			glBindTexture(m_texTarget, 0);
+			glBindTexture(m_texTarget, 0);	
 
 			EK_ASSERT((m_colorAttachments.size() <= 4), "Too many colors attachemnts! ({0})", m_colorAttachments.size());
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
@@ -95,47 +92,14 @@ namespace Eklipse
 			auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			EK_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete! Code: {0}", status);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			// Rect
-			// float rectangleVertices[] =
-			// {
-			// 	// Coords      // texCoords
-			// 	 1.0f, -1.0f,  1.0f, 0.0f,
-			// 	-1.0f, -1.0f,  0.0f, 0.0f,
-			// 	-1.0f,  1.0f,  0.0f, 1.0f,
-			//   
-			// 	 1.0f,  1.0f,  1.0f, 1.0f,
-			// 	 1.0f, -1.0f,  1.0f, 0.0f,
-			// 	-1.0f,  1.0f,  0.0f, 1.0f
-			// };
-			// glGenVertexArrays(1, &m_rectVAO);
-			// glGenBuffers(1, &m_rectVBO);
-			// glBindVertexArray(m_rectVAO);
-			// glBindBuffer(GL_ARRAY_BUFFER, m_rectVBO);
-			// glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
-			// glEnableVertexAttribArray(0);
-			// glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-			// glEnableVertexAttribArray(1);
-			// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 		}
 		void GLFramebuffer::Bind()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
-			glViewport(0, 0, m_framebufferInfo.width, m_framebufferInfo.height);
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glEnable(GL_DEPTH_TEST);
 		}
 		void GLFramebuffer::Unbind()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		}
-		void GLFramebuffer::Draw()
-		{
-			glBindVertexArray(m_rectVAO);
-			glDisable(GL_DEPTH_TEST);
-			glBindTexture(m_texTarget, g_viewportTexture);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 		void GLFramebuffer::Resize(uint32_t width, uint32_t height)
 		{
@@ -143,9 +107,6 @@ namespace Eklipse
 			glDeleteFramebuffers(1, &m_id);
 			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
 			glDeleteTextures(1, &m_depthAttachment);
-
-			/*glDeleteBuffers(1, &m_rectVBO);
-			glDeleteVertexArrays(1, &m_rectVAO);*/
 
 			// create
 			m_framebufferInfo.width = width;

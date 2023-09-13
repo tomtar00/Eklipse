@@ -36,10 +36,11 @@ namespace Eklipse
 
 		inline const FramebufferInfo& GetInfo() const { return m_framebufferInfo; }
 
+		virtual void* GetMainColorAttachment() = 0;
+
 		virtual void Build() = 0;
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
-		virtual void Draw() = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 	protected:
