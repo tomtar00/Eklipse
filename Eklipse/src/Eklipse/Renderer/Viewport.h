@@ -12,7 +12,7 @@ namespace Eklipse
 	};
 	struct ViewportCreateInfo
 	{
-		ViewportFlags flags;
+		int flags;
 		FramebufferInfo framebufferInfo;
 	};
 
@@ -35,6 +35,5 @@ namespace Eklipse
 
 	protected:
 		ViewportCreateInfo m_createInfo;
-		Ref<Framebuffer> m_framebuffer;
 	};
 }

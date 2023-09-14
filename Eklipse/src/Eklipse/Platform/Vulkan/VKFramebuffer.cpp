@@ -5,12 +5,16 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKFramebuffer::VKFramebuffer(const FramebufferInfo& frambufferInfo)
+		VKFramebuffer::VKFramebuffer(const FramebufferInfo& frambufferInfo) : m_framebufferInfo(frambufferInfo)
 		{
 
 		}
 		VKFramebuffer::~VKFramebuffer()
 		{
+		}
+		const FramebufferInfo& VKFramebuffer::GetInfo() const
+		{
+			return m_framebufferInfo;
 		}
 		void* VKFramebuffer::GetMainColorAttachment()
 		{

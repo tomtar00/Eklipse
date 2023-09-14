@@ -13,6 +13,7 @@ namespace Eklipse
 			GLFramebuffer(const FramebufferInfo& frambufferInfo);
 			virtual ~GLFramebuffer();
 
+			virtual const FramebufferInfo& GetInfo() const override;
 			virtual void* GetMainColorAttachment() override;
 
 			virtual void Build() override;
@@ -20,8 +21,9 @@ namespace Eklipse
 			virtual void Unbind() override;
 			virtual void Resize(uint32_t width, uint32_t height) override;
 		
-		private:
 			uint32_t m_id;
+		private:
+			FramebufferInfo m_framebufferInfo;
 			GLenum m_texTarget;
 
 			std::vector<uint32_t> m_colorAttachments{};

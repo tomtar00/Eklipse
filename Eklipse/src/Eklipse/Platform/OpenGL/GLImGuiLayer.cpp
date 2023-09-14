@@ -58,7 +58,7 @@ namespace Eklipse
 		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{
 			g_viewportSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-			g_framebuffer->Resize(width, height);
+			g_viewport->Resize(width, height);
 		}
 	}
 }

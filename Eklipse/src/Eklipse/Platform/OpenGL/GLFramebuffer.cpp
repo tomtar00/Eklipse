@@ -6,13 +6,8 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLFramebuffer* g_framebuffer;
-
-		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) : m_id(0)
+		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) : m_id(0), m_framebufferInfo(framebufferInfo)
 		{
-			g_framebuffer = this;
-			m_framebufferInfo = framebufferInfo;
-
 			Build();
 		}
 		GLFramebuffer::~GLFramebuffer()
@@ -20,6 +15,10 @@ namespace Eklipse
 			glDeleteFramebuffers(1, &m_id);
 			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
 			glDeleteTextures(1, &m_depthAttachment);
+		}
+		const FramebufferInfo& GLFramebuffer::GetInfo() const
+		{
+			return m_framebufferInfo;
 		}
 		void* GLFramebuffer::GetMainColorAttachment()
 		{

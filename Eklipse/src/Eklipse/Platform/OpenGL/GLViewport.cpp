@@ -8,9 +8,12 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
+		GLViewport* g_viewport;
+
 		GLViewport::GLViewport(ViewportCreateInfo& info) : Viewport(info)
 		{
-			m_framebuffer = Framebuffer::Create(info.framebufferInfo);
+			g_viewport = this;
+			m_framebuffer = CreateRef<GLFramebuffer>(info.framebufferInfo);
 			g_viewportTexture = *(uint32_t*)m_framebuffer->GetMainColorAttachment();
 
 			if (info.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
@@ -23,19 +26,21 @@ namespace Eklipse
 				blitInfo.depthAttachmentInfo = { info.framebufferInfo.depthAttachmentInfo };
 				m_blitFramebuffer = CreateRef<GLFramebuffer>(blitInfo);
 
-				g_viewportTexture = *(uint32_t*)m_blitFramebuffer->GetMainColorAttachment();
+				g_viewportTexture = *(uint32_t*)m_blitFramebuffer->GetMainColorAttachment();				
+			}
 
-				// Rect
+			if (info.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
+			{
 				float rectangleVertices[] =
 				{
-				   // Vert Coords // Tex Coords
-					 1.0f, -1.0f,  1.0f, 0.0f,
-					-1.0f, -1.0f,  0.0f, 0.0f,
-					-1.0f,  1.0f,  0.0f, 1.0f,
-				  
-					 1.0f,  1.0f,  1.0f, 1.0f,
-					 1.0f, -1.0f,  1.0f, 0.0f,
-					-1.0f,  1.0f,  0.0f, 1.0f
+					// Vert Coords // Tex Coords
+					  1.0f, -1.0f,  1.0f, 0.0f,
+					 -1.0f, -1.0f,  0.0f, 0.0f,
+					 -1.0f,  1.0f,  0.0f, 1.0f,
+
+					  1.0f,  1.0f,  1.0f, 1.0f,
+					  1.0f, -1.0f,  1.0f, 0.0f,
+					 -1.0f,  1.0f,  0.0f, 1.0f
 				};
 				glGenVertexArrays(1, &m_rectVAO);
 				glGenBuffers(1, &m_rectVBO);
@@ -50,17 +55,15 @@ namespace Eklipse
 		}
 		GLViewport::~GLViewport()
 		{
-			glDeleteBuffers(1, &m_rectVBO);
-			glDeleteVertexArrays(1, &m_rectVAO);
+			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
+			{
+				glDeleteBuffers(1, &m_rectVBO);
+				glDeleteVertexArrays(1, &m_rectVAO);
+			}
 		}
 		void GLViewport::Bind()
 		{
 			m_framebuffer->Bind();
-
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
-			{
-				m_blitFramebuffer->Bind();
-			}
 
 			glViewport(0, 0, m_framebuffer->GetInfo().width, m_framebuffer->GetInfo().height);
 			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -71,9 +74,11 @@ namespace Eklipse
 		{
 			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
 			{
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer->m_id);
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_blitFramebuffer->m_id);
+
 				uint32_t width = m_framebuffer->GetInfo().width;
 				uint32_t height = m_framebuffer->GetInfo().height;
-				EK_TEST("{0} {1}", width, height);
 				glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 			}
 
@@ -81,13 +86,15 @@ namespace Eklipse
 		}
 		void GLViewport::Resize(uint32_t width, uint32_t height)
 		{
-			m_framebuffer->Resize(width, height);
-
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
 			{
 				glDeleteBuffers(1, &m_rectVBO);
 				glDeleteVertexArrays(1, &m_rectVAO);
+			}
 
+			m_framebuffer->Resize(width, height);
+			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+			{
 				m_blitFramebuffer->Resize(width, height);
 			}
 		}

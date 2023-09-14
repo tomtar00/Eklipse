@@ -118,10 +118,6 @@ namespace Eklipse
 			s_graphicsAPI->Init();
 			initFn();
 
-			// TEMP ///
-			ViewportCreateInfo vCreateInfo{};
-			vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
-
 			FramebufferInfo fbInfo{};
 			fbInfo.width = 512;
 			fbInfo.height = 512;
@@ -129,10 +125,12 @@ namespace Eklipse
 			fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
 			fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
 
+			ViewportCreateInfo vCreateInfo{};
+			//vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
+			vCreateInfo.flags = VIEWPORT_FULLSCREEN | VIEWPORT_BLIT_FRAMEBUFFER;
 			vCreateInfo.framebufferInfo = fbInfo;
 
 			s_viewport = Viewport::Create(vCreateInfo);
-			//////////
 		}
 		else
 			EK_ASSERT(false, "API {0} not initialized!", (int)apiType);

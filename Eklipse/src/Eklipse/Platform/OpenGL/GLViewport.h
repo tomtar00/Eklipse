@@ -23,6 +23,7 @@ namespace Eklipse
 		private:
 			uint32_t m_rectVAO;
 			uint32_t m_rectVBO;
+			Ref<GLFramebuffer> m_framebuffer;
 			Ref<GLFramebuffer> m_blitFramebuffer;
 		};
 	}

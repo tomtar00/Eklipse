@@ -12,12 +12,16 @@ namespace Eklipse
 			VKFramebuffer(const FramebufferInfo& frambufferInfo);
 			virtual ~VKFramebuffer();
 
+			virtual const FramebufferInfo& GetInfo() const override;
 			virtual void* GetMainColorAttachment() override;
 
 			virtual void Build() override;
 			virtual void Bind() override;
 			virtual void Unbind() override;
 			virtual void Resize(uint32_t width, uint32_t height) override;
+
+		private:
+			FramebufferInfo m_framebufferInfo;
 		};
 	}
 }
