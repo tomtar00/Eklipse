@@ -21,9 +21,7 @@ namespace Eklipse
 			virtual void BeginGUIPass() override {};
 			virtual void EndPass() override {};
 
-			virtual void DrawIndexed(const Entity& entity) override;
-
-			float GetAspectRatio() override;
+			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
 		private:
 			inline static OpenGLAPI* s_instance = nullptr;

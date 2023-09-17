@@ -11,12 +11,12 @@ namespace Eklipse
 		// VERTEX BUFFER ///////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 
-		GLVertexBuffer::GLVertexBuffer(std::vector<Vertex> vertices) : m_id(0)
+		GLVertexBuffer::GLVertexBuffer(const std::vector<float>& vertices) : m_id(0)
 		{
-			size_t size = sizeof(vertices[0]) * vertices.size();
+			m_count = vertices.size();
 			glGenBuffers(1, &m_id);
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
-			glBufferData(GL_ARRAY_BUFFER, size, vertices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_count, vertices.data(), GL_STATIC_DRAW);
 		}
 		void GLVertexBuffer::Bind() const
 		{
@@ -35,12 +35,12 @@ namespace Eklipse
 		// INDEX BUFFER ////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 
-		GLIndexBuffer::GLIndexBuffer(std::vector<uint32_t> indices) : m_id(0)
+		GLIndexBuffer::GLIndexBuffer(const std::vector<uint32_t>& indices) : m_id(0)
 		{
 			m_count = indices.size();
 			glGenBuffers(1, &m_id);
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
-			glBufferData(GL_ARRAY_BUFFER, m_count * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(uint32_t) * m_count, indices.data(), GL_STATIC_DRAW);
 		}
 		void GLIndexBuffer::Bind() const
 		{
@@ -55,7 +55,7 @@ namespace Eklipse
 			glDeleteBuffers(1, &m_id);
 		}
 
-		uint32_t GLIndexBuffer::GetCount() const
+		size_t GLIndexBuffer::GetCount() const
 		{
 			return m_count;
 		}

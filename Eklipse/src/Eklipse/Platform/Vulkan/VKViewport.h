@@ -11,13 +11,12 @@ namespace Eklipse
 			VKViewport(ViewportCreateInfo& info);
 			~VKViewport();
 
-			virtual void Bind() override;
-			virtual void Unbind() override;
+			virtual void BindFramebuffer() override;
+			virtual void UnbindFramebuffer() override;
 			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual void Bind() override;
 
-		protected:
-			virtual void DrawViewport() override;
-			virtual void DrawFullscreen() override;
+			virtual Ref<VertexArray> GetVertexArray() const override;
 		};
 	}
 }

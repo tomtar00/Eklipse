@@ -24,7 +24,7 @@ namespace Eklipse
 
 		TextureData m_textureData;
 
-		std::vector<Vertex> m_vertices;
+		std::vector<float> m_vertices;
 		std::vector<uint32_t> m_indices;
 
 	private:

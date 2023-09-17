@@ -2,6 +2,8 @@
 
 #include "GL.h"
 #include "GLImGuiLayer.h"
+
+#include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
@@ -10,7 +12,6 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		ViewportSize	g_viewportSize = { 512, 512 };
 		uint32_t g_viewportTexture;
 
 		GLImGuiLayer::GLImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(window, configInfo)
@@ -57,8 +58,8 @@ namespace Eklipse
 		}
 		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{
-			g_viewportSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-			g_viewport->Resize(width, height);
+			if (width > 0 && height > 0)
+				g_viewport->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 		}
 	}
 }

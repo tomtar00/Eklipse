@@ -18,15 +18,9 @@ namespace Eklipse
 		EK_ASSERT(false, "API {0} not implemented for RenderTarget creation", int(apiType));
 		return nullptr;
 	}
-	void Viewport::Draw()
+	void Viewport::Resize(uint32_t width, uint32_t height)
 	{
-		if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
-		{
-			DrawFullscreen();
-		}
-		else
-		{
-			DrawViewport();
-		}
+		g_viewportSize = { width, height };
+		g_aspectRatio = (float)width / (float)height;
 	}
 }

@@ -12,20 +12,23 @@ namespace Eklipse
 		VKViewport::~VKViewport()
 		{
 		}
+		void VKViewport::BindFramebuffer()
+		{
+		}
+		void VKViewport::UnbindFramebuffer()
+		{
+		}
 		void VKViewport::Bind()
 		{
 		}
-		void VKViewport::Unbind()
+		Ref<VertexArray> VKViewport::GetVertexArray() const
 		{
+			return Ref<VertexArray>();
 		}
 		void VKViewport::Resize(uint32_t width, uint32_t height)
 		{
-		}
-		void VKViewport::DrawViewport()
-		{
-		}
-		void VKViewport::DrawFullscreen()
-		{
+			Viewport::Resize(width, height);
+			if (width == 0 || height == 0) return;
 		}
 	}
 }

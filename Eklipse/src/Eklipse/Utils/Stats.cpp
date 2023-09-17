@@ -3,26 +3,38 @@
 
 namespace Eklipse
 {
-	const float FPS_REFRESH_INTERVAL_SECONDS = 0.5f;
+	const float REFRESH_INTERVAL_SECONDS = 0.5f;
 
+	Stats::Stats() : fps(0), frameTime(0), drawCalls(0), numVertices(0), m_frameAcc(0), m_timeAcc(0)
+	{
+		frameTimes.resize(30);
+	}
+
+	Stats& Stats::Get()
+	{
+		static Stats stats;
+		return stats;
+	}
 	void Stats::Update(float deltaTime)
 	{
-		frameTime = deltaTime;
-
 		m_timeAcc += deltaTime;
 		m_frameAcc += 1;
 
-		if (m_timeAcc > FPS_REFRESH_INTERVAL_SECONDS)
+		if (m_timeAcc > REFRESH_INTERVAL_SECONDS)
 		{
 			fps = m_frameAcc / m_timeAcc;
+
+			frameTime = 1 / fps;
+			frameTimes.push_back(frameTime);
+			frameTimes.erase(frameTimes.begin());
 
 			m_timeAcc = 0.0f;
 			m_frameAcc = 0;
 		}
 	}
-	Stats& Stats::Get()
+	void Stats::Reset()
 	{
-		static Stats stats;
-		return stats;
+		drawCalls = 0;
+		numVertices = 0;
 	}
 }

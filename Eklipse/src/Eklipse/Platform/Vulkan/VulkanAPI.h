@@ -23,9 +23,8 @@ namespace Eklipse
 			virtual void BeginGUIPass() override;
 			virtual void EndPass() override;
 
-			virtual void DrawIndexed(const Entity& entity) override;
+			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
-			float GetAspectRatio() override;
 		private:
 			void CreateInstance();
 			void CreateSurface();

@@ -43,9 +43,9 @@ namespace Eklipse
 		// VERTEX BUFFER ////////////////////////////////
 		/////////////////////////////////////////////////
 
-		VKVertexBuffer::VKVertexBuffer(std::vector<Vertex> vertices)
+		VKVertexBuffer::VKVertexBuffer(const std::vector<float>& vertices)
 		{
-			size_t size = sizeof(vertices[0]) * vertices.size();
+			size_t size = sizeof(float) * vertices.size();
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
 
@@ -74,7 +74,7 @@ namespace Eklipse
 		// INDEX BUFFER /////////////////////////////////
 		/////////////////////////////////////////////////
 
-		VKIndexBuffer::VKIndexBuffer(std::vector<uint32_t> indices)
+		VKIndexBuffer::VKIndexBuffer(const std::vector<uint32_t>& indices)
 		{
 			m_count = indices.size();
 			size_t size = sizeof(indices[0]) * m_count;
@@ -100,7 +100,7 @@ namespace Eklipse
 		{
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
-		uint32_t VKIndexBuffer::GetCount() const
+		size_t VKIndexBuffer::GetCount() const
 		{
 			return m_count;
 		}

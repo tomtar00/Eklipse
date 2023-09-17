@@ -5,12 +5,18 @@ namespace Eklipse
 	class Stats
 	{
 	public:
-		void Update(float deltaTime);
-
+		Stats();
 		static Stats& Get();
+
+		void Reset();
+		void Update(float deltaTime);
 
 		float fps;
 		float frameTime;
+		std::vector<float> frameTimes;
+		uint32_t drawCalls;
+		uint32_t numVertices;
+
 	private:
 		inline static Stats* s_instance = nullptr;
 

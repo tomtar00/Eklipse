@@ -16,35 +16,37 @@ namespace Eklipse
     {
         size_t offset = 0;
         m_stride = 0;
+        m_componentsCount = 0;
         for (auto& element : m_elements)
         {
             element.offset = offset;
             offset += element.size;
             m_stride += element.size;
+            m_componentsCount += element.GetComponentCount();
         }
     }
     uint32_t BufferElement::GetComponentCount() const
     {
         switch (type)
         {
-        case ShaderDataType::Float:   return 1;
-        case ShaderDataType::Float2:  return 2;
-        case ShaderDataType::Float3:  return 3;
-        case ShaderDataType::Float4:  return 4;
-        case ShaderDataType::Mat3:    return 3;
-        case ShaderDataType::Mat4:    return 4;
-        case ShaderDataType::Int:     return 1;
-        case ShaderDataType::Int2:    return 2;
-        case ShaderDataType::Int3:    return 3;
-        case ShaderDataType::Int4:    return 4;
-        case ShaderDataType::Bool:    return 1;
+            case ShaderDataType::Float:   return 1;
+            case ShaderDataType::Float2:  return 2;
+            case ShaderDataType::Float3:  return 3;
+            case ShaderDataType::Float4:  return 4;
+            case ShaderDataType::Mat3:    return 9;
+            case ShaderDataType::Mat4:    return 16;
+            case ShaderDataType::Int:     return 1;
+            case ShaderDataType::Int2:    return 2;
+            case ShaderDataType::Int3:    return 3;
+            case ShaderDataType::Int4:    return 4;
+            case ShaderDataType::Bool:    return 1;
         }
 
         EK_ASSERT(false, "Unknown ShaderDataType!");
         return 0;
     }
 
-    Ref<VertexBuffer> VertexBuffer::Create(std::vector<Vertex> vertices)
+    Ref<VertexBuffer> VertexBuffer::Create(const std::vector<float>& vertices)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)
@@ -56,7 +58,7 @@ namespace Eklipse
         return nullptr;
     }
 
-    Ref<IndexBuffer> IndexBuffer::Create(std::vector<uint32_t> indices)
+    Ref<IndexBuffer> IndexBuffer::Create(const std::vector<uint32_t>& indices)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)

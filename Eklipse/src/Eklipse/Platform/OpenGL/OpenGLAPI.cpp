@@ -89,18 +89,10 @@ namespace Eklipse
 		{
 			Application::Get().GetWindow()->SwapBuffers();
 		}
-		void OpenGLAPI::DrawIndexed(const Entity& entity)
+		void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)
 		{	
-			entity.m_texture->Bind();
-			entity.m_vertexArray->Bind();
-			entity.m_uniformBuffer->SetData(&entity.m_ubo, sizeof(entity.m_ubo));
-
-			uint32_t numIndices = entity.m_vertexArray->GetIndexBuffer()->GetCount();
+			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
-		}
-		float OpenGLAPI::GetAspectRatio()
-		{
-			return (float)g_viewportSize.width / (float)g_viewportSize.height;
 		}
 	}
 }

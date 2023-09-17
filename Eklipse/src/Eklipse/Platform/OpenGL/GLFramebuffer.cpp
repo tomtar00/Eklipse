@@ -82,7 +82,7 @@ namespace Eklipse
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment, 0);
-			glBindTexture(m_texTarget, 0);	
+			glBindTexture(m_texTarget, 0);
 
 			EK_ASSERT((m_colorAttachments.size() <= 4), "Too many colors attachemnts! ({0})", m_colorAttachments.size());
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };

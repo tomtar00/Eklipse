@@ -1,5 +1,6 @@
 #include "precompiled.h"
 #include "Renderer.h"
+#include "RenderCommand.h"
 #include "Settings.h"
 
 #include <Eklipse/Core/Application.h>
@@ -9,14 +10,18 @@
 
 namespace Eklipse
 {
+	ViewportSize		g_viewportSize = { 512, 512 };
+	float				g_aspectRatio  = 0.5f;
+
 	ApiType				Renderer::s_apiType;
 	Scene*				Renderer::s_scene;
 	ShaderLibrary		Renderer::s_shaderLibrary;
-	Ref<GraphicsAPI>	Renderer::s_graphicsAPI;
 	Ref<Viewport>		Renderer::s_viewport;
 
-	static Ref<Shader> s_geometryShader;
-	static Ref<Shader> s_framebufferShader;
+	// TODO: Remove
+	static Ref<Shader>	s_geometryShader;
+	static Ref<Shader>	s_framebufferShader;
+	//
 
 	void Renderer::Init()
 	{
@@ -27,54 +32,66 @@ namespace Eklipse
 	}
 	void Renderer::Update(float deltaTime)
 	{
-		s_scene->m_camera.UpdateViewProjectionMatrix(s_graphicsAPI->GetAspectRatio());
+		if (g_viewportSize.width == 0 || g_viewportSize.height == 0) return;
+
+		s_scene->m_camera.UpdateViewProjectionMatrix(g_aspectRatio);
 		for (auto& entity : s_scene->m_entities)
 		{
 			entity.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
 		}
 		
 		// =============== Record Scene
-		s_viewport->Bind();
+		s_viewport->BindFramebuffer();
 
 		s_geometryShader->Bind();
 		s_geometryShader->UploadInt("texSampler", 0);
 		
-		s_graphicsAPI->BeginGeometryPass();
+		RenderCommand::API->BeginGeometryPass();
 		for (auto& entity : s_scene->m_entities)
 		{
 			s_geometryShader->UploadMat4("mvp", entity.m_ubo.mvp);
-			s_graphicsAPI->DrawIndexed(entity);
+			RenderCommand::DrawIndexed(s_geometryShader, entity.m_vertexArray, entity.m_texture);
 		}
-		s_graphicsAPI->EndPass();
+		RenderCommand::API->EndPass();
 
 		s_geometryShader->Unbind();
 		
-		s_viewport->Unbind();
+		s_viewport->UnbindFramebuffer();
 		// ==============================
 
 		///////////////////////////////// FRAME
-		s_graphicsAPI->BeginFrame();
+		RenderCommand::API->BeginFrame();
 
-		// =============== Draw Scene
-		s_framebufferShader->Bind();
-		s_viewport->Draw();
-		s_framebufferShader->Unbind();
+		// =============== Draw Scene Fullscreen
+		if (s_viewport->HasFlags(VIEWPORT_FULLSCREEN))
+		{
+			s_viewport->Bind();
+			RenderCommand::DrawIndexed(s_framebufferShader, s_viewport->GetVertexArray());
+		}
 		// ==============================
 
 		// =============== Draw ImGui
-		s_graphicsAPI->BeginGUIPass();
+		RenderCommand::API->BeginGUIPass();
 		Application::Get().DrawGUI();
-		s_graphicsAPI->EndPass();
+		RenderCommand::API->EndPass();
 		// ==============================
 
-		s_graphicsAPI->EndFrame();
+		RenderCommand::API->EndFrame();
 		////////////////////////////////
 	}
 
 	void Renderer::Shutdown()
 	{
-		s_graphicsAPI->Shutdown();
+		RenderCommand::API->Shutdown();
 		s_shaderLibrary.Dispose();
+	}
+
+	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
+	{
+		if (s_viewport->HasFlags(VIEWPORT_FULLSCREEN))
+		{
+			s_viewport->Resize(width, height);
+		}
 	}
 
 	ApiType Renderer::GetAPI()
@@ -89,51 +106,41 @@ namespace Eklipse
 
 	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
 	{
-		if (apiType == ApiType::None)
-		{
-			EK_CORE_ERROR("Cannot set graphics API to None");
-			return;
-		}
+		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
 
-		if (s_graphicsAPI != nullptr)
+		if (RenderCommand::API != nullptr)
 		{
-			if (apiType == s_apiType && s_graphicsAPI->IsInitialized())
+			if (apiType == s_apiType && RenderCommand::API->IsInitialized())
 			{
 				EK_CORE_WARN("{0} API already set and initialized!", (int)apiType);
 				return;
 			}
 
-			if (s_graphicsAPI->IsInitialized())
+			if (RenderCommand::API->IsInitialized())
 			{
 				shutdownFn();
-				s_graphicsAPI->Shutdown();
+				RenderCommand::API->Shutdown();
 			}
 		}
 
 		s_apiType = apiType;
-		s_graphicsAPI = GraphicsAPI::Create();
+		RenderCommand::API = GraphicsAPI::Create();
 
-		if (!s_graphicsAPI->IsInitialized())
-		{
-			s_graphicsAPI->Init();
-			initFn();
+		RenderCommand::API->Init();
+		initFn();
 
-			FramebufferInfo fbInfo{};
-			fbInfo.width = 512;
-			fbInfo.height = 512;
-			fbInfo.numSamples = RendererSettings::GetMsaaSamples();
-			fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
-			fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
+		FramebufferInfo fbInfo{};
+		fbInfo.width = 512;
+		fbInfo.height = 512;
+		fbInfo.numSamples = RendererSettings::GetMsaaSamples();
+		fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
+		fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
 
-			ViewportCreateInfo vCreateInfo{};
-			//vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
-			vCreateInfo.flags = VIEWPORT_FULLSCREEN | VIEWPORT_BLIT_FRAMEBUFFER;
-			vCreateInfo.framebufferInfo = fbInfo;
+		ViewportCreateInfo vCreateInfo{};
+		vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
+		vCreateInfo.framebufferInfo = fbInfo;
 
-			s_viewport = Viewport::Create(vCreateInfo);
-		}
-		else
-			EK_ASSERT(false, "API {0} not initialized!", (int)apiType);
+		s_viewport = Viewport::Create(vCreateInfo);
 	}
 	ShaderLibrary& Renderer::GetShaderLibrary()
 	{

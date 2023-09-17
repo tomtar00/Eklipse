@@ -7,7 +7,7 @@ namespace Eklipse
 	class GraphicsAPI
 	{
 	public:
-		static Ref<GraphicsAPI> Create();
+		static Unique<GraphicsAPI> Create();
 		GraphicsAPI();
 
 		virtual void Init() = 0;
@@ -20,9 +20,7 @@ namespace Eklipse
 		virtual void BeginGUIPass() = 0;
 		virtual void EndPass() = 0;
 
-		virtual void DrawIndexed(const Entity& entity) = 0;
-
-		virtual float GetAspectRatio() = 0;
+		virtual void DrawIndexed(Ref<VertexArray> vertexArray) = 0;
 		
 		bool IsInitialized();
 

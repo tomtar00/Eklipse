@@ -31,37 +31,30 @@ namespace Eklipse
 
 			if (info.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
 			{
-				float rectangleVertices[] =
-				{
-					// Vert Coords // Tex Coords
-					  1.0f, -1.0f,  1.0f, 0.0f,
-					 -1.0f, -1.0f,  0.0f, 0.0f,
-					 -1.0f,  1.0f,  0.0f, 1.0f,
-
-					  1.0f,  1.0f,  1.0f, 1.0f,
-					  1.0f, -1.0f,  1.0f, 0.0f,
-					 -1.0f,  1.0f,  0.0f, 1.0f
+				std::vector<float> vertices = {
+					 1.0f,  1.0f, 1.0f, 0.0f,  // top right
+					 1.0f, -1.0f, 1.0f, 1.0f,  // bottom right
+					-1.0f, -1.0f, 0.0f, 1.0f,  // bottom left
+					-1.0f,  1.0f, 0.0f, 0.0f,  // top left 
 				};
-				glGenVertexArrays(1, &m_rectVAO);
-				glGenBuffers(1, &m_rectVBO);
-				glBindVertexArray(m_rectVAO);
-				glBindBuffer(GL_ARRAY_BUFFER, m_rectVBO);
-				glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
-				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-				glEnableVertexAttribArray(1);
-				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+				std::vector<uint32_t> indices = {
+					0, 1, 3,
+					1, 2, 3
+				};
+
+				Ref<VertexBuffer> vertexBuffer = CreateRef<GLVertexBuffer>(vertices);
+				BufferLayout layout = {
+					{ "inPos",			ShaderDataType::Float2,		false },
+					{ "inTexCoords",	ShaderDataType::Float2,		false },
+				};
+				vertexBuffer->SetLayout(layout);
+
+				m_vertexArray = CreateRef<GLVertexArray>();
+				m_vertexArray->AddVertexBuffer(vertexBuffer);
+				m_vertexArray->SetIndexBuffer(CreateRef<GLIndexBuffer>(indices));
 			}
 		}
-		GLViewport::~GLViewport()
-		{
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
-			{
-				glDeleteBuffers(1, &m_rectVBO);
-				glDeleteVertexArrays(1, &m_rectVAO);
-			}
-		}
-		void GLViewport::Bind()
+		void GLViewport::BindFramebuffer()
 		{
 			m_framebuffer->Bind();
 
@@ -70,7 +63,7 @@ namespace Eklipse
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glEnable(GL_DEPTH_TEST);
 		}
-		void GLViewport::Unbind()
+		void GLViewport::UnbindFramebuffer()
 		{
 			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
 			{
@@ -86,11 +79,8 @@ namespace Eklipse
 		}
 		void GLViewport::Resize(uint32_t width, uint32_t height)
 		{
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
-			{
-				glDeleteBuffers(1, &m_rectVBO);
-				glDeleteVertexArrays(1, &m_rectVAO);
-			}
+			Viewport::Resize(width, height);
+			if (width == 0 || height == 0) return;
 
 			m_framebuffer->Resize(width, height);
 			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
@@ -98,16 +88,18 @@ namespace Eklipse
 				m_blitFramebuffer->Resize(width, height);
 			}
 		}
-		void GLViewport::DrawViewport()
+		void GLViewport::Bind()
 		{
-
+			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
+			{
+				m_vertexArray->Bind();
+				glDisable(GL_DEPTH_TEST);
+				glBindTexture(GL_TEXTURE_2D, g_viewportTexture);
+			}
 		}
-		void GLViewport::DrawFullscreen()
+		Ref<VertexArray> GLViewport::GetVertexArray() const
 		{
-			glBindVertexArray(m_rectVAO);
-			glDisable(GL_DEPTH_TEST);
-			glBindTexture(GL_TEXTURE_2D, g_viewportTexture);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			return m_vertexArray;
 		}
 	}
 }

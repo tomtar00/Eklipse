@@ -27,9 +27,9 @@ namespace Editor
 			}
 		}
 
-		ImGui::InputFloat3("Position", glm::value_ptr(m_entity->m_transform.position), "%.5f");
-		ImGui::InputFloat3("Rotation", glm::value_ptr(m_entity->m_transform.rotation), "%.5f");
-		ImGui::InputFloat3("Scale", glm::value_ptr(m_entity->m_transform.scale), "%.5f");
+		ImGui::DragFloat3("Position", glm::value_ptr(m_entity->m_transform.position), 0.1f);
+		ImGui::DragFloat3("Rotation", glm::value_ptr(m_entity->m_transform.rotation), 0.1f);
+		ImGui::DragFloat3("Scale", glm::value_ptr(m_entity->m_transform.scale), 0.1f);
 
 		ImGui::End();
 	}

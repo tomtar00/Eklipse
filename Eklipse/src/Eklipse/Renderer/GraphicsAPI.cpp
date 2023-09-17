@@ -14,13 +14,13 @@ namespace Eklipse
 	{
 		return m_initialized;
 	}
-	Ref<GraphicsAPI> GraphicsAPI::Create()
+	Unique<GraphicsAPI> GraphicsAPI::Create()
 	{
 		auto apiType = Renderer::GetAPI();
 		switch (apiType)
 		{
-			case ApiType::Vulkan: return CreateRef<Vulkan::VulkanAPI>();
-			case ApiType::OpenGL: return CreateRef<OpenGL::OpenGLAPI>();
+			case ApiType::Vulkan: return CreateUnique<Vulkan::VulkanAPI>();
+			case ApiType::OpenGL: return CreateUnique<OpenGL::OpenGLAPI>();
 		}
 		EK_ASSERT(false, "API {0} not implemented!", (int)apiType);
 		return nullptr;

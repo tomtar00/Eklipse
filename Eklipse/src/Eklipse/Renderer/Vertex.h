@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 
+// TODO: Remove this files (moved from struct to BufferLayout)
+
 namespace Eklipse
 {
 	struct Vertex

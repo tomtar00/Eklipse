@@ -13,10 +13,17 @@ namespace Eklipse
 		virtual void OnGUI() = 0;
 	};
 
+	enum EK_API ImGuiNodeDirType
+	{
+		Dir_Same		= BIT(0),
+		Dir_Opposite	= BIT(1)
+	};
+
 	struct EK_API DockLayoutInfo
 	{
 		char* name;
 		ImGuiDir_ dir;
+		int dirType;
 		float ratio;
 
 		ImGuiID id;

@@ -8,12 +8,12 @@ namespace Eklipse
     void Camera::UpdateViewProjectionMatrix(float aspectRatio)
     {
         glm::mat4 projection = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
-        projection[1][1] *= -1;
+        //projection[1][1] *= -1;
 
         float pitch = glm::radians(m_transform.rotation.x);
         float yaw = glm::radians(m_transform.rotation.y);
         float roll = glm::radians(m_transform.rotation.z);
-        glm::vec3 cameraFront;
+        glm::vec3 cameraFront{};
         cameraFront.x = cos(yaw) * cos(pitch);
         cameraFront.y = sin(pitch);
         cameraFront.z = sin(yaw) * cos(pitch);

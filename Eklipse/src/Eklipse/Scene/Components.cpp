@@ -64,18 +64,25 @@ namespace Eklipse
                     attrib.vertices[3 * index.vertex_index + 2]
                 };
 
+                vertex.color = { 1.0f, 1.0f, 1.0f };
+
                 vertex.texCoord =
                 {
                     attrib.texcoords[2 * index.texcoord_index + 0],
                     1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
                 };
 
-                vertex.color = { 1.0f, 1.0f, 1.0f };
-
                 if (uniqueVertices.count(vertex) == 0)
                 {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(m_vertices.size());
-                    m_vertices.push_back(vertex);
+                    uniqueVertices[vertex] = static_cast<uint32_t>(m_vertices.size() / 8);
+                    m_vertices.push_back(vertex.pos.x);
+                    m_vertices.push_back(vertex.pos.y);
+                    m_vertices.push_back(vertex.pos.z);
+                    m_vertices.push_back(vertex.color.r);
+                    m_vertices.push_back(vertex.color.g);
+                    m_vertices.push_back(vertex.color.b);
+                    m_vertices.push_back(vertex.texCoord.x);
+                    m_vertices.push_back(vertex.texCoord.y);
                 }
 
                 m_indices.push_back(uniqueVertices[vertex]);

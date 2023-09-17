@@ -52,10 +52,11 @@ namespace Eklipse
 	class BufferLayout
 	{
 	public:
-		BufferLayout() : m_stride(0) {}
+		BufferLayout() : m_stride(0), m_componentsCount(0) {}
 		BufferLayout(std::initializer_list<BufferElement> elements);
 
 		inline uint32_t GetStride() const { return m_stride; }
+		inline uint32_t GetComponentsCount() const { return m_componentsCount; }
 		inline const std::vector<BufferElement>& GetElements() const { return m_elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_elements.begin(); }
@@ -69,38 +70,42 @@ namespace Eklipse
 	private:
 		std::vector<BufferElement> m_elements;
 		uint32_t m_stride;
+		uint32_t m_componentsCount;
 	};
 
 	class VertexBuffer
 	{
 	public:
-		static Ref<VertexBuffer> Create(std::vector<Vertex> vertices);
+		static Ref<VertexBuffer> Create(const std::vector<float>& vertices);
 		virtual ~VertexBuffer() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
-		
+
+		inline size_t GetCount() const { return m_count / m_bufferLayout.GetComponentsCount(); };
 		inline const BufferLayout& GetBufferLayout() const { return m_bufferLayout; }
 		inline void SetLayout(const BufferLayout& layout) { m_bufferLayout = layout; };
 
 	protected:
 		BufferLayout m_bufferLayout;
+		size_t m_count;
 	};
 
 	class IndexBuffer
 	{
 	public:
-		static Ref<IndexBuffer> Create(std::vector<uint32_t> indices);
+		static Ref<IndexBuffer> Create(const std::vector<uint32_t>& indices);
 		virtual ~IndexBuffer() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
-		virtual uint32_t GetCount() const = 0;
+		virtual size_t GetCount() const = 0;
+
 	protected:
-		uint32_t m_count;
+		size_t m_count;
 	};
 
 	class UniformBuffer

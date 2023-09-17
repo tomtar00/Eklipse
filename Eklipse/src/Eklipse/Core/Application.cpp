@@ -107,6 +107,8 @@ namespace Eklipse
 	{
 		m_appInfo.windowWidth = event.GetWidth();
 		m_appInfo.windowHeight = event.GetHeight();
+
+		Renderer::OnWindowResize(m_appInfo.windowWidth, m_appInfo.windowHeight);
 	}
 
 	void Application::PushLayer(Ref<Layer> layer)
@@ -160,15 +162,17 @@ namespace Eklipse
 				layer->Update(dt);
 			}
 
+			Stats::Get().Reset();
 			Renderer::Update(dt);
 			Stats::Get().Update(dt);
 			m_window->Update(dt);
 		}
 
+		EK_CORE_INFO("========== Closing Eklipse Engine ==========");
+
 		Renderer::Shutdown();
 		m_window->Shutdown();
 		m_layerStack.Shutdown();
 
-		EK_CORE_INFO("========== Closing Eklipse Engine ==========");
 	}
 }

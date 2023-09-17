@@ -282,22 +282,15 @@ namespace Eklipse
 		{
 			EndRenderPass(g_currentCommandBuffer);
 		}
-		void VulkanAPI::DrawIndexed(const Entity& entity)
+		void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
 		{
-			entity.m_vertexArray->Bind();
-			entity.m_uniformBuffer->SetData(&entity.m_ubo, sizeof(entity.m_ubo));
+			//entity.m_uniformBuffer->SetData(&entity.m_ubo, sizeof(entity.m_ubo));
 
 			// TODO: add maybe some unsorted_map Entity->VkDescriptorSet and select descriptorSet from there
 			//VkDescriptorSet descriptorSet = m_descriptorSet;
 			//vkCmdBindDescriptorSets(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-		
-			uint32_t numIndices = entity.m_vertexArray->GetIndexBuffer()->GetCount();
+			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			vkCmdDrawIndexed(g_currentCommandBuffer, numIndices, 1, 0, 0, 0);
-		}
-		float VulkanAPI::GetAspectRatio()
-		{
-			return (float)g_viewportExtent.width / (float)g_viewportExtent.height;
-			//return (float)g_swapChainExtent.width / (float)g_swapChainExtent.height;
 		}
 		void VulkanAPI::CreateInstance()
 		{

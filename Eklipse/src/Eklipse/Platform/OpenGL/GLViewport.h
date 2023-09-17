@@ -1,6 +1,8 @@
 #pragma once
 #include <Eklipse/Renderer/Viewport.h>
 #include "GLFramebuffer.h"
+#include "GLVertexArray.h"
+#include "GLBuffers.h"
 
 namespace Eklipse
 {
@@ -10,19 +12,18 @@ namespace Eklipse
 		{
 		public:
 			GLViewport(ViewportCreateInfo& info);
-			~GLViewport();
+			~GLViewport() = default;
 
-			virtual void Bind() override;
-			virtual void Unbind() override;
+			virtual void BindFramebuffer() override;
+			virtual void UnbindFramebuffer() override;
 			virtual void Resize(uint32_t width, uint32_t height) override;
-
-		protected:
-			virtual void DrawViewport() override;
-			virtual void DrawFullscreen() override;
+			virtual void Bind() override;
+			
+			virtual Ref<VertexArray> GetVertexArray() const override;
 
 		private:
-			uint32_t m_rectVAO;
-			uint32_t m_rectVBO;
+			Ref<GLVertexArray> m_vertexArray;
+
 			Ref<GLFramebuffer> m_framebuffer;
 			Ref<GLFramebuffer> m_blitFramebuffer;
 		};

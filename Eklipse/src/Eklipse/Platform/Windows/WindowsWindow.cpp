@@ -145,9 +145,7 @@ namespace Eklipse
 	}
 	void WindowsWindow::Update(float deltaTime)
 	{
-		std::stringstream title;
-		title << m_data.title << " FPS: " << Stats::Get().fps;
-		glfwSetWindowTitle(m_window, title.str().c_str());
+		glfwSetWindowTitle(m_window, m_data.title);
 		glfwPollEvents();
 	}
 	void WindowsWindow::SetWindowHint(int hint, int value)

@@ -5,6 +5,8 @@
 #include <Panels/ViewPanel.h>
 #include <Panels/LogsPanel.h>
 #include <Panels/DetailsPanel.h>
+#include <Panels/StatsPanel.h>
+#include <Panels/SettingsPanel.h>
 
 namespace Editor
 {
@@ -37,5 +39,7 @@ namespace Editor
 		DetailsPanel m_detailsPanel;
 		LogsPanel m_logsPanel;
 		ViewPanel m_viewPanel;
+		StatsPanel m_statsPanel;
+		SettingsPanel m_settingsPanel;
 	};
 }
