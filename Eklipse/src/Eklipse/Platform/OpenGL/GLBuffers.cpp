@@ -13,10 +13,9 @@ namespace Eklipse
 
 		GLVertexBuffer::GLVertexBuffer(const std::vector<float>& vertices) : m_id(0)
 		{
-			m_count = vertices.size();
 			glGenBuffers(1, &m_id);
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_count, vertices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 		}
 		void GLVertexBuffer::Bind() const
 		{

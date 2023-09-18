@@ -88,7 +88,8 @@ namespace Eklipse
                 m_indices.push_back(uniqueVertices[vertex]);
             }
         }
-        EK_CORE_INFO("Loaded model from path {0}. Vertices: {1} Indices: {2}", modelPath, m_vertices.size(), m_indices.size());
+
+        EK_CORE_INFO("Loaded model from path {0}. Vertices: {1} Indices: {2}", modelPath, m_vertices.size() / 8, m_indices.size());
 
         if (texturePath != nullptr)
         {

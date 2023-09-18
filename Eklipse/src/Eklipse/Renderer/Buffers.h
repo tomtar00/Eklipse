@@ -52,11 +52,10 @@ namespace Eklipse
 	class BufferLayout
 	{
 	public:
-		BufferLayout() : m_stride(0), m_componentsCount(0) {}
+		BufferLayout() : m_stride(0) {}
 		BufferLayout(std::initializer_list<BufferElement> elements);
 
 		inline uint32_t GetStride() const { return m_stride; }
-		inline uint32_t GetComponentsCount() const { return m_componentsCount; }
 		inline const std::vector<BufferElement>& GetElements() const { return m_elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_elements.begin(); }
@@ -70,7 +69,6 @@ namespace Eklipse
 	private:
 		std::vector<BufferElement> m_elements;
 		uint32_t m_stride;
-		uint32_t m_componentsCount;
 	};
 
 	class VertexBuffer
@@ -83,13 +81,11 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
-		inline size_t GetCount() const { return m_count / m_bufferLayout.GetComponentsCount(); };
 		inline const BufferLayout& GetBufferLayout() const { return m_bufferLayout; }
-		inline void SetLayout(const BufferLayout& layout) { m_bufferLayout = layout; };
+		inline void SetLayout(const BufferLayout& layout) { m_bufferLayout = layout; }
 
 	protected:
 		BufferLayout m_bufferLayout;
-		size_t m_count;
 	};
 
 	class IndexBuffer

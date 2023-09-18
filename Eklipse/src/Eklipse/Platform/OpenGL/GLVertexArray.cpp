@@ -52,6 +52,7 @@ namespace Eklipse
 			const auto& layout = vertexBuffer->GetBufferLayout();
 			for (const auto& element : layout)
 			{
+				m_totalNumVertices += element.GetComponentCount();
 				switch (element.type)
 				{
 					case ShaderDataType::Float:

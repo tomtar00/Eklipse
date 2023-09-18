@@ -15,10 +15,7 @@ namespace Eklipse
 		API->DrawIndexed(vertexArray);
 
 		Stats::Get().drawCalls++;
-		for (auto& vb : vertexArray->GetVertexBuffers())
-		{
-			Stats::Get().numVertices += vb->GetCount();
-		}
+		Stats::Get().numVertices += vertexArray->GetTotalNumVertices();
 	}
 	void RenderCommand::DrawIndexed(Ref<Shader> shader, Ref<VertexArray> vertexArray, Ref<Texture> texture)
 	{
