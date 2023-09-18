@@ -34,7 +34,8 @@ namespace Eklipse
 		static void SetStartupAPI(ApiType apiType);
 		static void SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn);
 
-		static ShaderLibrary& GetShaderLibrary();
+		inline static ShaderLibrary& GetShaderLibrary() { return s_shaderLibrary; }
+		inline static Ref<Viewport> GetViewport() { return s_viewport; }
 
 	private:
 		static ApiType s_apiType;

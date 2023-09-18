@@ -81,11 +81,13 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
+		inline const uint32_t GetCount() const { return m_count; }
 		inline const BufferLayout& GetBufferLayout() const { return m_bufferLayout; }
 		inline void SetLayout(const BufferLayout& layout) { m_bufferLayout = layout; }
 
 	protected:
 		BufferLayout m_bufferLayout;
+		uint32_t m_count;
 	};
 
 	class IndexBuffer

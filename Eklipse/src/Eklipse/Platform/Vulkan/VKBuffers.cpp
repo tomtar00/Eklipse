@@ -45,6 +45,7 @@ namespace Eklipse
 
 		VKVertexBuffer::VKVertexBuffer(const std::vector<float>& vertices)
 		{
+			m_count = vertices.size();
 			size_t size = sizeof(float) * vertices.size();
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);

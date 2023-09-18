@@ -49,10 +49,11 @@ namespace Eklipse
 			glBindVertexArray(m_id);
 			vertexBuffer->Bind();
 
+			uint32_t vertexElementsCounter = 0;
 			const auto& layout = vertexBuffer->GetBufferLayout();
 			for (const auto& element : layout)
 			{
-				m_totalNumVertices += element.GetComponentCount();
+				vertexElementsCounter += element.GetComponentCount();
 				switch (element.type)
 				{
 					case ShaderDataType::Float:
@@ -114,6 +115,7 @@ namespace Eklipse
 				}
 			}
 
+			m_totalNumVertices += vertexBuffer->GetCount() / vertexElementsCounter;
 			m_vertexBuffers.push_back(vertexBuffer);
 		}
 		void GLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)

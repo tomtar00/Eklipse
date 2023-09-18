@@ -1,6 +1,8 @@
 #include "precompiled.h"
 #include "Settings.h"
 
+#include <Eklipse/Renderer/Renderer.h>
+
 #ifdef EK_PLATFORM_WINDOWS
 	#include <GLFW/glfw3.h>
 #endif
@@ -9,10 +11,11 @@ namespace Eklipse
 {
 	void RendererSettings::SetVsync(bool enabled)
 	{
+		if (s_vsyncEnabled == enabled) return;
+
 		s_vsyncEnabled = enabled;
 
 #ifdef EK_PLATFORM_WINDOWS
-		// TODO: what is the initial value of swapInterval???
 		if (enabled)
 			glfwSwapInterval(1);
 		else 
@@ -25,7 +28,13 @@ namespace Eklipse
 	}
 	void RendererSettings::SetMsaaSamples(int numSamples)
 	{
-		// TODO: recreate tetures and framebuffers
+		if (s_msaaSamples == numSamples) return;
 		s_msaaSamples = numSamples;
+
+		// TODO: recreate textures and framebuffers (FIX REFERENCE)
+		auto& viewport = Renderer::GetViewport();
+		auto& vCreateInfo = viewport->GetCreateInfo();
+		vCreateInfo.framebufferInfo.numSamples = numSamples;
+		viewport = Viewport::Create(vCreateInfo);
 	}
 }

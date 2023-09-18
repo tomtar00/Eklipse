@@ -120,6 +120,7 @@ namespace Eklipse
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 		m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title, nullptr, nullptr);
+		glfwSetWindowTitle(m_window, m_data.title);
 		glfwMakeContextCurrent(m_window);
 		glfwSwapInterval(0);
 		glfwSetWindowUserPointer(m_window, &m_data);
@@ -145,7 +146,6 @@ namespace Eklipse
 	}
 	void WindowsWindow::Update(float deltaTime)
 	{
-		glfwSetWindowTitle(m_window, m_data.title);
 		glfwPollEvents();
 	}
 	void WindowsWindow::SetWindowHint(int hint, int value)

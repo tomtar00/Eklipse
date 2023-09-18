@@ -142,8 +142,4 @@ namespace Eklipse
 
 		s_viewport = Viewport::Create(vCreateInfo);
 	}
-	ShaderLibrary& Renderer::GetShaderLibrary()
-	{
-		return s_shaderLibrary;
-	}
 }

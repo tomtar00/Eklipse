@@ -11,6 +11,7 @@ namespace Eklipse
     {
         // Projection
         glm::mat4 projection = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
+        projection[1][1] *= -1.0f;
 
         // View
         float pitch = glm::radians(m_transform.rotation.x);

@@ -32,6 +32,7 @@ namespace Eklipse
 
 		virtual Ref<VertexArray> GetVertexArray() const = 0;
 
+		inline ViewportCreateInfo& GetCreateInfo() { return m_createInfo; }
 		inline bool HasFlags(ViewportFlags flags) { return m_createInfo.flags & flags; }
 
 	protected:

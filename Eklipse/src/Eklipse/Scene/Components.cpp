@@ -55,7 +55,7 @@ namespace Eklipse
         {
             for (const auto& index : shape.mesh.indices)
             {
-                Vertex vertex;
+                Vertex vertex{};
 
                 vertex.pos =
                 {
@@ -66,11 +66,14 @@ namespace Eklipse
 
                 vertex.color = { 1.0f, 1.0f, 1.0f };
 
-                vertex.texCoord =
+                if (attrib.texcoords.size() > 0)
                 {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-                };
+                    vertex.texCoord =
+                    {
+                        attrib.texcoords[2 * index.texcoord_index + 0],
+                        1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                    };
+                }
 
                 if (uniqueVertices.count(vertex) == 0)
                 {
