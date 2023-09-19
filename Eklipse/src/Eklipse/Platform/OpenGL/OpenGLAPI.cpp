@@ -79,6 +79,8 @@ namespace Eklipse
 		}
 		void OpenGLAPI::BeginFrame()
 		{
+			EK_PROFILE();
+
 			int w, h;
 			Application::Get().GetWindow()->GetFramebufferSize(w, h);
 			glViewport(0, 0, w, h);
@@ -87,6 +89,7 @@ namespace Eklipse
 		}
 		void OpenGLAPI::EndFrame()
 		{
+			EK_PROFILE();
 			Application::Get().GetWindow()->SwapBuffers();
 		}
 		void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)

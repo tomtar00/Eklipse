@@ -56,6 +56,8 @@ namespace Eklipse
 		}
 		void GLViewport::BindFramebuffer()
 		{
+			EK_PROFILE();
+
 			m_framebuffer->Bind();
 
 			glViewport(0, 0, m_framebuffer->GetInfo().width, m_framebuffer->GetInfo().height);
@@ -65,6 +67,8 @@ namespace Eklipse
 		}
 		void GLViewport::UnbindFramebuffer()
 		{
+			EK_PROFILE();
+
 			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
 			{
 				glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer->m_id);
@@ -90,6 +94,8 @@ namespace Eklipse
 		}
 		void GLViewport::Bind()
 		{
+			EK_PROFILE();
+
 			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
 			{
 				m_vertexArray->Bind();

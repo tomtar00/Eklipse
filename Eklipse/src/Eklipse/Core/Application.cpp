@@ -131,6 +131,8 @@ namespace Eklipse
 
 	void Application::DrawGUI()
 	{
+		EK_PROFILE();
+
 		m_guiLayer->Draw();
 	}
 

@@ -33,6 +33,8 @@ namespace Eklipse
 	}
 	void ImGuiLayer::Update(float deltaTime)
 	{
+		EK_PROFILE();
+
 		if (!(*m_config.enabled)) return;
 
 		NewFrame();

@@ -25,8 +25,6 @@ namespace Eklipse
 
 	void Renderer::Init()
 	{
-		EK_PROFILE();
-
 		s_scene = Application::Get().GetScene();
 
 		s_geometryShader = s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
@@ -99,8 +97,6 @@ namespace Eklipse
 	}
 	void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
 	{
-		EK_PROFILE();
-
 		auto& vCreateInfo = s_viewport->GetCreateInfo();
 		vCreateInfo.framebufferInfo.numSamples = numSamples;
 		vCreateInfo.framebufferInfo.width = g_viewportSize.width;
@@ -120,8 +116,6 @@ namespace Eklipse
 
 	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
 	{
-		EK_PROFILE();
-
 		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
 
 		if (RenderCommand::API != nullptr)

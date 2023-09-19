@@ -9,6 +9,8 @@ namespace Eklipse
 
 	void RenderCommand::DrawIndexed(Ref<Shader> shader, Ref<VertexArray> vertexArray)
 	{
+		EK_PROFILE();
+
 		shader->Bind();
 		vertexArray->Bind();
 
@@ -19,6 +21,8 @@ namespace Eklipse
 	}
 	void RenderCommand::DrawIndexed(Ref<Shader> shader, Ref<VertexArray> vertexArray, Ref<Texture> texture)
 	{
+		EK_PROFILE();
+
 		texture->Bind();
 		DrawIndexed(shader, vertexArray);
 	}

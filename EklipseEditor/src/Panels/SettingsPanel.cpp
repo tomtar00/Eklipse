@@ -5,6 +5,8 @@ namespace Editor
 {
 	void SettingsPanel::OnGUI()
 	{
+		EK_PROFILE();
+
 		ImGui::Begin("Settings");
 
 		static bool v;

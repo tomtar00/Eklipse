@@ -6,6 +6,8 @@ namespace Editor
 {
 	void StatsPanel::OnGUI()
 	{
+		EK_PROFILE();
+
 		ImGui::Begin("Stats");
 
 		auto& stats = Eklipse::Stats::Get();

@@ -12,6 +12,8 @@ namespace Editor
 	}
 	void DetailsPanel::OnGUI()
 	{
+		EK_PROFILE();
+
 		ImGui::Begin("Details");
 		if (m_entity == nullptr)
 		{

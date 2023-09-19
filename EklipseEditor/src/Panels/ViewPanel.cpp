@@ -5,6 +5,8 @@ namespace Editor
 {
 	void ViewPanel::OnGUI()
 	{
+		EK_PROFILE();
+
 		ImGui::Begin("View");
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();

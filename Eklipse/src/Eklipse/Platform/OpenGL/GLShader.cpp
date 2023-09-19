@@ -56,10 +56,14 @@ namespace Eklipse
 		}
 		void GLShader::Bind() const
 		{
+			EK_PROFILE();
+
 			glUseProgram(m_id);
 		}
 		void GLShader::Unbind() const
 		{
+			EK_PROFILE();
+
 			glUseProgram(0);
 		}
 		void GLShader::Dispose() const
@@ -68,11 +72,15 @@ namespace Eklipse
 		}
 		void GLShader::UploadMat4(const std::string& name, const glm::mat4& matrix)
 		{
+			EK_PROFILE();
+
 			GLint location = glGetUniformLocation(m_id, name.c_str());
 			glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 		}
 		void GLShader::UploadInt(const std::string& name, const int value)
 		{
+			EK_PROFILE();
+
 			GLint location = glGetUniformLocation(m_id, name.c_str());
 			glUniform1i(location, value);
 		}

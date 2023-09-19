@@ -5,6 +5,8 @@ namespace Editor
 {
 	void EntitiesPanel::OnGUI()
 	{
+		EK_PROFILE();
+
 		ImGui::Begin("Hierarchy");
 		ImVec2 hierarchySize = ImGui::GetContentRegionAvail();
 

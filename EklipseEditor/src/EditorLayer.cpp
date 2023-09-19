@@ -18,8 +18,8 @@ namespace Editor
 			{ "Settings",	ImGuiDir_Down,	Eklipse::Dir_Same,		0.60f	},
 			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f	},
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f	},
-			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.20f	},
-			{ "Profiler",	ImGuiDir_Right,	Eklipse::Dir_Same,		0.50f	},
+			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f	},
+			{ "Profiler",	ImGuiDir_Right,	Eklipse::Dir_Same,		0.70f	},
 			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f	}
 		};
 		m_guiLayerCreateInfo.panels =
