@@ -29,6 +29,7 @@ namespace Eklipse
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
+		static void OnMultiSamplingChanged(uint32_t numSamples);
 
 		static ApiType GetAPI();
 		static void SetStartupAPI(ApiType apiType);

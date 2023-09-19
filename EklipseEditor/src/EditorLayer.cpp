@@ -19,11 +19,12 @@ namespace Editor
 			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f	},
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f	},
 			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.20f	},
+			{ "Profiler",	ImGuiDir_Right,	Eklipse::Dir_Same,		0.50f	},
 			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f	}
 		};
 		m_guiLayerCreateInfo.panels =
 		{
-			&m_entitiesPanel, &m_detailsPanel, &m_logsPanel, &m_viewPanel, &m_statsPanel, &m_settingsPanel
+			&m_entitiesPanel, &m_detailsPanel, &m_logsPanel, &m_viewPanel, &m_statsPanel, &m_settingsPanel, &m_profilerPanel
 		};
 
 		EK_INFO("Editor layer attached");

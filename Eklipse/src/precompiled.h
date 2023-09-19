@@ -21,5 +21,7 @@
 #include <random>
 #include <stacktrace>
 #include <optional>
+#include <thread>
 
 #include "Eklipse/Utils/Log.h"
+#include "Eklipse/Profiler/Profiler.h"

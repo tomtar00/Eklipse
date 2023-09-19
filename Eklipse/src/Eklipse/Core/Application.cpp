@@ -60,7 +60,8 @@ namespace Eklipse
 			{
 				if (m_guiLayer != nullptr)
 					m_guiLayer->Init();
-			});
+			}
+		);
 	}
 
 	void Application::Init()

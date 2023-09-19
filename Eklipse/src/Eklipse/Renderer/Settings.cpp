@@ -31,10 +31,6 @@ namespace Eklipse
 		if (s_msaaSamples == numSamples) return;
 		s_msaaSamples = numSamples;
 
-		// TODO: recreate textures and framebuffers (FIX REFERENCE)
-		auto& viewport = Renderer::GetViewport();
-		auto& vCreateInfo = viewport->GetCreateInfo();
-		vCreateInfo.framebufferInfo.numSamples = numSamples;
-		viewport = Viewport::Create(vCreateInfo);
+		Renderer::OnMultiSamplingChanged(numSamples);
 	}
 }

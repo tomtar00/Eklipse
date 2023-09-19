@@ -7,6 +7,7 @@
 #include <Panels/DetailsPanel.h>
 #include <Panels/StatsPanel.h>
 #include <Panels/SettingsPanel.h>
+#include <Panels/ProfilerPanel.h>
 
 namespace Editor
 {
@@ -41,5 +42,6 @@ namespace Editor
 		ViewPanel m_viewPanel;
 		StatsPanel m_statsPanel;
 		SettingsPanel m_settingsPanel;
+		ProfilerPanel m_profilerPanel;
 	};
 }

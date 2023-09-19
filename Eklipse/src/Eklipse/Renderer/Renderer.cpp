@@ -25,6 +25,8 @@ namespace Eklipse
 
 	void Renderer::Init()
 	{
+		EK_PROFILE();
+
 		s_scene = Application::Get().GetScene();
 
 		s_geometryShader = s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
@@ -32,6 +34,8 @@ namespace Eklipse
 	}
 	void Renderer::Update(float deltaTime)
 	{
+		EK_PROFILE();
+
 		if (g_viewportSize.width == 0 || g_viewportSize.height == 0) return;
 
 		s_scene->m_camera.UpdateViewProjectionMatrix(g_aspectRatio);
@@ -93,6 +97,16 @@ namespace Eklipse
 			s_viewport->Resize(width, height);
 		}
 	}
+	void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
+	{
+		EK_PROFILE();
+
+		auto& vCreateInfo = s_viewport->GetCreateInfo();
+		vCreateInfo.framebufferInfo.numSamples = numSamples;
+		vCreateInfo.framebufferInfo.width = g_viewportSize.width;
+		vCreateInfo.framebufferInfo.height = g_viewportSize.height;
+		s_viewport = Viewport::Create(vCreateInfo);
+	}
 
 	ApiType Renderer::GetAPI()
 	{
@@ -106,6 +120,8 @@ namespace Eklipse
 
 	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
 	{
+		EK_PROFILE();
+
 		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
 
 		if (RenderCommand::API != nullptr)
@@ -130,8 +146,8 @@ namespace Eklipse
 		initFn();
 
 		FramebufferInfo fbInfo{};
-		fbInfo.width = 512;
-		fbInfo.height = 512;
+		fbInfo.width = g_viewportSize.width;
+		fbInfo.height = g_viewportSize.height;
 		fbInfo.numSamples = RendererSettings::GetMsaaSamples();
 		fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
 		fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
