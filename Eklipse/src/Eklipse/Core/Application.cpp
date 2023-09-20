@@ -114,18 +114,12 @@ namespace Eklipse
 
 	void Application::PushLayer(Ref<Layer> layer)
 	{
-		if (ImGuiLayer* l = dynamic_cast<ImGuiLayer*>(layer.get()))
-		{
-			EK_ASSERT(false, "Tried to add gui layer as normal layer");
-			return;
-		}
-
 		m_layerStack.PushLayer(layer);
 	}
-	void Application::SetGuiLayer(const GuiLayerConfigInfo& configInfo)
+	void Application::PushOverlay(Ref<ImGuiLayer> overlay)
 	{
-		m_guiLayer = ImGuiLayer::Create(m_window.get(), configInfo);
-		m_layerStack.PushLayer(m_guiLayer);
+		m_layerStack.PushOverlay(overlay);
+		m_guiLayer = overlay;
 		m_guiLayer->Init();
 	}
 
@@ -160,14 +154,21 @@ namespace Eklipse
 			m_timer.Record();
 			dt = m_timer.DeltaTime();
 
+			Stats::Get().Reset();
+
 			for (auto& layer : m_layerStack)
 			{
-				layer->Update(dt);
+				layer->OnUpdate(dt);
 			}
 
-			Stats::Get().Reset();
+			for (auto& layer : m_layerStack)
+			{
+				layer->OnGUI();
+			}
+
 			Renderer::Update(dt);
 			Stats::Get().Update(dt);
+
 			m_window->Update(dt);
 		}
 

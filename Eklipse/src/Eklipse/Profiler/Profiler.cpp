@@ -39,7 +39,6 @@ namespace Eklipse
 		}
 		else
 		{
-			// TODO: add to parent data node
 			m_parentTimer->AddChildNode(m_name, m_node);
 		}
 		s_currentTimer = m_parentTimer;

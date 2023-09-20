@@ -14,10 +14,8 @@ namespace Editor
 
 			editorLayer = Eklipse::CreateRef<EditorLayer>();
 			PushLayer(editorLayer);
-
-			SetGuiLayer(editorLayer->GetGuiInfo());
+			PushOverlay(Eklipse::ImGuiLayer::Create(editorLayer->GetGuiInfo()));
 		}
-
 	private:
 		Eklipse::Ref<EditorLayer> editorLayer;
 	};

@@ -33,7 +33,7 @@ namespace Editor
 	{
 		EK_INFO("Editor layer detached");
 	}
-	void EditorLayer::Update(float deltaTime)
+	void EditorLayer::OnUpdate(float deltaTime)
 	{
 	}
 }

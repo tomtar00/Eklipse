@@ -19,7 +19,7 @@ namespace Editor
 
 		void OnAttach() override;
 		void OnDetach() override;
-		void Update(float deltaTime) override;
+		void OnUpdate(float deltaTime) override;
 
 		inline static EditorLayer* Get() { return s_instance; }
 

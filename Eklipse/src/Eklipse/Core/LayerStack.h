@@ -12,6 +12,10 @@ namespace Eklipse
 
 		void PushLayer(Ref<Layer> layer);
 		void PopLayer(Ref<Layer> layer);
+
+		void PushOverlay(Ref<Layer> overlay);
+		void PopOverlay(Ref<Layer> overlay);
+
 		void Shutdown();
 
 		std::vector<Ref<Layer>>::iterator begin() { return m_layers.begin(); }
@@ -19,5 +23,6 @@ namespace Eklipse
 
 	private:
 		std::vector<Ref<Layer>> m_layers;
+		uint32_t m_lastLayerIndex = 0;
 	};
 }

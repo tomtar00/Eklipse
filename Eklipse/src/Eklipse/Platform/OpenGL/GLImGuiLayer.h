@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:
-			GLImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo);
+			GLImGuiLayer(const GuiLayerConfigInfo& configInfo);
 			virtual ~GLImGuiLayer() {}
 
 			virtual void Init() override;

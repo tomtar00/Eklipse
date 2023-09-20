@@ -42,7 +42,7 @@ namespace Eklipse
 		void Init();
 		void Run();
 		void PushLayer(Ref<Layer> layer);
-		void SetGuiLayer(const GuiLayerConfigInfo& configInfo);
+		void PushOverlay(Ref<ImGuiLayer> overlay);
 		void DrawGUI();
 
 		void OnEventReceived(Event& event);

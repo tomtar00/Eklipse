@@ -7,6 +7,7 @@
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
+#include <Eklipse/Core/Application.h>
 
 namespace Eklipse
 {
@@ -14,9 +15,9 @@ namespace Eklipse
 	{
 		uint32_t g_viewportTexture;
 
-		GLImGuiLayer::GLImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(window, configInfo)
+		GLImGuiLayer::GLImGuiLayer(const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(configInfo)
 		{
-			m_glfwWindow = window->GetGlfwWindow();
+			m_glfwWindow = Application::Get().GetWindow()->GetGlfwWindow();
 			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in GL ImGui Layer!");
 		}
 		void GLImGuiLayer::Init()

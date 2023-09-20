@@ -8,12 +8,13 @@ namespace Eklipse
 	{
 	public:
 		Layer() = default;
-		virtual ~Layer() { }
+		virtual ~Layer() = default;
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnEvent(Event& event) {}
 
-		virtual void Update(float deltaTime) {}
+		virtual void OnUpdate(float deltaTime) {}
+		virtual void OnGUI() {}
 	};
 }

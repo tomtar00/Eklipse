@@ -11,7 +11,7 @@ namespace Eklipse
 		class VkImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:
-			VkImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo);
+			VkImGuiLayer(const GuiLayerConfigInfo& configInfo);
 			virtual ~VkImGuiLayer() {}
 
 			virtual void Init() override;

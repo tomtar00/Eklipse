@@ -12,6 +12,7 @@
 #include "VKSwapChain.h"
 #include "VKPipeline.h"
 #include "VKDescriptor.h"
+#include <Eklipse/Core/Application.h>
 
 namespace Eklipse
 {
@@ -29,10 +30,10 @@ namespace Eklipse
 		std::vector<Image>				g_viewportImages{};
 		std::vector<VkFramebuffer>		g_viewportFrameBuffers{};
 
-		VkImGuiLayer::VkImGuiLayer(Window* window, const GuiLayerConfigInfo& configInfo) :
-			m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(window, configInfo)
+		VkImGuiLayer::VkImGuiLayer(const GuiLayerConfigInfo& configInfo) :
+			m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(configInfo)
 		{
-			m_glfwWindow = dynamic_cast<WindowsWindow*>(window)->GetGlfwWindow();
+			m_glfwWindow = Eklipse::Application::Get().GetWindow()->GetGlfwWindow();
 			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in VK ImGui Layer!");
 		}
 		void VkImGuiLayer::Init()

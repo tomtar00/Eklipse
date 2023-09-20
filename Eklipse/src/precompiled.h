@@ -22,6 +22,7 @@
 #include <stacktrace>
 #include <optional>
 #include <thread>
+#include <stack>
 
 #include "Eklipse/Utils/Log.h"
 #include "Eklipse/Profiler/Profiler.h"
