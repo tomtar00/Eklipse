@@ -7,7 +7,7 @@ namespace Editor
 	{
 		EK_PROFILE();
 
-		ImGui::Begin("Hierarchy");
+		ImGui::Begin("Entities");
 		ImVec2 hierarchySize = ImGui::GetContentRegionAvail();
 
 		auto& camera = Eklipse::Application::Get().GetScene()->m_camera;

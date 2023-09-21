@@ -14,7 +14,7 @@ namespace Editor
 		m_guiLayerCreateInfo.dockingEnabled = true;
 		m_guiLayerCreateInfo.dockLayouts =
 		{
-			{ "Hierarchy",	ImGuiDir_Left,	Eklipse::Dir_Opposite,	0.20f	},
+			{ "Entities",	ImGuiDir_Left,	Eklipse::Dir_Opposite,	0.20f	},
 			{ "Settings",	ImGuiDir_Down,	Eklipse::Dir_Same,		0.60f	},
 			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f	},
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f	},

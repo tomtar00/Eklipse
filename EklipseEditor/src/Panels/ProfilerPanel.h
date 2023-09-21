@@ -7,5 +7,8 @@ namespace Editor
 	{
 	public:
 		void OnGUI();
+	private:
+		bool m_ascendingSort = false;
+		uint32_t m_columnIndex = -1;
 	};
 }

@@ -30,6 +30,7 @@ namespace Eklipse
 	Application::~Application()
 	{
 		m_scene.Dispose();
+		EK_PROFILE_END();
 	}
 	Application& Application::Get()
 	{
@@ -85,6 +86,8 @@ namespace Eklipse
 
 	void Application::OnEventReceived(Event& event)
 	{
+		EK_PROFILE();
+
 		EK_CORE_TRACE(event.ToString());
 
 		EventDispatcher dispatcher(event);
@@ -154,8 +157,6 @@ namespace Eklipse
 			m_timer.Record();
 			dt = m_timer.DeltaTime();
 
-			Stats::Get().Reset();
-
 			for (auto& layer : m_layerStack)
 			{
 				layer->OnUpdate(dt);
@@ -166,19 +167,20 @@ namespace Eklipse
 				layer->OnGUI();
 			}
 
+			Stats::Get().Reset();
 			Renderer::Update(dt);
 			Stats::Get().Update(dt);
 
 			m_window->Update(dt);
 
-			EK_PROFILE_END_FRAME();
+			EK_PROFILE_END_FRAME(dt);
 		}
 
 		EK_CORE_INFO("========== Closing Eklipse Engine ==========");
+		EK_PROFILE_BEGIN("Shutdown");
 
 		Renderer::Shutdown();
 		m_window->Shutdown();
 		m_layerStack.Shutdown();
-
 	}
 }

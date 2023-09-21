@@ -1,8 +1,10 @@
 #pragma once
 
+#define MAX_PROFILED_FRAMES 100
+#define SAMPLE_TIME_INTERVAL 1.0f
+
 namespace Eklipse
 {
-	constexpr int MAX_PROFILED_FRAMES = 100;
 	using TimePoint = std::chrono::steady_clock::time_point;
 
 	struct ProfilerNode
@@ -31,7 +33,7 @@ namespace Eklipse
 		void Start(char* name);
 		void Stop();
 		void AddChildNode(const ProfilerNode& node);
-		bool ContainsSignature(uint32_t signature);
+		ProfilerNode* GetChildNodeBySiganture(uint32_t signature);
 
 		inline float GetTimeMs() { return m_deltaMs; }
 		inline char* GetName() { return m_name; }
@@ -53,8 +55,9 @@ namespace Eklipse
 
 		static void Begin(char* name);
 		static void End();
-		static void EndFrame();
+		static void EndFrame(float deltaTime);
 
+		static bool CanProfile();
 		static std::vector<ProfilerFrameData>& GetData();
 		static ProfilerFrameData& GetLastFrameData();
 
@@ -63,6 +66,8 @@ namespace Eklipse
 	private:
 		static std::vector<ProfilerFrameData> m_frameData;
 		static ProfilerTimer m_timer;
+		static float m_timeAcc;
+		static bool m_allowProfiling;
 	};
 }
 
@@ -83,7 +88,7 @@ namespace Eklipse
 	#define EK_PROFILE_BEGIN(name)	Eklipse::Profiler::Begin(name)
 	#define EK_PROFILE_END()		Eklipse::Profiler::End()
 
-	#define EK_PROFILE_END_FRAME()	Eklipse::Profiler::EndFrame()
+	#define EK_PROFILE_END_FRAME(dt)	Eklipse::Profiler::EndFrame(dt)
 #else
 	#define EK_PROFILE_NAME(name)
 	#define EK_PROFILE()	

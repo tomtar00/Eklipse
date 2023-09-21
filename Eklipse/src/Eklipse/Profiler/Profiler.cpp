@@ -5,6 +5,8 @@ namespace Eklipse
 	std::vector<ProfilerFrameData>	Profiler::m_frameData;
 	ProfilerTimer					Profiler::m_timer;
 	ProfilerFrameData				Profiler::FrameData;
+	float							Profiler::m_timeAcc = 0;
+	bool							Profiler::m_allowProfiling = true;
 
 	ProfilerTimer*					ProfilerTimer::s_currentTimer;
 
@@ -15,6 +17,7 @@ namespace Eklipse
 	}
 	void Profiler::Begin(char* name)
 	{
+		m_allowProfiling = true;
 		m_timer.Start(name);
 	}
 	void Profiler::End()
@@ -22,11 +25,23 @@ namespace Eklipse
 		m_timer.Stop();
 		EK_CORE_TRACE("Stage '{0}' took {1}ms", m_timer.GetName(), m_timer.GetTimeMs());
 	}
-	void Profiler::EndFrame()
+	void Profiler::EndFrame(float deltaTime)
 	{
-		m_frameData.push_back(FrameData);
-		FrameData.ProfileNodes.clear();
-		m_frameData.erase(m_frameData.begin());
+		if (m_allowProfiling) m_allowProfiling = false;
+
+		m_timeAcc += deltaTime;
+		if (m_timeAcc > SAMPLE_TIME_INTERVAL)
+		{
+			m_frameData.push_back(FrameData);
+			FrameData.ProfileNodes.clear();
+			m_frameData.erase(m_frameData.begin());
+			m_timeAcc = 0.0f;
+			m_allowProfiling = true;
+		}
+	}
+	bool Profiler::CanProfile()
+	{
+		return m_allowProfiling;
 	}
 	std::vector<ProfilerFrameData>& Profiler::GetData()
 	{
@@ -39,6 +54,15 @@ namespace Eklipse
 	//////////////////////////////////////////////
 
 	// TIMER /////////////////////////////////////
+	void AddNode(ProfilerNode& dst, const ProfilerNode& src)
+	{
+		dst.numCalls += src.numCalls;
+		dst.execTimeMs += src.execTimeMs;
+		for (size_t i = 0; i < dst.ChildNodes.size(); i++)
+		{
+			AddNode(dst.ChildNodes[i], src.ChildNodes[i]);
+		}
+	}
 	ProfilerTimer::ProfilerTimer(char* name) : m_name(name), m_parentTimer(nullptr)
 	{
 		Start(name);
@@ -49,6 +73,8 @@ namespace Eklipse
 	}
 	void ProfilerTimer::Start(char* name)
 	{
+		if (!Profiler::CanProfile()) return;
+
 		m_name = name;
 		m_parentTimer = nullptr;
 
@@ -62,6 +88,8 @@ namespace Eklipse
 	}
 	void ProfilerTimer::Stop()
 	{
+		if (!Profiler::CanProfile()) return;
+
 		auto endTime = std::chrono::high_resolution_clock::now();
 		m_deltaMs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - m_startTime).count() / 1000.0f;
 
@@ -76,9 +104,10 @@ namespace Eklipse
 		}
 		else
 		{
-			if (m_parentTimer->ContainsSignature(m_node.signature))
+			auto signatureNode = m_parentTimer->GetChildNodeBySiganture(m_node.signature);
+			if (signatureNode != nullptr)
 			{
-				// TODO: get child node that contains the signature, than increament numCalls and sum execTimeMs
+				AddNode(*signatureNode, m_node);
 			}
 			else
 				m_parentTimer->AddChildNode(m_node);
@@ -89,14 +118,14 @@ namespace Eklipse
 	{
 		m_node.ChildNodes.push_back(node);
 	}
-	bool ProfilerTimer::ContainsSignature(uint32_t signature)
+	ProfilerNode* ProfilerTimer::GetChildNodeBySiganture(uint32_t signature)
 	{
 		for (size_t i = 0; i < m_node.ChildNodes.size(); i++)
 		{
 			if (m_node.ChildNodes[i].signature == signature)
-				return true;
+				return &m_node.ChildNodes[i];
 		}
-		return false;
+		return nullptr;
 	}
 	//////////////////////////////////////////////
 }
