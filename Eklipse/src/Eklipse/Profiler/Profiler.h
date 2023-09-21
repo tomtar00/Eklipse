@@ -2,43 +2,67 @@
 
 namespace Eklipse
 {
+	constexpr int MAX_PROFILED_FRAMES = 100;
 	using TimePoint = std::chrono::steady_clock::time_point;
 
-	struct ProfileNode
+	struct ProfilerNode
 	{
-		uint32_t threadId;
-		float execTimeMs;
+		char* name;
+		uint32_t signature{ 0 };
+		uint32_t threadId{ 0 };
+		uint32_t numCalls{ 1 };
+		float execTimeMs{ 0.0f };
 
-		std::unordered_map<const char*, ProfileNode> childNodes;
+		std::vector<ProfilerNode> ChildNodes;
+	};
 
-		ProfileNode() = default;
-		ProfileNode(const ProfileNode& data) : threadId(data.threadId), execTimeMs(data.execTimeMs){}
+	struct ProfilerFrameData
+	{
+		std::vector<ProfilerNode> ProfileNodes;
 	};
 
 	class ProfilerTimer
 	{
 	public:
+		ProfilerTimer() = default;
 		ProfilerTimer(char* name);
 		~ProfilerTimer();
-		void AddChildNode(const char* signature, const ProfileNode& data);
+
+		void Start(char* name);
+		void Stop();
+		void AddChildNode(const ProfilerNode& node);
+		bool ContainsSignature(uint32_t signature);
+
+		inline float GetTimeMs() { return m_deltaMs; }
+		inline char* GetName() { return m_name; }
 
 	private:
 		static ProfilerTimer* s_currentTimer;
 		ProfilerTimer* m_parentTimer;
-		ProfileNode m_node;
+		ProfilerNode m_node;
 
 		char* m_name;
 		TimePoint m_startTime;
+		float m_deltaMs;
 	};
 
 	class Profiler
 	{
 	public:
-		static void AddSample(const char* signature, const ProfileNode& sample);
-		static std::unordered_map<const char*, ProfileNode>& GetData();
+		static void Init();
+
+		static void Begin(char* name);
+		static void End();
+		static void EndFrame();
+
+		static std::vector<ProfilerFrameData>& GetData();
+		static ProfilerFrameData& GetLastFrameData();
+
+		static ProfilerFrameData FrameData;
 
 	private:
-		static std::unordered_map<const char*, ProfileNode> m_profileData;
+		static std::vector<ProfilerFrameData> m_frameData;
+		static ProfilerTimer m_timer;
 	};
 }
 
@@ -53,7 +77,19 @@ namespace Eklipse
 #endif
 
 #ifdef EK_DEBUG
-	#define EK_PROFILE()	Eklipse::ProfilerTimer timer(EK_FUNC_SIG)
+	#define EK_PROFILE_NAME(name)	Eklipse::ProfilerTimer timer(name)
+	#define EK_PROFILE()			EK_PROFILE_NAME(EK_FUNC_SIG)
+
+	#define EK_PROFILE_BEGIN(name)	Eklipse::Profiler::Begin(name)
+	#define EK_PROFILE_END()		Eklipse::Profiler::End()
+
+	#define EK_PROFILE_END_FRAME()	Eklipse::Profiler::EndFrame()
 #else
+	#define EK_PROFILE_NAME(name)
 	#define EK_PROFILE()	
+
+	#define EK_PROFILE_BEGIN(name)
+	#define EK_PROFILE_END()
+
+	#define EK_PROFILE_END_FRAME()
 #endif

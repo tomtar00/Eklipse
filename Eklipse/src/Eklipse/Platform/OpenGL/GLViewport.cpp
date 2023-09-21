@@ -16,7 +16,7 @@ namespace Eklipse
 			m_framebuffer = CreateRef<GLFramebuffer>(info.framebufferInfo);
 			g_viewportTexture = *(uint32_t*)m_framebuffer->GetMainColorAttachment();
 
-			if (info.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+			if (info.flags & VIEWPORT_BLIT_FRAMEBUFFER)
 			{
 				FramebufferInfo blitInfo{};
 				blitInfo.width = info.framebufferInfo.width;
@@ -29,13 +29,13 @@ namespace Eklipse
 				g_viewportTexture = *(uint32_t*)m_blitFramebuffer->GetMainColorAttachment();				
 			}
 
-			if (info.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
+			if (info.flags & VIEWPORT_FULLSCREEN)
 			{
 				std::vector<float> vertices = {
 					 1.0f,  1.0f, 1.0f, 0.0f,  // top right
 					 1.0f, -1.0f, 1.0f, 1.0f,  // bottom right
 					-1.0f, -1.0f, 0.0f, 1.0f,  // bottom left
-					-1.0f,  1.0f, 0.0f, 0.0f,  // top left 
+					-1.0f,  1.0f, 0.0f, 0.0f,  // top left
 				};
 				std::vector<uint32_t> indices = {
 					0, 1, 3,
@@ -69,7 +69,7 @@ namespace Eklipse
 		{
 			EK_PROFILE();
 
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+			if (m_createInfo.flags & VIEWPORT_BLIT_FRAMEBUFFER)
 			{
 				glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer->m_id);
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_blitFramebuffer->m_id);
@@ -87,7 +87,7 @@ namespace Eklipse
 			if (width == 0 || height == 0) return;
 
 			m_framebuffer->Resize(width, height);
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_BLIT_FRAMEBUFFER)
+			if (m_createInfo.flags & VIEWPORT_BLIT_FRAMEBUFFER)
 			{
 				m_blitFramebuffer->Resize(width, height);
 			}
@@ -96,7 +96,7 @@ namespace Eklipse
 		{
 			EK_PROFILE();
 
-			if (m_createInfo.flags & ViewportFlags::VIEWPORT_FULLSCREEN)
+			if (m_createInfo.flags & VIEWPORT_FULLSCREEN)
 			{
 				m_vertexArray->Bind();
 				glDisable(GL_DEPTH_TEST);

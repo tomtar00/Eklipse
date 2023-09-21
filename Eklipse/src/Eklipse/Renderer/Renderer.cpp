@@ -97,10 +97,18 @@ namespace Eklipse
 	}
 	void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
 	{
-		auto& vCreateInfo = s_viewport->GetCreateInfo();
-		vCreateInfo.framebufferInfo.numSamples = numSamples;
-		vCreateInfo.framebufferInfo.width = g_viewportSize.width;
-		vCreateInfo.framebufferInfo.height = g_viewportSize.height;
+		FramebufferInfo fbInfo{};
+		fbInfo.width = g_viewportSize.width;
+		fbInfo.height = g_viewportSize.height;
+		fbInfo.numSamples = numSamples;
+		fbInfo.colorAttachmentInfos = s_viewport->GetCreateInfo().framebufferInfo.colorAttachmentInfos;
+		fbInfo.depthAttachmentInfo = s_viewport->GetCreateInfo().framebufferInfo.depthAttachmentInfo;
+
+		ViewportCreateInfo vCreateInfo{};
+		vCreateInfo.flags = s_viewport->GetCreateInfo().flags;
+		vCreateInfo.framebufferInfo = fbInfo;
+
+		s_viewport.reset();
 		s_viewport = Viewport::Create(vCreateInfo);
 	}
 
@@ -134,6 +142,7 @@ namespace Eklipse
 		}
 
 		s_apiType = apiType;
+		RenderCommand::API.reset();
 		RenderCommand::API = GraphicsAPI::Create();
 
 		RenderCommand::API->Init();
@@ -144,7 +153,7 @@ namespace Eklipse
 		fbInfo.height = g_viewportSize.height;
 		fbInfo.numSamples = RendererSettings::GetMsaaSamples();
 		fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
-		fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::Depth };
+		fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::DEPTH24STENCIL8 };
 
 		ViewportCreateInfo vCreateInfo{};
 		vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;

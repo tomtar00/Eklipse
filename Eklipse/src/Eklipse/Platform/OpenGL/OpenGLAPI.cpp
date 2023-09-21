@@ -90,10 +90,13 @@ namespace Eklipse
 		void OpenGLAPI::EndFrame()
 		{
 			EK_PROFILE();
+
 			Application::Get().GetWindow()->SwapBuffers();
 		}
 		void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)
 		{	
+			EK_PROFILE();
+
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
 		}

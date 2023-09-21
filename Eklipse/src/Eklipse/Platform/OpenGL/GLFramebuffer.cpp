@@ -44,12 +44,13 @@ namespace Eklipse
 				for (size_t i = 0; i < m_colorAttachments.size(); i++)
 				{
 					glBindTexture(m_texTarget, m_colorAttachments[i]);
+					GLenum colorFormat = CovertToGLFormat(m_framebufferInfo.colorAttachmentInfos[i].textureFormat);
 
 					if (multiSampled)
-						glTexImage2DMultisample(m_texTarget, msaaSamples, GL_RGB, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
+						glTexImage2DMultisample(m_texTarget, msaaSamples, colorFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
 					else
 					{
-						glTexImage2D(m_texTarget, 0, GL_RGB, m_framebufferInfo.width, m_framebufferInfo.height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+						glTexImage2D(m_texTarget, 0, colorFormat, m_framebufferInfo.width, m_framebufferInfo.height, 0, colorFormat, GL_UNSIGNED_BYTE, nullptr);
 
 						glTexParameteri(m_texTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 						glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -62,17 +63,18 @@ namespace Eklipse
 				}
 				glBindTexture(m_texTarget, 0);
 			}
-
 			
 			// Depth and stencil attachment
 			glGenTextures(1, &m_depthAttachment);
 			glBindTexture(m_texTarget, m_depthAttachment);
 
+			GLenum depthFormat = CovertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
+
 			if (multiSampled)
-				glTexImage2DMultisample(m_texTarget, msaaSamples, GL_DEPTH24_STENCIL8, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
+				glTexImage2DMultisample(m_texTarget, msaaSamples, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
 			else
 			{
-				glTexStorage2D(m_texTarget, 1, GL_DEPTH24_STENCIL8, m_framebufferInfo.width, m_framebufferInfo.height);
+				glTexStorage2D(m_texTarget, 1, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height);
 
 				glTexParameteri(m_texTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

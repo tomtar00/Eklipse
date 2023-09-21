@@ -7,6 +7,19 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
+		static GLenum CovertToGLFormat(FramebufferTextureFormat format)
+		{
+			switch (format)
+			{
+				case FramebufferTextureFormat::RGB8:			return GL_RGB;
+				case FramebufferTextureFormat::RGBA8:			return GL_RGBA;
+				case FramebufferTextureFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
+			}
+
+			EK_ASSERT(false, "Wrong image format");
+			return 0;
+		}
+
 		class GLFramebuffer : public Eklipse::Framebuffer
 		{
 		public:

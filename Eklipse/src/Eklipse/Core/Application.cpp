@@ -170,6 +170,8 @@ namespace Eklipse
 			Stats::Get().Update(dt);
 
 			m_window->Update(dt);
+
+			EK_PROFILE_END_FRAME();
 		}
 
 		EK_CORE_INFO("========== Closing Eklipse Engine ==========");

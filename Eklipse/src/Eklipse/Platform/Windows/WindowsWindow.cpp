@@ -156,6 +156,8 @@ namespace Eklipse
 	}
 	void WindowsWindow::SwapBuffers()
 	{
+		EK_PROFILE();
+
 		glfwSwapBuffers(m_window);
 	}
 	GLFWwindow* WindowsWindow::GetGlfwWindow()

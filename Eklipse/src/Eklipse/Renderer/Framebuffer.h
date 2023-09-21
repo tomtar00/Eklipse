@@ -5,14 +5,9 @@ namespace Eklipse
 	enum class FramebufferTextureFormat
 	{
 		None = 0,
-
-		// Color
+		RGB8,
 		RGBA8,
-		RED_INTEGER,
-
-		// Depth/stencil
 		DEPTH24STENCIL8,
-		Depth = DEPTH24STENCIL8
 	};
 
 	struct FramebufferAttachmentInfo

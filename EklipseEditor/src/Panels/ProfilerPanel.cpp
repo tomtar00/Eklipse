@@ -2,9 +2,7 @@
 
 namespace Editor
 {
-    using ProfileData = std::unordered_map<const char*, Eklipse::ProfileNode>;
-
-    void DrawTable(float indent, ProfileData* data, bool sortTime)
+    void DrawTable(float indent, std::vector<Eklipse::ProfilerNode>* data, bool sortTime, uint32_t i)
     {
         if (sortTime)
         {
@@ -22,22 +20,24 @@ namespace Editor
             ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0, 0, 0, 0));
             ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0, 0, 0, 0));
             bool expanded = false;
-            if (it->second.childNodes.size() > 0) 
+            if (it->ChildNodes.size() > 0) 
             {
-                expanded = ImGui::CollapsingHeader(it->first, ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog);
+                std::string labelBuffer = it->signature;
+                labelBuffer += "##Sig" + std::to_string(++i);
+                expanded = ImGui::CollapsingHeader(labelBuffer.c_str(), ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog);
             }
-            else ImGui::Text(it->first);
+            else ImGui::Text(it->signature);
             ImGui::PopStyleColor(3);
             
             ImGui::TableNextColumn();
-            ImGui::Text(std::to_string(it->second.threadId).c_str());
+            ImGui::Text(std::to_string(it->threadId).c_str());
 
             ImGui::TableNextColumn();
-            ImGui::Text(std::to_string(it->second.execTimeMs).c_str());
+            ImGui::Text(std::to_string(it->execTimeMs).c_str());
 
             if (expanded)
             {
-                DrawTable(indent + 20.0f, &it->second.childNodes, sortTime);
+                DrawTable(indent + 20.0f, &it->ChildNodes, sortTime, i);
             }
 
             ++it;
@@ -68,8 +68,9 @@ namespace Editor
                 sortSpec->SpecsDirty = false;
             }
 
-            ProfileData* data = &Eklipse::Profiler::GetData();
-            DrawTable(0.0f, data, sortTime);
+            static uint32_t i = 0;
+            std::vector<Eklipse::ProfilerNode>* data = &Eklipse::Profiler::GetLastFrameData().ProfileNodes;
+            DrawTable(0.0f, data, sortTime, i);
 
             ImGui::EndTable();
         }
