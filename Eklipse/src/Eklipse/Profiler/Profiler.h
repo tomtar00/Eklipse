@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_PROFILED_FRAMES 100
+#define MAX_PROFILED_FRAMES 10.0f
 #define SAMPLE_TIME_INTERVAL 1.0f
 
 namespace Eklipse
