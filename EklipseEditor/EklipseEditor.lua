@@ -1,5 +1,5 @@
 project "EklipseEditor"
-	location "../EklipseEditor"
+	location "./"
 	kind "ConsoleApp" -- WindowedApp
 	language "C++"
 	staticruntime "off"
@@ -19,15 +19,9 @@ project "EklipseEditor"
 		"../Eklipse/src",
 
 		"%{Include.glfw}",
-		"%{Include.spdlog}",
-		"%{Include.Vulkan}",
+		"%{Include.glm}",
 		"%{Include.ImGui}",
-		"%{Include.vk_mem_alloc}"
-	}
-	libdirs
-	{
-		"%{Lib.glfw}",
-		"%{Lib.Vulkan}"
+		"%{Include.spdlog}"
 	}
 
 	links
