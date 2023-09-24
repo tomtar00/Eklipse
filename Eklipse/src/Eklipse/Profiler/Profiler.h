@@ -1,7 +1,7 @@
 #pragma once
 
-#define MAX_PROFILED_FRAMES 10.0f
-#define SAMPLE_TIME_INTERVAL 1.0f
+#define MAX_PROFILED_FRAMES 100.0f
+#define SAMPLE_TIME_INTERVAL 0.5f
 
 namespace Eklipse
 {
@@ -30,7 +30,7 @@ namespace Eklipse
 		ProfilerTimer(char* name);
 		~ProfilerTimer();
 
-		void Start(char* name);
+		void Start(char* name, bool saveData);
 		void Stop();
 		void AddChildNode(const ProfilerNode& node);
 		ProfilerNode* GetChildNodeBySiganture(uint32_t signature);
@@ -46,6 +46,7 @@ namespace Eklipse
 		char* m_name;
 		TimePoint m_startTime;
 		float m_deltaMs;
+		bool m_saveData;
 	};
 
 	class Profiler
@@ -57,7 +58,7 @@ namespace Eklipse
 		static void End();
 		static void EndFrame(float deltaTime);
 
-		static bool CanProfile();
+		static bool IsProfilingCurrentFrame();
 		static std::vector<ProfilerFrameData>& GetData();
 		static ProfilerFrameData& GetLastFrameData();
 

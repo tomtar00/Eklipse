@@ -32,7 +32,7 @@ namespace Eklipse
 	}
 	void Renderer::Update(float deltaTime)
 	{
-		EK_PROFILE();
+		EK_PROFILE_NAME("Renderer");
 
 		if (g_viewportSize.width == 0 || g_viewportSize.height == 0) return;
 

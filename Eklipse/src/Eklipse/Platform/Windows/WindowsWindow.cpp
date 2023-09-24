@@ -146,7 +146,7 @@ namespace Eklipse
 	}
 	void WindowsWindow::Update(float deltaTime)
 	{
-		EK_PROFILE();
+		EK_PROFILE_NAME("Window");
 
 		glfwPollEvents();
 	}

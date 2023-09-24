@@ -42,8 +42,7 @@ project "EklipseEditor"
 
 		defines
 		{
-			"EK_PLATFORM_WINDOWS",
-			"EK_EDITOR"
+			"EK_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"

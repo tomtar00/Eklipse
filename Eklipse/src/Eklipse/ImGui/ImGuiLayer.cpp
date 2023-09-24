@@ -32,7 +32,7 @@ namespace Eklipse
 	}
 	void ImGuiLayer::OnUpdate(float deltaTime)
 	{
-		EK_PROFILE();
+		EK_PROFILE_NAME("GUI");
 
 		if (!(*m_config.enabled)) return;
 

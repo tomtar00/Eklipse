@@ -1,8 +1,6 @@
 #include "EditorLayer.h"
 #include <Eklipse/Core/EntryPoint.h>
 
-#define EK_EDITOR
-
 namespace Editor
 {
 	class EklipseEditor : public Eklipse::Application

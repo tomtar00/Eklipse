@@ -17,8 +17,7 @@ namespace Eklipse
 	}
 	void Profiler::Begin(char* name)
 	{
-		m_allowProfiling = true;
-		m_timer.Start(name);
+		m_timer.Start(name, false);
 	}
 	void Profiler::End()
 	{
@@ -39,7 +38,7 @@ namespace Eklipse
 			m_allowProfiling = true;
 		}
 	}
-	bool Profiler::CanProfile()
+	bool Profiler::IsProfilingCurrentFrame()
 	{
 		return m_allowProfiling;
 	}
@@ -63,33 +62,32 @@ namespace Eklipse
 			AddNode(dst.ChildNodes[i], src.ChildNodes[i]);
 		}
 	}
-	ProfilerTimer::ProfilerTimer(char* name) : m_name(name), m_parentTimer(nullptr)
+	ProfilerTimer::ProfilerTimer(char* name) : m_name(name), m_parentTimer(nullptr), m_saveData(true)
 	{
-		Start(name);
+		if (!Profiler::IsProfilingCurrentFrame()) return;
+		Start(name, m_saveData);
 	}
 	ProfilerTimer::~ProfilerTimer()
 	{
+		if (!Profiler::IsProfilingCurrentFrame()) return;
 		Stop();
 	}
-	void ProfilerTimer::Start(char* name)
+	void ProfilerTimer::Start(char* name, bool saveData)
 	{
-		if (!Profiler::CanProfile()) return;
-
+		m_startTime = std::chrono::high_resolution_clock::now();
 		m_name = name;
 		m_parentTimer = nullptr;
+
+		if (!m_saveData) return;		
 
 		if (s_currentTimer != nullptr && s_currentTimer != this)
 		{
 			m_parentTimer = s_currentTimer;
 		}
 		s_currentTimer = this;
-
-		m_startTime = std::chrono::high_resolution_clock::now();
 	}
 	void ProfilerTimer::Stop()
 	{
-		if (!Profiler::CanProfile()) return;
-
 		auto endTime = std::chrono::high_resolution_clock::now();
 		m_deltaMs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - m_startTime).count() / 1000.0f;
 
@@ -97,6 +95,8 @@ namespace Eklipse
 		m_node.signature = std::hash<char*>{}(m_name);
 		m_node.threadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
 		m_node.execTimeMs = m_deltaMs;
+
+		if (!m_saveData) return;
 
 		if (m_parentTimer == nullptr)
 		{

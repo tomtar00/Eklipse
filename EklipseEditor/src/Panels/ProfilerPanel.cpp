@@ -2,46 +2,112 @@
 
 namespace Editor
 {
-    void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, uint32_t bgCol)
+    static ImColor GetColorByIndex(size_t index)
     {
-        drawList->AddRectFilled(graphPos, graphSize, bgCol);
+        switch (index)
+        {
+            case 0: return ImColor(255, 128, 0);   // orange
+            case 1: return ImColor(128, 255, 0);   // lime
+            case 2: return ImColor(0, 255, 255);   // cyan
+            case 3: return ImColor(128, 0, 255);   // purple
+            case 4: return ImColor(0, 64, 255);    // blue
+            default: return 0xFFFFFFFF;
+        }
+    }
+    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, std::vector<Eklipse::ProfilerNode>& lastestFrame, std::vector<Eklipse::ProfilerFrameData>& framesData)
+    {
+        drawList->AddRectFilled(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }, 0x55555555);
 
-        /*ImVec2 points[4] = {
-            {graphPos.x + 0, graphPos.y + 0},
-            {graphPos.x + 50, graphPos.y + 20},
-            {graphPos.x + 70, graphPos.y + 150},
-            {graphPos.x + 200, graphPos.y + 50}
-        };
-        drawList->AddConvexPolyFilled(points, 4, 0xFFFFFFFF);*/
+        const size_t labelCount = lastestFrame.size();
+        std::vector<ImVec2> lastFrameGlobalPositions;
+        std::vector<float> lastFrameHeights;
+        float barWidth = graphSize.x / MAX_PROFILED_FRAMES;
+        float spacingX = barWidth / 2.0f;
+        float spacingY = 5.0f;
 
-        auto& framesData = Eklipse::Profiler::GetData();
+        float height = 0.0f, lastHeight = 0.0f;
+        static float heightRatio = -1.0f;
+        ImVec2 localPos, localSize, globalPos, globalSize;
+
+        if (Eklipse::Profiler::IsProfilingCurrentFrame())
+        {
+            heightRatio = -1.0f;
+            for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
+            {
+                float height = 0.0f;
+                for (size_t nodeIdx = 0; nodeIdx < framesData[frameIdx].ProfileNodes.size(); nodeIdx++)
+                {
+                    height += framesData[frameIdx].ProfileNodes[nodeIdx].execTimeMs;
+                }
+                if (height > 0.0f)
+                {
+                    float ratio = (graphSize.y - spacingY * framesData[frameIdx].ProfileNodes.size()) / height;
+                    if (heightRatio < 0.0f || ratio < heightRatio)
+                    {
+                        heightRatio = ratio;
+                    }
+                }    
+            }
+        }
+
         for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
         {
-            float lastHeight = 0.0f;
+            lastHeight = 0.0f;
             for (size_t nodeIdx = 0; nodeIdx < framesData[frameIdx].ProfileNodes.size(); nodeIdx++)
             {
-                float height = framesData[frameIdx].ProfileNodes[nodeIdx].execTimeMs;
+                auto& node = framesData[frameIdx].ProfileNodes[nodeIdx];
+                height = node.execTimeMs * heightRatio;
 
-                float posX = frameIdx * (graphSize.x / MAX_PROFILED_FRAMES);
-                float posY = lastHeight;
-                float sizeX = graphSize.x / MAX_PROFILED_FRAMES;
-                float sizeY = height * 10;
+                localPos = { frameIdx * barWidth + spacingX, lastHeight };
+                localSize = { barWidth - spacingX, height };
 
-                EK_INFO("h:{0} pX:{1} pY:{2} sX:{3} sY:{4}", height, posX, posY, sizeX, sizeY);
-                drawList->AddRectFilled({ graphPos.x + posX,  graphPos.y + posY }, { graphPos.x + sizeX, graphPos.y + sizeY }, 0xFFFFFFFF / (nodeIdx+1));
+                globalPos = { graphPos.x + localPos.x, graphPos.y + (graphSize.y - localPos.y) };
+                globalSize = { globalPos.x + localSize.x, globalPos.y - localSize.y };
 
-                lastHeight = height;
+                drawList->AddRectFilled(globalPos, globalSize, GetColorByIndex(nodeIdx));
+
+                lastHeight += height + spacingY;
+
+                if (frameIdx == MAX_PROFILED_FRAMES - 1)
+                {
+                    lastFrameGlobalPositions.push_back(globalPos);
+                    lastFrameHeights.push_back(height);
+                }
+            }
+        }
+
+        height = 20;
+        spacingX = 20;
+        ImVec2 lastNodeGlobalPos;
+        ImVec2 p1, p2;
+        for (size_t nodeIdx = 0; nodeIdx < lastestFrame.size(); nodeIdx++)
+        {
+            ImColor color = GetColorByIndex(nodeIdx);
+            lastNodeGlobalPos = lastFrameGlobalPositions[nodeIdx];
+
+            localPos = { spacingX, graphSize.y - height * (nodeIdx+1) };
+            globalPos = { graphPos.x + graphSize.x + localPos.x, graphPos.y + localPos.y };
+            drawList->AddText(globalPos, color, lastestFrame[nodeIdx].name);
+
+            if (lastFrameHeights[nodeIdx] >= 0.2f)
+            {
+                globalPos = { globalPos.x + spacingX, globalPos.y + height / 1.5f };
+                p1 = { globalPos.x - spacingX - 5.0f, globalPos.y };
+                p2 = { lastNodeGlobalPos.x + barWidth, lastNodeGlobalPos.y + spacingY / 2.0f };
+
+                drawList->AddLine(globalPos, p1, color);
+                drawList->AddLine(p1, p2, color);
+                drawList->AddLine(p2, { p2.x - barWidth, p2.y }, color);
             }
         }
     }
-
-    void DrawTable(float indent, std::vector<Eklipse::ProfilerNode>* data, bool ascending, int columnIndex, uint32_t i)
+    static void DrawTable(float indent, std::vector<Eklipse::ProfilerNode>& data, bool ascending, int columnIndex, uint32_t i)
     {
-        if (Eklipse::Profiler::CanProfile())
+        if (Eklipse::Profiler::IsProfilingCurrentFrame())
         {
             if (columnIndex == 1)
             {
-                std::sort(data->begin(), data->end(),
+                std::sort(data.begin(), data.end(),
                     [ascending](Eklipse::ProfilerNode const& a, Eklipse::ProfilerNode const& b)
                     {
                         return ascending ? a.threadId < b.threadId : a.threadId > b.threadId;
@@ -50,7 +116,7 @@ namespace Editor
             }
             else if (columnIndex == 2)
             {
-                std::sort(data->begin(), data->end(),
+                std::sort(data.begin(), data.end(),
                     [ascending](Eklipse::ProfilerNode const& a, Eklipse::ProfilerNode const& b)
                     {
                         return ascending ? a.numCalls < b.numCalls : a.numCalls > b.numCalls;
@@ -59,7 +125,7 @@ namespace Editor
             }
             else if (columnIndex == 3)
             {
-                std::sort(data->begin(), data->end(),
+                std::sort(data.begin(), data.end(),
                     [ascending](Eklipse::ProfilerNode const& a, Eklipse::ProfilerNode const& b)
                     { 
                         return ascending ? a.execTimeMs < b.execTimeMs : a.execTimeMs > b.execTimeMs;
@@ -68,9 +134,9 @@ namespace Editor
             } 
         }
 
-        auto it = data->begin();
+        auto it = data.begin();
         if (indent > 0.0f) ImGui::Indent(indent);
-        while (it != data->end())
+        while (it != data.end())
         {
             ImGui::TableNextRow();
 
@@ -106,7 +172,7 @@ namespace Editor
 
             if (expanded)
             {
-                DrawTable(indent + 10.0f, &it->ChildNodes, ascending, columnIndex, i);
+                DrawTable(indent + 10.0f, it->ChildNodes, ascending, columnIndex, i);
             }
 
             ++it;
@@ -120,14 +186,22 @@ namespace Editor
 
         ImGui::Begin("Profiler");
 
-        std::vector<Eklipse::ProfilerNode>* data = &Eklipse::Profiler::GetLastFrameData().ProfileNodes;
+        static std::vector<Eklipse::ProfilerNode> data{};
+        static std::vector<Eklipse::ProfilerFrameData> framesData{};
+        if (Eklipse::Profiler::IsProfilingCurrentFrame())
+        {
+            data = Eklipse::Profiler::GetLastFrameData().ProfileNodes;
+            framesData = Eklipse::Profiler::GetData();
+        }
 
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         auto size = ImGui::GetContentRegionAvail();
         auto pos = ImGui::GetCursorScreenPos();
-        DrawGraph(drawList, pos, { pos.x + size.x, pos.y + 200 }, 0x99999999);
+        static float labelWidth = 80.0f;
+        static float graphHeight = 200.0f;
+        DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Eklipse::Profiler::GetLastFrameData().ProfileNodes, Eklipse::Profiler::GetData());
 
-        ImGui::SetCursorPos({ 8, 235 });
+        ImGui::SetCursorPos({ 8.0f, graphHeight + 35.0f });
         if (ImGui::BeginTable("Profiler", 4, ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableSetupColumn("Method", ImGuiTableColumnFlags_WidthStretch, 4.0f);

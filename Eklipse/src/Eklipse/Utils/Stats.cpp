@@ -17,7 +17,7 @@ namespace Eklipse
 	}
 	void Stats::Update(float deltaTime)
 	{
-		EK_PROFILE();
+		EK_PROFILE_NAME("Stats");
 
 		m_timeAcc += deltaTime;
 		m_frameAcc += 1;

@@ -151,6 +151,8 @@ namespace Eklipse
 //		m_guiLayer->AddPanel(m_debugPanel);
 //#endif
 
+		EK_CORE_TEST("Is running: {0}", m_running);
+
 		float dt = 0;
 		while (m_running)
 		{
