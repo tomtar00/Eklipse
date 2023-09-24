@@ -1,5 +1,5 @@
 project "Eklipse"
-	location "../Eklipse"
+	location "./"
 	kind "StaticLib"
 	language "C++"
 	staticruntime "off"
@@ -23,6 +23,7 @@ project "Eklipse"
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
+		"%{Include.glm}",
 		"%{Include.ImGui}",
 		"%{Include.Glad}",
 		"%{Include.stb_image}",
@@ -57,10 +58,10 @@ project "Eklipse"
 			"EK_BUILD_DLL"
 		}
 
-		postbuildcommands
-		{
-			"{COPY} %{cfg.targetdir}\\Eklipse.dll %{cfg.targetdir}\\..\\EklipseEditor"
-		}
+		--postbuildcommands
+		--{
+		--	"{COPY} %{cfg.targetdir}\\Eklipse.dll %{cfg.targetdir}\\..\\EklipseEditor"
+		--}
 
 	filter "configurations:Debug"
 		defines 

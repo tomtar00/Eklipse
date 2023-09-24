@@ -6,3 +6,6 @@ obj/
 *.vcxproj.user
 *.vcxproj.filters
 *.sln
+
+.vscode/
+Makefile

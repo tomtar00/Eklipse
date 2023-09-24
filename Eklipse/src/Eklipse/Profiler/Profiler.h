@@ -5,8 +5,6 @@
 
 namespace Eklipse
 {
-	using TimePoint = std::chrono::steady_clock::time_point;
-
 	struct ProfilerNode
 	{
 		char* name;
@@ -44,7 +42,7 @@ namespace Eklipse
 		ProfilerNode m_node;
 
 		char* m_name;
-		TimePoint m_startTime;
+		std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
 		float m_deltaMs;
 		bool m_saveData;
 	};
@@ -97,5 +95,5 @@ namespace Eklipse
 	#define EK_PROFILE_BEGIN(name)
 	#define EK_PROFILE_END()
 
-	#define EK_PROFILE_END_FRAME()
+	#define EK_PROFILE_END_FRAME(dt)
 #endif

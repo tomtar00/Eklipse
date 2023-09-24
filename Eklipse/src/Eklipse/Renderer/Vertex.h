@@ -11,7 +11,7 @@ namespace Eklipse
 		glm::vec3 color;
 		glm::vec2 texCoord;
 
-		bool Vertex::operator==(const Vertex& other) const;
+		bool operator==(const Vertex& other) const;
 	};
 
 	struct Particle
