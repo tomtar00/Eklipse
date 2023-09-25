@@ -14,6 +14,7 @@ namespace Eklipse
 		uint32_t channels;
 		unsigned char* data;
 	};
+
 	class AssetLoader
 	{
 	public:

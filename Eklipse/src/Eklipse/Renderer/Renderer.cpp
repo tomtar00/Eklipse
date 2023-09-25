@@ -3,6 +3,7 @@
 #include "RenderCommand.h"
 #include "Settings.h"
 
+#include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
@@ -21,6 +22,7 @@ namespace Eklipse
 	// TODO: Remove
 	static Ref<Shader>	s_geometryShader;
 	static Ref<Shader>	s_framebufferShader;
+	static Camera*		s_camera;
 	//
 
 	void Renderer::Init()
@@ -36,10 +38,14 @@ namespace Eklipse
 
 		if (g_viewportSize.width == 0 || g_viewportSize.height == 0) return;
 
-		s_scene->m_camera.UpdateViewProjectionMatrix(g_aspectRatio);
-		for (auto& entity : s_scene->m_entities)
+		auto& cameraView = s_scene->GetRegistry().view<TransformComponent, CameraComponent>();
+		for (auto entity : cameraView)
 		{
-			entity.UpdateModelMatrix(s_scene->m_camera.m_viewProj);
+			TransformComponent& transformComponent = cameraView.get<TransformComponent>(entity);
+			CameraComponent& cameraComponent = cameraView.get<CameraComponent>(entity);
+
+			cameraComponent.camera.UpdateViewProjectionMatrix(transformComponent.transform, g_aspectRatio);
+			s_camera = &cameraComponent.camera; // TODO: Change this
 		}
 		
 		// =============== Record Scene
@@ -49,10 +55,14 @@ namespace Eklipse
 		s_geometryShader->UploadInt("texSampler", 0);
 		
 		RenderCommand::API->BeginGeometryPass();
-		for (auto& entity : s_scene->m_entities)
+		auto view = s_scene->GetRegistry().view<TransformComponent, MeshComponent>();
+		for (auto& entity : view)
 		{
-			s_geometryShader->UploadMat4("mvp", entity.m_ubo.mvp);
-			RenderCommand::DrawIndexed(s_geometryShader, entity.m_vertexArray, entity.m_texture);
+			TransformComponent& transformComponent = view.get<TransformComponent>(entity);
+			MeshComponent& meshComponent = view.get<MeshComponent>(entity);
+
+			s_geometryShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(s_camera->m_viewProj));
+			RenderCommand::DrawIndexed(s_geometryShader, meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
 		}
 		RenderCommand::API->EndPass();
 
@@ -81,7 +91,6 @@ namespace Eklipse
 		RenderCommand::API->EndFrame();
 		////////////////////////////////
 	}
-
 	void Renderer::Shutdown()
 	{
 		RenderCommand::API->Shutdown();
@@ -116,12 +125,10 @@ namespace Eklipse
 	{
 		return s_apiType;
 	}
-
 	void Renderer::SetStartupAPI(ApiType apiType)
 	{
 		s_apiType = apiType;
 	}
-
 	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
 	{
 		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");

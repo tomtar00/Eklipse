@@ -8,6 +8,8 @@ namespace Eklipse
 	{
 		EK_CORE_TRACE("Begin scene load");
 
+		CreateEntity("Main Camera").AddComponent<CameraComponent>();
+
 		//m_camera.m_name = "Main Camera";
 		//m_camera.m_fov = 65.0f;
 		//m_camera.m_transform.position = { 0.0f,  0.0f,  1.0f };

@@ -15,6 +15,7 @@ namespace Eklipse
 		void Dispose();
 
 		Entity CreateEntity(const std::string name = "");
+
 		entt::registry& GetRegistry() { return m_registry; }
 
 	private:

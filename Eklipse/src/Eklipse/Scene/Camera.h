@@ -1,5 +1,4 @@
 #pragma once
-#include "Transform.h"
 #include "Entity.h"
 
 namespace Eklipse
@@ -8,7 +7,7 @@ namespace Eklipse
 	{
 	public:
 		Camera() = default;
-		void UpdateViewProjectionMatrix(float aspectRatio);
+		void UpdateViewProjectionMatrix(Transform transform, float aspectRatio);
 
 		glm::mat4 m_viewProj;
 		float m_fov = 120.0f;
