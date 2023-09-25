@@ -151,7 +151,7 @@ namespace Eklipse
 //		m_guiLayer->AddPanel(m_debugPanel);
 //#endif
 
-		EK_CORE_TEST("Is running: {0}", m_running);
+		m_running = true;
 
 		float dt = 0;
 		while (m_running)
@@ -179,6 +179,7 @@ namespace Eklipse
 		}
 
 		EK_CORE_INFO("========== Closing Eklipse Engine ==========");
+
 		EK_PROFILE_BEGIN("Shutdown");
 
 		Renderer::Shutdown();

@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Transform.h"
-#include "Components.h"
-#include <Eklipse/Renderer/UBO.h>
-#include <Eklipse/Renderer/VertexArray.h>
+#include <entt.hpp>
+#include "Scene.h"
 
 namespace Eklipse
 {
@@ -11,24 +9,34 @@ namespace Eklipse
 	{
 	public:
 		Entity() = default;
-		Entity(const std::string& name, Mesh& mesh);
-
-		void UpdateModelMatrix(glm::mat4 viewProjMatrix);
-
-	private:
-		inline static int s_idCounter = 0;
+		Entity(entt::entity handle, Scene* scene) : m_entityHandle(handle), m_scene(scene) {}
+		
+		template<typename T>
+		bool HasComponent()
+		{
+			return m_scene->GetRegistry().has<T>(m_entityHandle);
+		}
+		template<typename T, typename... Args>
+		void AddComponent(Args&&... args)
+		{
+			EK_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			m_scene->GetRegistry().emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+		}
+		template<typename T>
+		T& GetComponent()
+		{
+			EK_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			return m_scene->GetRegistry().get<T>(m_entityHandle);
+		}
+		template<typename T>
+		void RemoveComponent()
+		{
+			EK_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			m_scene->GetRegistry().remove<T>(m_entityHandle);
+		}
 		
 	public:
-		uint32_t m_id;
-		std::string m_name;
-
-		Transform m_transform;
-		ModelViewProjUBO m_ubo;
-		Ref<VertexArray> m_vertexArray;
-		Ref<UniformBuffer> m_uniformBuffer;
-		Ref<Texture> m_texture;
-
-		//std::vector<Component> m_components;
-		Mesh m_mesh;
+		entt::entity m_entityHandle{ 0 };
+		Scene* m_scene = nullptr;
 	};
 }

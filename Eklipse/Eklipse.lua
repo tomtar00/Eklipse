@@ -28,7 +28,8 @@ project "Eklipse"
 		"%{Include.Glad}",
 		"%{Include.stb_image}",
 		"%{Include.tiny_obj_loader}",
-		"%{Include.vk_mem_alloc}"
+		"%{Include.vk_mem_alloc}",
+		"%{Include.entt}"
 	}
 	libdirs
 	{

@@ -3,6 +3,9 @@
 #include "Entity.h"
 #include "Camera.h"
 
+#include <entt.hpp>
+#include <glm/glm.hpp>
+
 namespace Eklipse
 {
 	class Scene
@@ -11,7 +14,10 @@ namespace Eklipse
 		void Load();
 		void Dispose();
 
-		Camera m_camera;
-		std::vector<Entity> m_entities;
+		Entity CreateEntity(const std::string name = "");
+		entt::registry& GetRegistry() { return m_registry; }
+
+	private:
+		entt::registry m_registry;
 	};
 }
