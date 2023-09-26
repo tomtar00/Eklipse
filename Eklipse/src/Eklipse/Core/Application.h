@@ -11,7 +11,6 @@
 #include <Eklipse/Scene/Scene.h>
 
 #include <Eklipse/ImGui/ImGuiLayer.h>
-#include <Eklipse/ImGui/DebugPanel.h>
 
 namespace Eklipse
 {
@@ -57,10 +56,6 @@ namespace Eklipse
 
 		Ref<Window> m_window;
 		LayerStack m_layerStack;
-
-#ifdef EK_INCLUDE_DEBUG_LAYER
-		DebugPanel m_debugPanel;
-#endif
 
 		Timer m_timer;
 		Scene m_scene;

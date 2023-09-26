@@ -1,18 +1,12 @@
 #pragma once
 #include <glm/glm.hpp>
 
+#include "Transform.h"
 #include "Camera.h"
 #include <Eklipse/Renderer/Mesh.h>
 
 namespace Eklipse
 {
-	struct Transform
-	{
-		glm::vec3 position;
-		glm::vec3 rotation;
-		glm::vec3 scale;
-	};
-
 	struct NameComponent
 	{
 		std::string name;
@@ -42,7 +36,6 @@ namespace Eklipse
 	struct CameraComponent
 	{
 		Camera camera;
-		bool isActive = true;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& camera) = default;

@@ -21,7 +21,8 @@ project "EklipseEditor"
 		"%{Include.glfw}",
 		"%{Include.glm}",
 		"%{Include.ImGui}",
-		"%{Include.spdlog}"
+		"%{Include.spdlog}",
+		"%{Include.entt}"
 	}
 
 	links

@@ -19,7 +19,7 @@ namespace Editor
 			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f	},
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f	},
 			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f	},
-			{ "Profiler",	ImGuiDir_Right,	Eklipse::Dir_Same,		0.70f	},
+			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		0.70f	},
 			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f	}
 		};
 		m_guiLayerCreateInfo.panels =

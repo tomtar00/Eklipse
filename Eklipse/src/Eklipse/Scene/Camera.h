@@ -1,9 +1,10 @@
 #pragma once
-#include "Entity.h"
+#include <glm/glm.hpp>
+#include "Transform.h"
 
 namespace Eklipse
 {
-	class Camera : public Entity
+	class Camera
 	{
 	public:
 		Camera() = default;

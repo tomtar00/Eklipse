@@ -1,8 +1,7 @@
 #pragma once
-#include "GraphicsAPI.h"
 #include "Shader.h"
-#include "Framebuffer.h"
 #include "Viewport.h"
+#include <Eklipse/Scene/Scene.h>
 
 namespace Eklipse
 {

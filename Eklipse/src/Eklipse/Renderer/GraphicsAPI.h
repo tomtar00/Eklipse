@@ -1,6 +1,6 @@
 #pragma once
 #include "Pipeline.h"
-#include <Eklipse/Scene/Scene.h>
+#include "VertexArray.h"
 
 namespace Eklipse
 {

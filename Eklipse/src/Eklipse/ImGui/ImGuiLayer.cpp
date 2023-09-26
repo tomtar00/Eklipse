@@ -32,7 +32,7 @@ namespace Eklipse
 	}
 	void ImGuiLayer::OnUpdate(float deltaTime)
 	{
-		EK_PROFILE_NAME("GUI");
+		EK_PROFILE_NAME("ImGui");
 
 		if (!(*m_config.enabled)) return;
 
@@ -87,9 +87,14 @@ namespace Eklipse
 					}
 					else if (dockLayout.dirType & Dir_Same)
 					{
-						auto& prevDockLayout = m_config.dockLayouts[i-1];
+						auto& prevDockLayout = m_config.dockLayouts[i - 1];
 						dockLayout.id = ImGui::DockBuilderSplitNode(prevDockLayout.id, dockLayout.dir, dockLayout.ratio, nullptr, &out_opp_id);
 						prevDockLayout.id = out_opp_id;
+					}
+					else if (dockLayout.dirType & Dir_Stack)
+					{
+						auto& prevDockLayout = m_config.dockLayouts[i - 1];
+						dockLayout.id = ImGui::DockBuilderSplitNode(prevDockLayout.id, prevDockLayout.dir, prevDockLayout.ratio, nullptr, &out_opp_id);
 					}
 				}
 				for (int i = 0; i < m_config.dockLayouts.size() - 1; i++)

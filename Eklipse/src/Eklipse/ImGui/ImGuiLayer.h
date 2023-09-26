@@ -16,7 +16,8 @@ namespace Eklipse
 	enum EK_API ImGuiNodeDirType
 	{
 		Dir_Same		= BIT(0),
-		Dir_Opposite	= BIT(1)
+		Dir_Opposite	= BIT(1),
+		Dir_Stack		= BIT(2)
 	};
 
 	struct EK_API DockLayoutInfo

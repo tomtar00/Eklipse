@@ -41,8 +41,7 @@ namespace Eklipse
 		auto& cameraView = s_scene->GetRegistry().view<TransformComponent, CameraComponent>();
 		for (auto entity : cameraView)
 		{
-			TransformComponent& transformComponent = cameraView.get<TransformComponent>(entity);
-			CameraComponent& cameraComponent = cameraView.get<CameraComponent>(entity);
+			auto& [transformComponent, cameraComponent] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
 			cameraComponent.camera.UpdateViewProjectionMatrix(transformComponent.transform, g_aspectRatio);
 			s_camera = &cameraComponent.camera; // TODO: Change this
@@ -58,8 +57,7 @@ namespace Eklipse
 		auto view = s_scene->GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
-			TransformComponent& transformComponent = view.get<TransformComponent>(entity);
-			MeshComponent& meshComponent = view.get<MeshComponent>(entity);
+			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
 			s_geometryShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(s_camera->m_viewProj));
 			RenderCommand::DrawIndexed(s_geometryShader, meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
