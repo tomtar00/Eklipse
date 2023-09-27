@@ -3,8 +3,8 @@
 
 namespace Editor
 {
-	class StatsPanel : public Eklipse::ImGuiPanel
+	class StatsPanel : public Eklipse::Layer
 	{
-		void OnGUI();
+		virtual void OnGUI(float deltaTime) override;
 	};
 }

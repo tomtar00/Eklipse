@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "Viewport.h"
 #include <Eklipse/Scene/Scene.h>
+#include <Eklipse/Scene/Camera.h>
 
 namespace Eklipse
 {
@@ -24,7 +25,7 @@ namespace Eklipse
 	public:
 		static void Init();
 
-		static void Update(float deltaTime);
+		static void DrawFrame(Camera& camera, float deltaTime);
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);

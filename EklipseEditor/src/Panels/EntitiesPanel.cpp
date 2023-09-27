@@ -5,23 +5,12 @@
 
 namespace Editor
 {
-	void EntitiesPanel::OnGUI()
+	void EntitiesPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
 
 		ImGui::Begin("Entities");
-		ImVec2 hierarchySize = ImGui::GetContentRegionAvail();
-
 		static Eklipse::Scene* scene = Eklipse::Application::Get().GetScene();
-		scene->All([&](auto entityID)
-			{
-				Eklipse::Entity entity = { entityID, scene };
-				auto& nameComponent = entity.GetComponent<Eklipse::NameComponent>();
-				if (ImGui::Button(nameComponent.name.c_str(), { hierarchySize.x, 20 }))
-				{
-					EditorLayer::Get()->GetDetailsPanel().Setup(entity, nameComponent.name);
-				}
-			});
 
 		if (ImGui::BeginPopupContextWindow())
 		{
@@ -32,6 +21,36 @@ namespace Editor
 
 			ImGui::EndPopup();
 		}
+
+		scene->All([&](auto entityID)
+			{
+				Eklipse::Entity entity = { entityID, scene };
+				auto& nameComponent = entity.GetComponent<Eklipse::NameComponent>();
+
+				bool expand = ImGui::TreeNodeEx(nameComponent.name.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth);
+				
+				if (ImGui::IsItemClicked())
+				{
+					EditorLayer::Get()->GetDetailsPanel().Setup(entity, nameComponent.name);
+				}
+
+				if (ImGui::BeginPopupContextItem())
+				{
+					if (ImGui::MenuItem("Delete Entity"))
+					{
+						EditorLayer::Get()->GetDetailsPanel().SetEntityDeleted(true);
+						scene->DestroyEntity(entity);
+					}
+
+					ImGui::EndPopup();
+				}
+
+				if (expand)
+				{
+					// TODO: children
+					ImGui::TreePop();
+				}
+			});
 
 		ImGui::End();
 	}

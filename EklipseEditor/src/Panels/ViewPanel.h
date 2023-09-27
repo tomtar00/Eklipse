@@ -3,8 +3,13 @@
 
 namespace Editor
 {
-	class ViewPanel : public Eklipse::ImGuiPanel
+	class ViewPanel : public Eklipse::Layer
 	{
-		void OnGUI();
+	public:
+		virtual void OnGUI(float deltaTime) override;
+		float GetAspectRatio() const { return m_aspectRatio; }
+
+	private:
+		float m_aspectRatio{ 1.0f };
 	};
 }

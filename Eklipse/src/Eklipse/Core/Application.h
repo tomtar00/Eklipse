@@ -41,14 +41,14 @@ namespace Eklipse
 		void Init();
 		void Run();
 		void PushLayer(Ref<Layer> layer);
-		void PushOverlay(Ref<ImGuiLayer> overlay);
+		void PushOverlay(Ref<Layer> overlay);
 		void DrawGUI();
 
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
 
-		Ref<ImGuiLayer> m_guiLayer;
+		ImGuiLayer* GUI;
 
 	private:
 		inline static Application* s_instance = nullptr;

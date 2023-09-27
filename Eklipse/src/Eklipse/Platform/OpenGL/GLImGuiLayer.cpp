@@ -45,7 +45,6 @@ namespace Eklipse
 		{
 			if (!(*m_config.enabled)) return;
 
-			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 		void GLImGuiLayer::DrawViewport(float width, float height)

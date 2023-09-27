@@ -15,6 +15,6 @@ namespace Eklipse
 		virtual void OnEvent(Event& event) {}
 
 		virtual void OnUpdate(float deltaTime) {}
-		virtual void OnGUI() {}
+		virtual void OnGUI(float deltaTime) {}
 	};
 }

@@ -4,7 +4,7 @@
 
 namespace Editor
 {
-	void StatsPanel::OnGUI()
+	void StatsPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
 

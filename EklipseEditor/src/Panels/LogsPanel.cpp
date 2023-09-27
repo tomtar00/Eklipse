@@ -2,7 +2,7 @@
 
 namespace Editor
 {
-	void LogsPanel::OnGUI()
+	void LogsPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
 

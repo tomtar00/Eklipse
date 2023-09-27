@@ -3,6 +3,7 @@
 #include "RenderCommand.h"
 #include "Settings.h"
 
+#include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
@@ -22,7 +23,6 @@ namespace Eklipse
 	// TODO: Remove
 	static Ref<Shader>	s_geometryShader;
 	static Ref<Shader>	s_framebufferShader;
-	static Camera*		s_camera;
 	//
 
 	void Renderer::Init()
@@ -32,20 +32,21 @@ namespace Eklipse
 		s_geometryShader = s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
 		s_framebufferShader = s_shaderLibrary.Load("framebuffer", "shaders/framebuffer.vert", "shaders/framebuffer.frag");
 	}
-	void Renderer::Update(float deltaTime)
+	void Renderer::DrawFrame(Camera& camera, float deltaTime)
 	{
 		EK_PROFILE_NAME("Renderer");
+		Stats::Get().Reset();
 
 		if (g_viewportSize.width == 0 || g_viewportSize.height == 0) return;
 
-		auto& cameraView = s_scene->GetRegistry().view<TransformComponent, CameraComponent>();
-		for (auto entity : cameraView)
-		{
-			auto& [transformComponent, cameraComponent] = cameraView.get<TransformComponent, CameraComponent>(entity);
+		//auto& cameraView = s_scene->GetRegistry().view<TransformComponent, CameraComponent>();
+		//for (auto entity : cameraView)
+		//{
+		//	auto& [transformComponent, cameraComponent] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
-			cameraComponent.camera.UpdateViewProjectionMatrix(transformComponent.transform, g_aspectRatio);
-			s_camera = &cameraComponent.camera; // TODO: Change this
-		}
+		//	cameraComponent.camera.UpdateViewProjectionMatrix(transformComponent.transform, g_aspectRatio);
+		//	s_camera = &cameraComponent.camera; // TODO: Change this
+		//}
 		
 		// =============== Record Scene
 		s_viewport->BindFramebuffer();
@@ -59,7 +60,7 @@ namespace Eklipse
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
-			s_geometryShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(s_camera->m_viewProj));
+			s_geometryShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(camera.m_viewProj));
 			RenderCommand::DrawIndexed(s_geometryShader, meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
 		}
 		RenderCommand::API->EndPass();
@@ -88,6 +89,8 @@ namespace Eklipse
 
 		RenderCommand::API->EndFrame();
 		////////////////////////////////
+
+		Stats::Get().Update(deltaTime);
 	}
 	void Renderer::Shutdown()
 	{

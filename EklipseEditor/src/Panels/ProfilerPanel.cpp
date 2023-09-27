@@ -180,7 +180,7 @@ namespace Editor
         if (indent > 0.0f) ImGui::Unindent(indent);
     }
 
-    void ProfilerPanel::OnGUI()
+    void ProfilerPanel::OnGUI(float deltaTime)
     {
         EK_PROFILE();
 

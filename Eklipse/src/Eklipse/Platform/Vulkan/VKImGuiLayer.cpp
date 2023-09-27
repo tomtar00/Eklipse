@@ -130,7 +130,6 @@ namespace Eklipse
 		{
 			if (!(*m_config.enabled)) return;
 
-			ImGui::Render();
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_currentCommandBuffer);
 		}
 		void VkImGuiLayer::DrawViewport(float width, float height)

@@ -3,10 +3,10 @@
 
 namespace Editor
 {
-	class ProfilerPanel : public Eklipse::ImGuiPanel
+	class ProfilerPanel : public Eklipse::Layer
 	{
 	public:
-		void OnGUI();
+		virtual void OnGUI(float deltaTime) override;
 	private:
 		bool m_ascendingSort = false;
 		uint32_t m_columnIndex = -1;

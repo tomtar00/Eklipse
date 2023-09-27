@@ -5,7 +5,6 @@
 #include <Eklipse/Events/KeyEvent.h>
 #include <Eklipse/Events/MouseEvent.h>
 
-#include <Eklipse/Utils/Stats.h>
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/OpenGL/GlImGuiLayer.h>
@@ -49,22 +48,6 @@ namespace Eklipse
 		return &m_scene;
 	}
 
-	void Application::SetAPI(ApiType api)
-	{
-		Renderer::SetAPI(api,
-			[this]()
-			{
-				if (m_guiLayer != nullptr)
-					m_guiLayer->Shutdown();
-			},
-			[this]()
-			{
-				if (m_guiLayer != nullptr)
-					m_guiLayer->Init();
-			}
-		);
-	}
-
 	void Application::Init()
 	{
 		s_instance = this;
@@ -75,13 +58,24 @@ namespace Eklipse
 		m_window = Window::Create(data);
 		m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
-		m_guiLayer = nullptr;
 		IMGUI_CHECKVERSION();
+		GUI = nullptr;
+	}
 
-		SetAPI(Renderer::GetAPI());
-		Renderer::Init();
-
-		m_scene.Load();
+	void Application::SetAPI(ApiType api)
+	{
+		Renderer::SetAPI(api,
+			[this]()
+			{
+				if (GUI != nullptr)
+					GUI->Shutdown();
+			},
+			[this]()
+			{
+				if (GUI != nullptr)
+					GUI->Init();
+			}
+		);
 	}
 
 	void Application::OnEventReceived(Event& event)
@@ -119,59 +113,53 @@ namespace Eklipse
 	{
 		m_layerStack.PushLayer(layer);
 	}
-	void Application::PushOverlay(Ref<ImGuiLayer> overlay)
+	void Application::PushOverlay(Ref<Layer> overlay)
 	{
 		m_layerStack.PushOverlay(overlay);
-		m_guiLayer = overlay;
-		m_guiLayer->Init();
 	}
 
 	void Application::DrawGUI()
 	{
 		EK_PROFILE();
 
-		m_guiLayer->Draw();
+		GUI->Draw();
 	}
 
 	void Application::Run()
 	{
 		EK_CORE_INFO("========== Starting Eklipse Engine ==========");
 
-		/*#ifndef EK_EDITOR
-				bool enable = true;
-				GuiLayerConfigInfo debugLayerCreateInfo{};
-				debugLayerCreateInfo.enabled = &enable;
-				debugLayerCreateInfo.menuBarEnabled = false;
-				debugLayerCreateInfo.dockingEnabled = false;
-				ImGuiLayer::s_ctx = ImGui::CreateContext();
-				SetGuiLayer(debugLayerCreateInfo);
-		#endif*/
+		SetAPI(Renderer::GetAPI());
+		Renderer::Init();
 
-//#ifdef EK_INCLUDE_DEBUG_LAYER
-//		m_guiLayer->AddPanel(m_debugPanel);
-//#endif
+		m_scene.Load();
+
+		EK_PROFILE_END();
 
 		m_running = true;
-
 		float dt = 0;
 		while (m_running)
 		{
 			m_timer.Record();
 			dt = m_timer.DeltaTime();
 
+			if (GUI->IsEnabled()) 
+			{
+				EK_PROFILE_NAME("GUI");
+
+				GUI->Begin();
+				GUI->DrawDockspace();
+				for (auto& layer : m_layerStack)
+				{
+					layer->OnGUI(dt);
+				}
+				GUI->End();
+			}
+
 			for (auto& layer : m_layerStack)
 			{
 				layer->OnUpdate(dt);
 			}
-
-			for (auto& layer : m_layerStack)
-			{
-				layer->OnGUI();
-			}
-
-			Stats::Get().Reset();
-			Renderer::Update(dt);
-			Stats::Get().Update(dt);
 
 			m_window->Update(dt);
 

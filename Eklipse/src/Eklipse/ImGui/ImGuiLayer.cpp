@@ -2,6 +2,7 @@
 #include "ImGuiLayer.h"
 #include <imgui_internal.h>
 
+#include <Eklipse/Core/Application.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/OpenGL/GLImGuiLayer.h>
@@ -9,7 +10,11 @@
 namespace Eklipse
 {
 	ImGuiLayer::ImGuiLayer(const GuiLayerConfigInfo& configInfo)
-		: m_config(configInfo), m_first_time(true) {};
+		: m_config(configInfo), m_first_time(true) 
+	{
+		EK_ASSERT(Application::Get().GUI == nullptr, "ImGui Layer is already on the stack!");
+		Application::Get().GUI = this;
+	};
 
 	void ImGuiLayer::OnAttach()
 	{
@@ -30,16 +35,17 @@ namespace Eklipse
 
 		EK_CORE_INFO("{0} imgui layer detached", typeid(*this).name());
 	}
-	void ImGuiLayer::OnUpdate(float deltaTime)
+	void ImGuiLayer::Begin()
 	{
-		EK_PROFILE_NAME("ImGui");
-
-		if (!(*m_config.enabled)) return;
-
 		NewFrame();
 		ImGui::NewFrame();
-		ImGuiIO& io = ImGui::GetIO();
-
+	}
+	void ImGuiLayer::End()
+	{
+		ImGui::Render();
+	}
+	void ImGuiLayer::DrawDockspace()
+	{
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
 		if (m_config.menuBarEnabled) window_flags |= ImGuiWindowFlags_MenuBar;
@@ -61,6 +67,7 @@ namespace Eklipse
 		ImGui::PopStyleVar();
 		ImGui::PopStyleVar(2);
 
+		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
@@ -74,6 +81,7 @@ namespace Eklipse
 				ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
 				ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
+				ImGuiID out_id = -1;
 				ImGuiID out_opp_id = -1;
 				ImGuiID node_id = dockspace_id;
 				for (size_t i = 0; i < m_config.dockLayouts.size() - 1; i++)
@@ -94,7 +102,7 @@ namespace Eklipse
 					else if (dockLayout.dirType & Dir_Stack)
 					{
 						auto& prevDockLayout = m_config.dockLayouts[i - 1];
-						dockLayout.id = ImGui::DockBuilderSplitNode(prevDockLayout.id, prevDockLayout.dir, prevDockLayout.ratio, nullptr, &out_opp_id);
+						dockLayout.id = prevDockLayout.id;
 					}
 				}
 				for (int i = 0; i < m_config.dockLayouts.size() - 1; i++)
@@ -104,21 +112,19 @@ namespace Eklipse
 				}
 				ImGui::DockBuilderDockWindow(m_config.dockLayouts[m_config.dockLayouts.size() - 1].name, node_id);
 				ImGui::DockBuilderFinish(dockspace_id);
+
+				for (int i = 0; i < m_config.dockLayouts.size(); i++)
+				{
+					auto& dockLayout = m_config.dockLayouts[i];
+					Application::Get().PushOverlay(dockLayout.layer);
+				}
 			}
+			
 		}
 
 		ImGui::End();
-
-		for (auto& panel : m_config.panels)
-		{
-			panel->OnGUI();
-		}
 	}
 
-	void ImGuiLayer::AddPanel(ImGuiPanel& panel)
-	{
-		m_config.panels.push_back(&panel);
-	}
 	GuiLayerConfigInfo ImGuiLayer::GetConfig()
 	{
 		return m_config;

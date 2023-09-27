@@ -23,10 +23,10 @@ namespace Editor
 
 		inline static EditorLayer* Get() { return s_instance; }
 
-		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
-		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
-		inline LogsPanel& GetLogsPanel() { return m_logsPanel; }
-		inline ViewPanel& GetViewPanel()  { return m_viewPanel; }
+		inline EntitiesPanel& GetEntitiesPanel() { return *m_entitiesPanel.get(); }
+		inline DetailsPanel& GetDetailsPanel() { return *m_detailsPanel.get(); }
+		inline LogsPanel& GetLogsPanel() { return *m_logsPanel.get(); }
+		inline ViewPanel& GetViewPanel()  { return *m_viewPanel.get(); }
 
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 
@@ -35,13 +35,16 @@ namespace Editor
 
 		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
 
+		Eklipse::Camera m_editorCamera;
+		Eklipse::Transform m_editorCameraTransform;
+
 		bool m_guiEnabled;
-		EntitiesPanel m_entitiesPanel;
-		DetailsPanel m_detailsPanel;
-		LogsPanel m_logsPanel;
-		ViewPanel m_viewPanel;
-		StatsPanel m_statsPanel;
-		SettingsPanel m_settingsPanel;
-		ProfilerPanel m_profilerPanel;
+		Eklipse::Ref<EntitiesPanel> m_entitiesPanel;
+		Eklipse::Ref<DetailsPanel> m_detailsPanel;
+		Eklipse::Ref<LogsPanel> m_logsPanel;
+		Eklipse::Ref<ViewPanel> m_viewPanel;
+		Eklipse::Ref<StatsPanel> m_statsPanel;
+		Eklipse::Ref<SettingsPanel> m_settingsPanel;
+		Eklipse::Ref<ProfilerPanel> m_profilerPanel;
 	};
 }

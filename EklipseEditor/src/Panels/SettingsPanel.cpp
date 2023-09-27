@@ -3,7 +3,7 @@
 
 namespace Editor
 {
-	void SettingsPanel::OnGUI()
+	void SettingsPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
 

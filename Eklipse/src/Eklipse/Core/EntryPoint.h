@@ -11,7 +11,6 @@ int main(int argc, char** argv)
 
 	EK_PROFILE_BEGIN("Startup");
 	auto app = Eklipse::CreateApplication();
-	EK_PROFILE_END();
 
 	app->Run();
 }

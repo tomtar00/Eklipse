@@ -10,13 +10,14 @@ namespace Editor
 	{
 		m_entity = entity;
 		m_entityNameBuffer = name;
+		m_entityDeleted = false;
 	}
-	void DetailsPanel::OnGUI()
+	void DetailsPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
 
 		ImGui::Begin("Details");
-		if (m_entity.isNull())
+		if (m_entityDeleted || m_entity.isNull())
 		{
 			ImGui::End(); 
 			return;
