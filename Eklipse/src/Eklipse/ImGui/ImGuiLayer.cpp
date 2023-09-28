@@ -7,6 +7,8 @@
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/OpenGL/GLImGuiLayer.h>
 
+#include <ImGuizmo.h>
+
 namespace Eklipse
 {
 	ImGuiLayer::ImGuiLayer(const GuiLayerConfigInfo& configInfo)
@@ -39,6 +41,7 @@ namespace Eklipse
 	{
 		NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 	void ImGuiLayer::End()
 	{

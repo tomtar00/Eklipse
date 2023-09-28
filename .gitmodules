@@ -11,3 +11,6 @@
 [submodule "Eklipse/vendor/glm"]
 	path = Eklipse/vendor/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "Eklipse/vendor/ImGuizmo"]
+	path = Eklipse/vendor/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	enum EK_API KeyCode
+	enum KeyCode
 	{
 		// glfw3.h
 		Space = 32,
@@ -138,7 +138,7 @@ namespace Eklipse
 		Menu = 348
 	};
 
-	enum EK_API MouseCode
+	enum MouseCode
 	{
 		// From glfw3.h
 		Button0 = 0,
@@ -156,11 +156,11 @@ namespace Eklipse
 		ButtonMiddle = Button2
 	};
 
-	class EK_API Input
+	class Input
 	{
 	public:
-		static bool IsKeyDown(const KeyCode key);
-		static bool IsMouseButtonDown(const MouseCode button);
+		static bool IsKeyDown(KeyCode key);
+		static bool IsMouseButtonDown(MouseCode button);
 		static glm::vec2 GetMousePosition();
 	};
 }

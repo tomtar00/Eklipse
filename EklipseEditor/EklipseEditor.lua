@@ -22,13 +22,15 @@ project "EklipseEditor"
 		"%{Include.glm}",
 		"%{Include.ImGui}",
 		"%{Include.spdlog}",
-		"%{Include.entt}"
+		"%{Include.entt}",
+		"%{Include.ImGuizmo}"
 	}
 
 	links
 	{
 		"Eklipse",
-		"ImGui"
+		"ImGui",
+		"ImGuizmo"
 	}
 
 	filter "system:windows"

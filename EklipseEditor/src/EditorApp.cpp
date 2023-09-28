@@ -21,7 +21,7 @@ namespace Editor
 
 Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication()
 {
-	EK_INFO("Starting editor...");
+	EK_INFO("Starting Eklipse Editor");
 
 	Eklipse::ApplicationInfo info{};
 	info.appName = "Eklipse Editor";

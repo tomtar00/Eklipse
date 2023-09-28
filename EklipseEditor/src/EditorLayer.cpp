@@ -56,6 +56,22 @@ namespace Editor
 		{
 			m_editorCameraTransform.position.z -= deltaTime * 10.0f;
 		}
+		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::A))
+		{
+			m_editorCameraTransform.position.x -= deltaTime * 10.0f;
+		}
+		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::D))
+		{
+			m_editorCameraTransform.position.x += deltaTime * 10.0f;
+		}
+		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::Space))
+		{
+			m_editorCameraTransform.position.y += deltaTime * 10.0f;
+		}
+		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::LeftShift))
+		{
+			m_editorCameraTransform.position.y -= deltaTime * 10.0f;
+		}
 
 		m_editorCamera.UpdateViewProjectionMatrix(m_editorCameraTransform, m_viewPanel->GetAspectRatio());
 		Eklipse::Renderer::DrawFrame(m_editorCamera, deltaTime);

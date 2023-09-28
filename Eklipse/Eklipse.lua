@@ -29,7 +29,8 @@ project "Eklipse"
 		"%{Include.stb_image}",
 		"%{Include.tiny_obj_loader}",
 		"%{Include.vk_mem_alloc}",
-		"%{Include.entt}"
+		"%{Include.entt}",
+		"%{Include.ImGuizmo}"
 	}
 	libdirs
 	{
@@ -46,6 +47,7 @@ project "Eklipse"
 		"vulkan-1",
 
 		"ImGui",
+		"ImGuizmo",
 		"Glad"
 	}
 
