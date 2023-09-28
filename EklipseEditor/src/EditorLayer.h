@@ -26,7 +26,8 @@ namespace Editor
 		inline EntitiesPanel& GetEntitiesPanel() { return *m_entitiesPanel.get(); }
 		inline DetailsPanel& GetDetailsPanel() { return *m_detailsPanel.get(); }
 		inline LogsPanel& GetLogsPanel() { return *m_logsPanel.get(); }
-		inline ViewPanel& GetViewPanel()  { return *m_viewPanel.get(); }
+		inline ViewPanel& GetViewPanel() { return *m_viewPanel.get(); }
+		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
 
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 

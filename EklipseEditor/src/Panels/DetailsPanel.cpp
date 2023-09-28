@@ -1,9 +1,10 @@
 #include "DetailsPanel.h"
 #include "EntitiesPanel.h"
+#include "EditorLayer.h"
+
 #include <misc/cpp/imgui_stdlib.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <Eklipse/Scene/Components.h>
-
 #include <ImGuizmo.h>
 
 namespace Editor
@@ -51,21 +52,30 @@ namespace Editor
 
 		// Transform
 		{
+			ImGuizmo::SetDrawlist();
+
 			auto& transComp = m_entity.GetComponent<Eklipse::TransformComponent>();
 
-			auto* pos = glm::value_ptr(transComp.transform.position);
-			auto* rot = glm::value_ptr(transComp.transform.rotation);
-			auto* scale = glm::value_ptr(transComp.transform.scale);
+			// auto* pos = glm::value_ptr(transComp.transform.position);
+			// auto* rot = glm::value_ptr(transComp.transform.rotation);
+			// auto* scale = glm::value_ptr(transComp.transform.scale);
 
-			// ImGuizmo::DecomposeMatrixToComponents(matrix.m16, pos, rot, scale);
-			ImGui::DragFloat3("Position", pos, 0.1f);
-			ImGui::DragFloat3("Rotation", rot, 0.1f);
-			ImGui::DragFloat3("Scale", scale, 0.1f);
-			// ImGuizmo::RecomposeMatrixFromComponents(pos, rot, scale, matrix.m16);
+			auto& camera = EditorLayer::Get()->GetEditorCamera();
+			auto* matrix = glm::value_ptr(transComp.GetTransformMatrix(camera.GetViewProjectionMatrix()));
 
-			// ImGuiIO& io = ImGui::GetIO();
-			// ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-			// ImGuizmo::Manipulate(camera.mView.m16, camera.mProjection.m16, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, matrix.m16, NULL, false);
+			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+			ImGuizmo::DecomposeMatrixToComponents(matrix, matrixTranslation, matrixRotation, matrixScale);
+			ImGui::DragFloat3("Position", matrixTranslation, 0.1f);
+			ImGui::DragFloat3("Rotation", matrixRotation, 0.1f);
+			ImGui::DragFloat3("Scale", matrixScale, 0.1f);
+			ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix);
+
+			/*auto& viewportPos = EditorLayer::Get()->GetViewPanel().GetViewportPosition();
+			auto& viewportSize = EditorLayer::Get()->GetViewPanel().GetViewportSize();
+			ImGuizmo::SetRect(viewportPos.x, viewportPos.y, viewportSize.x, viewportPos.y);*/
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+			ImGuizmo::Manipulate(glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()), ImGuizmo::TRANSLATE, ImGuizmo::WORLD, matrix, NULL, NULL);
 		}
 
 		// Camera

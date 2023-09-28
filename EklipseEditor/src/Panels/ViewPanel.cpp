@@ -9,9 +9,10 @@ namespace Editor
 
 		ImGui::Begin("View");
 
-		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		Eklipse::Application::Get().GUI->DrawViewport(viewportPanelSize.x, viewportPanelSize.y);
-		m_aspectRatio = viewportPanelSize.x / viewportPanelSize.y;
+		m_viewportPosition = ImGui::GetWindowPos();
+		m_viewportSize = ImGui::GetContentRegionAvail();
+		Eklipse::Application::Get().GUI->DrawViewport(m_viewportSize.x, m_viewportSize.y);
+		m_aspectRatio = m_viewportSize.x / m_viewportSize.y;
 
 		ImGui::End();
 	}

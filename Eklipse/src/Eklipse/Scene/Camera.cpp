@@ -12,8 +12,8 @@ namespace Eklipse
         EK_PROFILE();
 
         // Projection
-        glm::mat4 projection = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
-        projection[1][1] *= -1.0f;
+        m_projectionMatrix = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
+        m_projectionMatrix[1][1] *= -1.0f;
 
         // View
         float pitch = glm::radians(transform.rotation.x);
@@ -21,9 +21,9 @@ namespace Eklipse
         float roll = glm::radians(transform.rotation.z);
 
         glm::quat orientation = glm::quat(glm::vec3(-pitch, -yaw, -roll));
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), transform.position) * glm::toMat4(orientation);
-        view = glm::inverse(view);
+        m_viewMatrix = glm::translate(glm::mat4(1.0f), transform.position) * glm::toMat4(orientation);
+        m_viewMatrix = glm::inverse(m_viewMatrix);
 
-        m_viewProj = projection * view;
+        m_viewProj = m_projectionMatrix * m_viewMatrix;
     }
 }

@@ -60,7 +60,7 @@ namespace Eklipse
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
-			s_geometryShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(camera.m_viewProj));
+			s_geometryShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(camera.GetViewProjectionMatrix()));
 			RenderCommand::DrawIndexed(s_geometryShader, meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
 		}
 		RenderCommand::API->EndPass();
