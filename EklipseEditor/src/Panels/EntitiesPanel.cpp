@@ -31,14 +31,15 @@ namespace Editor
 				
 				if (ImGui::IsItemClicked())
 				{
-					EditorLayer::Get()->GetDetailsPanel().Setup(entity, nameComponent.name);
+					EditorLayer::Get()->SetSelectedEntity(entity);
+					EditorLayer::Get()->GetDetailsPanel().Setup(nameComponent.name);
 				}
 
 				if (ImGui::BeginPopupContextItem())
 				{
 					if (ImGui::MenuItem("Delete Entity"))
 					{
-						EditorLayer::Get()->GetDetailsPanel().SetEntityDeleted(true);
+						EditorLayer::Get()->SetEntityNull();
 						scene->DestroyEntity(entity);
 					}
 

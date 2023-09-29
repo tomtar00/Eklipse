@@ -13,7 +13,7 @@ namespace Eklipse
 
         // Projection
         m_projectionMatrix = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
-        m_projectionMatrix[1][1] *= -1.0f;
+        //m_projectionMatrix[1][1] *= -1.0f;
 
         // View
         float pitch = glm::radians(transform.rotation.x);

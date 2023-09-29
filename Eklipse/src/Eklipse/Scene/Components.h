@@ -18,8 +18,9 @@ namespace Eklipse
 	struct TransformComponent
 	{
 		Transform transform;
+		glm::mat4 transformMatrix;
 
-		glm::mat4& GetTransformMatrix(glm::mat4 viewProjMatrix) const;
+		glm::mat4& GetTransformMatrix(const glm::mat4& viewProjMatrix) const;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& transform) = default;

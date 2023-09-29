@@ -54,7 +54,7 @@ namespace Eklipse
 				ResizeViewport(width, height);
 			}
 
-			ImGui::Image((ImTextureID)g_viewportTexture, ImVec2{width, height});
+			ImGui::Image((ImTextureID)g_viewportTexture, ImVec2{ width, height }, { 0,1 }, { 1,0 });
 		}
 		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{

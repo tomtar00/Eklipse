@@ -32,10 +32,10 @@ namespace Eklipse
 			if (info.flags & VIEWPORT_FULLSCREEN)
 			{
 				std::vector<float> vertices = {
-					 1.0f,  1.0f, 1.0f, 0.0f,  // top right
-					 1.0f, -1.0f, 1.0f, 1.0f,  // bottom right
-					-1.0f, -1.0f, 0.0f, 1.0f,  // bottom left
-					-1.0f,  1.0f, 0.0f, 0.0f,  // top left
+					 1.0f,  1.0f, 1.0f, 1.0f,  // top right
+					 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
+					-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
+					-1.0f,  1.0f, 0.0f, 1.0f,  // top left
 				};
 				std::vector<uint32_t> indices = {
 					0, 1, 3,

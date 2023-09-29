@@ -5,7 +5,7 @@
 
 namespace Eklipse
 {
-	glm::mat4& TransformComponent::GetTransformMatrix(glm::mat4 viewProjMatrix) const
+	glm::mat4& TransformComponent::GetTransformMatrix(const glm::mat4& viewProjMatrix) const
 	{
 		EK_PROFILE();
 
@@ -15,6 +15,8 @@ namespace Eklipse
 		model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, transform.scale);
 
+		/*auto test = viewProjMatrix * model;
+		transformMatrix = test;*/
 		return viewProjMatrix * model;
 	}
 }

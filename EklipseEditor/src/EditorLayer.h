@@ -30,12 +30,16 @@ namespace Editor
 		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
 
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
+		inline void SetSelectedEntity(Eklipse::Entity entity) { m_selectedEntity = entity; }
+		inline Eklipse::Entity GetSelectedEntity() { return m_selectedEntity; }
+		inline void SetEntityNull() { m_selectedEntity.MarkNull(); }
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
 
 		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
 
+		Eklipse::Entity m_selectedEntity;
 		Eklipse::Camera m_editorCamera;
 		Eklipse::Transform m_editorCameraTransform;
 
