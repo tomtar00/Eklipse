@@ -53,8 +53,8 @@ namespace Eklipse
 		class VKStagingBuffer : public VKBuffer
 		{
 		public:
-			void Setup(const void* data, uint64_t size);
-			void Dispose();
+			VKStagingBuffer(const void* data, size_t size);
+			~VKStagingBuffer();
 			void* m_data;
 		};	
 

@@ -5,7 +5,7 @@
 #include "LayerStack.h"
 #include "Timer.h"
 
-#include <Eklipse/Events/Event.h>
+#include <Eklipse/Events/MouseEvent.h>
 #include <Eklipse/Events/ApplicationEvent.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Scene/Scene.h>
@@ -26,42 +26,49 @@ namespace Eklipse
 	class EK_API Application
 	{
 	public:
-		Application();
+		Application() = delete;
 		Application(ApplicationInfo& info);
 		~Application();
 
-		static Application& Get();
-
-		ApplicationInfo& GetInfo();
-		Ref<Window> GetWindow() const;
-		Scene* GetScene();
-
+		void Init();
+		void Shutdown();
+		void BeginFrame(float* deltaTime);
+		void EndFrame(float deltaTime);
 		void SetAPI(ApiType api);
 
-		void Init();
-		void Run();
+		static Application& Get() { return *s_instance; }
+		inline const ApplicationInfo& GetInfo() const { return m_appInfo; }
+		inline const Ref<Window> GetWindow() const { return m_window; }
+		inline const Scene* GetScene() const { return &m_scene; }
+		inline const bool IsRunning() const { return m_running; }
+		inline const bool IsMinimized() const { return m_minimized; }
+
+		virtual void OnInitAPI(ApiType api) = 0;
+		virtual void OnShutdownAPI() = 0;
+
+		virtual void Run() = 0;
+
 		void PushLayer(Ref<Layer> layer);
 		void PushOverlay(Ref<Layer> overlay);
-		void DrawGUI();
 
+	private:
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
+		void OnMouseMove(MouseMovedEvent& event);
+		void OnMouseScroll(MouseScrolledEvent& event);
 
-		ImGuiLayer* GUI;
-
-	private:
-		inline static Application* s_instance = nullptr;
-		ApplicationInfo m_appInfo{};
-
-		Ref<Window> m_window;
+	protected:
 		LayerStack m_layerStack;
-
-		Timer m_timer;
 		Scene m_scene;
 
+	private:
 		bool m_running;
 		bool m_minimized;
+		inline static Application* s_instance = nullptr;
+		ApplicationInfo m_appInfo{};
+		Ref<Window> m_window;
+		Eklipse::Timer m_timer;
 	};
 
 	Ref<Application> CreateApplication();

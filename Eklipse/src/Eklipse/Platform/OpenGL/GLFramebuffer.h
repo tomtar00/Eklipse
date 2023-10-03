@@ -7,13 +7,13 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		static GLenum CovertToGLFormat(FramebufferTextureFormat format)
+		static GLenum ConvertToGLFormat(ImageFormat format)
 		{
 			switch (format)
 			{
-				case FramebufferTextureFormat::RGB8:			return GL_RGB;
-				case FramebufferTextureFormat::RGBA8:			return GL_RGBA;
-				case FramebufferTextureFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
+				case ImageFormat::RGB8:		return GL_RGB;
+				case ImageFormat::RGBA8:	return GL_RGBA;
+				case ImageFormat::D24S8:	return GL_DEPTH24_STENCIL8;
 			}
 
 			EK_ASSERT(false, "Wrong image format");

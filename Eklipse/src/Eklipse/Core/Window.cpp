@@ -1,5 +1,6 @@
 #include "precompiled.h"
 #include "Window.h"
+#include "Input.h"
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 
 namespace Eklipse
@@ -8,6 +9,10 @@ namespace Eklipse
     {
         width = m_data.width;
         height = m_data.height;
+    }
+    void Window::Update(float deltaTime)
+    {
+        Input::Reset();
     }
     Ref<Window> Window::Create(WindowData& data)
     {

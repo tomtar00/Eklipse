@@ -44,7 +44,7 @@ namespace Eklipse
 				for (size_t i = 0; i < m_colorAttachments.size(); i++)
 				{
 					glBindTexture(m_texTarget, m_colorAttachments[i]);
-					GLenum colorFormat = CovertToGLFormat(m_framebufferInfo.colorAttachmentInfos[i].textureFormat);
+					GLenum colorFormat = ConvertToGLFormat(m_framebufferInfo.colorAttachmentInfos[i].textureFormat);
 
 					if (multiSampled)
 						glTexImage2DMultisample(m_texTarget, msaaSamples, colorFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
@@ -68,7 +68,7 @@ namespace Eklipse
 			glGenTextures(1, &m_depthAttachment);
 			glBindTexture(m_texTarget, m_depthAttachment);
 
-			GLenum depthFormat = CovertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
+			GLenum depthFormat = ConvertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
 
 			if (multiSampled)
 				glTexImage2DMultisample(m_texTarget, msaaSamples, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);

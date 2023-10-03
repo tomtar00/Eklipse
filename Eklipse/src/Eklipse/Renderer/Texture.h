@@ -7,19 +7,29 @@ namespace Eklipse
 		int width, height;
 		void* pixels;
 	};
-	enum class ImageFormat
+	enum ImageFormat
 	{
-		None	= 0,
-		R8		= BIT(1),
-		RGB8	= BIT(2),
-		RGBA8	= BIT(3),
-		RGBA32F = BIT(4)
+		UNDEFINED	= 0,
+		R8			= BIT(1),
+		RGB8		= BIT(2),
+		RGBA8		= BIT(3),
+		RGBA32F		= BIT(4),
+		D24S8		= BIT(5),
+	};
+	enum ImageAspect
+	{
+		NONE	= 0,
+		COLOR	= BIT(1),
+		DEPTH	= BIT(2),
+		STENCIL	= BIT(3),
 	};
 	struct TextureInfo
 	{
 		uint32_t width{ 1 }, height{ 1 };
 		uint32_t mipMapLevel{ 1 };
+		uint32_t samples{ 1 };
 		ImageFormat imageFormat;
+		ImageAspect imageAspect;
 	};
 
 	class Texture

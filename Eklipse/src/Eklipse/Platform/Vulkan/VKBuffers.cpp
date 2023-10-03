@@ -50,12 +50,8 @@ namespace Eklipse
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
 
-			VKStagingBuffer stagingBuffer;
-			stagingBuffer.Setup(vertices.data(), size);
-
+			VKStagingBuffer stagingBuffer(vertices.data(), size);
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
-
-			stagingBuffer.Dispose();
 		}
 		void VKVertexBuffer::Bind() const
 		{
@@ -82,12 +78,8 @@ namespace Eklipse
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
 
-			VKStagingBuffer stagingBuffer;
-			stagingBuffer.Setup(indices.data(), size);
-
+			VKStagingBuffer stagingBuffer(indices.data(), size);
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
-
-			stagingBuffer.Dispose();
 		}
 		void VKIndexBuffer::Bind() const
 		{
@@ -143,7 +135,7 @@ namespace Eklipse
 		// STAGING BUFFER ///////////////////////////////
 		/////////////////////////////////////////////////
 
-		void VKStagingBuffer::Setup(const void* data, uint64_t size)
+		VKStagingBuffer::VKStagingBuffer(const void* data, size_t size)
 		{
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -154,7 +146,7 @@ namespace Eklipse
 			memcpy(m_data, data, (size_t)size);
 			vmaUnmapMemory(g_allocator, m_allocation);
 		}
-		void VKStagingBuffer::Dispose()
+		VKStagingBuffer::~VKStagingBuffer()
 		{
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}

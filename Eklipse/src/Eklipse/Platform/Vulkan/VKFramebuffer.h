@@ -1,6 +1,7 @@
 #pragma once
-
 #include <Eklipse/Renderer/Framebuffer.h>
+#include <vulkan/vulkan.h>
+#include "VKTexture.h"
 
 namespace Eklipse
 {
@@ -22,6 +23,9 @@ namespace Eklipse
 
 		private:
 			FramebufferInfo m_framebufferInfo;
+			VkFramebuffer m_framebuffer;
+			std::vector<VKTexture2D> m_colorAttachments{};
+			VKTexture2D m_depthAttachment;
 		};
 	}
 }

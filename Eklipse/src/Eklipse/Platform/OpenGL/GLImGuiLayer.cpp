@@ -3,7 +3,7 @@
 #include "GL.h"
 #include "GLImGuiLayer.h"
 
-#include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Renderer/RenderCommand.h>
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
@@ -45,7 +45,9 @@ namespace Eklipse
 		{
 			if (!(*m_config.enabled)) return;
 
+			RenderCommand::API->BeginGUIPass();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			RenderCommand::API->EndPass();
 		}
 		void GLImGuiLayer::DrawViewport(float width, float height)
 		{

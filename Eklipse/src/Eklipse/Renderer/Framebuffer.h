@@ -1,18 +1,11 @@
 #pragma once
+#include "Texture.h"
 
 namespace Eklipse
 {
-	enum class FramebufferTextureFormat
-	{
-		None = 0,
-		RGB8,
-		RGBA8,
-		DEPTH24STENCIL8,
-	};
-
 	struct FramebufferAttachmentInfo
 	{
-		FramebufferTextureFormat textureFormat = FramebufferTextureFormat::None;
+		ImageFormat textureFormat = ImageFormat::UNDEFINED;
 	};
 
 	struct FramebufferInfo

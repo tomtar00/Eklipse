@@ -1,10 +1,8 @@
 #include "precompiled.h"
 #include "Application.h"
+#include "Input.h"
 
-#include <Eklipse/Events/ApplicationEvent.h>
-#include <Eklipse/Events/KeyEvent.h>
-#include <Eklipse/Events/MouseEvent.h>
-
+#include <Eklipse/Utils/Stats.h>
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/OpenGL/GlImGuiLayer.h>
@@ -15,40 +13,9 @@ namespace Eklipse
 		: appName(info.appName), windowWidth(info.windowWidth),
 		windowHeight(info.windowHeight) {}
 
-	Application::Application() :
-		m_running(true), m_minimized(false)
-	{
-		Init();
-	}
 	Application::Application(ApplicationInfo& info) :
 		m_running(true), m_minimized(false),
-		m_appInfo(info)
-	{
-		Init();
-	}
-	Application::~Application()
-	{
-		m_scene.Dispose();
-		EK_PROFILE_END();
-	}
-	Application& Application::Get()
-	{
-		return *s_instance;
-	}
-	ApplicationInfo& Application::GetInfo()
-	{
-		return m_appInfo;
-	}
-	Ref<Window> Application::GetWindow() const
-	{
-		return m_window;
-	}
-	Scene* Application::GetScene()
-	{
-		return &m_scene;
-	}
-
-	void Application::Init()
+		m_appInfo(info) 
 	{
 		s_instance = this;
 
@@ -59,25 +26,45 @@ namespace Eklipse
 		m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
 		IMGUI_CHECKVERSION();
-		GUI = nullptr;
 	}
+	Application::~Application()
+	{
+		EK_PROFILE_END();
+	}
+	void Application::Init()
+	{
+		SetAPI(Renderer::GetAPI());
+		Renderer::Init();
+		m_scene.Load();
 
+		EK_PROFILE_END();
+	}
+	void Application::Shutdown()
+	{
+		EK_PROFILE_BEGIN("Shutdown");
+
+		Renderer::Shutdown();
+		m_window->Shutdown();
+		m_layerStack.Shutdown();
+		m_scene.Dispose();
+	}
+	void Application::BeginFrame(float* deltaTime)
+	{
+		Stats::Get().Reset();
+		m_timer.Record();
+		*deltaTime = m_timer.DeltaTime();
+	}
+	void Application::EndFrame(float deltaTime)
+	{
+		m_window->Update(deltaTime);
+		Stats::Get().Update(deltaTime);
+		EK_PROFILE_END_FRAME(deltaTime);
+	}
 	void Application::SetAPI(ApiType api)
 	{
-		Renderer::SetAPI(api,
-			[this]()
-			{
-				if (GUI != nullptr)
-					GUI->Shutdown();
-			},
-			[this]()
-			{
-				if (GUI != nullptr)
-					GUI->Init();
-			}
-		);
+		EK_CORE_INFO("Setting API to {0}", (int)api);
+		Renderer::SetAPI(api);
 	}
-
 	void Application::OnEventReceived(Event& event)
 	{
 		EK_PROFILE();
@@ -87,6 +74,8 @@ namespace Eklipse
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized));
+		dispatcher.Dispatch<MouseMovedEvent>(CAPTURE_FN(OnMouseMove));
+		dispatcher.Dispatch<MouseScrolledEvent>(CAPTURE_FN(OnMouseScroll));
 
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
@@ -96,7 +85,6 @@ namespace Eklipse
 			(*--it)->OnEvent(event);
 		}
 	}
-
 	void Application::OnWindowClose(WindowCloseEvent& event)
 	{
 		m_running = false;
@@ -108,7 +96,14 @@ namespace Eklipse
 
 		Renderer::OnWindowResize(m_appInfo.windowWidth, m_appInfo.windowHeight);
 	}
-
+	void Application::OnMouseMove(MouseMovedEvent& event)
+	{
+		Input::m_mousePosition = { event.GetX(), event.GetY() };
+	}
+	void Application::OnMouseScroll(MouseScrolledEvent& event)
+	{
+		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
+	}
 	void Application::PushLayer(Ref<Layer> layer)
 	{
 		m_layerStack.PushLayer(layer);
@@ -116,62 +111,5 @@ namespace Eklipse
 	void Application::PushOverlay(Ref<Layer> overlay)
 	{
 		m_layerStack.PushOverlay(overlay);
-	}
-
-	void Application::DrawGUI()
-	{
-		EK_PROFILE();
-
-		GUI->Draw();
-	}
-
-	void Application::Run()
-	{
-		EK_CORE_INFO("========== Starting Eklipse Engine ==========");
-
-		SetAPI(Renderer::GetAPI());
-		Renderer::Init();
-
-		m_scene.Load();
-
-		EK_PROFILE_END();
-
-		m_running = true;
-		float dt = 0;
-		while (m_running)
-		{
-			m_timer.Record();
-			dt = m_timer.DeltaTime();
-
-			if (GUI->IsEnabled()) 
-			{
-				EK_PROFILE_NAME("GUI");
-
-				GUI->Begin();
-				GUI->DrawDockspace();
-				for (auto& layer : m_layerStack)
-				{
-					layer->OnGUI(dt);
-				}
-				GUI->End();
-			}
-
-			for (auto& layer : m_layerStack)
-			{
-				layer->OnUpdate(dt);
-			}
-
-			m_window->Update(dt);
-
-			EK_PROFILE_END_FRAME(dt);
-		}
-
-		EK_CORE_INFO("========== Closing Eklipse Engine ==========");
-
-		EK_PROFILE_BEGIN("Shutdown");
-
-		Renderer::Shutdown();
-		m_window->Shutdown();
-		m_layerStack.Shutdown();
 	}
 }

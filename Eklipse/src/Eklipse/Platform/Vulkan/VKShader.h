@@ -1,5 +1,6 @@
 #pragma once
 #include <Eklipse/Renderer/Shader.h>
+#include <vulkan/vulkan.h>
 
 namespace Eklipse
 {
@@ -16,6 +17,9 @@ namespace Eklipse
 
 			virtual void UploadMat4(const std::string& name, const glm::mat4& matrix) override;
 			virtual void UploadInt(const std::string& name, const int value) override;
+
+		private:
+			VkPipelineLayout m_pipelineLayout;
 		};
 	}
 }

@@ -42,7 +42,7 @@ namespace Eklipse
 		virtual void OnDetach() override;
 
 		void Begin();
-		void DrawDockspace();
+		void RenderDockspace();
 		void End();
 
 	public:

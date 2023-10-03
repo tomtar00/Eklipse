@@ -10,7 +10,8 @@ namespace Editor
 		EK_PROFILE();
 
 		ImGui::Begin("Entities");
-		static Eklipse::Scene* scene = Eklipse::Application::Get().GetScene();
+		static Eklipse::Scene* scene = EditorLayer::Get()->GetActiveScene();
+		EK_ASSERT(scene != nullptr, "Scene is null!");
 
 		if (ImGui::BeginPopupContextWindow())
 		{
@@ -22,7 +23,7 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 
-		scene->All([&](auto entityID)
+		scene->ForEachEntity([&](auto entityID)
 			{
 				Eklipse::Entity entity = { entityID, scene };
 				auto& nameComponent = entity.GetComponent<Eklipse::NameComponent>();

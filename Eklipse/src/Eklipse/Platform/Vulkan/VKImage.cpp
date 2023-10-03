@@ -111,8 +111,7 @@ namespace Eklipse
 		}
 		void Image::AllocateOnGPU(VkDeviceSize imageSize, uint32_t width, uint32_t height, uint32_t mipLevels, const void* data)
 		{
-			VKStagingBuffer stagingBuffer;
-			stagingBuffer.Setup(data, imageSize);
+			VKStagingBuffer stagingBuffer(data, imageSize);
 
 			CreateImage(width, height, mipLevels,
 				VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
@@ -126,8 +125,6 @@ namespace Eklipse
 			// if mip maps are disabled, uncomment
 			//TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			//   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
-
-			stagingBuffer.Dispose();
 		}
 		void Image::CreateImageView(VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
 		{

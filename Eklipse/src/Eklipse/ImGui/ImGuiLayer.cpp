@@ -11,11 +11,12 @@
 
 namespace Eklipse
 {
+	static ImFont* s_font = nullptr;
+
 	ImGuiLayer::ImGuiLayer(const GuiLayerConfigInfo& configInfo)
 		: m_config(configInfo), m_first_time(true) 
 	{
-		EK_ASSERT(Application::Get().GUI == nullptr, "ImGui Layer is already on the stack!");
-		Application::Get().GUI = this;
+		//Init();
 	};
 
 	void ImGuiLayer::OnAttach()
@@ -28,6 +29,8 @@ namespace Eklipse
 		{
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
+		s_font = io.Fonts->AddFontFromFileTTF("fonts/onest.ttf", 16);
+		EK_ASSERT(s_font != nullptr, "Failed to load font");
 
 		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());
 	}
@@ -42,12 +45,14 @@ namespace Eklipse
 		NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
+		ImGui::PushFont(s_font);
 	}
 	void ImGuiLayer::End()
 	{
+		ImGui::PopFont();
 		ImGui::Render();
 	}
-	void ImGuiLayer::DrawDockspace()
+	void ImGuiLayer::RenderDockspace()
 	{
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;

@@ -2,7 +2,7 @@
 #include "VkImGuiLayer.h"
 
 #include <Eklipse/Renderer/Settings.h>
-
+#include <Eklipse/Renderer/RenderCommand.h>
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
@@ -130,7 +130,9 @@ namespace Eklipse
 		{
 			if (!(*m_config.enabled)) return;
 
+			RenderCommand::API->BeginGUIPass();
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_currentCommandBuffer);
+			RenderCommand::API->EndPass();
 		}
 		void VkImGuiLayer::DrawViewport(float width, float height)
 		{

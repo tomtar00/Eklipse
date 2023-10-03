@@ -3,7 +3,6 @@
 #include "RenderCommand.h"
 #include "Settings.h"
 
-#include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
@@ -16,7 +15,6 @@ namespace Eklipse
 	float				g_aspectRatio  = 0.5f;
 
 	ApiType				Renderer::s_apiType;
-	Scene*				Renderer::s_scene;
 	ShaderLibrary		Renderer::s_shaderLibrary;
 	Ref<Viewport>		Renderer::s_viewport;
 
@@ -27,35 +25,20 @@ namespace Eklipse
 
 	void Renderer::Init()
 	{
-		s_scene = Application::Get().GetScene();
-
 		s_geometryShader = s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
 		s_framebufferShader = s_shaderLibrary.Load("framebuffer", "shaders/framebuffer.vert", "shaders/framebuffer.frag");
 	}
-	void Renderer::DrawFrame(Camera& camera, float deltaTime)
+	void Renderer::RecordViewport(Scene& scene, Camera& camera, float deltaTime)
 	{
-		EK_PROFILE_NAME("Renderer");
-		Stats::Get().Reset();
-
-		if (g_viewportSize.width == 0 || g_viewportSize.height == 0) return;
-
-		//auto& cameraView = s_scene->GetRegistry().view<TransformComponent, CameraComponent>();
-		//for (auto entity : cameraView)
-		//{
-		//	auto& [transformComponent, cameraComponent] = cameraView.get<TransformComponent, CameraComponent>(entity);
-
-		//	cameraComponent.camera.UpdateViewProjectionMatrix(transformComponent.transform, g_aspectRatio);
-		//	s_camera = &cameraComponent.camera; // TODO: Change this
-		//}
+		EK_PROFILE_NAME("Record Scene");	
 		
-		// =============== Record Scene
 		s_viewport->BindFramebuffer();
 
 		s_geometryShader->Bind();
 		s_geometryShader->UploadInt("texSampler", 0);
 		
 		RenderCommand::API->BeginGeometryPass();
-		auto view = s_scene->GetRegistry().view<TransformComponent, MeshComponent>();
+		auto view = scene.GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
@@ -68,29 +51,6 @@ namespace Eklipse
 		s_geometryShader->Unbind();
 		
 		s_viewport->UnbindFramebuffer();
-		// ==============================
-
-		///////////////////////////////// FRAME
-		RenderCommand::API->BeginFrame();
-
-		// =============== Draw Scene Fullscreen
-		if (s_viewport->HasFlags(VIEWPORT_FULLSCREEN))
-		{
-			s_viewport->Bind();
-			RenderCommand::DrawIndexed(s_framebufferShader, s_viewport->GetVertexArray());
-		}
-		// ==============================
-
-		// =============== Draw ImGui
-		RenderCommand::API->BeginGUIPass();
-		Application::Get().DrawGUI();
-		RenderCommand::API->EndPass();
-		// ==============================
-
-		RenderCommand::API->EndFrame();
-		////////////////////////////////
-
-		Stats::Get().Update(deltaTime);
 	}
 	void Renderer::Shutdown()
 	{
@@ -130,7 +90,7 @@ namespace Eklipse
 	{
 		s_apiType = apiType;
 	}
-	void Renderer::SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn)
+	void Renderer::SetAPI(ApiType apiType)
 	{
 		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
 
@@ -144,7 +104,7 @@ namespace Eklipse
 
 			if (RenderCommand::API->IsInitialized())
 			{
-				shutdownFn();
+				Application::Get().OnShutdownAPI();
 				RenderCommand::API->Shutdown();
 			}
 		}
@@ -154,19 +114,20 @@ namespace Eklipse
 		RenderCommand::API = GraphicsAPI::Create();
 
 		RenderCommand::API->Init();
-		initFn();
+		Application::Get().OnInitAPI(s_apiType);
 
 		FramebufferInfo fbInfo{};
 		fbInfo.width = g_viewportSize.width;
 		fbInfo.height = g_viewportSize.height;
 		fbInfo.numSamples = RendererSettings::GetMsaaSamples();
-		fbInfo.colorAttachmentInfos = {{ FramebufferTextureFormat::RGBA8 }};
-		fbInfo.depthAttachmentInfo = { FramebufferTextureFormat::DEPTH24STENCIL8 };
+		fbInfo.colorAttachmentInfos = {{ ImageFormat::RGBA8 }};
+		fbInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
 
 		ViewportCreateInfo vCreateInfo{};
 		vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
 		vCreateInfo.framebufferInfo = fbInfo;
 
+		s_viewport.reset();
 		s_viewport = Viewport::Create(vCreateInfo);
 	}
 }

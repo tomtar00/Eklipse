@@ -15,14 +15,21 @@ namespace Editor
 			Eklipse::RendererSettings::SetVsync(v);
 		}
 		
-		static const char* items[]{ "Off","x2","x4","x8"};
+		static const char* msaaSamples[]{ "Off","x2","x4","x8"};
 		static int m;
-		if (ImGui::Combo("MSAA", &m, items, IM_ARRAYSIZE(items)))
+		if (ImGui::Combo("MSAA", &m, msaaSamples, IM_ARRAYSIZE(msaaSamples)))
 		{
 			int samples = 0;
 			if (m > 0)
 				samples = pow(2, m);
 			Eklipse::RendererSettings::SetMsaaSamples(samples);
+		}
+
+		static const char* APIs[]{ "OpenGL", "Vulkan"};
+		static int api;
+		if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
+		{
+			Eklipse::Application::Get().SetAPI((Eklipse::ApiType)api);
 		}
 
 		ImGui::End();

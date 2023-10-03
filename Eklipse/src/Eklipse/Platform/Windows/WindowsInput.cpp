@@ -6,6 +6,9 @@
 
 namespace Eklipse
 {
+	glm::vec2 Input::m_mousePosition = { 0.0f, 0.0f };
+	glm::vec2 Input::m_mouseScrollDelta = { 0.0f, 0.0f };
+
 	bool Input::IsKeyDown(KeyCode key)
 	{
 		auto* window = Application::Get().GetWindow()->GetGlfwWindow();
@@ -24,5 +27,25 @@ namespace Eklipse
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 		return { (float)xpos, (float)ypos };
+	}
+	float Input::GetMouseDeltaX()
+	{
+		return m_mousePosition.x - GetMousePosition().x;
+	}
+	float Input::GetMouseDeltaY()
+	{
+		return m_mousePosition.y - GetMousePosition().y;
+	}
+	float Input::IsScrollingUp()
+	{
+		return m_mouseScrollDelta.y > 0;
+	}
+	float Input::IsScrollingDown()
+	{
+		return m_mouseScrollDelta.y < 0;
+	}
+	void Input::Reset()
+	{
+		m_mouseScrollDelta = { 0.f, 0.f };
 	}
 }

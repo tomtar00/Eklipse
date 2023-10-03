@@ -10,7 +10,7 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		uint32_t CreateShader(const std::string& shaderPath, uint32_t shaderType)
+		static uint32_t CreateShader(const std::string& shaderPath, uint32_t shaderType)
 		{
 			GLint success = false;
 			char infoLog[512];

@@ -19,7 +19,7 @@ namespace Eklipse
 		void DestroyEntity(Entity entity);
 
 		template<typename Func>
-		inline void All(Func& func) { GetRegistry().each(func); }
+		inline void ForEachEntity(Func& func) { m_registry.each(func); }
 
 		entt::registry& GetRegistry() { return m_registry; }
 

@@ -15,9 +15,9 @@ namespace Eklipse
 
 	enum class ApiType
 	{
-		None,
-		Vulkan,
-		OpenGL
+		None	= 0,
+		Vulkan	= 1,
+		OpenGL	= 2
 	};
 
 	class Renderer
@@ -25,7 +25,7 @@ namespace Eklipse
 	public:
 		static void Init();
 
-		static void DrawFrame(Camera& camera, float deltaTime);
+		static void RecordViewport(Scene& scene, Camera& camera, float deltaTime);
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
@@ -33,14 +33,13 @@ namespace Eklipse
 
 		static ApiType GetAPI();
 		static void SetStartupAPI(ApiType apiType);
-		static void SetAPI(ApiType apiType, std::function<void()> shutdownFn, std::function<void()> initFn);
+		static void SetAPI(ApiType apiType);
 
 		inline static ShaderLibrary& GetShaderLibrary() { return s_shaderLibrary; }
 		inline static Ref<Viewport> GetViewport() { return s_viewport; }
 
 	private:
 		static ApiType s_apiType;
-		static Scene* s_scene;
 		static ShaderLibrary s_shaderLibrary;
 		static Ref<Viewport> s_viewport;
 	};

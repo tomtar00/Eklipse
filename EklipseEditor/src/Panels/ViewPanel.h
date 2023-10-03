@@ -1,5 +1,6 @@
 #pragma once
 #include <Eklipse.h>
+#include <ImGuizmo.h>
 
 namespace Editor
 {
@@ -16,5 +17,8 @@ namespace Editor
 		float m_aspectRatio{ 1.0f };
 		ImVec2 m_viewportSize{ 0.0f, 0.0f };
 		ImVec2 m_viewportPosition{ 0.0f, 0.0f };
+
+		ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
+		ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
 	};
 }

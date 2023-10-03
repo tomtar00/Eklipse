@@ -14,14 +14,17 @@ namespace Editor
 	class EditorLayer : public Eklipse::Layer
 	{
 	public:
-		EditorLayer();
+		EditorLayer() = delete;
+		EditorLayer(Eklipse::Scene& scene);
 		~EditorLayer() = default;
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnUpdate(float deltaTime) override;
+		void Render(Eklipse::Scene& scene, float deltaTime);
 
 		inline static EditorLayer* Get() { return s_instance; }
+		inline Eklipse::Scene* GetActiveScene() { return m_activeScene; }
 
 		inline EntitiesPanel& GetEntitiesPanel() { return *m_entitiesPanel.get(); }
 		inline DetailsPanel& GetDetailsPanel() { return *m_detailsPanel.get(); }
@@ -34,11 +37,14 @@ namespace Editor
 		inline Eklipse::Entity GetSelectedEntity() { return m_selectedEntity; }
 		inline void SetEntityNull() { m_selectedEntity.MarkNull(); }
 
+		Eklipse::Ref<Eklipse::ImGuiLayer> GUI;
+
 	private:
 		inline static EditorLayer* s_instance = nullptr;
 
 		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
 
+		Eklipse::Scene* m_activeScene;
 		Eklipse::Entity m_selectedEntity;
 		Eklipse::Camera m_editorCamera;
 		Eklipse::Transform m_editorCameraTransform;

@@ -159,8 +159,22 @@ namespace Eklipse
 	class Input
 	{
 	public:
+		friend class Application;
+		friend class Window;
+
 		static bool IsKeyDown(KeyCode key);
 		static bool IsMouseButtonDown(MouseCode button);
 		static glm::vec2 GetMousePosition();
+		static float GetMouseDeltaX();
+		static float GetMouseDeltaY();
+		static float IsScrollingUp();
+		static float IsScrollingDown();
+
+	private:
+		static void Reset();
+
+	private:
+		static glm::vec2 m_mousePosition;
+		static glm::vec2 m_mouseScrollDelta;
 	};
 }

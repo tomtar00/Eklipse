@@ -28,7 +28,7 @@ namespace Eklipse
 		inline void SetEventCallback(const std::function<void(Event&)>& callback) { m_data.EventCallback = callback; }
 		inline WindowData& GetData() { return m_data; }
 
-		virtual void Update(float deltaTime) = 0;
+		virtual void Update(float deltaTime);
 		virtual void SetWindowHint(int hint, int value) = 0;
 		virtual void SwapBuffers() = 0;
 
