@@ -19,7 +19,10 @@ namespace Eklipse
 			virtual void UploadInt(const std::string& name, const int value) override;
 
 		private:
+			VkPipeline m_pipeline;
 			VkPipelineLayout m_pipelineLayout;
+			VkDescriptorSetLayout m_descriptorSetLayout;
+			VkRenderPass m_renderPass;
 		};
 	}
 }

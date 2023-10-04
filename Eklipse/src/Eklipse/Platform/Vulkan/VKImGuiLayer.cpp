@@ -81,12 +81,12 @@ namespace Eklipse
 			g_viewportImages.resize(g_swapChainImageCount);
 			SetupViewportImages();
 
-			g_viewportPipeline = CreateGraphicsPipeline(
+			/*g_viewportPipeline = CreateGraphicsPipeline(
 				"shaders/vert.spv", "shaders/frag.spv",
 				g_viewportPipelineLayout, g_viewportRenderPass,
 				GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
 				&g_graphicsDescriptorSetLayout
-			);
+			);*/
 
 			auto cmd = BeginSingleCommands();
 			ImGui_ImplVulkan_CreateFontsTexture(cmd);

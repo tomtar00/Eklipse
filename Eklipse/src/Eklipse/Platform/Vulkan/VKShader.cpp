@@ -1,7 +1,12 @@
 #include "precompiled.h"
+
+#include "VK.h"
 #include "VKShader.h"
 #include "VKUtils.h"
+
 #include <Eklipse/Utils/File.h>
+#include "VKDescriptor.h"
+#include "VKPipeline.h"
 
 namespace Eklipse
 {
@@ -24,6 +29,28 @@ namespace Eklipse
 			fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 			fragShaderStageInfo.module = fragShaderModule;
 			fragShaderStageInfo.pName = "main";
+
+			std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+
+			m_descriptorSetLayout = CreateDescriptorSetLayout({
+				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
+				{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
+			});
+
+			m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout });
+
+			/*std::vector<VkVertexInputBindingDescription> bindingDescription = {
+				{ 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX }
+			};
+			std::vector<VkVertexInputAttributeDescription> attributeDescription = {
+				{ 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos) },
+				{ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color) },
+				{ 2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord) }
+			};
+			m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, m_renderPass, bindingDescription, attributeDescription);*/
+
+			vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
+			vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
 		}
 
 		void VKShader::Bind() const {}
@@ -31,14 +58,9 @@ namespace Eklipse
 
 		void VKShader::Dispose() const
 		{
-			/*if (m_pipelineLayout) vkDestroyPipelineLayout(m_device->GetDevice(), m_pipelineLayout, nullptr);
-			if (m_pipeline) vkDestroyPipeline(m_device->GetDevice(), m_pipeline, nullptr);
-			if (m_valid) {
-				for (auto module : m_shaderModules) {
-					vkDestroyShaderModule(m_device->GetDevice(), module, nullptr);
-				}
-				m_shaderModules.clear();
-			}*/
+			vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
+			vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
+			vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
 		}
 
 		void VKShader::UploadMat4(const std::string& name, const glm::mat4& matrix)

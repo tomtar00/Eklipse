@@ -20,36 +20,17 @@ namespace Eklipse
         VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
         VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
 
-        VkPipeline CreateGraphicsPipeline(const char* vertShaderRelPath, const char* fragShaderRelPath,
-            VkPipelineLayout& pipelineLayout, VkRenderPass renderPass,
-            std::vector<VkVertexInputBindingDescription> vertBindingDesc,
-            std::vector<VkVertexInputAttributeDescription> vertAttribteDesc,
-            VkDescriptorSetLayout* descSetLayouts)
+        VkPipeline CreateGraphicsPipeline(std::vector<VkPipelineShaderStageCreateInfo> shaderStages,
+            VkPipelineLayout pipelineLayout, VkRenderPass renderPass,
+            std::vector<VkVertexInputBindingDescription> bindingDesc,
+            std::vector<VkVertexInputAttributeDescription> attribteDesc)
         {
-            auto vertShaderCode = Eklipse::ReadFileFromPath(vertShaderRelPath);
-            VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-            VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-            vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-            vertShaderStageInfo.module = vertShaderModule;
-            vertShaderStageInfo.pName = "main";
-
-            auto fragShaderCode = Eklipse::ReadFileFromPath(fragShaderRelPath);
-            VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
-            VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-            fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-            fragShaderStageInfo.module = fragShaderModule;
-            fragShaderStageInfo.pName = "main";
-
-            VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            vertexInputInfo.vertexBindingDescriptionCount = vertBindingDesc.size();
-            vertexInputInfo.pVertexBindingDescriptions = vertBindingDesc.data();
-            vertexInputInfo.vertexAttributeDescriptionCount = vertAttribteDesc.size();
-            vertexInputInfo.pVertexAttributeDescriptions = vertAttribteDesc.data();
+            vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDesc.size());
+            vertexInputInfo.pVertexBindingDescriptions = bindingDesc.data();
+            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribteDesc.size());
+            vertexInputInfo.pVertexAttributeDescriptions = attribteDesc.data();
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
             inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -112,13 +93,6 @@ namespace Eklipse
             depthStencil.depthBoundsTestEnable = VK_FALSE;
             depthStencil.stencilTestEnable = VK_FALSE;
 
-            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo.setLayoutCount = 1;
-            pipelineLayoutInfo.pSetLayouts = descSetLayouts;
-            pipelineLayoutInfo.pushConstantRangeCount = 0;
-            pipelineLayoutInfo.pPushConstantRanges = nullptr;
-
             std::vector<VkDynamicState> dynamicStates = {
                 VK_DYNAMIC_STATE_VIEWPORT,
                 VK_DYNAMIC_STATE_SCISSOR
@@ -129,17 +103,13 @@ namespace Eklipse
             dynamicState.dynamicStateCount = dynamicStates.size();
             dynamicState.pDynamicStates = dynamicStates.data();
 
-            VkResult res;
-            res = vkCreatePipelineLayout(g_logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
-            HANDLE_VK_RESULT(res, "CREATE PIPELINE LAYOUT");
-
             VkGraphicsPipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount = 2;
             pipelineInfo.layout = pipelineLayout;
             pipelineInfo.renderPass = renderPass;
             pipelineInfo.subpass = 0;
-            pipelineInfo.pStages = shaderStages;
+            pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+            pipelineInfo.pStages = shaderStages.data();
             pipelineInfo.pVertexInputState = &vertexInputInfo;
             pipelineInfo.pInputAssemblyState = &inputAssembly;
             pipelineInfo.pViewportState = &viewportState;
@@ -153,13 +123,25 @@ namespace Eklipse
             pipelineInfo.basePipelineIndex = -1;
 
             VkPipeline pipeline;
-            res = vkCreateGraphicsPipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
-            HANDLE_VK_RESULT(res, "CREATE GRAPHICS PIPELINES");
-
-            vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
-            vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
+            VkResult res = vkCreateGraphicsPipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
+            HANDLE_VK_RESULT(res, "CREATE GRAPHICS PIPELINE");
 
             return pipeline;
+        }
+        VkPipelineLayout CreatePipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts)
+        {
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descSetLayouts.size());
+            pipelineLayoutInfo.pSetLayouts = descSetLayouts.data();
+            pipelineLayoutInfo.pushConstantRangeCount = 0;
+            pipelineLayoutInfo.pPushConstantRanges = nullptr;
+
+            VkPipelineLayout pipelineLayout;
+            VkResult res = vkCreatePipelineLayout(g_logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+            HANDLE_VK_RESULT(res, "CREATE PIPELINE LAYOUT");
+
+            return pipelineLayout;
         }
         VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout* descSetLayout)
         {

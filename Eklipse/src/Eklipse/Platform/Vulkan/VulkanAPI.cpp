@@ -98,12 +98,12 @@ namespace Eklipse
 				});
 
 			g_renderPass = CreateRenderPass();
-			g_graphicsPipeline = CreateGraphicsPipeline(
+			/*g_graphicsPipeline = CreateGraphicsPipeline(
 				"shaders/vert.spv", "shaders/frag.spv",
 				g_graphicsPipelineLayout, g_renderPass,
 				GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
 				&g_graphicsDescriptorSetLayout
-			);
+			);*/
 
 			CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
 

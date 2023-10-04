@@ -5,11 +5,12 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VkPipeline CreateGraphicsPipeline(const char* vertShaderRelPath, const char* fragShaderRelPath,
-			VkPipelineLayout& pipelineLayout, VkRenderPass renderPass,
-			std::vector<VkVertexInputBindingDescription> vertBindingDesc,
-			std::vector<VkVertexInputAttributeDescription> vertAttribteDesc,
-			VkDescriptorSetLayout* descSetLayouts);
+		VkPipeline CreateGraphicsPipeline(std::vector<VkPipelineShaderStageCreateInfo> shaderStages,
+			VkPipelineLayout pipelineLayout, VkRenderPass renderPass,
+			std::vector<VkVertexInputBindingDescription> bindingDesc,
+			std::vector<VkVertexInputAttributeDescription> attribteDesc);
+
+		VkPipelineLayout CreatePipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts);
 
 		VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, 
 			VkDescriptorSetLayout* descSetLayout);
