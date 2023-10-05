@@ -34,24 +34,21 @@ project "Eklipse"
 		"%{Include.shaderc}",
 		"%{Include.SPIRV_Cross}"
 	}
-	libdirs
-	{
-		"%{Lib.glfw}",
-		"%{Lib.Vulkan}",
-		"%{Lib.shaderc}",
-		"%{Lib.SPIRV_Cross}"
-	}
+	-- libdirs
+	-- {
+	-- 	"%{Lib.glfw}",
+	-- 	"%{Lib.Vulkan}",
+	-- 	"%{Lib.shaderc}",
+	-- 	"%{Lib.SPIRV_Cross}"
+	-- }
 
 	links
 	{
-		"glfw3.lib",
-		"glfw3_mt.lib",
-		"glfw3dll.lib",
+		"%{Lib.glfw3}",
+		"%{Lib.glfw3_mt}",
+		"%{Lib.glfw3dll}",
 
-		"vulkan-1",
-		"shaderc_shared",
-		"spirv-cross-core",
-		"spirv-cross-glsl",
+		"%{Lib.Vulkan}",
 
 		"ImGui",
 		"ImGuizmo",
@@ -68,19 +65,20 @@ project "Eklipse"
 			"EK_BUILD_DLL"
 		}
 
-		--postbuildcommands
-		--{
-		--	"{COPY} %{cfg.targetdir}\\Eklipse.dll %{cfg.targetdir}\\..\\EklipseEditor"
-		--}
-
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "On"
 
 		defines 
 		{
-			"EK_DEBUG",
-			"EK_INCLUDE_DEBUG_LAYER"
+			"EK_DEBUG"
+		}
+
+		links
+		{
+			"%{Lib.shaderc_debug}",
+			"%{Lib.SPIRV_Cross_debug}",
+			"%{Lib.SPIRV_Cross_GLSL_debug}",
 		}
 
 	filter "configurations:Release"
@@ -88,7 +86,21 @@ project "Eklipse"
 		runtime "Release"
 		optimize "On"
 
+		links
+		{
+			"%{Lib.shaderc_release}",
+			"%{Lib.SPIRV_Cross_release}",
+			"%{Lib.SPIRV_Cross_GLSL_release}",
+		}
+
 	filter "configurations:Dist"
 		defines "EK_DIST"
 		runtime "Release"
 		optimize "On"
+
+		links
+		{
+			"%{Lib.shaderc_release}",
+			"%{Lib.SPIRV_Cross_release}",
+			"%{Lib.SPIRV_Cross_GLSL_release}",
+		}

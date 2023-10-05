@@ -27,7 +27,7 @@ namespace Eklipse
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int frameWidth, int frameHeight);
-		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		VkShaderModule CreateShaderModule(const std::string& code);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		VkSampleCountFlagBits GetMaxUsableSampleCount();

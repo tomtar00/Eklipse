@@ -10,6 +10,7 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
+#include <Eklipse/Core/Timer.h>
 
 namespace Eklipse
 {
@@ -287,11 +288,11 @@ namespace Eklipse
 			}
 		}
 
-		GLShader::GLShader(const std::string& name, const std::string& filePath) : m_id(0)
+		GLShader::GLShader(const std::string& filePath) : m_id(0)
 		{
 			CreateCacheDirectoryIfNeeded();
 
-			std::string source = ReadFile(filePath);
+			std::string source = ReadFileFromPath(filePath);
 			auto shaderSources = PreProcess(source);
 
 			{
@@ -299,7 +300,7 @@ namespace Eklipse
 				CompileOrGetVulkanBinaries(shaderSources);
 				CompileOrGetOpenGLBinaries();
 				CreateProgram();
-				EK_CORE_WARN("Shader creation took {0} ms", timer.ElapsedMillis());
+				EK_CORE_WARN("Shader creation took {0} ms", timer.ElapsedTimeMs());
 			}
 
 			// Extract name from filepath

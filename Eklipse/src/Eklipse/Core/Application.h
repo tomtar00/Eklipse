@@ -68,7 +68,7 @@ namespace Eklipse
 		inline static Application* s_instance = nullptr;
 		ApplicationInfo m_appInfo{};
 		Ref<Window> m_window;
-		Eklipse::Timer m_timer;
+		Eklipse::MainLoopTimer m_timer;
 	};
 
 	Ref<Application> CreateApplication();

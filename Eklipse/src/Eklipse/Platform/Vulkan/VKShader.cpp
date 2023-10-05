@@ -12,9 +12,9 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKShader::VKShader(const std::string& name, const std::string& vertPath, const std::string& fragPath)
+		VKShader::VKShader(const std::string& filePath)
 		{
-			auto vertShaderCode = Eklipse::ReadFileFromPath(vertPath);
+			/*auto& vertShaderCode = Eklipse::ReadFileFromPath(vertPath);
 			VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -22,7 +22,7 @@ namespace Eklipse
 			vertShaderStageInfo.module = vertShaderModule;
 			vertShaderStageInfo.pName = "main";
 
-			auto fragShaderCode = Eklipse::ReadFileFromPath(fragPath);
+			auto& fragShaderCode = Eklipse::ReadFileFromPath(fragPath);
 			VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
 			VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
 			fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -37,7 +37,7 @@ namespace Eklipse
 				{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
 			});
 
-			m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout });
+			m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout });*/
 
 			/*std::vector<VkVertexInputBindingDescription> bindingDescription = {
 				{ 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX }
@@ -49,8 +49,8 @@ namespace Eklipse
 			};
 			m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, m_renderPass, bindingDescription, attributeDescription);*/
 
-			vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
-			vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
+			/*vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
+			vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);*/
 		}
 
 		void VKShader::Bind() const {}

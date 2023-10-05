@@ -7,7 +7,7 @@ namespace Eklipse
 	class Shader
 	{
 	public:
-		static Ref<Shader> Create(const std::string& name, const std::string& vertPath, const std::string& fragPath);
+		static Ref<Shader> Create(const std::string& filePath);
 		virtual ~Shader() = default;
 
 		const std::string& GetName() const;
@@ -27,7 +27,7 @@ namespace Eklipse
 	{
 	public:
 		void Add(const Ref<Shader>& shader);
-		Ref<Shader> Load(const std::string& name, const std::string& vertPath, const std::string& fragPath);
+		Ref<Shader> Load(const std::string& filePath);
 		Ref<Shader> Get(const std::string& name);
 		bool Contains(const std::string& name);
 		void Dispose();

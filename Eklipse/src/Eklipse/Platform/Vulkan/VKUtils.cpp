@@ -56,7 +56,7 @@ namespace Eklipse
 				return actualExtent;
 			}
 		}
-		VkShaderModule CreateShaderModule(const std::vector<char>& code)
+		VkShaderModule CreateShaderModule(const std::string& code)
 		{
 			VkShaderModuleCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

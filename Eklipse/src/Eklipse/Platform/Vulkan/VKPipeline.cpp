@@ -145,7 +145,7 @@ namespace Eklipse
         }
         VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout* descSetLayout)
         {
-            auto computeShaderCode = Eklipse::ReadFileFromPath(shaderRelPath);
+            auto& computeShaderCode = Eklipse::ReadFileFromPath(shaderRelPath);
             VkShaderModule computeShaderModule = CreateShaderModule(computeShaderCode);
             VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
             computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

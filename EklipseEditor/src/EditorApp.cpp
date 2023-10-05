@@ -72,8 +72,6 @@ namespace Editor
 
 Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication()
 {
-	EK_INFO("Starting Eklipse Editor");
-
 	Eklipse::ApplicationInfo info{};
 	info.appName = "Eklipse Editor";
 	info.windowWidth = 1600;

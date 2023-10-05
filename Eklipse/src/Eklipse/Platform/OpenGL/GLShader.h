@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLShader : public Eklipse::Shader
 		{
 		public:
-			GLShader(const std::string& name, const std::string& vertPath, const std::string& fragPath);
+			GLShader(const std::string& filePath);
 
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
@@ -29,7 +29,6 @@ namespace Eklipse
 		private:
 			uint32_t m_id;
 			std::string m_filePath;
-			std::string m_name;
 
 			std::unordered_map<GLenum, std::vector<uint32_t>> m_vulkanSPIRV;
 			std::unordered_map<GLenum, std::vector<uint32_t>> m_openGLSPIRV;

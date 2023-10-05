@@ -7,13 +7,13 @@
 
 namespace Eklipse
 {
-    Ref<Shader> Shader::Create(const std::string& name, const std::string& vertPath, const std::string& fragPath)
+    Ref<Shader> Shader::Create(const std::string& filePath)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(name, vertPath, fragPath);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(name, vertPath, fragPath);
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(filePath);
         }
         EK_ASSERT(false, "API {0} not implemented for Shader creation", int(apiType));
         return nullptr;
@@ -38,9 +38,9 @@ namespace Eklipse
         m_shaders[shader->GetName()] = shader;
         EK_CORE_INFO("Adding shader '{0}' to library", shader->GetName());
     }
-    Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& vertPath, const std::string& fragPath)
+    Ref<Shader> ShaderLibrary::Load(const std::string& filePath)
     {
-        auto shader = Shader::Create(name, vertPath, fragPath);
+        auto shader = Shader::Create(filePath);
         Add(shader);
         return shader;
     }

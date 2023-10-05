@@ -1,3 +1,5 @@
+// Particle Shader
+
 #stage vertex
 #version 430
 
