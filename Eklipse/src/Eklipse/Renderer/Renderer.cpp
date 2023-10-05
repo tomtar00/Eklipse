@@ -25,8 +25,8 @@ namespace Eklipse
 
 	void Renderer::Init()
 	{
-		s_geometryShader = s_shaderLibrary.Load("geometry", "shaders/geometry.vert", "shaders/geometry.frag");
-		s_framebufferShader = s_shaderLibrary.Load("framebuffer", "shaders/framebuffer.vert", "shaders/framebuffer.frag");
+		s_geometryShader = s_shaderLibrary.Load("geometry", "Assets/Shaders/geometry.vert", "Assets/Shaders/geometry.frag");
+		s_framebufferShader = s_shaderLibrary.Load("framebuffer", "Assets/Shaders/framebuffer.vert", "Assets/Shaders/framebuffer.frag");
 	}
 	void Renderer::RecordViewport(Scene& scene, Camera& camera, float deltaTime)
 	{

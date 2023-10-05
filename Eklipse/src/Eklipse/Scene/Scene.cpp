@@ -13,7 +13,7 @@ namespace Eklipse
 
 		CreateEntity("Main Camera").AddComponent<CameraComponent>();
 
-		viking = { "models/viking_room.obj", "textures/viking_room.png" };
+		viking = { "Assets/Models/viking_room.obj", "Assets/Textures/viking_room.png" };
 		CreateEntity("Viking").AddComponent<MeshComponent>(viking);
 		CreateEntity("Viking 2").AddComponent<MeshComponent>(viking);
 

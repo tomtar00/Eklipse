@@ -30,12 +30,16 @@ project "Eklipse"
 		"%{Include.tiny_obj_loader}",
 		"%{Include.vk_mem_alloc}",
 		"%{Include.entt}",
-		"%{Include.ImGuizmo}"
+		"%{Include.ImGuizmo}",
+		"%{Include.shaderc}",
+		"%{Include.SPIRV_Cross}"
 	}
 	libdirs
 	{
 		"%{Lib.glfw}",
-		"%{Lib.Vulkan}"
+		"%{Lib.Vulkan}",
+		"%{Lib.shaderc}",
+		"%{Lib.SPIRV_Cross}"
 	}
 
 	links
@@ -45,6 +49,9 @@ project "Eklipse"
 		"glfw3dll.lib",
 
 		"vulkan-1",
+		"shaderc_shared",
+		"spirv-cross-core",
+		"spirv-cross-glsl",
 
 		"ImGui",
 		"ImGuizmo",
@@ -67,13 +74,14 @@ project "Eklipse"
 		--}
 
 	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "On"
+
 		defines 
 		{
 			"EK_DEBUG",
 			"EK_INCLUDE_DEBUG_LAYER"
 		}
-		runtime "Debug"
-		symbols "On"
 
 	filter "configurations:Release"
 		defines "EK_RELEASE"

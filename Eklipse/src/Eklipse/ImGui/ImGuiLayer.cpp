@@ -29,7 +29,7 @@ namespace Eklipse
 		{
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
-		s_font = io.Fonts->AddFontFromFileTTF("fonts/onest.ttf", 16);
+		s_font = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", 16);
 		EK_ASSERT(s_font != nullptr, "Failed to load font");
 
 		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());

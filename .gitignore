@@ -10,3 +10,5 @@ obj/
 .vscode/
 *.code-workspace
 Makefile
+
+EklipseEditor/Assets/Cache
