@@ -19,36 +19,42 @@ namespace Eklipse
 	Ref<Viewport>		Renderer::s_viewport;
 
 	// TODO: Remove
-	static Ref<Shader>	s_meshShader;
-	static Ref<Shader>	s_spriteShader;
+	static Ref<Shader>			s_meshShader;
+	static Ref<Shader>			s_spriteShader;
+	static Ref<UniformBuffer>	s_cameraUniformBuffer;
+	static Ref<UniformBuffer>	s_transformUniformBuffer;
 	//
 
 	void Renderer::Init()
 	{
 		s_meshShader = s_shaderLibrary.Load("Assets/Shaders/mesh.glsl");
 		s_spriteShader = s_shaderLibrary.Load("Assets/Shaders/sprite.glsl");
+
+		s_cameraUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 0);
+		s_transformUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 1);
 	}
 	void Renderer::RecordViewport(Scene& scene, Camera& camera, float deltaTime)
 	{
 		EK_PROFILE_NAME("Record Scene");	
+
+		auto& viewProjection = camera.GetViewProjectionMatrix();
+		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
 		
 		s_viewport->BindFramebuffer();
-
-		s_meshShader->Bind();
-		s_meshShader->UploadInt("texSampler", 0);
 		
 		RenderCommand::API->BeginGeometryPass();
+		s_meshShader->Bind();
 		auto view = scene.GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
-			s_meshShader->UploadMat4("mvp", transformComponent.GetTransformMatrix(camera.GetViewProjectionMatrix()));
-			RenderCommand::DrawIndexed(s_meshShader, meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
+			//s_meshShader->UploadInt("texSampler", 0);
+			auto& transform = transformComponent.GetTransformMatrix(viewProjection);
+			s_transformUniformBuffer->SetData(&transform, sizeof(glm::mat4));
+			RenderCommand::DrawIndexed(meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
 		}
 		RenderCommand::API->EndPass();
-
-		s_meshShader->Unbind();
 		
 		s_viewport->UnbindFramebuffer();
 	}

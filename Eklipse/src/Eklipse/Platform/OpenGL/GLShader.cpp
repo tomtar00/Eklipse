@@ -116,10 +116,8 @@ namespace Eklipse
 
 			shaderc::Compiler compiler;
 			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-			const bool optimize = true;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_performance);
+			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
 			std::filesystem::path cacheDirectory = GetCacheDirectory();
 
@@ -173,9 +171,7 @@ namespace Eklipse
 			shaderc::Compiler compiler;
 			shaderc::CompileOptions options;
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-			const bool optimize = false;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_performance);
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
 			std::filesystem::path cacheDirectory = GetCacheDirectory();
 
@@ -204,11 +200,8 @@ namespace Eklipse
 					auto& source = m_openGLSourceCode[stage];
 
 					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, GLShaderStageToShaderC(stage), m_filePath.c_str());
-					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-					{
-						EK_ASSERT(false, "{0}", module.GetErrorMessage());
-					}
-
+					EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
+					
 					shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 
 					std::ofstream out(cachedPath, std::ios::out | std::ios::binary);

@@ -77,6 +77,7 @@ namespace Eklipse
 		static Ref<VertexBuffer> Create(const std::vector<float>& vertices);
 		virtual ~VertexBuffer() = default;
 
+		virtual void SetData(const void* data, uint32_t size) = 0;
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;

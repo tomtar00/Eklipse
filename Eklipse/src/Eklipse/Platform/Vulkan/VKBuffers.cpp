@@ -53,6 +53,11 @@ namespace Eklipse
 			VKStagingBuffer stagingBuffer(vertices.data(), size);
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
 		}
+		void VKVertexBuffer::SetData(const void* data, uint32_t size)
+		{
+			VKStagingBuffer stagingBuffer(data, size);
+			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
+		}
 		void VKVertexBuffer::Bind() const
 		{
 			VkDeviceSize offsets = { 0 };

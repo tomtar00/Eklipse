@@ -3,9 +3,13 @@
 #stage vertex
 #version 460 core
 
-layout(std140, binding = 0) uniform Transform
+layout(std140, binding = 0) uniform Camera
 {
-	mat4 MVP;
+	mat4 ViewProjection;
+} Camera;
+layout(std140, binding = 1) uniform Transform
+{
+	mat4 Model;
 } Transform;
 
 layout(location = 0) in vec3 inPosition;
@@ -17,7 +21,7 @@ layout(location = 1) out vec2 fragTexCoord;
 
 void main()
 {
-    gl_Position = Transform * vec4(inPosition, 1.0);
+    gl_Position = Camera.ViewProjection * Transform.Model * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
 }
