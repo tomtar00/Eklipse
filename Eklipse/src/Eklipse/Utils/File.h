@@ -2,5 +2,5 @@
 
 namespace Eklipse
 {
-	extern std::string& ReadFileFromPath(const std::string& filename);
+	extern std::string ReadFileFromPath(const std::string& filename);
 }

@@ -15,14 +15,19 @@ namespace Eklipse
 			virtual void Unbind() const override;
 			virtual void Dispose() const override;
 
-			virtual void UploadMat4(const std::string& name, const glm::mat4& matrix) override;
-			virtual void UploadInt(const std::string& name, const int value) override;
+			VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_descriptorSetLayout; }
+			VkPipelineLayout GetPipelineLayout() const { return m_pipelineLayout; }
+
+		private:
+			void CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources);
 
 		private:
 			VkPipeline m_pipeline;
 			VkPipelineLayout m_pipelineLayout;
 			VkDescriptorSetLayout m_descriptorSetLayout;
-			VkRenderPass m_renderPass;
+
+			std::string m_filePath;
+			std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
 		};
 	}
 }

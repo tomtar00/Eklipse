@@ -20,10 +20,6 @@ namespace Eklipse
 		{
 			return m_framebufferInfo;
 		}
-		void* GLFramebuffer::GetMainColorAttachment()
-		{
-			return &m_colorAttachments[0];
-		}
 		void GLFramebuffer::Build()
 		{
 			glGenFramebuffers(1, &m_id);
@@ -32,7 +28,7 @@ namespace Eklipse
 			int msaaSamples = m_framebufferInfo.numSamples;
 			bool multiSampled = msaaSamples > 1;
 			m_texTarget = multiSampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			
+
 			// TODO: maybe use renderbuffers for better performance (no shader read)
 
 			if (m_framebufferInfo.colorAttachmentInfos.size() > 0)
@@ -63,28 +59,31 @@ namespace Eklipse
 				}
 				glBindTexture(m_texTarget, 0);
 			}
-			
+
 			// Depth and stencil attachment
-			glGenTextures(1, &m_depthAttachment);
-			glBindTexture(m_texTarget, m_depthAttachment);
-
-			GLenum depthFormat = ConvertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
-
-			if (multiSampled)
-				glTexImage2DMultisample(m_texTarget, msaaSamples, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
-			else
+			//if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED)
 			{
-				glTexStorage2D(m_texTarget, 1, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height);
+				glGenTextures(1, &m_depthAttachment);
+				glBindTexture(m_texTarget, m_depthAttachment);
 
-				glTexParameteri(m_texTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-				glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				GLenum depthFormat = ConvertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
+
+				if (multiSampled)
+					glTexImage2DMultisample(m_texTarget, msaaSamples, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
+				else
+				{
+					glTexStorage2D(m_texTarget, 1, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height);
+
+					glTexParameteri(m_texTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				}
+
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment, 0);
+				glBindTexture(m_texTarget, 0);
 			}
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment, 0);
-			glBindTexture(m_texTarget, 0);
 
 			EK_ASSERT((m_colorAttachments.size() <= 4), "Too many colors attachemnts! ({0})", m_colorAttachments.size());
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };

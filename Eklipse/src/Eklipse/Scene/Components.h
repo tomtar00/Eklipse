@@ -3,6 +3,7 @@
 
 #include "Transform.h"
 #include "Camera.h"
+#include <Eklipse/Renderer/Material.h>
 #include <Eklipse/Renderer/Mesh.h>
 
 namespace Eklipse
@@ -20,7 +21,7 @@ namespace Eklipse
 		Transform transform;
 		glm::mat4 transformMatrix;
 
-		glm::mat4& GetTransformMatrix(const glm::mat4& viewProjMatrix) const;
+		glm::mat4& GetTransformMatrix() const;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& transform) = default;
@@ -28,11 +29,12 @@ namespace Eklipse
 	};
 	struct MeshComponent
 	{
-		Mesh mesh;
+		Mesh* mesh;
+		Material* material;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& mesh) = default;
-		MeshComponent(const Mesh& mesh) : mesh(mesh) {}
+		MeshComponent(Mesh* mesh, Material* material) : mesh(mesh), material(material) {}
 	};
 	struct CameraComponent
 	{

@@ -41,9 +41,13 @@ namespace Editor
 					editorLayer->GUI->End();
 				}
 
-				for (auto& layer : m_layerStack)
 				{
-					layer->OnUpdate(deltaTime);
+					EK_PROFILE_NAME("Update");
+
+					for (auto& layer : m_layerStack)
+					{
+						layer->OnUpdate(deltaTime);
+					}
 				}
 
 				editorLayer->Render(m_scene, deltaTime);
@@ -58,11 +62,11 @@ namespace Editor
 
 		void OnInitAPI(Eklipse::ApiType api) override
 		{
-			editorLayer->GUI->Init();
+			editorLayer->OnInitAPI(api);
 		}
 		void OnShutdownAPI() override
 		{
-			editorLayer->GUI->Shutdown();
+			editorLayer->OnShutdownAPI();
 		}
 
 	private:

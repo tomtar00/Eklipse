@@ -17,8 +17,6 @@ namespace Editor
 		{
 			if (ImGui::MenuItem("New Entity"))
 				scene->CreateEntity();
-			if (ImGui::MenuItem("New Test Mesh")) // TODO: remove this later
-				scene->CreateTestMesh("Test Mesh");
 
 			ImGui::EndPopup();
 		}

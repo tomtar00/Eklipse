@@ -23,6 +23,9 @@ namespace Editor
 		void OnUpdate(float deltaTime) override;
 		void Render(Eklipse::Scene& scene, float deltaTime);
 
+		void OnInitAPI(Eklipse::ApiType api);
+		void OnShutdownAPI();
+
 		inline static EditorLayer* Get() { return s_instance; }
 		inline Eklipse::Scene* GetActiveScene() { return m_activeScene; }
 
@@ -43,6 +46,8 @@ namespace Editor
 		inline static EditorLayer* s_instance = nullptr;
 
 		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
+		Eklipse::Ref<Eklipse::Framebuffer> m_defaultFramebuffer;
+		Eklipse::Ref<Eklipse::Framebuffer> m_viewportFramebuffer;
 
 		Eklipse::Scene* m_activeScene;
 		Eklipse::Entity m_selectedEntity;

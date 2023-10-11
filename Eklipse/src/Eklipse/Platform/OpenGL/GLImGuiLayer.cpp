@@ -45,9 +45,7 @@ namespace Eklipse
 		{
 			if (!(*m_config.enabled)) return;
 
-			RenderCommand::API->BeginGUIPass();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			RenderCommand::API->EndPass();
 		}
 		void GLImGuiLayer::DrawViewport(float width, float height)
 		{
@@ -61,7 +59,7 @@ namespace Eklipse
 		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{
 			if (width > 0 && height > 0)
-				g_viewport->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+				g_glViewport->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 		}
 	}
 }

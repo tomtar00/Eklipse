@@ -10,6 +10,7 @@
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #endif
 
+
 #include "VKUtils.h"
 #include "VKValidationLayers.h"
 #include "VKDevice.h"
@@ -26,13 +27,13 @@ namespace Eklipse
 	{
 		const uint32_t g_maxFramesInFlight = 2;
 
-		VkInstance			g_instance				= VK_NULL_HANDLE;
-		VkSurfaceKHR		g_surface				= VK_NULL_HANDLE;
-		VmaAllocator		g_allocator				= VK_NULL_HANDLE;
+		VkInstance			g_instance = VK_NULL_HANDLE;
+		VkSurfaceKHR		g_surface = VK_NULL_HANDLE;
+		VmaAllocator		g_allocator = VK_NULL_HANDLE;
 
-		VkQueue				g_graphicsQueue			= VK_NULL_HANDLE;
-		VkQueue				g_computeQueue			= VK_NULL_HANDLE;
-		VkQueue				g_presentQueue			= VK_NULL_HANDLE;
+		VkQueue				g_graphicsQueue = VK_NULL_HANDLE;
+		VkQueue				g_computeQueue = VK_NULL_HANDLE;
+		VkQueue				g_presentQueue = VK_NULL_HANDLE;
 
 		QueueFamilyIndices	g_queueFamilyIndices;
 
@@ -43,7 +44,10 @@ namespace Eklipse
 		ColorImage			g_colorImage;
 		DepthImage			g_depthImage;
 
-		VkCommandBuffer		g_currentCommandBuffer	= VK_NULL_HANDLE;
+		VkCommandBuffer		g_currentCommandBuffer = VK_NULL_HANDLE;
+
+		VKFramebuffer*		g_framebuffer;
+		VKFramebuffer*		g_guiFramebuffer;
 
 		VulkanAPI::VulkanAPI() : GraphicsAPI()
 		{
@@ -84,6 +88,7 @@ namespace Eklipse
 			vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
 
 			g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+			CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
 			// GEOMETRY //////////////////////////////////////////
 
@@ -91,26 +96,25 @@ namespace Eklipse
 			Application::Get().GetWindow()->GetFramebufferSize(width, height);
 			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
 			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
+			g_renderPass = CreateRenderPass();
+			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			//CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 
-			g_graphicsDescriptorSetLayout = CreateDescriptorSetLayout({
+			/*g_graphicsDescriptorSetLayout = CreateDescriptorSetLayout({
 				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
 				{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-				});
+				});*/
 
-			g_renderPass = CreateRenderPass();
-			/*g_graphicsPipeline = CreateGraphicsPipeline(
-				"shaders/vert.spv", "shaders/frag.spv",
-				g_graphicsPipelineLayout, g_renderPass,
-				GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
-				&g_graphicsDescriptorSetLayout
-			);*/
+				/*g_graphicsPipeline = CreateGraphicsPipeline(
+					"shaders/vert.spv", "shaders/frag.spv",
+					g_graphicsPipelineLayout, g_renderPass,
+					GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
+					&g_graphicsDescriptorSetLayout
+				);*/
 
-			CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
-			g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-			g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 
-			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			g_descriptorPool = CreateDescriptorPool({
 				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
@@ -158,8 +162,8 @@ namespace Eklipse
 
 			// GEOMETRY //////////////////////////////////////////
 
-			g_colorImage.Dispose();
-			g_depthImage.Dispose();
+			//g_colorImage.Dispose();
+			//g_depthImage.Dispose();
 
 			DestroyFrameBuffers(g_swapChainFramebuffers);
 			DestroyImageViews(g_swapChainImageViews);
@@ -230,16 +234,24 @@ namespace Eklipse
 			std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
 			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
-			std::array<VkCommandBuffer, 2> commandBuffers = { /*drawCommandBuffer,*/ m_viewportCommandBuffer, m_imguiCommandBuffer };
+			std::vector<VkCommandBuffer> commandBuffers = { };
+			if (g_framebuffer != nullptr)
+			{
+				commandBuffers.push_back(g_framebuffer->GetCommandBuffer(g_currentFrame));
+			}
+			if (g_guiFramebuffer != nullptr)
+			{
+				commandBuffers.push_back(g_guiFramebuffer->GetCommandBuffer(g_currentFrame));
+			}
 
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.commandBufferCount = commandBuffers.size();
+			submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 			submitInfo.pCommandBuffers = commandBuffers.data();
-			submitInfo.waitSemaphoreCount = waitSemaphores.size();
+			submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
 			submitInfo.pWaitSemaphores = waitSemaphores.data();
 			submitInfo.pWaitDstStageMask = waitStages.data();
-			submitInfo.signalSemaphoreCount = signalSemaphores.size();
+			submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
 			submitInfo.pSignalSemaphores = signalSemaphores.data();
 
 			VkResult result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_renderInFlightFences[g_currentFrame]);
@@ -256,6 +268,7 @@ namespace Eklipse
 
 			result = vkQueuePresentKHR(g_presentQueue, &presentInfo);
 
+			// TODO: move this to Application class
 			bool& framebufferResized = Application::Get().GetWindow()->GetData().framebufferResized;
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
 			{
@@ -263,34 +276,38 @@ namespace Eklipse
 				RecreateSwapChain();
 			}
 			else EK_ASSERT(result == VK_SUCCESS, "Failed to present swap chain image!");
+			//
 
 			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
 		}
 		void VulkanAPI::BeginGeometryPass()
 		{
-			g_currentCommandBuffer = m_viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
-			BeginRenderPass(g_viewportRenderPass, g_currentCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
-			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
+			//g_currentCommandBuffer = m_viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
+			//BeginRenderPass(g_viewportRenderPass, g_currentCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
+			//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
 		}
 		void VulkanAPI::BeginGUIPass()
 		{
-			g_currentCommandBuffer = m_imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
-			BeginRenderPass(g_imguiRenderPass, g_currentCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
-			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
+			//g_currentCommandBuffer = m_imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
+			//BeginRenderPass(g_imguiRenderPass, g_currentCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
+			//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
 		}
 		void VulkanAPI::EndPass()
 		{
-			EndRenderPass(g_currentCommandBuffer);
+			//EndRenderPass(g_currentCommandBuffer);
 		}
 		void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
 		{
-			//entity.m_uniformBuffer->SetData(&entity.m_ubo, sizeof(entity.m_ubo));
-
-			// TODO: add maybe some unsorted_map Entity->VkDescriptorSet and select descriptorSet from there
-			//VkDescriptorSet descriptorSet = m_descriptorSet;
-			//vkCmdBindDescriptorSets(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			vkCmdDrawIndexed(g_currentCommandBuffer, numIndices, 1, 0, 0, 0);
+		}
+		void VulkanAPI::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
+		{
+			g_framebuffer = std::static_pointer_cast<VKFramebuffer>(framebuffer).get();
+		}
+		void VulkanAPI::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
+		{
+			g_guiFramebuffer = std::static_pointer_cast<VKFramebuffer>(framebuffer).get();
 		}
 		void VulkanAPI::CreateInstance()
 		{

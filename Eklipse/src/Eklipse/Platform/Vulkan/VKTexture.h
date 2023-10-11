@@ -31,7 +31,9 @@ namespace Eklipse
 			void Setup(const TextureInfo& textureInfo);
 			void Destroy();
 
+			inline VkImage GetImage() const { return m_image; }
 			inline VkImageView GetImageView() const { return m_imageView; }
+			inline VkSampler GetSampler() const { return m_sampler; }
 
 		private:
 			VkImage m_image;

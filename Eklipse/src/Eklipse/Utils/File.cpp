@@ -2,7 +2,7 @@
 
 namespace Eklipse
 {
-    std::string& ReadFileFromPath(const std::string& filename)
+    std::string ReadFileFromPath(const std::string& filename)
     {
         std::string buffer;
         std::ifstream file(filename, std::ios::in | std::ios::binary);

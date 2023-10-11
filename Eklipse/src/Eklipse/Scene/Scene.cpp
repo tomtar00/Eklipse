@@ -5,27 +5,29 @@
 
 namespace Eklipse
 {
-	Mesh viking;
+	static Mesh				s_viking;
+	static Ref<Shader>		s_meshShader;
+	static Ref<Shader>		s_spriteShader;
+	static Ref<Material>	s_material;
 
 	void Scene::Load()
 	{
 		EK_CORE_TRACE("Begin scene load");
 
+		s_meshShader	= Shader::Create("Assets/Shaders/mesh.glsl");
+		s_material		= Material::Create(s_meshShader);
+		s_viking		= { "Assets/Models/viking_room.obj" };
+
 		CreateEntity("Main Camera").AddComponent<CameraComponent>();
 
-		viking = { "Assets/Models/viking_room.obj", "Assets/Textures/viking_room.png" };
-		CreateEntity("Viking").AddComponent<MeshComponent>(viking);
-		CreateEntity("Viking 2").AddComponent<MeshComponent>(viking);
+		CreateEntity("Viking").AddComponent<MeshComponent>(&s_viking, s_material.get());
+		CreateEntity("Viking 2").AddComponent<MeshComponent>(&s_viking, s_material.get());
 
 		EK_CORE_TRACE("Scene loaded");
 	}
 	void Scene::Dispose()
 	{
-		// TODO: dispose something...
-	}
-	void Scene::CreateTestMesh(const std::string& name)
-	{
-		CreateEntity(name).AddComponent<MeshComponent>(viking);
+		
 	}
 	Entity Scene::CreateEntity(const std::string name)
 	{

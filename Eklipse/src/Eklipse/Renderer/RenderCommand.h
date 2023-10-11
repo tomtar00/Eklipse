@@ -2,16 +2,20 @@
 #include "GraphicsAPI.h"
 #include "Shader.h"
 #include "VertexArray.h"
-#include "Texture.h"
+#include "Material.h"
 
 namespace Eklipse
 {
 	class RenderCommand
 	{
+		friend class Renderer;
+
 	public:
 		static void DrawIndexed(Ref<VertexArray> vertexArray);
-		static void DrawIndexed(Ref<VertexArray> vertexArray, Ref<Texture> texture);
+		static void DrawIndexed(Ref<VertexArray> vertexArray, Material* texture);
 
+	private:
 		static Unique<GraphicsAPI> API;
+
 	};
 }

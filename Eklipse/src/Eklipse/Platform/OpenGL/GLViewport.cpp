@@ -8,13 +8,13 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLViewport* g_viewport;
+		GLViewport* g_glViewport;
 
 		GLViewport::GLViewport(ViewportCreateInfo& info) : Viewport(info)
 		{
-			g_viewport = this;
+			g_glViewport = this;
 			m_framebuffer = CreateRef<GLFramebuffer>(info.framebufferInfo);
-			g_viewportTexture = *(uint32_t*)m_framebuffer->GetMainColorAttachment();
+			g_viewportTexture = m_framebuffer->GetMainColorAttachment();
 
 			if (info.flags & VIEWPORT_BLIT_FRAMEBUFFER)
 			{
@@ -26,32 +26,7 @@ namespace Eklipse
 				blitInfo.depthAttachmentInfo = { info.framebufferInfo.depthAttachmentInfo };
 				m_blitFramebuffer = CreateRef<GLFramebuffer>(blitInfo);
 
-				g_viewportTexture = *(uint32_t*)m_blitFramebuffer->GetMainColorAttachment();				
-			}
-
-			if (info.flags & VIEWPORT_FULLSCREEN)
-			{
-				std::vector<float> vertices = {
-					 1.0f,  1.0f, 1.0f, 1.0f,  // top right
-					 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
-					-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
-					-1.0f,  1.0f, 0.0f, 1.0f,  // top left
-				};
-				std::vector<uint32_t> indices = {
-					0, 1, 3,
-					1, 2, 3
-				};
-
-				Ref<VertexBuffer> vertexBuffer = CreateRef<GLVertexBuffer>(vertices);
-				BufferLayout layout = {
-					{ "inPos",			ShaderDataType::Float2,		false },
-					{ "inTexCoords",	ShaderDataType::Float2,		false },
-				};
-				vertexBuffer->SetLayout(layout);
-
-				m_vertexArray = CreateRef<GLVertexArray>();
-				m_vertexArray->AddVertexBuffer(vertexBuffer);
-				m_vertexArray->SetIndexBuffer(CreateRef<GLIndexBuffer>(indices));
+				g_viewportTexture = m_blitFramebuffer->GetMainColorAttachment();				
 			}
 		}
 		void GLViewport::BindFramebuffer()
@@ -102,10 +77,6 @@ namespace Eklipse
 				glDisable(GL_DEPTH_TEST);
 				glBindTexture(GL_TEXTURE_2D, g_viewportTexture);
 			}
-		}
-		Ref<VertexArray> GLViewport::GetVertexArray() const
-		{
-			return m_vertexArray;
 		}
 	}
 }

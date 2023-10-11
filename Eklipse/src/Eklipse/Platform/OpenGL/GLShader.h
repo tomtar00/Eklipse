@@ -15,25 +15,19 @@ namespace Eklipse
 			virtual void Unbind() const override;
 			virtual void Dispose() const override;
 
-			virtual void UploadMat4(const std::string& name, const glm::mat4& matrix) override;
-			virtual void UploadInt(const std::string& name, const int value) override;
-
 		private:
-			std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
-
-			void CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
+			void CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources);
 			void CompileOrGetOpenGLBinaries();
 			void CreateProgram();
-			void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 
 		private:
 			uint32_t m_id;
 			std::string m_filePath;
 
-			std::unordered_map<GLenum, std::vector<uint32_t>> m_vulkanSPIRV;
-			std::unordered_map<GLenum, std::vector<uint32_t>> m_openGLSPIRV;
+			std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
+			std::unordered_map<ShaderStage, std::vector<uint32_t>> m_openGLSPIRV;
 
-			std::unordered_map<GLenum, std::string> m_openGLSourceCode;
+			std::unordered_map<ShaderStage, std::string> m_openGLSourceCode;
 		};
 	}
 }

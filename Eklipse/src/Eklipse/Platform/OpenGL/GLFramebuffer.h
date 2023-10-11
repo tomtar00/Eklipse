@@ -11,9 +11,12 @@ namespace Eklipse
 		{
 			switch (format)
 			{
-				case ImageFormat::RGB8:		return GL_RGB;
-				case ImageFormat::RGBA8:	return GL_RGBA;
-				case ImageFormat::D24S8:	return GL_DEPTH24_STENCIL8;
+				case ImageFormat::UNDEFINED:	return GL_NONE;
+				case ImageFormat::R8:			return GL_RED;
+				case ImageFormat::RGB8:			return GL_RGB;
+				case ImageFormat::RGBA8:		return GL_RGBA;
+				case ImageFormat::BGRA8:		return GL_BGRA;
+				case ImageFormat::D24S8:		return GL_DEPTH24_STENCIL8;
 			}
 
 			EK_ASSERT(false, "Wrong image format");
@@ -27,7 +30,7 @@ namespace Eklipse
 			virtual ~GLFramebuffer();
 
 			virtual const FramebufferInfo& GetInfo() const override;
-			virtual void* GetMainColorAttachment() override;
+			uint32_t GetMainColorAttachment() { return m_colorAttachments[0]; }
 
 			virtual void Build() override;
 			virtual void Bind() override;

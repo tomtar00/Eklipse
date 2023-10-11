@@ -24,23 +24,30 @@ namespace Eklipse
 	{
 	public:
 		static void Init();
-
-		static void RecordViewport(Scene& scene, Camera& camera, float deltaTime);
 		static void Shutdown();
 
+		// Render stages
+		static void BeginFrame(Camera& camera, Transform& cameraTransform);
+		static void BeginRenderPass(Ref<Framebuffer> framebuffer);
+		static void RenderMeshes(Scene& scene);
+		static void EndRenderPass(Ref<Framebuffer> framebuffer);
+		static void Submit();
+
+		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void OnMultiSamplingChanged(uint32_t numSamples);
 
+		// Getters / Setters
 		static ApiType GetAPI();
 		static void SetStartupAPI(ApiType apiType);
 		static void SetAPI(ApiType apiType);
+		static void SetSceneFramebuffer(Ref<Framebuffer> framebuffer);
+		static void SetGUIFramebuffer(Ref<Framebuffer> framebuffer);
 
-		inline static ShaderLibrary& GetShaderLibrary() { return s_shaderLibrary; }
 		inline static Ref<Viewport> GetViewport() { return s_viewport; }
 
 	private:
 		static ApiType s_apiType;
-		static ShaderLibrary s_shaderLibrary;
 		static Ref<Viewport> s_viewport;
 	};
 }

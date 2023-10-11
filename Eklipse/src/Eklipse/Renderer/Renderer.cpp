@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "Settings.h"
+#include "Material.h"
 
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
@@ -12,56 +13,69 @@
 namespace Eklipse
 {
 	ViewportSize		g_viewportSize = { 512, 512 };
-	float				g_aspectRatio  = 0.5f;
+	float				g_aspectRatio  = 1.0f;
 
 	ApiType				Renderer::s_apiType;
-	ShaderLibrary		Renderer::s_shaderLibrary;
 	Ref<Viewport>		Renderer::s_viewport;
 
 	// TODO: Remove
-	static Ref<Shader>			s_meshShader;
-	static Ref<Shader>			s_spriteShader;
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
 	static Ref<UniformBuffer>	s_transformUniformBuffer;
+
+	static Ref<Material>		s_material;
 	//
 
 	void Renderer::Init()
 	{
-		s_meshShader = s_shaderLibrary.Load("Assets/Shaders/mesh.glsl");
-		s_spriteShader = s_shaderLibrary.Load("Assets/Shaders/sprite.glsl");
-
 		s_cameraUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 0);
 		s_transformUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 1);
 	}
-	void Renderer::RecordViewport(Scene& scene, Camera& camera, float deltaTime)
+	
+	void Renderer::Shutdown()
 	{
-		EK_PROFILE_NAME("Record Scene");	
+		RenderCommand::API->Shutdown();
+		ShaderLibrary::Dispose();
+	}
 
+	void Renderer::BeginFrame(Camera& camera, Transform& cameraTransform)
+	{
+		EK_PROFILE();
+
+		camera.UpdateViewProjectionMatrix(cameraTransform, g_aspectRatio);
 		auto& viewProjection = camera.GetViewProjectionMatrix();
 		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
-		
-		s_viewport->BindFramebuffer();
-		
-		RenderCommand::API->BeginGeometryPass();
-		s_meshShader->Bind();
+
+		RenderCommand::API->BeginFrame();
+	}
+	void Renderer::BeginRenderPass(Ref<Framebuffer> framebuffer)
+	{
+		EK_PROFILE();
+
+		framebuffer->Bind();
+	}
+	void Renderer::RenderMeshes(Scene& scene)
+	{
 		auto view = scene.GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
-			//s_meshShader->UploadInt("texSampler", 0);
-			auto& transform = transformComponent.GetTransformMatrix(viewProjection);
+			auto& transform = transformComponent.GetTransformMatrix();
 			s_transformUniformBuffer->SetData(&transform, sizeof(glm::mat4));
-			RenderCommand::DrawIndexed(meshComponent.mesh.GetVertexArray(), meshComponent.mesh.GetTexture());
+			RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
 		}
-		RenderCommand::API->EndPass();
-		
-		s_viewport->UnbindFramebuffer();
 	}
-	void Renderer::Shutdown()
+	void Renderer::EndRenderPass(Ref<Framebuffer> framebuffer)
 	{
-		RenderCommand::API->Shutdown();
-		s_shaderLibrary.Dispose();
+		EK_PROFILE();
+
+		framebuffer->Unbind();
+	}
+	void Renderer::Submit()
+	{
+		EK_PROFILE();
+
+		RenderCommand::API->EndFrame();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -118,11 +132,9 @@ namespace Eklipse
 		s_apiType = apiType;
 		RenderCommand::API.reset();
 		RenderCommand::API = GraphicsAPI::Create();
-
 		RenderCommand::API->Init();
-		Application::Get().OnInitAPI(s_apiType);
-
-		FramebufferInfo fbInfo{};
+		
+		/*FramebufferInfo fbInfo{};
 		fbInfo.width = g_viewportSize.width;
 		fbInfo.height = g_viewportSize.height;
 		fbInfo.numSamples = RendererSettings::GetMsaaSamples();
@@ -134,6 +146,16 @@ namespace Eklipse
 		vCreateInfo.framebufferInfo = fbInfo;
 
 		s_viewport.reset();
-		s_viewport = Viewport::Create(vCreateInfo);
+		s_viewport = Viewport::Create(vCreateInfo);*/
+
+		Application::Get().OnInitAPI(s_apiType);
+	}
+	void Renderer::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
+	{
+		RenderCommand::API->SetSceneFramebuffer(framebuffer);
+	}
+	void Renderer::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
+	{
+		RenderCommand::API->SetGUIFramebuffer(framebuffer);
 	}
 }

@@ -11,10 +11,6 @@ namespace Eklipse
 		void Load();
 		void Dispose();
 
-		//
-		void CreateTestMesh(const std::string& name); // TODO: remove this
-		//
-
 		Entity CreateEntity(const std::string name = "");
 		void DestroyEntity(Entity entity);
 

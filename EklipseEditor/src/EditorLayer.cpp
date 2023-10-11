@@ -1,7 +1,7 @@
 #include "EditorLayer.h"
-#include <Eklipse/Renderer/RenderCommand.h>
 #include <glm/gtc/quaternion.hpp>
 #include <Eklipse/Scene/Components.h>
+#include <Eklipse/Renderer/Settings.h>
 
 namespace Editor
 {
@@ -100,21 +100,77 @@ namespace Editor
 
 		m_editorCameraTransform.position = cameraPosition;
 		glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
-		m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));
-
-		m_editorCamera.UpdateViewProjectionMatrix(m_editorCameraTransform, m_viewPanel->GetAspectRatio());
+		m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));	
 		// ===================================
 	}
 	void EditorLayer::Render(Eklipse::Scene& scene, float deltaTime)
 	{
+		EK_PROFILE();
+
 		m_activeScene = &scene;
 
 		// Rendering
-		Eklipse::Renderer::RecordViewport(scene, m_editorCamera, deltaTime);
+		//				Eklipse::Renderer::RecordViewport(scene, m_editorCamera, deltaTime);
 
 		// Drawing
-		Eklipse::RenderCommand::API->BeginFrame();
+		//				Eklipse::RenderCommand::API->BeginFrame();
+		//				GUI->Draw();
+		//				Eklipse::RenderCommand::API->EndFrame();
+
+		// ==========
+
+		
+		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
+
+		// Record scene framebuffer
+		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
+		Eklipse::Renderer::RenderMeshes(scene);
+		Eklipse::Renderer::EndRenderPass(m_viewportFramebuffer);
+
+		// Record ImGui framebuffer
+		Eklipse::Renderer::BeginRenderPass(m_defaultFramebuffer);
 		GUI->Draw();
-		Eklipse::RenderCommand::API->EndFrame();
+		Eklipse::Renderer::EndRenderPass(m_defaultFramebuffer);
+
+		Eklipse::Renderer::Submit();
+	}
+	void EditorLayer::OnInitAPI(Eklipse::ApiType api)
+	{
+		// Create default framebuffer (for ImGui)
+		{
+			Eklipse::FramebufferInfo fbInfo{};
+			fbInfo.framebufferType			= Eklipse::FramebufferType::DEFAULT;
+			fbInfo.width					= Eklipse::Application::Get().GetInfo().windowWidth;
+			fbInfo.height					= Eklipse::Application::Get().GetInfo().windowWidth;
+			fbInfo.numSamples				= 1;
+			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::BGRA8 } }; // TODO: Check if Vulkan swap chain supports this format
+			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::UNDEFINED };
+
+			m_defaultFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
+		}
+
+		// Create off-screen framebuffer (for scene view)
+		{
+			Eklipse::FramebufferInfo fbInfo{};
+			fbInfo.framebufferType			= Eklipse::FramebufferType::OFFSCREEN;
+			fbInfo.width					= 512;//m_viewPanel->GetViewportSize().x;		// Might be zero
+			fbInfo.height					= 512;//m_viewPanel->GetViewportSize().y;
+			fbInfo.numSamples				= Eklipse::RendererSettings::GetMsaaSamples();
+			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } };
+			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::D24S8 };
+
+			m_viewportFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
+		}
+
+		Eklipse::Renderer::SetSceneFramebuffer(m_viewportFramebuffer);
+		Eklipse::Renderer::SetGUIFramebuffer(m_defaultFramebuffer);
+
+		GUI->Init();
+	}
+	void EditorLayer::OnShutdownAPI()
+	{
+		GUI->Shutdown();
+		m_defaultFramebuffer.reset();
+		m_viewportFramebuffer.reset();
 	}
 }

@@ -22,20 +22,20 @@ namespace Eklipse
 	public:
 		static Ref<Viewport> Create(ViewportCreateInfo& info);
 
-		Viewport(ViewportCreateInfo& info) : m_createInfo(info) {}
+		Viewport(ViewportCreateInfo& info);
 		virtual ~Viewport() = default;
 
 		virtual void BindFramebuffer()= 0;
 		virtual void UnbindFramebuffer() = 0;
 		virtual void Resize(uint32_t width, uint32_t height);
-		virtual void Bind() = 0;
+		virtual void Bind();
 
-		virtual Ref<VertexArray> GetVertexArray() const = 0;
-
+		inline Ref<VertexArray> GetVertexArray() const { return m_vertexArray;  }
 		inline ViewportCreateInfo& GetCreateInfo() { return m_createInfo; }
 		inline bool HasFlags(ViewportFlags flags) { return m_createInfo.flags & flags; }
 
 	protected:
 		ViewportCreateInfo m_createInfo;
+		Ref<VertexArray> m_vertexArray;
 	};
 }

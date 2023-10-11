@@ -10,33 +10,6 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		static VkImageAspectFlagBits ConvertToVKAspect(ImageAspect aspect)
-		{
-			switch (aspect)
-			{
-			case ImageAspect::COLOR:			return VK_IMAGE_ASPECT_COLOR_BIT;
-			case ImageAspect::DEPTH:			return VK_IMAGE_ASPECT_DEPTH_BIT;
-			case ImageAspect::STENCIL:			return VK_IMAGE_ASPECT_STENCIL_BIT;
-			}
-
-			EK_ASSERT(false, "Wrong image aspect");
-			return VK_IMAGE_ASPECT_NONE;
-		}
-		static VkFormat ConvertToVKFormat(ImageFormat format)
-		{
-			switch (format)
-			{
-			case ImageFormat::R8:				return VK_FORMAT_R8_SRGB;
-			case ImageFormat::RGB8:				return VK_FORMAT_R8G8B8_SRGB;
-			case ImageFormat::RGBA8:			return VK_FORMAT_R8G8B8A8_SRGB;
-			case ImageFormat::RGBA32F:			return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ImageFormat::D24S8:			return VK_FORMAT_D24_UNORM_S8_UINT;
-			}
-
-			EK_ASSERT(false, "Wrong image format");
-			return VK_FORMAT_UNDEFINED;
-		}
-
 		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
 		{
 			VkImageViewCreateInfo viewInfo{};
@@ -347,7 +320,7 @@ namespace Eklipse
 		}
 		VKTexture2D::~VKTexture2D()
 		{
-			Destroy();
+			//Destroy();
 		}
 		void VKTexture2D::SetData(void* data, uint32_t size)
 		{
@@ -383,10 +356,10 @@ namespace Eklipse
 
 			EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
 			VkImageAspectFlagBits aspect = ConvertToVKAspect(m_textureInfo.imageAspect);
+			VkImageUsageFlagBits usage = ConvertToVKUsage(m_textureInfo.imageUsage);
 
 			m_image = CreateImage(&m_allocation, textureInfo.width, textureInfo.height, textureInfo.mipMapLevel,
-				VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+				VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL, usage);
 
 			m_imageView = CreateImageView(m_image, format, aspect, textureInfo.mipMapLevel);
 			m_sampler = CreateSampler(textureInfo.mipMapLevel);

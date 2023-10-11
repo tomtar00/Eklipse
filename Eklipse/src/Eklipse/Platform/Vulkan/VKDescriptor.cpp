@@ -1,4 +1,3 @@
-
 #include "precompiled.h"
 #include "VKDescriptor.h"
 		   
@@ -7,7 +6,6 @@
 #include "VKBuffers.h"
 
 #include <Eklipse/Renderer/Vertex.h>
-
 
 namespace Eklipse
 {

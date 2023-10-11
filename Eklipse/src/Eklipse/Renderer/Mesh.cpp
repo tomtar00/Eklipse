@@ -5,10 +5,10 @@
 
 namespace Eklipse
 {
-	Mesh::Mesh(const char* modelPath, const char* texturePath)
+	Mesh::Mesh(const char* modelPath)
 	{
 		auto& meshLoadResult = AssetLoader::LoadMesh(modelPath);
-		auto& textureLoadResult = AssetLoader::LoadTexture(texturePath);
+		//auto& textureLoadResult = AssetLoader::LoadTexture(texturePath);
 
 		m_vertexArray = VertexArray::Create();
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(meshLoadResult.vertices);
@@ -23,14 +23,13 @@ namespace Eklipse
 		m_vertexArray->AddVertexBuffer(vertexBuffer);
 		m_vertexArray->SetIndexBuffer(IndexBuffer::Create(meshLoadResult.indices));
 
-		//m_uniformBuffer = UniformBuffer::Create(sizeof(m_ubo), 0);
-
-		TextureInfo texInfo{};
-		texInfo.width = textureLoadResult.width;
-		texInfo.height = textureLoadResult.height;
-		texInfo.imageFormat = ImageFormat::RGBA8; // size = 4
-		texInfo.mipMapLevel = 1;
-		m_texture = Texture2D::Create(texInfo);
-		m_texture->SetData(textureLoadResult.data, texInfo.width * texInfo.height * 4);
+		//TextureInfo texInfo{};
+		//texInfo.width = textureLoadResult.width;
+		//texInfo.height = textureLoadResult.height;
+		//texInfo.imageAspect = ImageAspect::COLOR;
+		//texInfo.imageFormat = ImageFormat::RGBA8; // size = 4
+		//texInfo.mipMapLevel = 1;
+		//m_texture = Texture2D::Create(texInfo);
+		//m_texture->SetData(textureLoadResult.data, texInfo.width * texInfo.height * 4);
 	}
 }

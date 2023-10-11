@@ -1,9 +1,10 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
+
 #include "VKImage.h"
 #include "VKUtils.h"
-
-#include <vk_mem_alloc.h>
+#include "VKFramebuffer.h"
 
 namespace Eklipse
 {
@@ -50,6 +51,8 @@ namespace Eklipse
 		//
 
 		// viewport
+		extern VKFramebuffer* g_framebuffer;
+		extern VKFramebuffer* g_guiFramebuffer;
 		extern uint32_t g_viewportImageIndex;
 		extern VkExtent2D g_viewportExtent;
 		extern VkRenderPass g_viewportRenderPass;

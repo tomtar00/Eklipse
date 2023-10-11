@@ -23,12 +23,9 @@ namespace Eklipse
 			virtual void ResizeViewport(float width, float height) override;
 
 		private:
-			void SetupViewportImages();
-			void DestroyViewportImages();
-
-		private:
 			GLFWwindow* m_glfwWindow;
 			VkDescriptorPool m_imguiPool;
+
 			std::vector<VkDescriptorSet> m_imageDescrSets;
 		};
 	}

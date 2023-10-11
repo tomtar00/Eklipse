@@ -5,9 +5,11 @@
 
 namespace Eklipse
 {
-	MainLoopTimer::MainLoopTimer()
+	MainLoopTimer::MainLoopTimer() : m_time(), m_lastTime(), m_deltaTime(0.0f)
 	{
 		s_instance = this;
+		m_time = std::chrono::high_resolution_clock::now();
+		m_lastTime = m_time;
 	}
 	void MainLoopTimer::Record()
 	{

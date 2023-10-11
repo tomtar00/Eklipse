@@ -13,8 +13,9 @@ namespace Eklipse
 		R8			= BIT(1),
 		RGB8		= BIT(2),
 		RGBA8		= BIT(3),
-		RGBA32F		= BIT(4),
-		D24S8		= BIT(5),
+		BGRA8		= BIT(4),
+		RGBA32F		= BIT(5),
+		D24S8		= BIT(6),
 	};
 	enum ImageAspect
 	{
@@ -23,6 +24,15 @@ namespace Eklipse
 		DEPTH	= BIT(2),
 		STENCIL	= BIT(3),
 	};
+	enum ImageUsage
+	{
+		UNKNOWN				= 0,
+		SAMPLED				= BIT(1),
+		COLOR_ATTACHMENT	= BIT(2),
+		DEPTH_ATTACHMENT	= BIT(3),
+		TRANSFER_SRC		= BIT(4),
+		TRASNFER_DST		= BIT(5),
+	};
 	struct TextureInfo
 	{
 		uint32_t width{ 1 }, height{ 1 };
@@ -30,6 +40,7 @@ namespace Eklipse
 		uint32_t samples{ 1 };
 		ImageFormat imageFormat;
 		ImageAspect imageAspect;
+		ImageUsage imageUsage;
 	};
 
 	class Texture

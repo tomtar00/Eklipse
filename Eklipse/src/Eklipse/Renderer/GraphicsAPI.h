@@ -1,6 +1,7 @@
 #pragma once
 #include "Pipeline.h"
 #include "VertexArray.h"
+#include "Framebuffer.h"
 
 namespace Eklipse
 {
@@ -21,6 +22,8 @@ namespace Eklipse
 		virtual void EndPass() = 0;
 
 		virtual void DrawIndexed(Ref<VertexArray> vertexArray) = 0;
+		virtual void SetSceneFramebuffer(Ref<Framebuffer> framebuffer) = 0;
+		virtual void SetGUIFramebuffer(Ref<Framebuffer> framebuffer) = 0;
 		
 		bool IsInitialized();
 

@@ -100,5 +100,11 @@ namespace Eklipse
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
 		}
+		void OpenGLAPI::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
+		{
+		}
+		void OpenGLAPI::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
+		{
+		}
 	}
 }

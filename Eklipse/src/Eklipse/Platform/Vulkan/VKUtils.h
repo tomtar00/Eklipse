@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include <Eklipse/Renderer/Texture.h>
 
 #define HANDLE_VK_RESULT(res, name) EK_ASSERT(res == VK_SUCCESS, "Vulkan result not successfull at {0}. Result code = {1}", name, (int)res);
 
@@ -24,10 +25,14 @@ namespace Eklipse
 			std::vector<VkPresentModeKHR> presentModes;
 		};
 
+		VkFormat ConvertToVKFormat(Eklipse::ImageFormat format);
+		VkImageAspectFlagBits ConvertToVKAspect(Eklipse::ImageAspect aspect);
+		VkImageUsageFlagBits ConvertToVKUsage(Eklipse::ImageUsage usage);
+
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int frameWidth, int frameHeight);
-		VkShaderModule CreateShaderModule(const std::string& code);
+		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		VkSampleCountFlagBits GetMaxUsableSampleCount();

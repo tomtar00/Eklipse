@@ -19,11 +19,7 @@ namespace Eklipse
 			virtual void Resize(uint32_t width, uint32_t height) override;
 			virtual void Bind() override;
 			
-			virtual Ref<VertexArray> GetVertexArray() const override;
-
 		private:
-			Ref<GLVertexArray> m_vertexArray;
-
 			Ref<GLFramebuffer> m_framebuffer;
 			Ref<GLFramebuffer> m_blitFramebuffer;
 		};

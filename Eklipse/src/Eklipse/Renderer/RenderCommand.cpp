@@ -17,11 +17,11 @@ namespace Eklipse
 		Stats::Get().drawCalls++;
 		Stats::Get().numVertices += vertexArray->GetTotalNumVertices();
 	}
-	void RenderCommand::DrawIndexed(Ref<VertexArray> vertexArray, Ref<Texture> texture)
+	void RenderCommand::DrawIndexed(Ref<VertexArray> vertexArray, Material* material)
 	{
 		EK_PROFILE();
 
-		texture->Bind();
+		material->Bind();
 		DrawIndexed(vertexArray);
 	}
 }

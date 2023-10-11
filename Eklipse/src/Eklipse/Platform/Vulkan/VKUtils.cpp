@@ -12,11 +12,53 @@ namespace Eklipse
 			return has_graphicsAndComputeFamily && has_presentFamily;
 		}
 
+		VkImageAspectFlagBits ConvertToVKAspect(ImageAspect aspect)
+		{
+			switch (aspect)
+			{
+				case ImageAspect::COLOR:			return VK_IMAGE_ASPECT_COLOR_BIT;
+				case ImageAspect::DEPTH:			return VK_IMAGE_ASPECT_DEPTH_BIT;
+				case ImageAspect::STENCIL:			return VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+
+			EK_ASSERT(false, "Wrong image aspect");
+			return VK_IMAGE_ASPECT_NONE;
+		}
+		VkImageUsageFlagBits ConvertToVKUsage(Eklipse::ImageUsage usage)
+		{
+			switch (usage)
+			{
+				case ImageUsage::SAMPLED:			return VK_IMAGE_USAGE_SAMPLED_BIT;
+				case ImageUsage::COLOR_ATTACHMENT:	return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+				case ImageUsage::DEPTH_ATTACHMENT:	return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+				case ImageUsage::TRANSFER_SRC:		return VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+				case ImageUsage::TRASNFER_DST:		return VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			}
+
+			EK_ASSERT(false, "Wrong image usage");
+			return VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM;
+		}
+		VkFormat ConvertToVKFormat(ImageFormat format)
+		{
+			switch (format)
+			{
+				case ImageFormat::R8:				return VK_FORMAT_R8_SRGB;
+				case ImageFormat::RGB8:				return VK_FORMAT_R8G8B8_SRGB;
+				case ImageFormat::RGBA8:			return VK_FORMAT_R8G8B8A8_SRGB;
+				case ImageFormat::BGRA8:			return VK_FORMAT_B8G8R8A8_SRGB;
+				case ImageFormat::RGBA32F:			return VK_FORMAT_R32G32B32A32_SFLOAT;
+				case ImageFormat::D24S8:			return VK_FORMAT_D24_UNORM_S8_UINT;
+			}
+
+			EK_ASSERT(false, "Wrong image format");
+			return VK_FORMAT_UNDEFINED;
+		}
+
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 		{
 			for (const auto& availableFormat : availableFormats)
 			{
-				if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+				if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 				{
 					return availableFormat;
 				}
@@ -56,12 +98,12 @@ namespace Eklipse
 				return actualExtent;
 			}
 		}
-		VkShaderModule CreateShaderModule(const std::string& code)
+		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code)
 		{
 			VkShaderModuleCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-			createInfo.codeSize = code.size();
-			createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+			createInfo.codeSize = code.size() * sizeof(uint32_t);
+			createInfo.pCode = code.data();
 
 			VkShaderModule shaderModule;
 			VkResult res = vkCreateShaderModule(g_logicalDevice, &createInfo, nullptr, &shaderModule);

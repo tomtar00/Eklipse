@@ -132,7 +132,7 @@ namespace Eklipse
                 }
                 else
                 {
-                    if ((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples() != VK_SAMPLE_COUNT_1_BIT)
+                    if (RendererSettings::GetMsaaSamples() > 1)
                     {
                         attachments =
                         {

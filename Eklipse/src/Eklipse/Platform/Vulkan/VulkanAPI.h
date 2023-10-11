@@ -24,6 +24,8 @@ namespace Eklipse
 			virtual void EndPass() override;
 
 			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
+			virtual void SetSceneFramebuffer(Ref<Framebuffer> framebuffer) override;
+			virtual void SetGUIFramebuffer(Ref<Framebuffer> framebuffer) override;
 
 		private:
 			void CreateInstance();
