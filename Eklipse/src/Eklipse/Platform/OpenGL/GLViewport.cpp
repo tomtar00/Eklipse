@@ -8,11 +8,8 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLViewport* g_glViewport;
-
 		GLViewport::GLViewport(ViewportCreateInfo& info) : Viewport(info)
 		{
-			g_glViewport = this;
 			m_framebuffer = CreateRef<GLFramebuffer>(info.framebufferInfo);
 			g_viewportTexture = m_framebuffer->GetMainColorAttachment();
 

@@ -104,9 +104,9 @@ namespace Eklipse
 		}
 		void OpenGLAPI::BeginFrame()
 		{
-			EK_PROFILE();
+			//EK_PROFILE();
 
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		void OpenGLAPI::EndFrame()
 		{
@@ -116,12 +116,13 @@ namespace Eklipse
 			int height = Application::Get().GetInfo().windowHeight;
 			glViewport(0, 0, width, width);
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			ShaderLibrary::Get("sprite")->Bind(); // TODO: may take a long time to search for shader
 			m_vertexArray->Bind();
 			glDisable(GL_DEPTH_TEST);
+			glActiveTexture(GL_TEXTURE2); // TODO: use texture slot from shader reflection (here, its set to 2, because sampler 'layout(binding = 2)' in shader)
 			glBindTexture(GL_TEXTURE_2D, g_guiFramebuffer->GetMainColorAttachment());
+			ShaderLibrary::Get("sprite")->Bind(); // TODO: may take a long time to search for shader
 			DrawIndexed(m_vertexArray);
 
 			Application::Get().GetWindow()->SwapBuffers();

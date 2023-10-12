@@ -54,12 +54,13 @@ namespace Eklipse
 				ResizeViewport(width, height);
 			}
 
+			g_viewportTexture = g_sceneFramebuffer->GetMainColorAttachment(); // TODO: refactor
 			ImGui::Image((ImTextureID)g_viewportTexture, ImVec2{ width, height }, { 0,1 }, { 1,0 });
 		}
 		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{
 			if (width > 0 && height > 0)
-				g_glViewport->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+				g_sceneFramebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 		}
 	}
 }

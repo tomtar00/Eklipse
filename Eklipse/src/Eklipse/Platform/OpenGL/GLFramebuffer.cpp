@@ -86,7 +86,7 @@ namespace Eklipse
 			}
 			else
 			{
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
 			}
 
 			EK_ASSERT((m_colorAttachments.size() <= 4), "Too many colors attachemnts! ({0})", m_colorAttachments.size());
@@ -98,6 +98,11 @@ namespace Eklipse
 		void GLFramebuffer::Bind()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+
+			glViewport(0, 0, m_framebufferInfo.width, m_framebufferInfo.height);
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
 
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers(m_colorAttachments.size(), buffers);

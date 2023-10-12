@@ -141,7 +141,7 @@ namespace Editor
 			fbInfo.width					= Eklipse::Application::Get().GetInfo().windowWidth;
 			fbInfo.height					= Eklipse::Application::Get().GetInfo().windowWidth;
 			fbInfo.numSamples				= 1;
-			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::BGRA8 } }; // TODO: Check if Vulkan swap chain supports this format
+			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } }; // TODO: Check if Vulkan swap chain supports this format
 			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::UNDEFINED };
 
 			m_defaultFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
