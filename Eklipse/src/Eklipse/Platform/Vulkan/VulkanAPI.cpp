@@ -41,8 +41,8 @@ namespace Eklipse
 		uint32_t			g_imageIndex;
 		uint32_t			g_viewportImageIndex;
 
-		ColorImage			g_colorImage;
-		DepthImage			g_depthImage;
+		//ColorImage			g_colorImage;
+		//DepthImage			g_depthImage;
 
 		VkCommandBuffer		g_currentCommandBuffer = VK_NULL_HANDLE;
 
@@ -88,15 +88,15 @@ namespace Eklipse
 			vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
 
 			g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-			CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
+			//CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
 			// GEOMETRY //////////////////////////////////////////
 
-			int width, height;
-			Application::Get().GetWindow()->GetFramebufferSize(width, height);
+			int width = Application::Get().GetInfo().windowWidth;
+			int height = Application::Get().GetInfo().windowHeight;
 			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
 			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
-			g_renderPass = CreateRenderPass();
+			//g_renderPass = CreateRenderPass();
 			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 			//CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
@@ -113,13 +113,11 @@ namespace Eklipse
 					&g_graphicsDescriptorSetLayout
 				);*/
 
-
-
 			g_descriptorPool = CreateDescriptorPool({
 				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
 				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
-				}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+			}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
 			// PARTICLES ////////////////////////////////////////
 
@@ -165,16 +163,17 @@ namespace Eklipse
 			//g_colorImage.Dispose();
 			//g_depthImage.Dispose();
 
-			DestroyFrameBuffers(g_swapChainFramebuffers);
 			DestroyImageViews(g_swapChainImageViews);
 			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
-
 			vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
-			vkDestroyDescriptorSetLayout(g_logicalDevice, g_graphicsDescriptorSetLayout, nullptr);
 
-			vkDestroyRenderPass(g_logicalDevice, g_renderPass, nullptr);
-			vkDestroyPipeline(g_logicalDevice, g_graphicsPipeline, nullptr);
-			vkDestroyPipelineLayout(g_logicalDevice, g_graphicsPipelineLayout, nullptr);
+			//DestroyFrameBuffers(g_swapChainFramebuffers);
+			//
+			//vkDestroyDescriptorSetLayout(g_logicalDevice, g_graphicsDescriptorSetLayout, nullptr);
+			//
+			//vkDestroyRenderPass(g_logicalDevice, g_renderPass, nullptr);
+			//vkDestroyPipeline(g_logicalDevice, g_graphicsPipeline, nullptr);
+			//vkDestroyPipelineLayout(g_logicalDevice, g_graphicsPipelineLayout, nullptr);
 
 			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
@@ -186,7 +185,7 @@ namespace Eklipse
 				vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
 			}
 
-			FreeCommandBuffers(g_drawCommandBuffers, g_commandPool);
+			//FreeCommandBuffers(g_drawCommandBuffers, g_commandPool);
 
 			// PARTICLES //////////////////////////////////////////
 
@@ -280,22 +279,22 @@ namespace Eklipse
 
 			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
 		}
-		void VulkanAPI::BeginGeometryPass()
-		{
-			//g_currentCommandBuffer = m_viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
-			//BeginRenderPass(g_viewportRenderPass, g_currentCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
-			//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
-		}
-		void VulkanAPI::BeginGUIPass()
-		{
-			//g_currentCommandBuffer = m_imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
-			//BeginRenderPass(g_imguiRenderPass, g_currentCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
-			//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
-		}
-		void VulkanAPI::EndPass()
-		{
-			//EndRenderPass(g_currentCommandBuffer);
-		}
+		//void VulkanAPI::BeginGeometryPass()
+		//{
+		//	//g_currentCommandBuffer = m_viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
+		//	//BeginRenderPass(g_viewportRenderPass, g_currentCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
+		//	//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
+		//}
+		//void VulkanAPI::BeginGUIPass()
+		//{
+		//	//g_currentCommandBuffer = m_imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
+		//	//BeginRenderPass(g_imguiRenderPass, g_currentCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
+		//	//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
+		//}
+		//void VulkanAPI::EndPass()
+		//{
+		//	//EndRenderPass(g_currentCommandBuffer);
+		//}
 		void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
 		{
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
@@ -303,11 +302,11 @@ namespace Eklipse
 		}
 		void VulkanAPI::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
 		{
-			g_framebuffer = std::static_pointer_cast<VKFramebuffer>(framebuffer).get();
+			g_framebuffer = static_cast<VKFramebuffer*>(framebuffer.get());
 		}
 		void VulkanAPI::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
 		{
-			g_guiFramebuffer = std::static_pointer_cast<VKFramebuffer>(framebuffer).get();
+			g_guiFramebuffer = static_cast<VKFramebuffer*>(framebuffer.get());
 		}
 		void VulkanAPI::CreateInstance()
 		{
@@ -357,24 +356,24 @@ namespace Eklipse
 
 			vkDeviceWaitIdle(g_logicalDevice);
 
-			DestroyFrameBuffers(g_imguiFrameBuffers);
-			DestroyFrameBuffers(g_swapChainFramebuffers);
+			//DestroyFrameBuffers(g_imguiFrameBuffers);
+			//DestroyFrameBuffers(g_swapChainFramebuffers);
 			DestroyImageViews(g_swapChainImageViews);
 			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 
-			g_depthImage.Dispose();
-			g_colorImage.Dispose();
+			//g_depthImage.Dispose();
+			//g_colorImage.Dispose();
 
 			int width, height;
 			Application::Get().GetWindow()->GetFramebufferSize(width, height);
 			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
 			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 
-			g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-			g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 
-			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
-			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
+			//CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
+			//CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
 
 			//Application::Get().GUI->ResizeViewport(512, 512);
 		}
@@ -421,20 +420,19 @@ namespace Eklipse
 			fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-			VkDevice device = g_logicalDevice;
 			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
 				VkResult res;
-				res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+				res = vkCreateSemaphore(g_logicalDevice, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
 				HANDLE_VK_RESULT(res, "CREATE IMAGE SEMAPHORE");
-				res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+				res = vkCreateSemaphore(g_logicalDevice, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
 				HANDLE_VK_RESULT(res, "CREATE RENDER SEMAPHORE");
-				res = vkCreateFence(device, &fenceInfo, nullptr, &m_renderInFlightFences[i]);
+				res = vkCreateFence(g_logicalDevice, &fenceInfo, nullptr, &m_renderInFlightFences[i]);
 				HANDLE_VK_RESULT(res, "CREATE RENDER FENCE");
 
-				res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_computeFinishedSemaphores[i]);
+				res = vkCreateSemaphore(g_logicalDevice, &semaphoreInfo, nullptr, &m_computeFinishedSemaphores[i]);
 				HANDLE_VK_RESULT(res, "CREATE COMPUTE SEMAPHORE");
-				res = vkCreateFence(device, &fenceInfo, nullptr, &m_computeInFlightFences[i]);
+				res = vkCreateFence(g_logicalDevice, &fenceInfo, nullptr, &m_computeInFlightFences[i]);
 				HANDLE_VK_RESULT(res, "CREATE COMPUTE FENCE");
 			}
 		}

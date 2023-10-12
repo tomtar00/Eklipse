@@ -17,9 +17,9 @@ namespace Eklipse
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
-		virtual void BeginGeometryPass() = 0;
-		virtual void BeginGUIPass() = 0;
-		virtual void EndPass() = 0;
+		//virtual void BeginGeometryPass() = 0;
+		//virtual void BeginGUIPass() = 0;
+		//virtual void EndPass() = 0;
 
 		virtual void DrawIndexed(Ref<VertexArray> vertexArray) = 0;
 		virtual void SetSceneFramebuffer(Ref<Framebuffer> framebuffer) = 0;

@@ -18,17 +18,17 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VkRenderPass					g_imguiRenderPass = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer>	g_imguiCommandBuffers{};
-		std::vector<VkFramebuffer>		g_imguiFrameBuffers{};
-
+		//VkRenderPass					g_imguiRenderPass = VK_NULL_HANDLE;
+		//std::vector<VkCommandBuffer>	g_imguiCommandBuffers{};
+		//std::vector<VkFramebuffer>		g_imguiFrameBuffers{};
+		//
 		VkExtent2D						g_viewportExtent = { 512, 512 };
-		VkRenderPass					g_viewportRenderPass = VK_NULL_HANDLE;
-		VkPipeline						g_viewportPipeline = VK_NULL_HANDLE;
-		VkPipelineLayout				g_viewportPipelineLayout = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer>	g_viewportCommandBuffers{};
-		std::vector<Image>				g_viewportImages{};
-		std::vector<VkFramebuffer>		g_viewportFrameBuffers{};
+		//VkRenderPass					g_viewportRenderPass = VK_NULL_HANDLE;
+		//VkPipeline						g_viewportPipeline = VK_NULL_HANDLE;
+		//VkPipelineLayout				g_viewportPipelineLayout = VK_NULL_HANDLE;
+		//std::vector<VkCommandBuffer>	g_viewportCommandBuffers{};
+		//std::vector<Image>				g_viewportImages{};
+		//std::vector<VkFramebuffer>		g_viewportFrameBuffers{};
 
 		VkImGuiLayer::VkImGuiLayer(const GuiLayerConfigInfo& configInfo) :
 			m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(configInfo)

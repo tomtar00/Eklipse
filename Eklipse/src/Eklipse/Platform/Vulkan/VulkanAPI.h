@@ -19,9 +19,9 @@ namespace Eklipse
 			void BeginFrame() override;
 			void EndFrame() override;
 			
-			virtual void BeginGeometryPass() override;
-			virtual void BeginGUIPass() override;
-			virtual void EndPass() override;
+			//virtual void BeginGeometryPass() override;
+			//virtual void BeginGUIPass() override;
+			//virtual void EndPass() override;
 
 			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
 			virtual void SetSceneFramebuffer(Ref<Framebuffer> framebuffer) override;

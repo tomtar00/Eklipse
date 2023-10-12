@@ -14,7 +14,8 @@ namespace Eklipse
 	{
 		EK_CORE_TRACE("Begin scene load");
 
-		s_meshShader	= Shader::Create("Assets/Shaders/mesh.glsl");
+		s_spriteShader	= ShaderLibrary::Load("Assets/Shaders/sprite.glsl");
+		s_meshShader	= ShaderLibrary::Load("Assets/Shaders/mesh.glsl");
 		s_material		= Material::Create(s_meshShader);
 		s_viking		= { "Assets/Models/viking_room.obj" };
 
@@ -27,7 +28,6 @@ namespace Eklipse
 	}
 	void Scene::Dispose()
 	{
-		
 	}
 	Entity Scene::CreateEntity(const std::string name)
 	{

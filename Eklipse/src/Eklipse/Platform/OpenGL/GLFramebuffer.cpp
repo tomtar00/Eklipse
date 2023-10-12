@@ -61,7 +61,7 @@ namespace Eklipse
 			}
 
 			// Depth and stencil attachment
-			//if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED)
+			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED)
 			{
 				glGenTextures(1, &m_depthAttachment);
 				glBindTexture(m_texTarget, m_depthAttachment);
@@ -84,10 +84,12 @@ namespace Eklipse
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment, 0);
 				glBindTexture(m_texTarget, 0);
 			}
+			else
+			{
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+			}
 
 			EK_ASSERT((m_colorAttachments.size() <= 4), "Too many colors attachemnts! ({0})", m_colorAttachments.size());
-			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers(m_colorAttachments.size(), buffers);
 
 			auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			EK_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete! Code: {0}", status);
@@ -96,6 +98,9 @@ namespace Eklipse
 		void GLFramebuffer::Bind()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+
+			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+			glDrawBuffers(m_colorAttachments.size(), buffers);
 		}
 		void GLFramebuffer::Unbind()
 		{

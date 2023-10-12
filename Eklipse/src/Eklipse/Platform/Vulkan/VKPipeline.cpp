@@ -12,13 +12,13 @@ namespace Eklipse
 {
     namespace Vulkan
     {
-        VkRenderPass        g_renderPass                = VK_NULL_HANDLE;
-        VkPipeline          g_graphicsPipeline          = VK_NULL_HANDLE;
-        VkPipelineLayout    g_graphicsPipelineLayout    = VK_NULL_HANDLE;
-        VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
-        VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
-        VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
-        VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
+        //VkRenderPass        g_renderPass                = VK_NULL_HANDLE;
+        //VkPipeline          g_graphicsPipeline          = VK_NULL_HANDLE;
+        //VkPipelineLayout    g_graphicsPipelineLayout    = VK_NULL_HANDLE;
+        //VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
+        //VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
+        //VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
+        //VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
 
         VkPipeline CreateGraphicsPipeline(std::vector<VkPipelineShaderStageCreateInfo> shaderStages,
             VkPipelineLayout pipelineLayout, VkRenderPass renderPass,

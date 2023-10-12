@@ -39,8 +39,6 @@ namespace Editor
 			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f,	m_viewPanel		}
 		};
 
-		// TODO: Framebuffer
-
 		EK_INFO("Editor layer attached");
 	}
 	void EditorLayer::OnDetach()
@@ -162,6 +160,7 @@ namespace Editor
 			m_viewportFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
 		}
 
+		// TODO: refactor (temporary solution)
 		Eklipse::Renderer::SetSceneFramebuffer(m_viewportFramebuffer);
 		Eklipse::Renderer::SetGUIFramebuffer(m_defaultFramebuffer);
 

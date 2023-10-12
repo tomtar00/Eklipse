@@ -11,7 +11,7 @@ Lib["glfw3dll"] = "%{wks.location}/Eklipse/vendor/GLFW/lib-vc2022/glfw3dll.lib"
 
 Include["shaderc"] = "%{wks.location}/Eklipse/vendor/shaderc/include"
 Lib["shaderc_debug"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-debug/shaderc_sharedd.lib"
-Lib["shaderc_release"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-release/shaderc_sharedd.lib"
+Lib["shaderc_release"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-release/shaderc_shared.lib"
 
 Include["SPIRV_Cross"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/include"
 Lib["SPIRV_Cross_debug"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-debug/spirv-cross-cored.lib"

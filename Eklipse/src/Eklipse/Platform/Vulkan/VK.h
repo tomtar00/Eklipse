@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
-#include "VKImage.h"
+//#include "VKImage.h"
 #include "VKUtils.h"
 #include "VKFramebuffer.h"
 
@@ -31,8 +31,8 @@ namespace Eklipse
 		extern VkQueue g_computeQueue;
 		extern VkQueue g_presentQueue;
 
-		extern ColorImage g_colorImage;
-		extern DepthImage g_depthImage;
+		//extern ColorImage g_colorImage;
+		//extern DepthImage g_depthImage;
 
 		extern uint32_t g_currentFrame;
 		extern uint32_t g_imageIndex;
@@ -42,44 +42,45 @@ namespace Eklipse
 		extern uint32_t g_swapChainImageCount;
 		extern std::vector<VkImage> g_swapChainImages;
 		extern std::vector<VkImageView> g_swapChainImageViews;
-		extern std::vector<VkFramebuffer> g_swapChainFramebuffers;
+		//extern std::vector<VkFramebuffer> g_swapChainFramebuffers;
 
 		// imgui
-		extern VkRenderPass g_imguiRenderPass;
-		extern std::vector<VkCommandBuffer> g_imguiCommandBuffers;
-		extern std::vector<VkFramebuffer> g_imguiFrameBuffers;
+		//extern VkRenderPass g_imguiRenderPass;
+		//extern std::vector<VkCommandBuffer> g_imguiCommandBuffers;
+		//extern std::vector<VkFramebuffer> g_imguiFrameBuffers;
 		//
 
-		// viewport
 		extern VKFramebuffer* g_framebuffer;
 		extern VKFramebuffer* g_guiFramebuffer;
+
+		// viewport
 		extern uint32_t g_viewportImageIndex;
 		extern VkExtent2D g_viewportExtent;
-		extern VkRenderPass g_viewportRenderPass;
-		extern VkPipeline g_viewportPipeline;
-		extern VkPipelineLayout g_viewportPipelineLayout;
-		extern std::vector<VkCommandBuffer> g_viewportCommandBuffers;
-		extern std::vector<Image> g_viewportImages;
-		extern std::vector<VkFramebuffer> g_viewportFrameBuffers;
+		//extern VkRenderPass g_viewportRenderPass;
+		//extern VkPipeline g_viewportPipeline;
+		//extern VkPipelineLayout g_viewportPipelineLayout;
+		//extern std::vector<VkCommandBuffer> g_viewportCommandBuffers;
+		//extern std::vector<Image> g_viewportImages;
+		//extern std::vector<VkFramebuffer> g_viewportFrameBuffers;
 		//
 
-		extern VkDescriptorSetLayout g_graphicsDescriptorSetLayout;
-		extern VkDescriptorSetLayout g_computeDescriptorSetLayout;
+		//extern VkDescriptorSetLayout g_graphicsDescriptorSetLayout;
+		//extern VkDescriptorSetLayout g_computeDescriptorSetLayout;
 		extern VkDescriptorPool g_descriptorPool;
-		extern std::vector<VkDescriptorSet> g_graphicsDescriptorSets;
-		extern std::vector<VkDescriptorSet> g_computeDescriptorSets;
+		//extern std::vector<VkDescriptorSet> g_graphicsDescriptorSets;
+		//extern std::vector<VkDescriptorSet> g_computeDescriptorSets;
 
 		extern VkCommandPool g_commandPool;
 		extern VkCommandBuffer g_currentCommandBuffer;
-		extern std::vector<VkCommandBuffer> g_drawCommandBuffers;
-		extern std::vector<VkCommandBuffer> g_computeCommandBuffers;
+		//extern std::vector<VkCommandBuffer> g_drawCommandBuffers;
+		//extern std::vector<VkCommandBuffer> g_computeCommandBuffers;
 
-		extern VkRenderPass g_renderPass;
-		extern VkPipeline g_graphicsPipeline;
-		extern VkPipelineLayout g_graphicsPipelineLayout;
-		extern VkPipeline g_particlePipeline;
-		extern VkPipelineLayout g_particlePipelineLayout;
-		extern VkPipeline g_computePipeline;
-		extern VkPipelineLayout g_computePipelineLayout;
+		//extern VkRenderPass g_renderPass;
+		//extern VkPipeline g_graphicsPipeline;
+		//extern VkPipelineLayout g_graphicsPipelineLayout;
+		//extern VkPipeline g_particlePipeline;
+		//extern VkPipelineLayout g_particlePipelineLayout;
+		//extern VkPipeline g_computePipeline;
+		//extern VkPipelineLayout g_computePipelineLayout;
 	}
 }

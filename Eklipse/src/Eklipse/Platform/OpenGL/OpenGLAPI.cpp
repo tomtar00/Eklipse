@@ -9,6 +9,9 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
+		GLFramebuffer* g_sceneFramebuffer = nullptr;
+		GLFramebuffer* g_guiFramebuffer = nullptr;
+
 		void OpenGLMessageCallback(
 			unsigned source,
 			unsigned type,
@@ -61,6 +64,28 @@ namespace Eklipse
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_LINE_SMOOTH);
 
+			std::vector<float> vertices = {
+				 1.0f,  1.0f, 1.0f, 1.0f,  // top right
+				 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
+				-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
+				-1.0f,  1.0f, 0.0f, 1.0f,  // top left
+			};
+			std::vector<uint32_t> indices = {
+				0, 1, 3,
+				1, 2, 3
+			};
+
+			Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
+			BufferLayout layout = {
+				{ "inPos",			ShaderDataType::Float2,		false },
+				{ "inTexCoords",	ShaderDataType::Float2,		false },
+			};
+			vertexBuffer->SetLayout(layout);
+
+			m_vertexArray = VertexArray::Create();
+			m_vertexArray->AddVertexBuffer(vertexBuffer);
+			m_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
+
 			std::stringstream ss;
 			ss << glGetString(GL_VERSION);
 			EK_CORE_INFO("OpenGL initialized - {0}", ss.str());
@@ -81,15 +106,23 @@ namespace Eklipse
 		{
 			EK_PROFILE();
 
-			int w, h;
-			Application::Get().GetWindow()->GetFramebufferSize(w, h);
-			glViewport(0, 0, w, h);
-			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		void OpenGLAPI::EndFrame()
 		{
 			EK_PROFILE();
+
+			int width = Application::Get().GetInfo().windowWidth;
+			int height = Application::Get().GetInfo().windowHeight;
+			glViewport(0, 0, width, width);
+			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			ShaderLibrary::Get("sprite")->Bind(); // TODO: may take a long time to search for shader
+			m_vertexArray->Bind();
+			glDisable(GL_DEPTH_TEST);
+			glBindTexture(GL_TEXTURE_2D, g_guiFramebuffer->GetMainColorAttachment());
+			DrawIndexed(m_vertexArray);
 
 			Application::Get().GetWindow()->SwapBuffers();
 		}
@@ -102,9 +135,11 @@ namespace Eklipse
 		}
 		void OpenGLAPI::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
 		{
+			g_sceneFramebuffer = static_cast<GLFramebuffer*>(framebuffer.get());
 		}
 		void OpenGLAPI::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
 		{
+			g_guiFramebuffer = static_cast<GLFramebuffer*>(framebuffer.get());
 		}
 	}
 }

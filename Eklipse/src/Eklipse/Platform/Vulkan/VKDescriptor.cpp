@@ -11,11 +11,11 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VkDescriptorSetLayout			g_graphicsDescriptorSetLayout	= VK_NULL_HANDLE;
-		VkDescriptorSetLayout			g_computeDescriptorSetLayout	= VK_NULL_HANDLE;
+		//VkDescriptorSetLayout			g_graphicsDescriptorSetLayout	= VK_NULL_HANDLE;
+		//VkDescriptorSetLayout			g_computeDescriptorSetLayout	= VK_NULL_HANDLE;
 		VkDescriptorPool				g_descriptorPool				= VK_NULL_HANDLE;
-		std::vector<VkDescriptorSet>	g_graphicsDescriptorSets{};
-		std::vector<VkDescriptorSet>	g_computeDescriptorSets{};
+		//std::vector<VkDescriptorSet>	g_graphicsDescriptorSets{};
+		//std::vector<VkDescriptorSet>	g_computeDescriptorSets{};
 
 		std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription()
 		{

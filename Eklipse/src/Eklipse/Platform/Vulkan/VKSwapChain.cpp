@@ -18,7 +18,7 @@ namespace Eklipse
         uint32_t                    g_swapChainImageCount;
         std::vector<VkImage>		g_swapChainImages;
         std::vector<VkImageView>	g_swapChainImageViews;
-        std::vector<VkFramebuffer>	g_swapChainFramebuffers;
+        //std::vector<VkFramebuffer>	g_swapChainFramebuffers;
 
         VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount, 
             VkFormat& imageFormat, VkExtent2D& extent, std::vector<VkImage>& images)
@@ -136,8 +136,8 @@ namespace Eklipse
                     {
                         attachments =
                         {
-                            g_colorImage.m_imageView,
-                            g_depthImage.m_imageView,
+                            //g_colorImage.m_imageView,
+                            //g_depthImage.m_imageView,
                             imageViews[i]
                         };
                     }
@@ -146,7 +146,7 @@ namespace Eklipse
                         attachments =
                         {
                             imageViews[i],
-                            g_depthImage.m_imageView
+                            //g_depthImage.m_imageView
                         };
                     }
                 }        

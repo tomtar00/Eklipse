@@ -9,8 +9,8 @@ namespace Eklipse
 	namespace Vulkan
 	{
 		VkCommandPool					g_commandPool = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer>	g_drawCommandBuffers{};
-		std::vector<VkCommandBuffer>	g_computeCommandBuffers{};
+		//std::vector<VkCommandBuffer>	g_drawCommandBuffers{};
+		//std::vector<VkCommandBuffer>	g_computeCommandBuffers{};
 
 		VkCommandPool CreateCommandPool(int queueFamilyIndex, VkCommandPoolCreateFlagBits flags)
 		{
@@ -98,12 +98,12 @@ namespace Eklipse
 		void RecordComputeCommandBuffer()
 		{
 			VkResult res;
-			vkResetCommandBuffer(g_computeCommandBuffers[g_currentFrame], 0);
+			//vkResetCommandBuffer(g_computeCommandBuffers[g_currentFrame], 0);
 
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-			res = vkBeginCommandBuffer(g_computeCommandBuffers[g_currentFrame], &beginInfo);
+			//res = vkBeginCommandBuffer(g_computeCommandBuffers[g_currentFrame], &beginInfo);
 			HANDLE_VK_RESULT(res, "BEGIN COMPUTE COMMAND BUFFER");
 
 			// vkCmdBindPipeline(g_computeCommandBuffers[g_currentFrame], g_particlePipeline);

@@ -27,6 +27,7 @@ namespace Editor
 			while (Application::IsRunning())
 			{
 				Application::BeginFrame(&deltaTime);
+
 				if (Application::IsMinimized()) continue;
 				
 				{

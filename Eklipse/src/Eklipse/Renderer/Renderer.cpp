@@ -21,16 +21,13 @@ namespace Eklipse
 	// TODO: Remove
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
 	static Ref<UniformBuffer>	s_transformUniformBuffer;
-
-	static Ref<Material>		s_material;
 	//
 
 	void Renderer::Init()
 	{
 		s_cameraUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 0);
 		s_transformUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 1);
-	}
-	
+	}	
 	void Renderer::Shutdown()
 	{
 		RenderCommand::API->Shutdown();
