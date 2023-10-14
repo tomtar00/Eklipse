@@ -46,6 +46,7 @@ namespace Editor
 		inline static EditorLayer* s_instance = nullptr;
 
 		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
+
 		Eklipse::Ref<Eklipse::Framebuffer> m_defaultFramebuffer;
 		Eklipse::Ref<Eklipse::Framebuffer> m_viewportFramebuffer;
 

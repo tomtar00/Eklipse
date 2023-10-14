@@ -3,10 +3,11 @@
 
 namespace Eklipse
 {
-	enum class FramebufferType
+	enum FramebufferType
 	{
-		DEFAULT,
-		OFFSCREEN
+		DEFAULT		= BIT(0),
+		SCENE_VIEW	= BIT(1),
+		OFFSCREEN	= BIT(2)
 	};
 	struct FramebufferAttachmentInfo
 	{
@@ -27,11 +28,14 @@ namespace Eklipse
 		static Ref<Framebuffer> Create(const FramebufferInfo& framebufferInfo);
 		virtual ~Framebuffer() = default;
 
-		virtual const FramebufferInfo& GetInfo() const = 0;
+		virtual FramebufferInfo& GetInfo() = 0;
 
 		virtual void Build() = 0;
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 	};
+
+	extern Framebuffer* g_defaultFramebuffer;
+	extern Framebuffer* g_sceneFramebuffer;
 }

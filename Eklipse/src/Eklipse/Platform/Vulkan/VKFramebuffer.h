@@ -16,12 +16,12 @@ namespace Eklipse
 		class VKFramebuffer : public Eklipse::Framebuffer
 		{
 		public:
-			VKFramebuffer(const FramebufferInfo& frambufferInfo);
+			VKFramebuffer(const FramebufferInfo& framebufferInfo);
 			virtual ~VKFramebuffer();
 
 			void DestroyFramebuffers();
 
-			virtual const FramebufferInfo& GetInfo() const { return m_framebufferInfo; }
+			virtual FramebufferInfo& GetInfo() { return m_framebufferInfo; }
 			inline VKTexture2D GetMainColorAttachment(uint32_t index) { return m_framebufferAttachments[index].colorAttachments[0]; }
 			inline VkRenderPass GetRenderPass() { return m_renderPass; }
 			inline VkCommandBuffer GetCommandBuffer(uint32_t index) { return m_commandBuffers[index]; }

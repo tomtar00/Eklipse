@@ -12,11 +12,8 @@
 
 namespace Eklipse
 {
-	ViewportSize		g_viewportSize = { 512, 512 };
-	float				g_aspectRatio  = 1.0f;
-
+	float				g_aspectRatio = 1.0f;
 	ApiType				Renderer::s_apiType;
-	Ref<Viewport>		Renderer::s_viewport;
 
 	// TODO: Remove
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
@@ -38,6 +35,7 @@ namespace Eklipse
 	{
 		EK_PROFILE();
 
+		g_aspectRatio = g_sceneFramebuffer->GetInfo().width / (float)g_sceneFramebuffer->GetInfo().height;
 		camera.UpdateViewProjectionMatrix(cameraTransform, g_aspectRatio);
 		auto& viewProjection = camera.GetViewProjectionMatrix();
 		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
@@ -50,8 +48,9 @@ namespace Eklipse
 
 		framebuffer->Bind();
 	}
-	void Renderer::RenderMeshes(Scene& scene)
+	void Renderer::RenderScene(Scene& scene)
 	{
+		// Geometry
 		auto view = scene.GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
@@ -61,6 +60,8 @@ namespace Eklipse
 			s_transformUniformBuffer->SetData(&transform, sizeof(glm::mat4));
 			RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
 		}
+
+		// ...
 	}
 	void Renderer::EndRenderPass(Ref<Framebuffer> framebuffer)
 	{
@@ -77,26 +78,18 @@ namespace Eklipse
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		if (s_viewport->HasFlags(VIEWPORT_FULLSCREEN))
-		{
-			s_viewport->Resize(width, height);
-		}
+		g_defaultFramebuffer->Resize(width, height);
 	}
 	void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
 	{
-		FramebufferInfo fbInfo{};
-		fbInfo.width = g_viewportSize.width;
-		fbInfo.height = g_viewportSize.height;
+		// TODO: Works with Vulkan, but not with OpenGL
+		// ImGui doesn't work with multisampled GLTexture2Ds as ImGui::Image() input
+
+		/*
+		auto& fbInfo = g_sceneFramebuffer->GetInfo();
 		fbInfo.numSamples = numSamples;
-		fbInfo.colorAttachmentInfos = s_viewport->GetCreateInfo().framebufferInfo.colorAttachmentInfos;
-		fbInfo.depthAttachmentInfo = s_viewport->GetCreateInfo().framebufferInfo.depthAttachmentInfo;
-
-		ViewportCreateInfo vCreateInfo{};
-		vCreateInfo.flags = s_viewport->GetCreateInfo().flags;
-		vCreateInfo.framebufferInfo = fbInfo;
-
-		s_viewport.reset();
-		s_viewport = Viewport::Create(vCreateInfo);
+		g_sceneFramebuffer->Resize(fbInfo.width, fbInfo.height);
+		*/
 	}
 
 	ApiType Renderer::GetAPI()
@@ -131,28 +124,6 @@ namespace Eklipse
 		RenderCommand::API = GraphicsAPI::Create();
 		RenderCommand::API->Init();
 		
-		/*FramebufferInfo fbInfo{};
-		fbInfo.width = g_viewportSize.width;
-		fbInfo.height = g_viewportSize.height;
-		fbInfo.numSamples = RendererSettings::GetMsaaSamples();
-		fbInfo.colorAttachmentInfos = {{ ImageFormat::RGBA8 }};
-		fbInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
-
-		ViewportCreateInfo vCreateInfo{};
-		vCreateInfo.flags = VIEWPORT_BLIT_FRAMEBUFFER;
-		vCreateInfo.framebufferInfo = fbInfo;
-
-		s_viewport.reset();
-		s_viewport = Viewport::Create(vCreateInfo);*/
-
 		Application::Get().OnInitAPI(s_apiType);
-	}
-	void Renderer::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
-	{
-		RenderCommand::API->SetSceneFramebuffer(framebuffer);
-	}
-	void Renderer::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
-	{
-		RenderCommand::API->SetGUIFramebuffer(framebuffer);
 	}
 }

@@ -8,7 +8,7 @@ namespace Eklipse
 	{
 		GLMaterial::GLMaterial(Ref<Shader> shader) : Material(shader)
 		{
-			
+			// TODO: Implement
 		}
 		GLMaterial::~GLMaterial()
 		{

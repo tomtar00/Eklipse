@@ -1,11 +1,11 @@
 #pragma once
-#include "GLViewport.h"
+#include "GLFramebuffer.h"
 
 namespace Eklipse
 {
 	namespace OpenGL
 	{
-		extern uint32_t g_viewportTexture;
-		extern GLFramebuffer* g_sceneFramebuffer;
+		extern GLFramebuffer* g_GLDefaultFramebuffer;
+		extern GLFramebuffer* g_GLSceneFramebuffer;
 	}
 }

@@ -22,8 +22,6 @@ namespace Eklipse
 		//virtual void EndPass() = 0;
 
 		virtual void DrawIndexed(Ref<VertexArray> vertexArray) = 0;
-		virtual void SetSceneFramebuffer(Ref<Framebuffer> framebuffer) = 0;
-		virtual void SetGUIFramebuffer(Ref<Framebuffer> framebuffer) = 0;
 		
 		bool IsInitialized();
 

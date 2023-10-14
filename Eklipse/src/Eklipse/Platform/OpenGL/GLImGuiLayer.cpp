@@ -13,8 +13,6 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		uint32_t g_viewportTexture;
-
 		GLImGuiLayer::GLImGuiLayer(const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(configInfo)
 		{
 			m_glfwWindow = Application::Get().GetWindow()->GetGlfwWindow();
@@ -41,7 +39,7 @@ namespace Eklipse
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 		}
-		void GLImGuiLayer::Draw()
+		void GLImGuiLayer::Render()
 		{
 			if (!(*m_config.enabled)) return;
 
@@ -49,18 +47,17 @@ namespace Eklipse
 		}
 		void GLImGuiLayer::DrawViewport(float width, float height)
 		{
-			if (width != g_viewportSize.width || height != g_viewportSize.height)
+			if (width != g_GLSceneFramebuffer->GetInfo().width || height != g_GLSceneFramebuffer->GetInfo().height)
 			{
 				ResizeViewport(width, height);
 			}
 
-			g_viewportTexture = g_sceneFramebuffer->GetMainColorAttachment(); // TODO: refactor
-			ImGui::Image((ImTextureID)g_viewportTexture, ImVec2{ width, height }, { 0,1 }, { 1,0 });
+			ImGui::Image((ImTextureID)g_GLSceneFramebuffer->GetMainColorAttachment(), ImVec2{ width, height }, { 0, 1 }, { 1, 0 });
 		}
 		void GLImGuiLayer::ResizeViewport(float width, float height)
 		{
 			if (width > 0 && height > 0)
-				g_sceneFramebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+				g_GLSceneFramebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 		}
 	}
 }

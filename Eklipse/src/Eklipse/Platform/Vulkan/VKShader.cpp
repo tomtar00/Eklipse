@@ -194,8 +194,8 @@ namespace Eklipse
 					attributeDescription.push_back(attribute);
 				}
 
-				EK_ASSERT(g_framebuffer != nullptr, "g_framebuffer is null! Maybe forgot to call Renderer::SetSceneFramebuffer()");
-				m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_framebuffer->GetRenderPass(), bindingDescription, attributeDescription);
+				EK_ASSERT(g_VKSceneFramebuffer != nullptr, "Vulkan Scene Frambuffer is null!");
+				m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKSceneFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
 
 				vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
 				vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);

@@ -46,8 +46,8 @@ namespace Eklipse
 
 		VkCommandBuffer		g_currentCommandBuffer = VK_NULL_HANDLE;
 
-		VKFramebuffer*		g_framebuffer;
-		VKFramebuffer*		g_guiFramebuffer;
+		VKFramebuffer*		g_VKSceneFramebuffer;
+		VKFramebuffer*		g_VKDefaultFramebuffer;
 
 		VulkanAPI::VulkanAPI() : GraphicsAPI()
 		{
@@ -234,13 +234,13 @@ namespace Eklipse
 			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
 			std::vector<VkCommandBuffer> commandBuffers = { };
-			if (g_framebuffer != nullptr)
+			if (g_VKSceneFramebuffer != nullptr)
 			{
-				commandBuffers.push_back(g_framebuffer->GetCommandBuffer(g_currentFrame));
+				commandBuffers.push_back(g_VKSceneFramebuffer->GetCommandBuffer(g_currentFrame));
 			}
-			if (g_guiFramebuffer != nullptr)
+			if (g_VKDefaultFramebuffer != nullptr)
 			{
-				commandBuffers.push_back(g_guiFramebuffer->GetCommandBuffer(g_currentFrame));
+				commandBuffers.push_back(g_VKDefaultFramebuffer->GetCommandBuffer(g_currentFrame));
 			}
 
 			VkSubmitInfo submitInfo{};
@@ -299,14 +299,6 @@ namespace Eklipse
 		{
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			vkCmdDrawIndexed(g_currentCommandBuffer, numIndices, 1, 0, 0, 0);
-		}
-		void VulkanAPI::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
-		{
-			g_framebuffer = static_cast<VKFramebuffer*>(framebuffer.get());
-		}
-		void VulkanAPI::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
-		{
-			g_guiFramebuffer = static_cast<VKFramebuffer*>(framebuffer.get());
 		}
 		void VulkanAPI::CreateInstance()
 		{

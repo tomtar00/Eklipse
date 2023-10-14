@@ -8,6 +8,17 @@ namespace Eklipse
 	{
 		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) : m_id(0), m_framebufferInfo(framebufferInfo)
 		{
+			if (framebufferInfo.framebufferType & FramebufferType::DEFAULT)
+			{
+				EK_ASSERT(g_GLDefaultFramebuffer == nullptr, "Default framebuffer already exists!");
+				g_defaultFramebuffer = g_GLDefaultFramebuffer = this;
+			}
+			if (framebufferInfo.framebufferType & FramebufferType::SCENE_VIEW)
+			{
+				EK_ASSERT(g_GLSceneFramebuffer == nullptr, "Scene framebuffer already exists!");
+				g_sceneFramebuffer = g_GLSceneFramebuffer = this;
+			}
+
 			Build();
 		}
 		GLFramebuffer::~GLFramebuffer()
@@ -16,7 +27,7 @@ namespace Eklipse
 			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
 			glDeleteTextures(1, &m_depthAttachment);
 		}
-		const FramebufferInfo& GLFramebuffer::GetInfo() const
+		FramebufferInfo& GLFramebuffer::GetInfo()
 		{
 			return m_framebufferInfo;
 		}

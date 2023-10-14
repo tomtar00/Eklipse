@@ -66,6 +66,8 @@ namespace Editor
 		static glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 		static glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
+		// TODO: check if input was started in view window
+
 		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::F))
 		{
 			if (!m_selectedEntity.IsNull())
@@ -106,28 +108,17 @@ namespace Editor
 		EK_PROFILE();
 
 		m_activeScene = &scene;
-
-		// Rendering
-		//				Eklipse::Renderer::RecordViewport(scene, m_editorCamera, deltaTime);
-
-		// Drawing
-		//				Eklipse::RenderCommand::API->BeginFrame();
-		//				GUI->Draw();
-		//				Eklipse::RenderCommand::API->EndFrame();
-
-		// ==========
-
 		
 		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
 		// Record scene framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
-		Eklipse::Renderer::RenderMeshes(scene);
+		Eklipse::Renderer::RenderScene(*m_activeScene);
 		Eklipse::Renderer::EndRenderPass(m_viewportFramebuffer);
 
 		// Record ImGui framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_defaultFramebuffer);
-		GUI->Draw();
+		GUI->Render();
 		Eklipse::Renderer::EndRenderPass(m_defaultFramebuffer);
 
 		Eklipse::Renderer::Submit();
@@ -139,7 +130,7 @@ namespace Editor
 			Eklipse::FramebufferInfo fbInfo{};
 			fbInfo.framebufferType			= Eklipse::FramebufferType::DEFAULT;
 			fbInfo.width					= Eklipse::Application::Get().GetInfo().windowWidth;
-			fbInfo.height					= Eklipse::Application::Get().GetInfo().windowWidth;
+			fbInfo.height					= Eklipse::Application::Get().GetInfo().windowHeight;
 			fbInfo.numSamples				= 1;
 			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } }; // TODO: Check if Vulkan swap chain supports this format
 			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::UNDEFINED };
@@ -150,19 +141,15 @@ namespace Editor
 		// Create off-screen framebuffer (for scene view)
 		{
 			Eklipse::FramebufferInfo fbInfo{};
-			fbInfo.framebufferType			= Eklipse::FramebufferType::OFFSCREEN;
-			fbInfo.width					= 512;//m_viewPanel->GetViewportSize().x;		// Might be zero
-			fbInfo.height					= 512;//m_viewPanel->GetViewportSize().y;
+			fbInfo.framebufferType			= Eklipse::FramebufferType::SCENE_VIEW;
+			fbInfo.width					= 512;
+			fbInfo.height					= 512;
 			fbInfo.numSamples				= Eklipse::RendererSettings::GetMsaaSamples();
 			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } };
 			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::D24S8 };
 
 			m_viewportFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
 		}
-
-		// TODO: refactor (temporary solution)
-		Eklipse::Renderer::SetSceneFramebuffer(m_viewportFramebuffer);
-		Eklipse::Renderer::SetGUIFramebuffer(m_defaultFramebuffer);
 
 		GUI->Init();
 	}

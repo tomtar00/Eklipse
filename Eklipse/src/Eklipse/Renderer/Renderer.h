@@ -1,16 +1,11 @@
 #pragma once
 #include "Shader.h"
-#include "Viewport.h"
+#include "Framebuffer.h"
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Camera.h>
 
 namespace Eklipse
 {
-	struct ViewportSize
-	{
-		uint32_t width{ 512 }, height{ 512 };
-	};
-	extern ViewportSize g_viewportSize;
 	extern float g_aspectRatio;
 
 	enum class ApiType
@@ -29,7 +24,7 @@ namespace Eklipse
 		// Render stages
 		static void BeginFrame(Camera& camera, Transform& cameraTransform);
 		static void BeginRenderPass(Ref<Framebuffer> framebuffer);
-		static void RenderMeshes(Scene& scene);
+		static void RenderScene(Scene& scene);
 		static void EndRenderPass(Ref<Framebuffer> framebuffer);
 		static void Submit();
 
@@ -41,13 +36,8 @@ namespace Eklipse
 		static ApiType GetAPI();
 		static void SetStartupAPI(ApiType apiType);
 		static void SetAPI(ApiType apiType);
-		static void SetSceneFramebuffer(Ref<Framebuffer> framebuffer);
-		static void SetGUIFramebuffer(Ref<Framebuffer> framebuffer);
-
-		inline static Ref<Viewport> GetViewport() { return s_viewport; }
 
 	private:
 		static ApiType s_apiType;
-		static Ref<Viewport> s_viewport;
 	};
 }

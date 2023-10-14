@@ -7,8 +7,19 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKFramebuffer::VKFramebuffer(const FramebufferInfo& frambufferInfo) : m_framebufferInfo(frambufferInfo)
+		VKFramebuffer::VKFramebuffer(const FramebufferInfo& framebufferInfo) : m_framebufferInfo(framebufferInfo)
 		{
+			if (framebufferInfo.framebufferType & FramebufferType::DEFAULT)
+			{
+				EK_ASSERT(g_VKDefaultFramebuffer == nullptr, "Default framebuffer already exists!");
+				g_defaultFramebuffer = g_VKDefaultFramebuffer = this;
+			}
+			if (framebufferInfo.framebufferType & FramebufferType::SCENE_VIEW)
+			{
+				EK_ASSERT(g_VKSceneFramebuffer == nullptr, "Scene framebuffer already exists!");
+				g_sceneFramebuffer = g_VKSceneFramebuffer = this;
+			}
+
 			CreateCommandBuffers(m_commandBuffers, g_swapChainImageCount, g_commandPool);
 			m_renderPass = CreateRenderPass();
 			Build();

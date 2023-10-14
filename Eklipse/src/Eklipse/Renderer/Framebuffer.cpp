@@ -7,6 +7,9 @@
 
 namespace Eklipse
 {
+    Framebuffer* g_defaultFramebuffer   = nullptr;
+    Framebuffer* g_sceneFramebuffer     = nullptr;
+
     Ref<Framebuffer> Eklipse::Framebuffer::Create(const FramebufferInfo& framebufferInfo)
     {
         auto apiType = Renderer::GetAPI();

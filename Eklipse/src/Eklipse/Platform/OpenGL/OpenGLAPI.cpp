@@ -9,8 +9,8 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLFramebuffer* g_sceneFramebuffer = nullptr;
-		GLFramebuffer* g_guiFramebuffer = nullptr;
+		GLFramebuffer* g_GLSceneFramebuffer = nullptr;
+		GLFramebuffer* g_GLDefaultFramebuffer = nullptr;
 
 		void OpenGLMessageCallback(
 			unsigned source,
@@ -104,9 +104,7 @@ namespace Eklipse
 		}
 		void OpenGLAPI::BeginFrame()
 		{
-			//EK_PROFILE();
-
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
 		}
 		void OpenGLAPI::EndFrame()
 		{
@@ -114,16 +112,18 @@ namespace Eklipse
 
 			int width = Application::Get().GetInfo().windowWidth;
 			int height = Application::Get().GetInfo().windowHeight;
-			glViewport(0, 0, width, width);
+			glViewport(0, 0, width, height);
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+			auto& spriteShader = ShaderLibrary::Get("sprite");
 			m_vertexArray->Bind();
 			glDisable(GL_DEPTH_TEST);
-			glActiveTexture(GL_TEXTURE2); // TODO: use texture slot from shader reflection (here, its set to 2, because sampler 'layout(binding = 2)' in shader)
-			glBindTexture(GL_TEXTURE_2D, g_guiFramebuffer->GetMainColorAttachment());
-			ShaderLibrary::Get("sprite")->Bind(); // TODO: may take a long time to search for shader
+			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);
+			glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
+			spriteShader->Bind();
 			DrawIndexed(m_vertexArray);
+			glBindTexture(GL_TEXTURE_2D, 0);
 
 			Application::Get().GetWindow()->SwapBuffers();
 		}
@@ -133,14 +133,6 @@ namespace Eklipse
 
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
-		}
-		void OpenGLAPI::SetSceneFramebuffer(Ref<Framebuffer> framebuffer)
-		{
-			g_sceneFramebuffer = static_cast<GLFramebuffer*>(framebuffer.get());
-		}
-		void OpenGLAPI::SetGUIFramebuffer(Ref<Framebuffer> framebuffer)
-		{
-			g_guiFramebuffer = static_cast<GLFramebuffer*>(framebuffer.get());
 		}
 	}
 }

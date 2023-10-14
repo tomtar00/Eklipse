@@ -50,8 +50,8 @@ namespace Eklipse
 		//extern std::vector<VkFramebuffer> g_imguiFrameBuffers;
 		//
 
-		extern VKFramebuffer* g_framebuffer;
-		extern VKFramebuffer* g_guiFramebuffer;
+		extern VKFramebuffer* g_VKSceneFramebuffer;
+		extern VKFramebuffer* g_VKDefaultFramebuffer;
 
 		// viewport
 		extern uint32_t g_viewportImageIndex;

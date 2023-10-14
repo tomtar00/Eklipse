@@ -75,8 +75,8 @@ namespace Eklipse
 			init_info.MSAASamples = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples();
 			init_info.CheckVkResultFn = [](VkResult res) { HANDLE_VK_RESULT(res, "IMGUI") };
 
-			EK_ASSERT(g_guiFramebuffer != nullptr, "g_framebuffer is null! Maybe forgot to call Renderer::SetGUIFramebuffer()");
-			ImGui_ImplVulkan_Init(&init_info, g_guiFramebuffer->GetRenderPass());
+			EK_ASSERT(g_VKDefaultFramebuffer != nullptr, "g_framebuffer is null! Maybe forgot to call Renderer::SetGUIFramebuffer()");
+			ImGui_ImplVulkan_Init(&init_info, g_VKDefaultFramebuffer->GetRenderPass());
 
 			/*m_imageDescrSets.resize(g_swapChainImageCount);
 			for (int i = 0; i < g_swapChainImageCount; i++)
@@ -130,7 +130,7 @@ namespace Eklipse
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 		}
-		void VkImGuiLayer::Draw()
+		void VkImGuiLayer::Render()
 		{
 			if (!(*m_config.enabled)) return;
 
@@ -151,7 +151,7 @@ namespace Eklipse
 			vkDeviceWaitIdle(g_logicalDevice);
 			g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
-			g_framebuffer->Resize(width, height);
+			g_VKSceneFramebuffer->Resize(width, height);
 		}
 		/*void VkImGuiLayer::SetupViewportImages()
 		{

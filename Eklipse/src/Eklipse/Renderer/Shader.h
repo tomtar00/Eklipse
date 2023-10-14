@@ -65,6 +65,8 @@ namespace Eklipse
 
 		const std::string& GetName() const;
 		const std::unordered_map<ShaderStage, ShaderReflection>& GetReflections() const;
+		const ShaderReflection& GetVertexReflection() { return m_reflections[ShaderStage::VERTEX]; }
+		const ShaderReflection& GetFragmentReflection() { return m_reflections[ShaderStage::FRAGMENT]; }
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;

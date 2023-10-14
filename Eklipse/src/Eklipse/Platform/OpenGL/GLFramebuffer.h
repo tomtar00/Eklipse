@@ -29,7 +29,7 @@ namespace Eklipse
 			GLFramebuffer(const FramebufferInfo& frambufferInfo);
 			virtual ~GLFramebuffer();
 
-			virtual const FramebufferInfo& GetInfo() const override;
+			virtual FramebufferInfo& GetInfo() override;
 			uint32_t GetMainColorAttachment() { return m_colorAttachments[0]; }
 
 			virtual void Build() override;
