@@ -268,59 +268,66 @@ namespace Eklipse
 			EndSingleCommands(commandBuffer);
 		}
 
-		VKTexture2D::VKTexture2D(const std::string& texturePath)
-		{
-			int width, height, channels;
-			stbi_uc* data = stbi_load(texturePath.c_str(), &width, &height, &channels, 0);
-			EK_ASSERT(data, "Failed to load texture from path '{0}'", texturePath);
+		//VKTexture2D::VKTexture2D(const std::string& texturePath)
+		//{
+		//	int width, height, channels;
+		//	stbi_uc* data = stbi_load(texturePath.c_str(), &width, &height, &channels, 0);
+		//	EK_ASSERT(data, "Failed to load texture from path '{0}'", texturePath);
 
-			m_textureInfo.width = width;
-			m_textureInfo.height = height;
+		//	m_textureInfo.width = width;
+		//	m_textureInfo.height = height;
 
-			VkFormat format = VK_FORMAT_UNDEFINED;
-			if (channels == 4)
-			{
-				format = VK_FORMAT_R32G32B32A32_SFLOAT;
-			}
-			else if (channels == 3)
-			{
-				format = VK_FORMAT_R32G32B32_SFLOAT;
-			}
+		//	VkFormat format = VK_FORMAT_UNDEFINED;
+		//	if (channels == 4)
+		//	{
+		//		format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		//	}
+		//	else if (channels == 3)
+		//	{
+		//		format = VK_FORMAT_R32G32B32_SFLOAT;
+		//	}
 
-			EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
-			uint32_t mipLevels = 1; // TODO: find mipmaps count
+		//	EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
+		//	uint32_t mipLevels = 1; // TODO: find mipmaps count
 
-			{
-				VkDeviceSize imageSize = width * height * channels;
-				VKStagingBuffer stagingBuffer(data, imageSize);
+		//	{
+		//		VkDeviceSize imageSize = width * height * channels;
+		//		VKStagingBuffer stagingBuffer(data, imageSize);
 
-				m_image = CreateImage(&m_allocation, width, height, mipLevels,
-					VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+		//		m_image = CreateImage(&m_allocation, width, height, mipLevels,
+		//			VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL,
+		//			VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
-				TransitionImageLayout(m_image, format, VK_IMAGE_LAYOUT_UNDEFINED,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		//		TransitionImageLayout(m_image, format, VK_IMAGE_LAYOUT_UNDEFINED,
+		//			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 
-				CopyBufferToImage(stagingBuffer.m_buffer, m_image, width, height);
+		//		CopyBufferToImage(stagingBuffer.m_buffer, m_image, width, height);
 
-				// if mip maps are disabled, uncomment
-				//TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-				//   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
-			}
+		//		// if mip maps are disabled, uncomment
+		//		//TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		//		//   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
+		//	}
 
-			GenerateMipMaps(m_image, mipLevels, width, height);
-			m_imageView = CreateImageView(m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
-			m_sampler = CreateSampler(mipLevels);
+		//	GenerateMipMaps(m_image, mipLevels, width, height);
+		//	m_imageView = CreateImageView(m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+		//	m_sampler = CreateSampler(mipLevels);
 
-			stbi_image_free(data);
-		}
+		//	stbi_image_free(data);
+		//}
 		VKTexture2D::VKTexture2D(const TextureInfo& textureInfo)
 		{
-			Setup(textureInfo);
-		}
-		VKTexture2D::~VKTexture2D()
-		{
-			//Destroy();
+			m_textureInfo = textureInfo;
+			VkFormat format = ConvertToVKFormat(textureInfo.imageFormat);
+
+			EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
+			VkImageAspectFlagBits aspect = ConvertToVKAspect(m_textureInfo.imageAspect);
+			VkImageUsageFlagBits usage = ConvertToVKUsage(m_textureInfo.imageUsage);
+
+			m_image = CreateImage(&m_allocation, textureInfo.width, textureInfo.height, textureInfo.mipMapLevel,
+				VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL, usage);
+
+			m_imageView = CreateImageView(m_image, format, aspect, textureInfo.mipMapLevel);
+			m_sampler = CreateSampler(textureInfo.mipMapLevel);
 		}
 		void VKTexture2D::SetData(void* data, uint32_t size)
 		{
@@ -338,7 +345,7 @@ namespace Eklipse
 
 				CopyBufferToImage(stagingBuffer.m_buffer, m_image, m_textureInfo.width, m_textureInfo.height);
 
-				// if mip maps are disabled, uncomment
+				// if mip maps are disabled - uncomment
 				//TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 				//   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);	
 			}
@@ -349,22 +356,7 @@ namespace Eklipse
 		{
 			//vkBindImageMemory(g_logicalDevice, m_image, m_allocation->GetMemory(), m_allocation->GetOffset());
 		}
-		void VKTexture2D::Setup(const TextureInfo& textureInfo)
-		{
-			m_textureInfo = textureInfo;
-			VkFormat format = ConvertToVKFormat(textureInfo.imageFormat);
-
-			EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
-			VkImageAspectFlagBits aspect = ConvertToVKAspect(m_textureInfo.imageAspect);
-			VkImageUsageFlagBits usage = ConvertToVKUsage(m_textureInfo.imageUsage);
-
-			m_image = CreateImage(&m_allocation, textureInfo.width, textureInfo.height, textureInfo.mipMapLevel,
-				VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL, usage);
-
-			m_imageView = CreateImageView(m_image, format, aspect, textureInfo.mipMapLevel);
-			m_sampler = CreateSampler(textureInfo.mipMapLevel);
-		}
-		void VKTexture2D::Destroy()
+		void VKTexture2D::Dispose()
 		{
 			vkDestroySampler(g_logicalDevice, m_sampler, nullptr);
 			vkDestroyImageView(g_logicalDevice, m_imageView, nullptr);

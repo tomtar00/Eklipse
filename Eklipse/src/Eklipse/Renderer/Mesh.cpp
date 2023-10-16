@@ -5,14 +5,12 @@
 
 namespace Eklipse
 {
-	Mesh::Mesh(const char* modelPath)
+	Mesh::Mesh(std::vector<float> vertices, std::vector<uint32_t> indices)
 	{
-		auto& meshLoadResult = AssetLoader::LoadMesh(modelPath);
-		//auto& textureLoadResult = AssetLoader::LoadTexture(texturePath);
-
 		m_vertexArray = VertexArray::Create();
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(meshLoadResult.vertices);
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
 
+		// TODO: Make mesh format dependent
 		BufferLayout layout = {
 			{ "inPosition", ShaderDataType::Float3, false },
 			{ "inColor",	ShaderDataType::Float3, false },
@@ -21,15 +19,6 @@ namespace Eklipse
 
 		vertexBuffer->SetLayout(layout);
 		m_vertexArray->AddVertexBuffer(vertexBuffer);
-		m_vertexArray->SetIndexBuffer(IndexBuffer::Create(meshLoadResult.indices));
-
-		//TextureInfo texInfo{};
-		//texInfo.width = textureLoadResult.width;
-		//texInfo.height = textureLoadResult.height;
-		//texInfo.imageAspect = ImageAspect::COLOR;
-		//texInfo.imageFormat = ImageFormat::RGBA8; // size = 4
-		//texInfo.mipMapLevel = 1;
-		//m_texture = Texture2D::Create(texInfo);
-		//m_texture->SetData(textureLoadResult.data, texInfo.width * texInfo.height * 4);
+		m_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
 	}
 }

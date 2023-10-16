@@ -33,7 +33,13 @@ namespace Eklipse
 		virtual void Build() = 0;
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual void Resize(uint32_t width, uint32_t height);
+		virtual void Dispose() = 0;
+
+		inline const float GetAspectRatio() const { return m_aspectRatio; }
+
+	protected:
+		float m_aspectRatio;
 	};
 
 	extern Framebuffer* g_defaultFramebuffer;

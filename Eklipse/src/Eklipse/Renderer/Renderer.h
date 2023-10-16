@@ -6,8 +6,6 @@
 
 namespace Eklipse
 {
-	extern float g_aspectRatio;
-
 	enum class ApiType
 	{
 		None	= 0,

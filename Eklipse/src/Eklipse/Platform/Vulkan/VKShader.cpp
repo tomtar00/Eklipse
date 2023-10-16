@@ -6,7 +6,6 @@
 #include "VKDescriptor.h"
 #include "VKPipeline.h"
 
-#include <Eklipse/Utils/File.h>
 #include <filesystem>
 #include <fstream>
 #include <shaderc/shaderc.hpp>
@@ -26,20 +25,6 @@ namespace Eklipse
 			EK_ASSERT(false, "Unknown shader stage!");
 			return VK_SHADER_STAGE_ALL;
 		}
-		static const char* GetCacheDirectory()
-		{
-			return "Assets/Cache/Shader/Vulkan";
-		}
-		static const char* VKShaderStageCachedVulkanFileExtension(const ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::VERTEX:    return ".cached_vulkan.vert";
-				case ShaderStage::FRAGMENT:  return ".cached_vulkan.frag";
-			}
-			EK_ASSERT(false, "Unknown shader stage!");
-			return "";
-		}
 		static VkFormat VertexInputSizeToVKFormat(const size_t size)
 		{
 			switch (size)
@@ -53,66 +38,9 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		void VKShader::CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources)
-		{
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-			options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-			std::filesystem::path cacheDirectory = GetCacheDirectory();
-
-			auto& shaderData = m_vulkanSPIRV;
-			shaderData.clear();
-			for (auto&& [stage, source] : shaderSources)
-			{
-				std::filesystem::path shaderFilePath = m_filePath;
-				std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + VKShaderStageCachedVulkanFileExtension(stage));
-
-				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-				if (in.is_open())
-				{
-					in.seekg(0, std::ios::end);
-					auto size = in.tellg();
-					in.seekg(0, std::ios::beg);
-
-					auto& data = shaderData[stage];
-					data.resize(size / sizeof(uint32_t));
-					in.read((char*)data.data(), size);
-				}
-				else
-				{
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
-					EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
-
-					shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-					std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-					if (out.is_open())
-					{
-						auto& data = shaderData[stage];
-						out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-						out.flush();
-						out.close();
-					}
-				}
-			}
-
-			Reflect(m_vulkanSPIRV, m_filePath);
-		}
-
-		VKShader::VKShader(const std::string& filePath) : m_filePath(filePath)
-		{
-			CreateCacheDirectoryIfNeeded("Assets/Cache/Shader/Vulkan");
-
-			std::string source = ReadFileFromPath(filePath);
-			auto shaderSources = PreProcess(source);
-
-			auto lastSlash = filePath.find_last_of("/\\");
-			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-			auto lastDot = filePath.rfind('.');
-			auto count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
-			m_name = filePath.substr(lastSlash, count);
+		VKShader::VKShader(const std::string& filePath) : Shader(filePath)
+		{			
+			auto shaderSources = Setup();
 
 			{
 				Timer timer;

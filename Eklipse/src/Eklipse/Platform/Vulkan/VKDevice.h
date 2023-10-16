@@ -7,6 +7,5 @@ namespace Eklipse
 	{
 		void CreateLogicalDevice();
 		void PickPhysicalDevice();
-		void DisposeDevice();
 	}
 }

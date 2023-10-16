@@ -1,9 +1,11 @@
 #include "precompiled.h"
 #include "Shader.h"
 
+#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Platform/OpenGL/GLShader.h>
 #include <Eklipse/Platform/Vulkan/VKShader.h>
+#include <Eklipse/Utils/File.h>
 
 #include <filesystem>
 #include <fstream>
@@ -13,7 +15,7 @@
 
 namespace Eklipse
 {
-    std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_shaders{};
+    //std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_shaders{};
 
     ShaderStage StringToShaderStage(const std::string& stage)
     {
@@ -46,12 +48,21 @@ namespace Eklipse
         EK_ASSERT(false, "Unkown shader stage!");
         return 0;
     }
-    void CreateCacheDirectoryIfNeeded(std::string cacheDirectory)
+    static void CreateCacheDirectoryIfNeeded(const std::string& cacheDirectory)
     {
         if (!std::filesystem::exists(cacheDirectory))
             std::filesystem::create_directories(cacheDirectory);
     }
-
+    static const char* VKShaderStageCachedVulkanFileExtension(const ShaderStage stage)
+    {
+        switch (stage)
+        {
+            case ShaderStage::VERTEX:    return ".cached_vulkan.vert";
+            case ShaderStage::FRAGMENT:  return ".cached_vulkan.frag";
+        }
+        EK_ASSERT(false, "Unknown shader stage!");
+        return "";
+    }
     static size_t GetSizeOfSPIRVType(const spirv_cross::SPIRType type, const std::string& name)
     {
         switch (type.basetype)
@@ -88,6 +99,59 @@ namespace Eklipse
 
         return shaderSources;
     }
+    void Shader::CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources)
+    {
+        shaderc::Compiler compiler;
+        shaderc::CompileOptions options;
+        options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+
+        //! Strips reflection info
+        //options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+        std::filesystem::path cacheDirectory = "Assets/Cache/Shader/Vulkan";
+
+        auto& shaderData = m_vulkanSPIRV;
+        shaderData.clear();
+        for (auto&& [stage, source] : shaderSources)
+        {
+            std::filesystem::path shaderFilePath = m_filePath;
+            std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + VKShaderStageCachedVulkanFileExtension(stage));
+
+            std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+            if (in.is_open())
+            {
+                EK_CORE_INFO("Reading Vulkan shader cache binaries from path: '{0}'", m_filePath);
+
+                in.seekg(0, std::ios::end);
+                auto size = in.tellg();
+                in.seekg(0, std::ios::beg);
+
+                auto& data = shaderData[stage];
+                data.resize(size / sizeof(uint32_t));
+                in.read((char*)data.data(), size);
+            }
+            else
+            {
+                EK_CORE_INFO("Compiling shader at path: '{0}' to Vulkan binaries", m_filePath);
+
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
+                EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
+
+                shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+                std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+                if (out.is_open())
+                {
+                    auto& data = shaderData[stage];
+                    out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+                    out.flush();
+                    out.close();
+                }
+            }
+        }
+
+        Reflect(m_vulkanSPIRV, m_filePath);
+    }
     void Shader::Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderStagesData, const std::string& shaderName)
     {
         EK_CORE_WARN("Shader::Reflect - {0}", shaderName);
@@ -103,50 +167,56 @@ namespace Eklipse
             for (size_t inputIndex = 0; inputIndex < resources.stage_inputs.size(); ++inputIndex)
             {
                 auto& resource = resources.stage_inputs[inputIndex];
+                const auto& name = compiler.get_name(resource.id);
                 const auto& type = compiler.get_type(resource.base_type_id);
                 uint32_t location = compiler.get_decoration(resource.id, spv::DecorationLocation);
-                size_t size = GetSizeOfSPIRVType(type, resource.name);
-                EK_CORE_TRACE("\tName: {0}", resource.name);
+                size_t size = GetSizeOfSPIRVType(type, name);
+                EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tLocation: {0}", location);
                 EK_CORE_TRACE("\tSize: {0}", size);
                 EK_CORE_TRACE("\tOffset: {0}", offset);
-                reflection.inputs.push_back({ resource.name, location, size, offset });
+                reflection.inputs.push_back({ name, location, size, offset });
                 offset += size;
             }
             EK_CORE_TRACE("Outputs:");
             for (const auto& resource : resources.stage_outputs)
             {
+                const auto& name = compiler.get_name(resource.id);
                 const auto& type = compiler.get_type(resource.base_type_id);
                 uint32_t location = compiler.get_decoration(resource.id, spv::DecorationLocation);
-                size_t size = GetSizeOfSPIRVType(type, resource.name);
-                EK_CORE_TRACE("\tName: {0}", resource.name);
+                size_t size = GetSizeOfSPIRVType(type, name);
+                EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tLocation: {0}", location);
                 EK_CORE_TRACE("\tSize: {0}", size);
-                reflection.outputs.push_back({ resource.name, location, size });
+                reflection.outputs.push_back({ name, location, size });
             }
             EK_CORE_TRACE("Uniform buffers:");
             for (const auto& resource : resources.uniform_buffers)
             {
+                auto& name = compiler.get_name(resource.id);
                 const auto& bufferType = compiler.get_type(resource.base_type_id);
                 size_t bufferSize = compiler.get_declared_struct_size(bufferType);
                 uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-                EK_CORE_TRACE("\tName: {0}", resource.name);
+                EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tSize: {0}", bufferSize);
                 EK_CORE_TRACE("\tBinding: {0}", binding);
-                ShaderUniformBuffer uniformBuffer = { resource.name, bufferSize, binding };
+                ShaderUniformBuffer uniformBuffer = { name, bufferSize, binding };
                 for (size_t memberIndex = 0; memberIndex < bufferType.member_types.size(); ++memberIndex)
                 {
+                    const auto& name = compiler.get_member_name(bufferType.self, memberIndex);
                     const auto& memberType = compiler.get_type(bufferType.member_types[memberIndex]);
                     size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
                     uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
                     uint32_t memberBinding = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationBinding);
-                    EK_CORE_TRACE("\t\tName: {0}", compiler.get_member_name(bufferType.self, memberIndex));
+                    EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
                     EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
-                    uniformBuffer.uniforms.push_back({ compiler.get_member_name(bufferType.self, memberIndex), memberSize, memberOffset, memberBinding });
+                    uniformBuffer.uniforms.push_back({ name, memberSize, memberOffset, memberBinding });
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
+
+                Assets::CreateUniformBuffer(name, bufferSize, binding);
             }
             EK_CORE_TRACE("Samplers:");
             for (const auto& resource : resources.sampled_images)
@@ -161,7 +231,6 @@ namespace Eklipse
         }
     }
 
-
     Ref<Shader> Shader::Create(const std::string& filePath)
     {
         auto apiType = Renderer::GetAPI();
@@ -172,6 +241,24 @@ namespace Eklipse
         }
         EK_ASSERT(false, "API {0} not implemented for Shader creation", int(apiType));
         return nullptr;
+    }
+    Shader::Shader(const std::string& filePath) : m_filePath(filePath)
+    {
+        m_name = "NO_SHADER_NAME";
+    }
+    std::unordered_map<ShaderStage, std::string> Shader::Setup()
+    {
+        CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
+
+        std::string source = ReadFileFromPath(m_filePath);
+
+        auto lastSlash = m_filePath.find_last_of("/\\");
+        lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+        auto lastDot = m_filePath.rfind('.');
+        auto count = lastDot == std::string::npos ? m_filePath.size() - lastSlash : lastDot - lastSlash;
+        m_name = m_filePath.substr(lastSlash, count);
+
+        return PreProcess(source);
     }
     const std::string& Shader::GetName() const
     {
@@ -187,7 +274,7 @@ namespace Eklipse
     // SHADER LIBRARY ////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////
 
-    void ShaderLibrary::Add(const Ref<Shader>& shader)
+   /* void ShaderLibrary::Add(const Ref<Shader>& shader)
     {
         if (Contains(shader->GetName()))
         {
@@ -217,5 +304,5 @@ namespace Eklipse
     {
         for (auto& shader : m_shaders)
             shader.second->Dispose();
-    }
+    }*/
 }

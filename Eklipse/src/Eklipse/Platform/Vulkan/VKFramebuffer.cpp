@@ -24,11 +24,6 @@ namespace Eklipse
 			m_renderPass = CreateRenderPass();
 			Build();
 		}
-		VKFramebuffer::~VKFramebuffer()
-		{
-			DestroyFramebuffers();
-			vkDestroyRenderPass(g_logicalDevice, m_renderPass, nullptr);
-		}
 		void VKFramebuffer::DestroyFramebuffers()
 		{
 			if (m_framebufferInfo.framebufferType == FramebufferType::DEFAULT)
@@ -43,8 +38,8 @@ namespace Eklipse
 			for (uint32_t i = 0; i < g_swapChainImageCount; i++)
 			{
 				for (auto& colorAttachment : m_framebufferAttachments[i].colorAttachments)
-					colorAttachment.Destroy();
-				m_framebufferAttachments[i].depthAttachment.Destroy();
+					colorAttachment.Dispose();
+				m_framebufferAttachments[i].depthAttachment.Dispose();
 
 				vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
 			}
@@ -288,11 +283,21 @@ namespace Eklipse
 		}
 		void VKFramebuffer::Resize(uint32_t width, uint32_t height)
 		{
+			Framebuffer::Resize(width, height);
+
+			// destroy
 			DestroyFramebuffers();
 
+			// create
 			m_framebufferInfo.width = width;
 			m_framebufferInfo.height = height;
 			Build();
+		}
+		void VKFramebuffer::Dispose()
+		{
+			DestroyFramebuffers();
+			vkDestroyRenderPass(g_logicalDevice, m_renderPass, nullptr);
+			FreeCommandBuffers(m_commandBuffers, g_commandPool);
 		}
 	}
 }

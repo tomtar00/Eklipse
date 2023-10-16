@@ -52,6 +52,7 @@ namespace Eklipse
 
 		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual void Bind() const = 0;
+		virtual void Dispose() = 0;
 
 	protected:
 		TextureInfo m_textureInfo;
@@ -60,7 +61,6 @@ namespace Eklipse
 	class Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(const std::string& texturePath);
 		static Ref<Texture2D> Create(const TextureInfo& textureInfo);
 	};
 }

@@ -1,8 +1,8 @@
 #include <precompiled.h>
 #include "OpenGLAPI.h"
 #include <glad/glad.h>
-
 #include "GL.h"
+#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Core/Application.h>
 
 namespace Eklipse
@@ -102,6 +102,9 @@ namespace Eklipse
 			EK_CORE_INFO("OpenGL shutdown");
 			m_initialized = false;
 		}
+		void OpenGLAPI::WaitDeviceIdle()
+		{
+		}
 		void OpenGLAPI::BeginFrame()
 		{
 			
@@ -116,7 +119,7 @@ namespace Eklipse
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			auto& spriteShader = ShaderLibrary::Get("sprite");
+			auto& spriteShader = Assets::GetShader("Assets/Shaders/sprite.glsl");
 			m_vertexArray->Bind();
 			glDisable(GL_DEPTH_TEST);
 			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);

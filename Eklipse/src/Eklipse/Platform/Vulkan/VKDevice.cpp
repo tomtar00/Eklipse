@@ -91,9 +91,5 @@ namespace Eklipse
 				}
 			}
 		}
-		void DisposeDevice()
-		{
-			vkDestroyDevice(g_logicalDevice, nullptr);
-		}
 	}
 }

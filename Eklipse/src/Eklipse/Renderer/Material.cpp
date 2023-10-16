@@ -18,4 +18,13 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Material creation", int(apiType));
         return nullptr;
     }
+
+    void Material::Bind()
+    {
+        m_shader->Bind();
+    }
+    void Material::Dispose()
+    {
+        m_shader->Dispose();
+    }
 }

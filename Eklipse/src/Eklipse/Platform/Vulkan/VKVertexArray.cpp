@@ -9,9 +9,6 @@ namespace Eklipse
 		VKVertexArray::VKVertexArray()
 		{
 		}
-		VKVertexArray::~VKVertexArray()
-		{
-		}
 		void VKVertexArray::Bind() const
 		{
 			for (auto& vertexBuffer : m_vertexBuffers)
@@ -20,6 +17,12 @@ namespace Eklipse
 		}
 		void VKVertexArray::Unbind() const
 		{
+		}
+		void VKVertexArray::Dispose() const
+		{
+			for (auto& vertexBuffer : m_vertexBuffers)
+				vertexBuffer->Dispose();
+			m_indexBuffer->Dispose();
 		}
 		void VKVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		{
@@ -37,7 +40,6 @@ namespace Eklipse
 		}
 		void VKVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 		{
-			//indexBuffer->Bind();
 			m_indexBuffer = indexBuffer;
 		}
 	}

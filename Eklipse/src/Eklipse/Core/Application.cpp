@@ -34,8 +34,8 @@ namespace Eklipse
 	void Application::Init()
 	{
 		SetAPI(Renderer::GetAPI());
-		Renderer::Init();
 		m_scene.Load();
+		Renderer::Init();
 
 		EK_PROFILE_END();
 	}
@@ -43,9 +43,9 @@ namespace Eklipse
 	{
 		EK_PROFILE_BEGIN("Shutdown");
 
+		m_layerStack.Shutdown();
 		Renderer::Shutdown();
 		m_window->Shutdown();
-		m_layerStack.Shutdown();
 		m_scene.Dispose();
 	}
 	void Application::BeginFrame(float* deltaTime)

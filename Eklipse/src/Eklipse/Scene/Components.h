@@ -5,9 +5,17 @@
 #include "Camera.h"
 #include <Eklipse/Renderer/Material.h>
 #include <Eklipse/Renderer/Mesh.h>
+#include <Eklipse/Core/UUID.h>
 
 namespace Eklipse
 {
+	struct IDComponent
+	{
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+	};
 	struct NameComponent
 	{
 		std::string name;

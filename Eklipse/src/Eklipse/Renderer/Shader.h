@@ -55,14 +55,16 @@ namespace Eklipse
 	extern ShaderStage StringToShaderStage(const std::string& stage);
 	extern std::string ShaderStageToString(ShaderStage stage);
 	extern uint32_t ShaderStageToShaderC(const ShaderStage stage);
-	extern void CreateCacheDirectoryIfNeeded(std::string cacheDirectory);
 	
 	class Shader
 	{
 	public:
 		static Ref<Shader> Create(const std::string& filePath);
+		Shader() = delete;
+		Shader(const std::string& filePath);
 		virtual ~Shader() = default;
 
+		std::unordered_map<ShaderStage, std::string> Shader::Setup();
 		const std::string& GetName() const;
 		const std::unordered_map<ShaderStage, ShaderReflection>& GetReflections() const;
 		const ShaderReflection& GetVertexReflection() { return m_reflections[ShaderStage::VERTEX]; }
@@ -73,26 +75,31 @@ namespace Eklipse
 		virtual void Dispose() const = 0;
 
 	protected:
+		virtual const std::string GetCacheDirectoryPath() = 0;
+		void CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources);
 		std::unordered_map<ShaderStage, std::string> PreProcess(const std::string& source);
 		void Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData, const std::string& shaderName);
 
 	protected:
 		std::string m_name;
+		std::string m_filePath;
 		std::unordered_map<ShaderStage, ShaderReflection> m_reflections;
+
+		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
 
 		static std::unordered_map<std::string, std::string> s_shaderResources;
 	};
 
-	class ShaderLibrary
-	{
-	public:
-		static void Add(const Ref<Shader>& shader);
-		static Ref<Shader> Load(const std::string& filePath);
-		static Ref<Shader> Get(const std::string& name);
-		static bool Contains(const std::string& name);
-		static void Dispose();
+	//class ShaderLibrary
+	//{
+	//public:
+	//	static void Add(const Ref<Shader>& shader);
+	//	static Ref<Shader> Load(const std::string& filePath);
+	//	static Ref<Shader> Get(const std::string& name);
+	//	static bool Contains(const std::string& name);
+	//	static void Dispose();
 
-	private:
-		static std::unordered_map<std::string, Ref<Shader>> m_shaders;
-	};
+	//private:
+	//	static std::unordered_map<std::string, Ref<Shader>> m_shaders;
+	//};
 }

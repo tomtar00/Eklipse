@@ -30,10 +30,6 @@ namespace Eklipse
 		{
 			glGenVertexArrays(1, &m_id);
 		}
-		GLVertexArray::~GLVertexArray()
-		{
-			glDeleteVertexArrays(1, &m_id);
-		}
 		void GLVertexArray::Bind() const
 		{
 			glBindVertexArray(m_id);
@@ -41,6 +37,10 @@ namespace Eklipse
 		void GLVertexArray::Unbind() const
 		{
 			glBindVertexArray(0);
+		}
+		void GLVertexArray::Dispose() const
+		{
+			glDeleteVertexArrays(1, &m_id);
 		}
 		void GLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		{

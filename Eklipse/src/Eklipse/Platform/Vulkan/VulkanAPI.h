@@ -15,6 +15,7 @@ namespace Eklipse
 
 			void Init() override;
 			void Shutdown() override;
+			void WaitDeviceIdle() override;
 
 			void BeginFrame() override;
 			void EndFrame() override;

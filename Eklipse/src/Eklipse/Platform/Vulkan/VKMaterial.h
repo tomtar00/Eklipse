@@ -13,18 +13,16 @@ namespace Eklipse
 		{
 		public:
 			VKMaterial(Ref<Shader> shader);
-			~VKMaterial();
+			virtual ~VKMaterial() = default;
 
 			virtual void Bind() override;
+			virtual void Dispose() override;
 
 		private:
 			void CreateDescriptorSets();
 
 		private:
 			Ref<VKShader> m_vkShader;
-			std::vector<Ref<VKTexture2D>> m_textures;
-			std::vector<Ref<VKUniformBuffer>> m_uniformBuffers;
-
 			std::vector<VkDescriptorSet> m_descriptorSets;
 		};
 	}

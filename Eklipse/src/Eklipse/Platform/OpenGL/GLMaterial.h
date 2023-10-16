@@ -1,5 +1,6 @@
 #pragma once
 #include <Eklipse/Renderer/Material.h>
+#include "GLShader.h"
 
 namespace Eklipse
 {
@@ -9,9 +10,13 @@ namespace Eklipse
 		{
 		public:
 			GLMaterial(Ref<Shader> shader);
-			~GLMaterial();
+			virtual ~GLMaterial() = default;
 
 			virtual void Bind() override;
+			virtual void Dispose() override;
+
+		private:
+			Ref<GLShader> m_glShader;
 		};
 	}
 }

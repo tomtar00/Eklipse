@@ -2,27 +2,27 @@
 #include "Scene.h"
 #include "Entity.h"
 #include "Components.h"
+#include "Assets.h"
 
 namespace Eklipse
 {
-	static Mesh				s_viking;
-	static Ref<Shader>		s_meshShader;
-	static Ref<Shader>		s_spriteShader;
-	static Ref<Material>	s_material;
+	static Ref<Shader>			s_meshShader;
+	static Ref<Shader>			s_spriteShader;
+	static Ref<Material>		s_material;
 
 	void Scene::Load()
 	{
 		EK_CORE_TRACE("Begin scene load");
 
-		s_spriteShader	= ShaderLibrary::Load("Assets/Shaders/sprite.glsl");
-		s_meshShader	= ShaderLibrary::Load("Assets/Shaders/mesh.glsl");
+		s_spriteShader	= Assets::GetShader("Assets/Shaders/sprite.glsl");
+		s_meshShader	= Assets::GetShader("Assets/Shaders/mesh.glsl");
 		s_material		= Material::Create(s_meshShader);
-		s_viking		= { "Assets/Models/viking_room.obj" };
+
+		Ref<Mesh> viking	= Assets::GetMesh("Assets/Models/viking_room.obj");
 
 		CreateEntity("Main Camera").AddComponent<CameraComponent>();
-
-		CreateEntity("Viking").AddComponent<MeshComponent>(&s_viking, s_material.get());
-		CreateEntity("Viking 2").AddComponent<MeshComponent>(&s_viking, s_material.get());
+		CreateEntity("Viking").AddComponent<MeshComponent>(viking.get(), s_material.get());
+		CreateEntity("Viking 2").AddComponent<MeshComponent>(viking.get(), s_material.get());
 
 		EK_CORE_TRACE("Scene loaded");
 	}
@@ -32,6 +32,7 @@ namespace Eklipse
 	Entity Scene::CreateEntity(const std::string name)
 	{
 		Entity entity = { m_registry.create(), this };
+		entity.AddComponent<IDComponent>();
 		entity.AddComponent<NameComponent>(name.empty() ? "Empty Entity" : name);
 		entity.AddComponent<TransformComponent>();
 		return entity;

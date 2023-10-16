@@ -4,6 +4,7 @@
 #include "Settings.h"
 #include "Material.h"
 
+#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
@@ -12,31 +13,28 @@
 
 namespace Eklipse
 {
-	float				g_aspectRatio = 1.0f;
-	ApiType				Renderer::s_apiType;
+	ApiType						Renderer::s_apiType;
 
-	// TODO: Remove
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
 	static Ref<UniformBuffer>	s_transformUniformBuffer;
-	//
 
 	void Renderer::Init()
 	{
-		s_cameraUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 0);
-		s_transformUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 1);
+		s_cameraUniformBuffer		= Assets::GetUniformBuffer("uCamera");
+		s_transformUniformBuffer	= Assets::GetUniformBuffer("uTransform");
 	}	
-	void Renderer::Shutdown()
+	void Renderer::Shutdown() // TODO: Call this when switching graphics API
 	{
+		RenderCommand::API->WaitDeviceIdle();
+		Assets::Shutdown();
 		RenderCommand::API->Shutdown();
-		ShaderLibrary::Dispose();
 	}
 
 	void Renderer::BeginFrame(Camera& camera, Transform& cameraTransform)
 	{
 		EK_PROFILE();
 
-		g_aspectRatio = g_sceneFramebuffer->GetInfo().width / (float)g_sceneFramebuffer->GetInfo().height;
-		camera.UpdateViewProjectionMatrix(cameraTransform, g_aspectRatio);
+		camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
 		auto& viewProjection = camera.GetViewProjectionMatrix();
 		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
 

@@ -8,14 +8,15 @@ namespace Eklipse
 	{
 		GLMaterial::GLMaterial(Ref<Shader> shader) : Material(shader)
 		{
-			// TODO: Implement
-		}
-		GLMaterial::~GLMaterial()
-		{
+			m_glShader = std::static_pointer_cast<GLShader>(shader);
 		}
 		void GLMaterial::Bind()
 		{
-			m_shader->Bind();
+			Material::Bind();
+		}
+		void GLMaterial::Dispose()
+		{
+			Material::Dispose();
 		}
 	}
 }

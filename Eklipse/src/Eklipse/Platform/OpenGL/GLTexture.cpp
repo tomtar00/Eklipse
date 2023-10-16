@@ -31,7 +31,7 @@ namespace Eklipse
 			return 0;
 		}
 
-		GLTexture2D::GLTexture2D(const std::string& texturePath) : m_id(0)
+		/*GLTexture2D::GLTexture2D(const std::string& texturePath) : m_id(0)
 		{
 			int width, height, channels;
 			stbi_uc* data = stbi_load(texturePath.c_str(), &width, &height, &channels, 0);
@@ -69,7 +69,7 @@ namespace Eklipse
 			glGenerateMipmap(GL_TEXTURE_2D);
 
 			stbi_image_free(data);
-		}
+		}*/
 		GLTexture2D::GLTexture2D(const TextureInfo& textureInfo) : m_id(0)
 		{
 			m_format = ConvertToGLFormat(textureInfo.imageFormat);
@@ -86,10 +86,6 @@ namespace Eklipse
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
-		GLTexture2D::~GLTexture2D()
-		{
-			glDeleteTextures(1, &m_id);
-		}
 		void GLTexture2D::SetData(void* data, uint32_t size)
 		{
 			uint32_t singlePixelSize = m_format == GL_RGBA ? 4 : 3;
@@ -101,6 +97,10 @@ namespace Eklipse
 		void GLTexture2D::Bind() const
 		{
 			glBindTexture(GL_TEXTURE_2D, m_id);
+		}
+		void GLTexture2D::Dispose()
+		{
+			glDeleteTextures(1, &m_id);
 		}
 	}
 }

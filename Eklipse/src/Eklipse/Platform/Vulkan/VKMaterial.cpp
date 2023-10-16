@@ -2,6 +2,8 @@
 #include "VKMaterial.h"
 #include "VK.h"
 
+#include <Eklipse/Scene/Assets.h>
+
 namespace Eklipse
 {
 	namespace Vulkan
@@ -11,14 +13,15 @@ namespace Eklipse
 			m_vkShader = std::static_pointer_cast<VKShader>(shader);
 			CreateDescriptorSets();
 		}
-		VKMaterial::~VKMaterial()
-		{
-		
-		}
 		void VKMaterial::Bind()
 		{
-			m_vkShader->Bind();
+			Material::Bind();
 			vkCmdBindDescriptorSets(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkShader->GetPipelineLayout(), 0, 1, &m_descriptorSets[g_currentFrame], 0, nullptr);
+		}
+		void VKMaterial::Dispose()
+		{
+			Material::Dispose();
+			vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
 		}
 		void VKMaterial::CreateDescriptorSets()
 		{
@@ -42,10 +45,9 @@ namespace Eklipse
 				{
 					for (auto& ubo : reflection.uniformBuffers)
 					{
-						// TODO: check if this uniform buffer already exists
-						
-						Ref<VKUniformBuffer> uniformBuffer = CreateRef<VKUniformBuffer>(ubo.size, ubo.binding);
-						m_uniformBuffers.push_back(uniformBuffer);
+						Ref<VKUniformBuffer> uniformBuffer = std::static_pointer_cast<VKUniformBuffer>(
+							Assets::GetUniformBuffer(ubo.name)
+						);
 
 						VkDescriptorBufferInfo bufferInfo{};
 						bufferInfo.buffer = uniformBuffer->m_buffer;
@@ -66,7 +68,8 @@ namespace Eklipse
 					for (auto& sampler : reflection.samplers)
 					{
 						// Creating dummy texture, fix it to support loading from file (.mat) in assets library
-						TextureInfo textureInfo = {};
+
+						/*TextureInfo textureInfo = {};
 						textureInfo.width = 1;
 						textureInfo.height = 1;
 						textureInfo.mipMapLevel = 1;
@@ -92,7 +95,7 @@ namespace Eklipse
 						descriptorWrite.descriptorCount = 1;
 						descriptorWrite.pImageInfo = &imageInfo;
 
-						descriptorWrites.push_back(descriptorWrite);
+						descriptorWrites.push_back(descriptorWrite);*/
 					}
 				}
 

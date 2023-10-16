@@ -27,7 +27,7 @@ namespace Eklipse
 		{
 		public:
 			GLFramebuffer(const FramebufferInfo& frambufferInfo);
-			virtual ~GLFramebuffer();
+			virtual ~GLFramebuffer() = default;
 
 			virtual FramebufferInfo& GetInfo() override;
 			uint32_t GetMainColorAttachment() { return m_colorAttachments[0]; }
@@ -36,6 +36,7 @@ namespace Eklipse
 			virtual void Bind() override;
 			virtual void Unbind() override;
 			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual void Dispose() override;
 		
 			uint32_t m_id;
 		private:

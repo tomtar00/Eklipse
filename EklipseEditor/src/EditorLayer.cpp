@@ -156,6 +156,9 @@ namespace Editor
 	void EditorLayer::OnShutdownAPI()
 	{
 		GUI->Shutdown();
+		m_defaultFramebuffer->Dispose();
+		m_viewportFramebuffer->Dispose();
+
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
 	}

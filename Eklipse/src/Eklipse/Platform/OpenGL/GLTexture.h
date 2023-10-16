@@ -10,12 +10,12 @@ namespace Eklipse
 		class GLTexture2D : public Eklipse::Texture2D
 		{
 		public:
-			GLTexture2D(const std::string& texturePath);
 			GLTexture2D(const TextureInfo& textureInfo);
-			virtual ~GLTexture2D();
+			virtual ~GLTexture2D() = default;
 
 			virtual void SetData(void* data, uint32_t size) override;
 			virtual void Bind() const override;
+			virtual void Dispose() override;
 
 		private:
 			uint32_t m_id;

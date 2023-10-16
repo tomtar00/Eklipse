@@ -40,6 +40,9 @@ namespace Eklipse
 	#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	//#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), "File: {0}:{1} ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
 	//#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), "File: {0}:{1} CRITICAL ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
+
+	#define VMA_DEBUG_LOG(format, ...) SPDLOG_LOGGER_TRACE(Eklipse::Log::coreLogger(), format) // TODO: Formatting not working
+
 #elif EK_RELEASE
 	#define EK_CORE_TRACE(...)
 	#define EK_CORE_TEST(...)		SPDLOG_LOGGER_DEBUG(Eklipse::Log::coreLogger(), __VA_ARGS__)
@@ -54,6 +57,8 @@ namespace Eklipse
 	#define EK_WARN(...)			SPDLOG_LOGGER_WARN(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), __VA_ARGS__)
+
+	#define VMA_DEBUG_LOG(format, ...)
 #elif EK_DIST
 	#define EK_CORE_TRACE(...)
 	#define EK_CORE_TEST(...)
@@ -68,4 +73,6 @@ namespace Eklipse
 	#define EK_WARN(...)
 	#define EK_ERROR(...)
 	#define EK_CRITICAL(...)
+
+	#define VMA_DEBUG_LOG(format, ...)
 #endif

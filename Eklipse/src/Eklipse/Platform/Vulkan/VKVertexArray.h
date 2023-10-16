@@ -10,10 +10,11 @@ namespace Eklipse
 		{
 		public:
 			VKVertexArray();
-			virtual ~VKVertexArray();
+			virtual ~VKVertexArray() = default;
 
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
+			virtual void Dispose() const override;
 
 			virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) override;
 			virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;

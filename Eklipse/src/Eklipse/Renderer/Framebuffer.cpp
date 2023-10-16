@@ -21,4 +21,9 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Framebuffer creation", int(apiType));
         return nullptr;
     }
+
+    void Framebuffer::Resize(uint32_t width, uint32_t height)
+    {
+        m_aspectRatio = (float)width / (float)height;
+    }
 }

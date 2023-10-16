@@ -25,21 +25,59 @@ namespace std
 
 namespace Eklipse
 {
-    MeshLoadResult AssetLoader::LoadMesh(const char* modelPath)
+    std::unordered_map<std::string, Ref<Mesh>, std::hash<std::string>>          Assets::s_meshCache;
+    std::unordered_map<std::string, Ref<Texture2D>, std::hash<std::string>>     Assets::s_textureCache;
+    std::unordered_map<std::string, Ref<Shader>, std::hash<std::string>>        Assets::s_shaderCache;
+    std::unordered_map<std::string, Ref<Material>, std::hash<std::string>>      Assets::s_materialCache;
+
+    std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Assets::s_uniformBufferCache;
+
+    void Assets::Shutdown()
+    {
+        // Shaders
+        for (auto&& [path, shader] : s_shaderCache)
+        {
+            shader->Dispose();
+        }
+
+        // Uniform buffers
+        for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
+		{
+			uniformBuffer->Dispose();
+		}
+
+        // Textures
+        for (auto&& [path, texture] : s_textureCache)
+		{
+			texture->Dispose();
+		}
+
+        // Meshes
+        for (auto&& [path, mesh] : s_meshCache)
+        {
+            mesh->GetVertexArray()->Dispose();
+        }
+    }
+    Ref<Mesh> Assets::GetMesh(const std::string& meshPath)
 	{
-        MeshLoadResult result{};
+        if (s_meshCache.find(meshPath) != s_meshCache.end())
+        {
+			return s_meshCache[meshPath];
+		}   
 
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPath))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.c_str()))
         {
-            EK_CORE_ERROR("Failed to load model at location: {0}. {1}", modelPath, warn + err);
+            EK_CORE_ERROR("Failed to load model at location: {0}. {1}", meshPath, warn + err);
         }
 
         std::unordered_map<Vertex, uint32_t, std::hash<Vertex>> uniqueVertices{};
+        std::vector<float> vertices{};
+        std::vector<uint32_t> indices{};
 
         for (const auto& shape : shapes)
         {
@@ -67,31 +105,105 @@ namespace Eklipse
 
                 if (uniqueVertices.count(vertex) == 0)
                 {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(result.vertices.size() / 8);
-                    result.vertices.push_back(vertex.pos.x);
-                    result.vertices.push_back(vertex.pos.y);
-                    result.vertices.push_back(vertex.pos.z);
-                    result.vertices.push_back(vertex.color.r);
-                    result.vertices.push_back(vertex.color.g);
-                    result.vertices.push_back(vertex.color.b);
-                    result.vertices.push_back(vertex.texCoord.x);
-                    result.vertices.push_back(vertex.texCoord.y);
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size() / 8);
+                    vertices.push_back(vertex.pos.x);
+                    vertices.push_back(vertex.pos.y);
+                    vertices.push_back(vertex.pos.z);
+                    vertices.push_back(vertex.color.r);
+                    vertices.push_back(vertex.color.g);
+                    vertices.push_back(vertex.color.b);
+                    vertices.push_back(vertex.texCoord.x);
+                    vertices.push_back(vertex.texCoord.y);
                 }
 
-                result.indices.push_back(uniqueVertices[vertex]);
+                indices.push_back(uniqueVertices[vertex]);
             }
         }
 
-        EK_CORE_INFO("Loaded model from path {0}. Vertices: {1} Indices: {2}", modelPath, result.vertices.size() / 8, result.indices.size());
+        Mesh mesh{ vertices, indices };
+        Ref<Mesh> meshRef = CreateRef<Mesh>(mesh);
+        s_meshCache[meshPath] = meshRef;
 
-        return result;
+        EK_CORE_INFO("Loaded model from path {0}. Vertices: {1} Indices: {2}", meshPath, vertices.size() / 8, indices.size());
+        return meshRef;
 	}
-    TextureLoadResult AssetLoader::LoadTexture(const char* texturePath)
+    Ref<Texture2D> Assets::GetTexture(const std::string& texturePath)
     {
-        TextureLoadResult result{};
-        result.data = stbi_load(texturePath, &result.width, &result.height, nullptr, STBI_rgb_alpha);
-        EK_ASSERT(result.data, "Failed to load texture image from location: {0}", texturePath);
-        EK_CORE_INFO("Loaded texture from path {0}. Width: {1} Height: {2}", texturePath, result.width, result.height);
-        return result;
+        if (s_textureCache.find(texturePath) != s_textureCache.end())
+        {
+			return s_textureCache[texturePath];
+		}
+
+        int width, height, channels;
+        void* data = stbi_load(texturePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        EK_ASSERT(data, "Failed to load texture image from location: {0}", texturePath);
+
+        ImageFormat format = ImageFormat::UNDEFINED;
+        if (channels == 3)
+            format = ImageFormat::RGB8;
+        else if (channels == 4)
+            format = ImageFormat::RGBA8;
+
+        TextureInfo textureInfo{};
+        textureInfo.width = width;
+        textureInfo.height = height;
+        textureInfo.mipMapLevel = 1;
+        textureInfo.samples = 1;
+        textureInfo.imageFormat = format;
+        textureInfo.imageAspect = ImageAspect::COLOR;
+        textureInfo.imageUsage = ImageUsage::SAMPLED;
+
+        Ref<Texture2D> texture = Texture2D::Create(textureInfo);
+        texture->SetData(data, width * height * channels);
+        s_textureCache[texturePath] = texture;
+
+        EK_CORE_INFO("Loaded texture from path {0}. Width: {1} Height: {2}", texturePath, width, height);
+        return texture;
+    }
+    Ref<Shader> Assets::GetShader(const std::string& shaderPath)
+    {
+        if (s_shaderCache.find(shaderPath) != s_shaderCache.end())
+        {
+            return s_shaderCache[shaderPath];
+        }
+
+        Ref<Shader> shader = Shader::Create(shaderPath);
+        s_shaderCache[shaderPath] = shader;
+
+        return shader;
+    }
+    Ref<Material> Assets::GetMaterial(const std::string& materialPath)
+    {
+        // TODO: insert return statement here
+        EK_ASSERT(false, "Getting material from path not implemented!");
+
+        if (s_materialCache.find(materialPath) != s_materialCache.end())
+        {
+            return s_materialCache[materialPath];
+        }
+
+        return Material::Create(s_shaderCache[0]);
+    }
+    Ref<UniformBuffer> Assets::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
+    {
+        if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
+		{
+			return s_uniformBufferCache[uniformBufferName];
+		}
+
+        Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
+		s_uniformBufferCache[uniformBufferName] = uniformBuffer;
+
+		return uniformBuffer;
+    }
+    Ref<UniformBuffer> Assets::GetUniformBuffer(const std::string& uniformBufferName)
+    {
+        if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
+        {
+            return s_uniformBufferCache[uniformBufferName];
+        }
+
+        EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
+        return nullptr;
     }
 }

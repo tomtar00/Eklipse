@@ -6,10 +6,11 @@ namespace Eklipse
 	class Material
 	{
 	public:
-		Material() = default;
+		Material() = delete;
 		Material(Ref<Shader> shader) : m_shader(shader) {}
 
-		virtual void Bind() = 0;
+		virtual void Bind();
+		virtual void Dispose();
 
 		static Ref<Material> Create(Ref<Shader> shader);
 

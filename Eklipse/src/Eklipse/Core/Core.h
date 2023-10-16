@@ -9,7 +9,11 @@
 		#define EK_API __declspec(dllimport)
 	#endif
 
-	#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
+	#ifdef EK_DEBUG
+		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
+	#else
+		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); }
+	#endif
 
 #else
 	#error Engine only supports Windows!
@@ -40,4 +44,13 @@ namespace Eklipse
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
+
+	template <typename T>
+	struct RefHash
+	{
+		size_t operator()(const Eklipse::Ref<T>& ref) const
+		{
+			return std::hash<T*>{}(ref.get());
+		}
+	};
 }

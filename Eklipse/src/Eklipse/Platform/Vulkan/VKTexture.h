@@ -21,15 +21,12 @@ namespace Eklipse
 		{
 		public:
 			VKTexture2D() = default;
-			VKTexture2D(const std::string& texturePath);
 			VKTexture2D(const TextureInfo& textureInfo);
-			virtual ~VKTexture2D();
+			virtual ~VKTexture2D() = default;
 
 			virtual void SetData(void* data, uint32_t size) override;
 			virtual void Bind() const override;
-
-			void Setup(const TextureInfo& textureInfo);
-			void Destroy();
+			virtual void Dispose() override;
 
 			inline VkImage GetImage() const { return m_image; }
 			inline VkImageView GetImageView() const { return m_imageView; }

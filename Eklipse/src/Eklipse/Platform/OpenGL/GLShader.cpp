@@ -37,67 +37,6 @@ namespace Eklipse
 			return "";
 		}
 
-		static const char* GLShaderStageCachedVulkanFileExtension(const ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::VERTEX:    return ".cached_vulkan.vert";
-				case ShaderStage::FRAGMENT:  return ".cached_vulkan.frag";
-			}
-			EK_ASSERT(false, "Unknown shader stage!");
-			return "";
-		}
-
-		void GLShader::CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources)
-		{
-			GLuint program = glCreateProgram();
-
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-			options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-			std::filesystem::path cacheDirectory = "Assets/Cache/Shader/Opengl";
-
-			auto& shaderData = m_vulkanSPIRV;
-			shaderData.clear();
-			for (auto&& [stage, source] : shaderSources)
-			{
-				std::filesystem::path shaderFilePath = m_filePath;
-				std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + GLShaderStageCachedVulkanFileExtension(stage));
-
-				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-				if (in.is_open())
-				{
-					in.seekg(0, std::ios::end);
-					auto size = in.tellg();
-					in.seekg(0, std::ios::beg);
-
-					auto& data = shaderData[stage];
-					data.resize(size / sizeof(uint32_t));
-					in.read((char*)data.data(), size);
-				}
-				else
-				{
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
-					EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
-
-					shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-					std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-					if (out.is_open())
-					{
-						auto& data = shaderData[stage];
-						out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-						out.flush();
-						out.close();
-					}
-				}
-			}
-
-			Reflect(m_vulkanSPIRV, m_filePath);
-		}
-
 		void GLShader::CompileOrGetOpenGLBinaries()
 		{
 			auto& shaderData = m_openGLSPIRV;
@@ -105,9 +44,11 @@ namespace Eklipse
 			shaderc::Compiler compiler;
 			shaderc::CompileOptions options;
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-			std::filesystem::path cacheDirectory = "Assets/Cache/Shader/Opengl";
+			//! Strips reflection info
+			//options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+			std::filesystem::path cacheDirectory = GetCacheDirectoryPath();
 
 			shaderData.clear();
 			m_openGLSourceCode.clear();
@@ -119,6 +60,8 @@ namespace Eklipse
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (in.is_open())
 				{
+					EK_CORE_INFO("Reading OpenGL shader cache binaries from path: '{0}'", m_filePath);
+
 					in.seekg(0, std::ios::end);
 					auto size = in.tellg();
 					in.seekg(0, std::ios::beg);
@@ -129,6 +72,8 @@ namespace Eklipse
 				}
 				else
 				{
+					EK_CORE_INFO("Compiling shader at path: '{0}' to OpenGL binaries", m_filePath);
+
 					spirv_cross::CompilerGLSL glslCompiler(spirv);
 					m_openGLSourceCode[stage] = glslCompiler.compile();
 					auto& source = m_openGLSourceCode[stage];
@@ -196,18 +141,9 @@ namespace Eklipse
 			m_id = program;
 		}
 
-		GLShader::GLShader(const std::string& filePath) : m_id(0), m_filePath(filePath)
+		GLShader::GLShader(const std::string& filePath) : m_id(0), Shader(filePath)
 		{
-			CreateCacheDirectoryIfNeeded("Assets/Cache/Shader/Opengl");
-
-			std::string source = ReadFileFromPath(filePath);
-			auto shaderSources = PreProcess(source);
-
-			auto lastSlash = filePath.find_last_of("/\\");
-			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-			auto lastDot = filePath.rfind('.');
-			auto count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
-			m_name = filePath.substr(lastSlash, count);
+			auto shaderSources = Setup();
 
 			{
 				Timer timer;

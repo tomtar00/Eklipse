@@ -206,12 +206,16 @@ namespace Eklipse
 
 			vmaDestroyAllocator(g_allocator);
 
-			DisposeDevice();
+			vkDestroyDevice(g_logicalDevice, nullptr);
 			vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
 			vkDestroyInstance(g_instance, nullptr);
 
-			EK_CORE_INFO("Vulkan shutdown ");
+			EK_CORE_INFO("Vulkan shutdown");
 			m_initialized = false;
+		}
+		void VulkanAPI::WaitDeviceIdle()
+		{
+			vkDeviceWaitIdle(g_logicalDevice);
 		}
 		void VulkanAPI::BeginFrame()
 		{

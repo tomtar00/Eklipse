@@ -17,7 +17,7 @@ namespace Eklipse
 		{
 		public:
 			VKFramebuffer(const FramebufferInfo& framebufferInfo);
-			virtual ~VKFramebuffer();
+			virtual ~VKFramebuffer() = default;
 
 			void DestroyFramebuffers();
 
@@ -30,6 +30,7 @@ namespace Eklipse
 			virtual void Bind() override;
 			virtual void Unbind() override;
 			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual void Dispose() override;
 
 		private:
 			VkRenderPass CreateRenderPass();

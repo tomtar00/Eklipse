@@ -15,18 +15,17 @@ namespace Eklipse
 			virtual void Unbind() const override;
 			virtual void Dispose() const override;
 
+		protected:
+			virtual const std::string GetCacheDirectoryPath() override { return "Assets/Cache/Shader/OpenGL"; }
+
 		private:
-			void CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources);
 			void CompileOrGetOpenGLBinaries();
 			void CreateProgram();
 
 		private:
 			uint32_t m_id;
-			std::string m_filePath;
-
-			std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
+	
 			std::unordered_map<ShaderStage, std::vector<uint32_t>> m_openGLSPIRV;
-
 			std::unordered_map<ShaderStage, std::string> m_openGLSourceCode;
 		};
 	}

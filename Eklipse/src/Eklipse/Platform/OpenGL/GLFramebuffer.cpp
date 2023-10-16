@@ -21,12 +21,6 @@ namespace Eklipse
 
 			Build();
 		}
-		GLFramebuffer::~GLFramebuffer()
-		{
-			glDeleteFramebuffers(1, &m_id);
-			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
-			glDeleteTextures(1, &m_depthAttachment);
-		}
 		FramebufferInfo& GLFramebuffer::GetInfo()
 		{
 			return m_framebufferInfo;
@@ -124,15 +118,23 @@ namespace Eklipse
 		}
 		void GLFramebuffer::Resize(uint32_t width, uint32_t height)
 		{
+			Framebuffer::Resize(width, height);
+
 			// destroy
-			glDeleteFramebuffers(1, &m_id);
-			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
-			glDeleteTextures(1, &m_depthAttachment);
+			Dispose();
 
 			// create
 			m_framebufferInfo.width = width;
 			m_framebufferInfo.height = height;
 			Build();
+		}
+		void GLFramebuffer::Dispose()
+		{
+			glDeleteFramebuffers(1, &m_id);
+			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
+
+			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED)
+				glDeleteTextures(1, &m_depthAttachment);
 		}
 	}
 }
