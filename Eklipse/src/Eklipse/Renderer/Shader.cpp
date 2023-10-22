@@ -104,6 +104,7 @@ namespace Eklipse
         shaderc::Compiler compiler;
         shaderc::CompileOptions options;
         options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+        options.SetAutoMapLocations(true);
 
         //! Strips reflection info
         //options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -120,7 +121,7 @@ namespace Eklipse
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (in.is_open())
             {
-                EK_CORE_INFO("Reading Vulkan shader cache binaries from path: '{0}'", m_filePath);
+                EK_CORE_INFO("Reading Vulkan shader cache binaries from path: '{0}'", cachedPath.string());
 
                 in.seekg(0, std::ios::end);
                 auto size = in.tellg();
@@ -170,6 +171,8 @@ namespace Eklipse
                 const auto& name = compiler.get_name(resource.id);
                 const auto& type = compiler.get_type(resource.base_type_id);
                 uint32_t location = compiler.get_decoration(resource.id, spv::DecorationLocation);
+                if (location > reflection.maxLocation)
+					reflection.maxLocation = location;
                 size_t size = GetSizeOfSPIRVType(type, name);
                 EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tLocation: {0}", location);
@@ -184,6 +187,8 @@ namespace Eklipse
                 const auto& name = compiler.get_name(resource.id);
                 const auto& type = compiler.get_type(resource.base_type_id);
                 uint32_t location = compiler.get_decoration(resource.id, spv::DecorationLocation);
+                if (location > reflection.maxLocation)
+                    reflection.maxLocation = location;
                 size_t size = GetSizeOfSPIRVType(type, name);
                 EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tLocation: {0}", location);
@@ -212,11 +217,35 @@ namespace Eklipse
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
                     EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
-                    uniformBuffer.uniforms.push_back({ name, memberSize, memberOffset, memberBinding });
+                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, memberBinding });
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
 
                 Assets::CreateUniformBuffer(name, bufferSize, binding);
+            }
+            EK_CORE_TRACE("Push constants:");
+            for (const auto& pushConstant : resources.push_constant_buffers)
+            {
+                auto& name = compiler.get_name(pushConstant.id);
+                const auto& bufferType = compiler.get_type(pushConstant.base_type_id);
+                size_t bufferSize = compiler.get_declared_struct_size(bufferType);
+                EK_CORE_TRACE("\tName: {0}", name);
+                EK_CORE_TRACE("\tSize: {0}", bufferSize);
+                ShaderPushConstant pushConstant = { name, bufferSize };
+                for (size_t memberIndex = 0; memberIndex < bufferType.member_types.size(); ++memberIndex)
+                {
+                    const auto& name = compiler.get_member_name(bufferType.self, memberIndex);
+                    const auto& memberType = compiler.get_type(bufferType.member_types[memberIndex]);
+                    size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
+                    uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
+                    uint32_t memberBinding = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationBinding);
+                    EK_CORE_TRACE("\t\tName: {0}", name);
+                    EK_CORE_TRACE("\t\tSize: {0}", memberSize);
+                    EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
+                    EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
+                    pushConstant.members.push_back({ name, memberSize, memberOffset, memberBinding });
+                }
+                reflection.pushConstants.push_back(pushConstant);
             }
             EK_CORE_TRACE("Samplers:");
             for (const auto& resource : resources.sampled_images)

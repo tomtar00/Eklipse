@@ -24,7 +24,7 @@ namespace Eklipse
             VkFormat& imageFormat, VkExtent2D& extent, std::vector<VkImage>& images)
         {
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(g_physicalDevice);
-            VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+            VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats, imageFormat);
             VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
             extent = ChooseSwapExtent(swapChainSupport.capabilities, frameWidth, frameHeight);
 

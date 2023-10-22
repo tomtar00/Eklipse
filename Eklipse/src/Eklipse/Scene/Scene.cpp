@@ -18,7 +18,7 @@ namespace Eklipse
 		s_meshShader	= Assets::GetShader("Assets/Shaders/mesh.glsl");
 		s_material		= Material::Create(s_meshShader);
 
-		Ref<Mesh> viking	= Assets::GetMesh("Assets/Models/viking_room.obj");
+		Ref<Mesh> viking = Assets::GetMesh("Assets/Models/viking_room.obj");
 
 		CreateEntity("Main Camera").AddComponent<CameraComponent>();
 		CreateEntity("Viking").AddComponent<MeshComponent>(viking.get(), s_material.get());

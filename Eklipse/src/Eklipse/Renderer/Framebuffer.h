@@ -11,7 +11,7 @@ namespace Eklipse
 	};
 	struct FramebufferAttachmentInfo
 	{
-		ImageFormat textureFormat = ImageFormat::UNDEFINED;
+		ImageFormat textureFormat = ImageFormat::FORMAT_UNDEFINED;
 	};
 	struct FramebufferInfo
 	{

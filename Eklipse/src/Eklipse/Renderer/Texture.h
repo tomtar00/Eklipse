@@ -9,29 +9,36 @@ namespace Eklipse
 	};
 	enum ImageFormat
 	{
-		UNDEFINED	= 0,
-		R8			= BIT(1),
-		RGB8		= BIT(2),
-		RGBA8		= BIT(3),
-		BGRA8		= BIT(4),
-		RGBA32F		= BIT(5),
-		D24S8		= BIT(6),
+		FORMAT_UNDEFINED	= 0,
+		R8					= BIT(1),
+		RGB8				= BIT(2),
+		RGBA8				= BIT(3),
+		BGRA8				= BIT(4),
+		RGBA32F				= BIT(5),
+		D24S8				= BIT(6),
 	};
 	enum ImageAspect
 	{
-		NONE	= 0,
-		COLOR	= BIT(1),
-		DEPTH	= BIT(2),
-		STENCIL	= BIT(3),
+		ASPECT_UNDEFINED	= 0,
+		COLOR				= BIT(1),
+		DEPTH				= BIT(2),
+		STENCIL				= BIT(3),
 	};
 	enum ImageUsage
 	{
-		UNKNOWN				= 0,
+		USAGE_UNDEFINED		= 0,
 		SAMPLED				= BIT(1),
 		COLOR_ATTACHMENT	= BIT(2),
 		DEPTH_ATTACHMENT	= BIT(3),
 		TRANSFER_SRC		= BIT(4),
 		TRASNFER_DST		= BIT(5),
+	};
+	enum ImageLayout
+	{
+		LAYOUT_UNDEFINED		= 0,
+		COLOR_OPTIMAL			= BIT(1),
+		DEPTH_OPTIMAL			= BIT(2),
+		SHADER_READ_ONLY		= BIT(3),
 	};
 	struct TextureInfo
 	{
@@ -40,7 +47,8 @@ namespace Eklipse
 		uint32_t samples{ 1 };
 		ImageFormat imageFormat;
 		ImageAspect imageAspect;
-		ImageUsage imageUsage;
+		ImageLayout imageLayout;
+		uint32_t imageUsage;
 	};
 
 	class Texture

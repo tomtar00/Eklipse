@@ -34,13 +34,6 @@ project "Eklipse"
 		"%{Include.shaderc}",
 		"%{Include.SPIRV_Cross}"
 	}
-	-- libdirs
-	-- {
-	-- 	"%{Lib.glfw}",
-	-- 	"%{Lib.Vulkan}",
-	-- 	"%{Lib.shaderc}",
-	-- 	"%{Lib.SPIRV_Cross}"
-	-- }
 
 	links
 	{

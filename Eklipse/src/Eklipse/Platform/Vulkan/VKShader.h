@@ -6,6 +6,9 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
+		extern VkShaderStageFlagBits VKShaderStageFromInternalStage(const ShaderStage stage);
+		extern VkFormat VertexInputSizeToVKFormat(const size_t size);
+
 		class VKShader : public Eklipse::Shader
 		{
 		public:

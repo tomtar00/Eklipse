@@ -64,18 +64,18 @@ namespace Editor
 		if (!entity.IsNull())
 		{
 			auto& transComp = entity.GetComponent<Eklipse::TransformComponent>();
-
+		
 			auto* pos = glm::value_ptr(transComp.transform.position);
 			auto* rot = glm::value_ptr(transComp.transform.rotation);
 			auto* scale = glm::value_ptr(transComp.transform.scale);
 		
 			auto* matrix = glm::value_ptr(transComp.transformMatrix);
-
+		
 			ImGuizmo::RecomposeMatrixFromComponents(pos, rot, scale, matrix);
 			auto& viewportPos = EditorLayer::Get()->GetViewPanel().GetViewportPosition();
 			auto& viewportSize = EditorLayer::Get()->GetViewPanel().GetViewportSize();
 			ImGuizmo::SetRect(viewportPos.x, viewportPos.y, viewportSize.x, viewportSize.y);
-
+		
 			ImGuizmo::Manipulate(viewMatrix, projMatrix, m_gizmoOperation, m_gizmoMode, matrix, nullptr, nullptr);
 			ImGuizmo::DecomposeMatrixToComponents(matrix, pos, rot, scale);
 		}

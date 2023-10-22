@@ -49,6 +49,10 @@ namespace Eklipse
 			virtual void Dispose() const override;
 			virtual void SetData(const void* data, uint32_t size, uint32_t offset) override;
 			virtual void* GetBuffer() const override;
+
+		private:
+			void* m_mappedData;
+			VkDeviceMemory m_memory;
 		};
 
 		class VKStagingBuffer : public VKBuffer

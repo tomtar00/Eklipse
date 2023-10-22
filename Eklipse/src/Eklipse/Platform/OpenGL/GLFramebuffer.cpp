@@ -66,7 +66,7 @@ namespace Eklipse
 			}
 
 			// Depth and stencil attachment
-			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED)
+			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED)
 			{
 				glGenTextures(1, &m_depthAttachment);
 				glBindTexture(m_texTarget, m_depthAttachment);
@@ -133,7 +133,7 @@ namespace Eklipse
 			glDeleteFramebuffers(1, &m_id);
 			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
 
-			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED)
+			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED)
 				glDeleteTextures(1, &m_depthAttachment);
 		}
 	}

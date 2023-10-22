@@ -10,7 +10,7 @@ namespace Eklipse
 			std::vector<VkVertexInputBindingDescription> bindingDesc,
 			std::vector<VkVertexInputAttributeDescription> attribteDesc);
 
-		VkPipelineLayout CreatePipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts);
+		VkPipelineLayout CreatePipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts, std::vector<VkPushConstantRange> pushConstantRanges);
 
 		VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, 
 			VkDescriptorSetLayout* descSetLayout);

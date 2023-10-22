@@ -4,6 +4,7 @@
 #include "GL.h"
 #include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Core/Application.h>
+#include <Eklipse/Renderer/RenderCommand.h>
 
 namespace Eklipse
 {
@@ -113,19 +114,18 @@ namespace Eklipse
 		{
 			EK_PROFILE();
 
-			int width = Application::Get().GetInfo().windowWidth;
-			int height = Application::Get().GetInfo().windowHeight;
+			uint32_t width = Application::Get().GetInfo().windowWidth;
+			uint32_t height = Application::Get().GetInfo().windowHeight;
 			glViewport(0, 0, width, height);
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
 			auto& spriteShader = Assets::GetShader("Assets/Shaders/sprite.glsl");
-			m_vertexArray->Bind();
+			spriteShader->Bind();
 			glDisable(GL_DEPTH_TEST);
 			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);
 			glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
-			spriteShader->Bind();
-			DrawIndexed(m_vertexArray);
+			Eklipse::RenderCommand::DrawIndexed(m_vertexArray);
 			glBindTexture(GL_TEXTURE_2D, 0);
 
 			Application::Get().GetWindow()->SwapBuffers();

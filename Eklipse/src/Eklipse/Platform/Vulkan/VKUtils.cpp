@@ -24,19 +24,29 @@ namespace Eklipse
 			EK_ASSERT(false, "Wrong image aspect");
 			return VK_IMAGE_ASPECT_NONE;
 		}
-		VkImageUsageFlagBits ConvertToVKUsage(Eklipse::ImageUsage usage)
+		VkImageUsageFlagBits ConvertToVKUsage(uint32_t internalUsage)
 		{
-			switch (usage)
+			uint32_t usageFlag = 0;
+			if (internalUsage & ImageUsage::SAMPLED)			usageFlag |= VK_IMAGE_USAGE_SAMPLED_BIT;
+			if (internalUsage & ImageUsage::COLOR_ATTACHMENT)	usageFlag |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			if (internalUsage & ImageUsage::DEPTH_ATTACHMENT)	usageFlag |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			if (internalUsage & ImageUsage::TRANSFER_SRC)		usageFlag |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+			if (internalUsage & ImageUsage::TRASNFER_DST)		usageFlag |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+			EK_ASSERT(usageFlag != 0, "Wrong image usage");
+			return (VkImageUsageFlagBits)usageFlag;
+		}
+		VkImageLayout ConvertToVKLayout(Eklipse::ImageLayout layout)
+		{
+			switch (layout)
 			{
-				case ImageUsage::SAMPLED:			return VK_IMAGE_USAGE_SAMPLED_BIT;
-				case ImageUsage::COLOR_ATTACHMENT:	return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-				case ImageUsage::DEPTH_ATTACHMENT:	return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-				case ImageUsage::TRANSFER_SRC:		return VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-				case ImageUsage::TRASNFER_DST:		return VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+				case ImageLayout::COLOR_OPTIMAL:		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				case ImageLayout::DEPTH_OPTIMAL:		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				case ImageLayout::SHADER_READ_ONLY:		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			}
 
-			EK_ASSERT(false, "Wrong image usage");
-			return VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM;
+			EK_ASSERT(false, "Wrong image layout");
+			return VK_IMAGE_LAYOUT_UNDEFINED;
 		}
 		VkFormat ConvertToVKFormat(ImageFormat format)
 		{
@@ -54,11 +64,11 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat)
 		{
 			for (const auto& availableFormat : availableFormats)
 			{
-				if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+				if (availableFormat.format == desiredFormat /*&& availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR*/)
 				{
 					return availableFormat;
 				}

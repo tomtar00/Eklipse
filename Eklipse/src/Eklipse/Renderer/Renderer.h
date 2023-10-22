@@ -17,6 +17,8 @@ namespace Eklipse
 	{
 	public:
 		static void Init();
+
+		static void ShutdownPrep();
 		static void Shutdown();
 
 		// Render stages

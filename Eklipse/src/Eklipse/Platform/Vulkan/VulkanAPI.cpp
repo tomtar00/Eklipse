@@ -39,7 +39,6 @@ namespace Eklipse
 
 		uint32_t			g_currentFrame;
 		uint32_t			g_imageIndex;
-		uint32_t			g_viewportImageIndex;
 
 		//ColorImage			g_colorImage;
 		//DepthImage			g_depthImage;
@@ -92,10 +91,10 @@ namespace Eklipse
 
 			// GEOMETRY //////////////////////////////////////////
 
-			int width = Application::Get().GetInfo().windowWidth;
+			/*int width = Application::Get().GetInfo().windowWidth;
 			int height = Application::Get().GetInfo().windowHeight;
 			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
-			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
+			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);*/
 			//g_renderPass = CreateRenderPass();
 			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
@@ -163,8 +162,8 @@ namespace Eklipse
 			//g_colorImage.Dispose();
 			//g_depthImage.Dispose();
 
-			DestroyImageViews(g_swapChainImageViews);
-			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
+			// DestroyImageViews(g_swapChainImageViews);
+			// vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 			vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
 
 			//DestroyFrameBuffers(g_swapChainFramebuffers);
@@ -220,16 +219,7 @@ namespace Eklipse
 		void VulkanAPI::BeginFrame()
 		{
 			vkWaitForFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
-
 			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, &g_imageIndex);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR)
-			{
-				RecreateSwapChain();
-				return;
-			}
-			EK_ASSERT((result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR), "Failed to aquire swap chain image!");
-
 			vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
 		}
 		void VulkanAPI::EndFrame()
@@ -238,13 +228,22 @@ namespace Eklipse
 			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
 			std::vector<VkCommandBuffer> commandBuffers = { };
-			if (g_VKSceneFramebuffer != nullptr)
+
+			// TODO: get rid of 'if' statments
+			if (g_VKDefaultFramebuffer == g_VKSceneFramebuffer)
 			{
 				commandBuffers.push_back(g_VKSceneFramebuffer->GetCommandBuffer(g_currentFrame));
 			}
-			if (g_VKDefaultFramebuffer != nullptr)
+			else
 			{
-				commandBuffers.push_back(g_VKDefaultFramebuffer->GetCommandBuffer(g_currentFrame));
+				if (g_VKSceneFramebuffer != nullptr)
+				{
+					commandBuffers.push_back(g_VKSceneFramebuffer->GetCommandBuffer(g_currentFrame));
+				}
+				if (g_VKDefaultFramebuffer != nullptr)
+				{
+					commandBuffers.push_back(g_VKDefaultFramebuffer->GetCommandBuffer(g_currentFrame));
+				}
 			}
 
 			VkSubmitInfo submitInfo{};
@@ -258,11 +257,11 @@ namespace Eklipse
 			submitInfo.pSignalSemaphores = signalSemaphores.data();
 
 			VkResult result = vkQueueSubmit(g_graphicsQueue, 1, &submitInfo, m_renderInFlightFences[g_currentFrame]);
-			HANDLE_VK_RESULT(result, "DRAW FRAME QUEUE SUBMIT");
+			HANDLE_VK_RESULT(result, "QUEUE SUBMIT");
 
 			VkPresentInfoKHR presentInfo{};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-			presentInfo.waitSemaphoreCount = signalSemaphores.size();
+			presentInfo.waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
 			presentInfo.pWaitSemaphores = signalSemaphores.data();
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = &g_swapChain;
@@ -270,16 +269,7 @@ namespace Eklipse
 			presentInfo.pResults = nullptr;
 
 			result = vkQueuePresentKHR(g_presentQueue, &presentInfo);
-
-			// TODO: move this to Application class
-			bool& framebufferResized = Application::Get().GetWindow()->GetData().framebufferResized;
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
-			{
-				framebufferResized = false;
-				RecreateSwapChain();
-			}
-			else EK_ASSERT(result == VK_SUCCESS, "Failed to present swap chain image!");
-			//
+			HANDLE_VK_RESULT(result, "QUEUE PRESENT");
 
 			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
 		}
@@ -345,25 +335,25 @@ namespace Eklipse
 		}
 		void VulkanAPI::RecreateSwapChain()
 		{
-			while (Application::Get().GetWindow()->GetData().minimized)
-			{
-				glfwWaitEvents();
-			}
+			// while (Application::Get().GetWindow()->GetData().minimized)
+			// {
+			// 	glfwWaitEvents();
+			// }
 
-			vkDeviceWaitIdle(g_logicalDevice);
+			//vkDeviceWaitIdle(g_logicalDevice);
 
 			//DestroyFrameBuffers(g_imguiFrameBuffers);
 			//DestroyFrameBuffers(g_swapChainFramebuffers);
-			DestroyImageViews(g_swapChainImageViews);
-			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
+			//DestroyImageViews(g_swapChainImageViews);
+			//vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 
 			//g_depthImage.Dispose();
 			//g_colorImage.Dispose();
 
-			int width, height;
-			Application::Get().GetWindow()->GetFramebufferSize(width, height);
-			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
-			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
+			//int width, height;
+			//Application::Get().GetWindow()->GetFramebufferSize(width, height);
+			//g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
+			//CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 
 			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
@@ -371,7 +361,9 @@ namespace Eklipse
 			//CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
 			//CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
 
-			//Application::Get().GUI->ResizeViewport(512, 512);
+			// uint32_t width = Application::Get().GetInfo().windowWidth;
+			// uint32_t height = Application::Get().GetInfo().windowHeight;
+			// g_VKDefaultFramebuffer->Resize(width, height);
 		}
 		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
 		{

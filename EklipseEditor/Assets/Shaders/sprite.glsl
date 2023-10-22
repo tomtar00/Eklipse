@@ -1,12 +1,12 @@
 // Sprite Shader
 
 #stage vertex
-#version 430 core
+#version 460 core
 
-layout (location = 0) in vec2 inPos;
-layout (location = 1) in vec2 inTexCoords;
+in vec2 inPos;
+in vec2 inTexCoords;
 
-layout(location = 0) out vec2 texCoords;
+out vec2 texCoords;
 
 void main()
 {
@@ -15,10 +15,11 @@ void main()
 }  
 
 #stage fragment
-#version 430 core
+#version 460 core
 
-layout(location = 0) out vec4 FragColor;
-layout(location = 0) in vec2 texCoords;
+in vec2 texCoords;
+
+out vec4 FragColor;
 
 layout(binding = 2) uniform sampler2D screenTexture;
 

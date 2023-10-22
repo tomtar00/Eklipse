@@ -1,7 +1,9 @@
 #include "precompiled.h"
 #include "VKFramebuffer.h"
+
 #include "VK.h"
 #include "VKCommands.h"
+#include "VKSwapChain.h"
 
 namespace Eklipse
 {
@@ -13,41 +15,49 @@ namespace Eklipse
 			{
 				EK_ASSERT(g_VKDefaultFramebuffer == nullptr, "Default framebuffer already exists!");
 				g_defaultFramebuffer = g_VKDefaultFramebuffer = this;
+				m_imageIndex = &g_imageIndex;
 			}
 			if (framebufferInfo.framebufferType & FramebufferType::SCENE_VIEW)
 			{
 				EK_ASSERT(g_VKSceneFramebuffer == nullptr, "Scene framebuffer already exists!");
 				g_sceneFramebuffer = g_VKSceneFramebuffer = this;
+				m_imageIndex = &g_viewportImageIndex;
 			}
 
-			CreateCommandBuffers(m_commandBuffers, g_swapChainImageCount, g_commandPool);
-			m_renderPass = CreateRenderPass();
+			CreateCommandBuffers(m_commandBuffers, g_maxFramesInFlight, g_commandPool);
 			Build();
 		}
 		void VKFramebuffer::DestroyFramebuffers()
 		{
-			if (m_framebufferInfo.framebufferType == FramebufferType::DEFAULT)
+			vkDeviceWaitIdle(g_logicalDevice);
+
+			vkDestroyRenderPass(g_logicalDevice, m_renderPass, nullptr);
+
+			if (m_framebufferInfo.framebufferType & FramebufferType::DEFAULT)
 			{
+				DestroyImageViews(g_swapChainImageViews);
+				vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 				for (uint32_t i = 0; i < g_swapChainImageCount; i++)
 				{
 					vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
 				}
-				return;
 			}
-
-			for (uint32_t i = 0; i < g_swapChainImageCount; i++)
+			else
 			{
-				for (auto& colorAttachment : m_framebufferAttachments[i].colorAttachments)
-					colorAttachment.Dispose();
-				m_framebufferAttachments[i].depthAttachment.Dispose();
+				for (uint32_t i = 0; i < g_swapChainImageCount; i++)
+				{
+					for (auto& colorAttachment : m_framebufferAttachments[i].colorAttachments)
+						colorAttachment->Dispose();
+					m_framebufferAttachments[i].depthAttachment->Dispose();
 
-				vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
+					vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
+				}
 			}
 		}
 		VkRenderPass VKFramebuffer::CreateRenderPass()
 		{
 			size_t size = m_framebufferInfo.colorAttachmentInfos.size();
-			bool hasDepthAttachment = m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED;
+			bool hasDepthAttachment = m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED;
 
 			std::vector<VkAttachmentDescription> attachments;
 			if (hasDepthAttachment)
@@ -62,7 +72,6 @@ namespace Eklipse
 			{
 				auto& colorAttachmentInfo = m_framebufferInfo.colorAttachmentInfos[i];
 
-				attachments[i].format = ConvertToVKFormat(colorAttachmentInfo.textureFormat);
 				attachments[i].samples = (VkSampleCountFlagBits)m_framebufferInfo.numSamples;
 				attachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				attachments[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -70,10 +79,16 @@ namespace Eklipse
 				attachments[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				attachments[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-				if (m_framebufferInfo.framebufferType == FramebufferType::DEFAULT)
+				if (m_framebufferInfo.framebufferType & FramebufferType::DEFAULT)
+				{
+					attachments[i].format = g_swapChainImageFormat;
 					attachments[i].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				else if (m_framebufferInfo.framebufferType == FramebufferType::OFFSCREEN)
-					attachments[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	
+				}
+				else if (m_framebufferInfo.framebufferType & FramebufferType::OFFSCREEN || m_framebufferInfo.framebufferType & FramebufferType::SCENE_VIEW)
+				{
+					attachments[i].format = ConvertToVKFormat(colorAttachmentInfo.textureFormat);
+					attachments[i].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				}
 
 				colorAttachmentRefs[i].attachment = i;
 				colorAttachmentRefs[i].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -123,29 +138,34 @@ namespace Eklipse
 				subpass.pResolveAttachments = &colorAttachmentResolveRef;
 			}
 
-			VkSubpassDependency dependency{};
-			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependency.srcAccessMask = 0;
-			dependency.dstSubpass = 0;
-			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-			if (hasDepthAttachment)
+			std::vector<VkSubpassDependency> dependencies;
 			{
-				dependency.srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-				dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-				dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				VkSubpassDependency dependency{};
+				dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+				dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				dependency.srcAccessMask = 0;
+				dependency.dstSubpass = 0;
+				dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+				if (hasDepthAttachment)
+				{
+					dependency.srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+					dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+					dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				}
+
+				dependencies.push_back(dependency);
 			}
 
 			VkRenderPassCreateInfo renderPassInfo{};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-			renderPassInfo.attachmentCount = attachments.size();
+			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 			renderPassInfo.pAttachments = attachments.data();
 			renderPassInfo.subpassCount = 1;
 			renderPassInfo.pSubpasses = &subpass;
-			renderPassInfo.dependencyCount = 1;
-			renderPassInfo.pDependencies = &dependency;
+			renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+			renderPassInfo.pDependencies = dependencies.data();
 
 			VkRenderPass renderPass;
 			VkResult res = vkCreateRenderPass(g_logicalDevice, &renderPassInfo, nullptr, &renderPass);
@@ -154,10 +174,21 @@ namespace Eklipse
 			return renderPass;
 		}
 		void VKFramebuffer::Build()
-		{
-			m_framebuffers.resize(g_swapChainImageCount);
-			if (m_framebufferInfo.framebufferType == FramebufferType::DEFAULT)
+		{	
+			if (m_framebufferInfo.framebufferType & FramebufferType::DEFAULT)
 			{
+				VkFormat desiredFormat = ConvertToVKFormat(m_framebufferInfo.colorAttachmentInfos[0].textureFormat);
+				g_swapChainImageFormat = desiredFormat;
+				g_swapChain = CreateSwapChain(m_framebufferInfo.width, m_framebufferInfo.height,
+					g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
+				if (g_swapChainImageFormat != desiredFormat)
+				{
+					EK_CORE_WARN("Desired format not supported by swap chain! Using {0} instead", (int)g_swapChainImageFormat);
+				}
+				CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
+
+				m_renderPass = CreateRenderPass();
+				m_framebuffers.resize(g_swapChainImageCount);
 				for (size_t i = 0; i < g_swapChainImageViews.size(); ++i)
 				{
 					VkFramebufferCreateInfo framebufferInfo{};
@@ -175,6 +206,8 @@ namespace Eklipse
 				return;
 			}
 
+			m_renderPass = CreateRenderPass();
+			m_framebuffers.resize(g_swapChainImageCount);
 			m_framebufferAttachments.resize(g_swapChainImageCount);
 			for (uint32_t idx = 0; idx < g_swapChainImageCount; idx++)
 			{
@@ -186,25 +219,26 @@ namespace Eklipse
 				{
 					auto& colorAttachmentInfo = m_framebufferInfo.colorAttachmentInfos[i];
 
-					TextureInfo textureInfo = {};
+					TextureInfo textureInfo{};
 					textureInfo.width		= m_framebufferInfo.width;
 					textureInfo.height		= m_framebufferInfo.height;
 					textureInfo.mipMapLevel = 1;
 					textureInfo.samples		= m_framebufferInfo.numSamples;
 					textureInfo.imageFormat = colorAttachmentInfo.textureFormat;
+					textureInfo.imageLayout = ImageLayout::SHADER_READ_ONLY;
 					textureInfo.imageAspect = ImageAspect::COLOR;
-					textureInfo.imageUsage	= ImageUsage::COLOR_ATTACHMENT;
+					textureInfo.imageUsage	= ImageUsage::COLOR_ATTACHMENT | ImageUsage::SAMPLED;
 
-					VKTexture2D texture(textureInfo);
+					Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(Texture2D::Create(textureInfo));
 					m_framebufferAttachments[idx].colorAttachments[i] = texture;
-					attachments.push_back(texture.GetImageView());
+					attachments.push_back(texture->GetImageView());
 				}
 
 				// Depth attachment
 				auto& depthAttachmentInfo = m_framebufferInfo.depthAttachmentInfo;
-				if (depthAttachmentInfo.textureFormat != ImageFormat::UNDEFINED) 
+				if (depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED) 
 				{
-					TextureInfo textureInfo = {};
+					TextureInfo textureInfo{};
 					textureInfo.width		= m_framebufferInfo.width;
 					textureInfo.height		= m_framebufferInfo.height;
 					textureInfo.mipMapLevel	= 1;
@@ -213,9 +247,9 @@ namespace Eklipse
 					textureInfo.imageAspect	= ImageAspect::DEPTH;
 					textureInfo.imageUsage	= ImageUsage::DEPTH_ATTACHMENT;
 
-					VKTexture2D texture(textureInfo);
+					Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(Texture2D::Create(textureInfo));
 					m_framebufferAttachments[idx].depthAttachment = texture;
-					attachments.push_back(texture.GetImageView());
+					attachments.push_back(texture->GetImageView());
 				}
 
 				VkFramebufferCreateInfo framebufferInfo{};
@@ -241,19 +275,18 @@ namespace Eklipse
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-			VkResult res;
-			res = vkBeginCommandBuffer(g_currentCommandBuffer, &beginInfo);
+			VkResult res = vkBeginCommandBuffer(g_currentCommandBuffer, &beginInfo);
 			HANDLE_VK_RESULT(res, "BEGIN RENDER PASS COMMAND BUFFER");
 
 			VkRenderPassBeginInfo renderPassInfo{};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassInfo.renderPass = m_renderPass;
-			renderPassInfo.framebuffer = m_framebuffers[g_currentFrame];
+			renderPassInfo.framebuffer = m_framebuffers[*m_imageIndex];
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = extent;
 
 			std::array<VkClearValue, 2> clearValues{};
-			clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+			clearValues[0].color = { 0.2f, 0.2f, 0.2f, 1.0f };
 			clearValues[1].depthStencil = { 1.0f, 0 };
 
 			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -263,9 +296,9 @@ namespace Eklipse
 
 			VkViewport viewport{};
 			viewport.x = 0.0f;
-			viewport.y = 0.0f;
+			viewport.y = static_cast<float>(m_framebufferInfo.height);
 			viewport.width = static_cast<float>(m_framebufferInfo.width);
-			viewport.height = static_cast<float>(m_framebufferInfo.height);
+			viewport.height = -static_cast<float>(m_framebufferInfo.height);
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 			vkCmdSetViewport(g_currentCommandBuffer, 0, 1, &viewport);
@@ -296,7 +329,6 @@ namespace Eklipse
 		void VKFramebuffer::Dispose()
 		{
 			DestroyFramebuffers();
-			vkDestroyRenderPass(g_logicalDevice, m_renderPass, nullptr);
 			FreeCommandBuffers(m_commandBuffers, g_commandPool);
 		}
 	}

@@ -138,9 +138,9 @@ namespace Eklipse
         void* data = stbi_load(texturePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
         EK_ASSERT(data, "Failed to load texture image from location: {0}", texturePath);
 
-        ImageFormat format = ImageFormat::UNDEFINED;
+        ImageFormat format = ImageFormat::FORMAT_UNDEFINED;
         if (channels == 3)
-            format = ImageFormat::RGB8;
+            format = ImageFormat::RGBA8; // ImageFormat::RGB8;
         else if (channels == 4)
             format = ImageFormat::RGBA8;
 
@@ -151,13 +151,13 @@ namespace Eklipse
         textureInfo.samples = 1;
         textureInfo.imageFormat = format;
         textureInfo.imageAspect = ImageAspect::COLOR;
-        textureInfo.imageUsage = ImageUsage::SAMPLED;
+        textureInfo.imageUsage = ImageUsage::SAMPLED | ImageUsage::TRASNFER_DST;
 
         Ref<Texture2D> texture = Texture2D::Create(textureInfo);
-        texture->SetData(data, width * height * channels);
+        texture->SetData(data, width * height * 4/*channels*/);
         s_textureCache[texturePath] = texture;
 
-        EK_CORE_INFO("Loaded texture from path {0}. Width: {1} Height: {2}", texturePath, width, height);
+        EK_CORE_INFO("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", texturePath, width, height, channels);
         return texture;
     }
     Ref<Shader> Assets::GetShader(const std::string& shaderPath)
@@ -169,7 +169,7 @@ namespace Eklipse
 
         Ref<Shader> shader = Shader::Create(shaderPath);
         s_shaderCache[shaderPath] = shader;
-
+        EK_CORE_INFO("Loaded shader from path '{0}'", shaderPath);
         return shader;
     }
     Ref<Material> Assets::GetMaterial(const std::string& materialPath)
@@ -193,7 +193,7 @@ namespace Eklipse
 
         Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
 		s_uniformBufferCache[uniformBufferName] = uniformBuffer;
-
+        EK_CORE_INFO("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
 		return uniformBuffer;
     }
     Ref<UniformBuffer> Assets::GetUniformBuffer(const std::string& uniformBufferName)

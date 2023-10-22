@@ -12,16 +12,12 @@ namespace Eklipse
 		COMPUTE
 	};
 
-	struct ShaderUniform
+	// Buffer data
+	struct ShaderUniformMember
 	{
 		std::string name;
 		size_t size;
 		size_t offset;
-		uint32_t binding;
-	};
-	struct ShaderSampler
-	{
-		std::string name;
 		uint32_t binding;
 	};
 	struct ShaderUniformBuffer
@@ -29,14 +25,23 @@ namespace Eklipse
 		std::string name;
 		size_t size;
 		uint32_t binding;
-		std::vector<ShaderUniform> uniforms;
+		std::vector<ShaderUniformMember> members;
 	};
-	struct ShaderOutput
+	struct ShaderPushConstant
 	{
 		std::string name;
-		uint32_t location;
 		size_t size;
+		std::vector<ShaderUniformMember> members;
 	};
+
+	// Samplers
+	struct ShaderSampler
+	{
+		std::string name;
+		uint32_t binding;
+	};
+	
+	// Inputs and outputs
 	struct ShaderInput
 	{
 		std::string name;
@@ -44,12 +49,22 @@ namespace Eklipse
 		size_t size;
 		size_t offset;
 	};
+	struct ShaderOutput
+	{
+		std::string name;
+		uint32_t location;
+		size_t size;
+	};
+	
+	// Reflection
 	struct ShaderReflection
 	{
 		std::vector<ShaderInput> inputs;
 		std::vector<ShaderOutput> outputs;
 		std::vector<ShaderUniformBuffer> uniformBuffers;
+		std::vector<ShaderPushConstant> pushConstants;
 		std::vector<ShaderSampler> samplers;
+		uint32_t maxLocation = 0;
 	};
 
 	extern ShaderStage StringToShaderStage(const std::string& stage);

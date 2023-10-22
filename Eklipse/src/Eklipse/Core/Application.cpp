@@ -19,7 +19,7 @@ namespace Eklipse
 	{
 		s_instance = this;
 
-		Renderer::SetStartupAPI(ApiType::OpenGL);
+		Renderer::SetStartupAPI(ApiType::Vulkan);
 
 		WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
 		m_window = Window::Create(data);
@@ -50,7 +50,6 @@ namespace Eklipse
 	}
 	void Application::BeginFrame(float* deltaTime)
 	{
-		Stats::Get().Reset(); // TODO: move elsewhere because now it resets earlier than imgui drawing
 		m_timer.Record();
 		*deltaTime = m_timer.DeltaTime();
 	}

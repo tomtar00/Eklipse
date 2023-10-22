@@ -44,9 +44,7 @@ namespace Eklipse
 			shaderc::Compiler compiler;
 			shaderc::CompileOptions options;
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-
-			//! Strips reflection info
-			//options.SetOptimizationLevel(shaderc_optimization_level_performance);
+			options.SetSourceLanguage(shaderc_source_language_glsl);
 
 			std::filesystem::path cacheDirectory = GetCacheDirectoryPath();
 
@@ -60,7 +58,7 @@ namespace Eklipse
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (in.is_open())
 				{
-					EK_CORE_INFO("Reading OpenGL shader cache binaries from path: '{0}'", m_filePath);
+					EK_CORE_INFO("Reading OpenGL shader cache binaries from path: '{0}'", cachedPath.string());
 
 					in.seekg(0, std::ios::end);
 					auto size = in.tellg();
@@ -75,10 +73,22 @@ namespace Eklipse
 					EK_CORE_INFO("Compiling shader at path: '{0}' to OpenGL binaries", m_filePath);
 
 					spirv_cross::CompilerGLSL glslCompiler(spirv);
+					spirv_cross::CompilerGLSL::Options glslOptions;
+					glslOptions.vulkan_semantics = false;
+					glslCompiler.set_common_options(glslOptions);
+
+					uint32_t locationCounter = m_reflections[stage].maxLocation + 1;
+					spirv_cross::ShaderResources resources = glslCompiler.get_shader_resources();
+					for (auto& pushConstant : resources.push_constant_buffers)
+					{
+						glslCompiler.set_decoration(pushConstant.id, spv::DecorationLocation, locationCounter++);
+					}
+
 					m_openGLSourceCode[stage] = glslCompiler.compile();
 					auto& source = m_openGLSourceCode[stage];
+					EK_CORE_TRACE("OpenGL source code:\n\n{0}", source);
 
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str());
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
 					EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
 					
 					shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -137,6 +147,11 @@ namespace Eklipse
 					glDeleteShader(id);
 				}
 			}
+
+			glValidateProgram(program);
+			GLint isValid;
+			glGetProgramiv(program, GL_VALIDATE_STATUS, &isValid);
+			EK_ASSERT(isValid, "Shader validation failed ({0})", m_filePath);
 
 			m_id = program;
 		}

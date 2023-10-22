@@ -17,15 +17,15 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		static VkShaderStageFlagBits VKShaderStageFromInternalStage(const ShaderStage stage)
+		VkShaderStageFlagBits VKShaderStageFromInternalStage(const ShaderStage stage)
 		{
 			if (stage == ShaderStage::VERTEX)   return VK_SHADER_STAGE_VERTEX_BIT;
 			if (stage == ShaderStage::FRAGMENT) return VK_SHADER_STAGE_FRAGMENT_BIT;
 
-			EK_ASSERT(false, "Unknown shader stage!");
+			EK_ASSERT(false, "Unknown shader stage! ({0})", (int)stage);
 			return VK_SHADER_STAGE_ALL;
 		}
-		static VkFormat VertexInputSizeToVKFormat(const size_t size)
+		VkFormat VertexInputSizeToVKFormat(const size_t size)
 		{
 			switch (size)
 			{
@@ -34,7 +34,7 @@ namespace Eklipse
 				case sizeof(glm::vec3): return VK_FORMAT_R32G32B32_SFLOAT;
 				case sizeof(glm::vec4): return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
-			EK_ASSERT(false, "Unknown vertex input size!");
+			EK_ASSERT(false, "Unknown vertex input size! ({0})", size);
 			return VK_FORMAT_UNDEFINED;
 		}
 
@@ -66,7 +66,6 @@ namespace Eklipse
 				std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
 
 				// Create descriptor set layout
-				bool requiresDescriptorSets = false;
 				std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
 				for (auto&& [stage, reflection] : m_reflections)
 				{
@@ -79,7 +78,6 @@ namespace Eklipse
 						uboLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
 						uboLayoutBinding.pImmutableSamplers = nullptr;
 						descriptorSetLayoutBindings.push_back(uboLayoutBinding);
-						requiresDescriptorSets = true;
 					}
 					for (auto& sampler : reflection.samplers)
 					{
@@ -90,14 +88,48 @@ namespace Eklipse
 						samplerLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
 						samplerLayoutBinding.pImmutableSamplers = nullptr;
 						descriptorSetLayoutBindings.push_back(samplerLayoutBinding);
-						requiresDescriptorSets = true;
 					}
 				}
 
+				// =============
+				/*descriptorSetLayoutBindings.resize(3);
+				descriptorSetLayoutBindings[0].binding = 0;
+				descriptorSetLayoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorSetLayoutBindings[0].descriptorCount = 1;
+				descriptorSetLayoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				descriptorSetLayoutBindings[0].pImmutableSamplers = nullptr;
+
+				descriptorSetLayoutBindings[1].binding = 1;
+				descriptorSetLayoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorSetLayoutBindings[1].descriptorCount = 1;
+				descriptorSetLayoutBindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				descriptorSetLayoutBindings[1].pImmutableSamplers = nullptr;
+
+				descriptorSetLayoutBindings[2].binding = 2;
+				descriptorSetLayoutBindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorSetLayoutBindings[2].descriptorCount = 1;
+				descriptorSetLayoutBindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+				descriptorSetLayoutBindings[2].pImmutableSamplers = nullptr;*/
+				//=============
+
 				m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
 
+				std::vector<VkPushConstantRange> pushConstantRanges;
+				for (auto&& [stage, reflection] : m_reflections)
+				{
+					for (auto& pushConstant : reflection.pushConstants)
+					{
+						VkPushConstantRange range{};
+						range.offset = 0;
+						range.size = pushConstant.size;
+						range.stageFlags = VKShaderStageFromInternalStage(stage);
+
+						pushConstantRanges.push_back(range);
+					}
+				}
+
 				// Create pipeline layout
-				m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout });
+				m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout }, pushConstantRanges);
 
 				// Create pipeline
 				size_t inputSize = 0;

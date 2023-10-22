@@ -9,8 +9,8 @@ namespace Eklipse
 	{
 		struct VkFramebufferAttachments
 		{
-			std::vector<VKTexture2D> colorAttachments{};
-			VKTexture2D depthAttachment;
+			std::vector<Ref<VKTexture2D>> colorAttachments{};
+			Ref<VKTexture2D> depthAttachment;
 		};
 
 		class VKFramebuffer : public Eklipse::Framebuffer
@@ -22,7 +22,7 @@ namespace Eklipse
 			void DestroyFramebuffers();
 
 			virtual FramebufferInfo& GetInfo() { return m_framebufferInfo; }
-			inline VKTexture2D GetMainColorAttachment(uint32_t index) { return m_framebufferAttachments[index].colorAttachments[0]; }
+			inline VKTexture2D& GetMainColorAttachment(uint32_t index) { return *m_framebufferAttachments[index].colorAttachments[0]; }
 			inline VkRenderPass GetRenderPass() { return m_renderPass; }
 			inline VkCommandBuffer GetCommandBuffer(uint32_t index) { return m_commandBuffers[index]; }
 
@@ -37,10 +37,11 @@ namespace Eklipse
 
 		private:
 			FramebufferInfo m_framebufferInfo;
+			VkRenderPass m_renderPass;
 			std::vector<VkFramebuffer> m_framebuffers;
 			std::vector<VkFramebufferAttachments> m_framebufferAttachments;
-			VkRenderPass m_renderPass;
 			std::vector<VkCommandBuffer> m_commandBuffers;
+			uint32_t* m_imageIndex = 0;
 		};
 	}
 }

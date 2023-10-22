@@ -4,6 +4,7 @@
 #include "Settings.h"
 #include "Material.h"
 
+#include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
@@ -14,18 +15,18 @@
 namespace Eklipse
 {
 	ApiType						Renderer::s_apiType;
-
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
-	static Ref<UniformBuffer>	s_transformUniformBuffer;
 
 	void Renderer::Init()
 	{
 		s_cameraUniformBuffer		= Assets::GetUniformBuffer("uCamera");
-		s_transformUniformBuffer	= Assets::GetUniformBuffer("uTransform");
 	}	
-	void Renderer::Shutdown() // TODO: Call this when switching graphics API
+	void Renderer::ShutdownPrep()
 	{
 		RenderCommand::API->WaitDeviceIdle();
+	}
+	void Renderer::Shutdown() // TODO: Call this when switching graphics API
+	{
 		Assets::Shutdown();
 		RenderCommand::API->Shutdown();
 	}
@@ -33,6 +34,8 @@ namespace Eklipse
 	void Renderer::BeginFrame(Camera& camera, Transform& cameraTransform)
 	{
 		EK_PROFILE();
+
+		Stats::Get().Reset();
 
 		camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
 		auto& viewProjection = camera.GetViewProjectionMatrix();
@@ -55,7 +58,7 @@ namespace Eklipse
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
 			auto& transform = transformComponent.GetTransformMatrix();
-			s_transformUniformBuffer->SetData(&transform, sizeof(glm::mat4));
+			meshComponent.material->SetConstant("pConstants", "Model", &transform, sizeof(glm::mat4));
 			RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
 		}
 

@@ -58,6 +58,7 @@ namespace Editor
 
 			EK_INFO("========== Closing Eklipse Editor ==========");
 
+			Eklipse::Renderer::ShutdownPrep();
 			editorLayer->OnShutdownAPI();
 			Application::Shutdown();
 		}	

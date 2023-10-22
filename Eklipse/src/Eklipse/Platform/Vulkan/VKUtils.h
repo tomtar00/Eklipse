@@ -27,9 +27,10 @@ namespace Eklipse
 
 		VkFormat ConvertToVKFormat(Eklipse::ImageFormat format);
 		VkImageAspectFlagBits ConvertToVKAspect(Eklipse::ImageAspect aspect);
-		VkImageUsageFlagBits ConvertToVKUsage(Eklipse::ImageUsage usage);
+		VkImageUsageFlagBits ConvertToVKUsage(uint32_t internalUsage);
+		VkImageLayout ConvertToVKLayout(Eklipse::ImageLayout layout);
 
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int frameWidth, int frameHeight);
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);

@@ -91,7 +91,7 @@ namespace Editor
 
             if (lastFrameHeights[nodeIdx] >= 0.2f)
             {
-                globalPos = { globalPos.x + spacingX, globalPos.y + height / 1.5f };
+                globalPos = { globalPos.x + spacingX, globalPos.y + height - 5.0f };
                 p1 = { globalPos.x - spacingX - 5.0f, globalPos.y };
                 p2 = { lastNodeGlobalPos.x + barWidth, lastNodeGlobalPos.y + spacingY / 2.0f };
 
@@ -197,7 +197,7 @@ namespace Editor
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         auto size = ImGui::GetContentRegionAvail();
         auto pos = ImGui::GetCursorScreenPos();
-        static float labelWidth = 80.0f;
+        static float labelWidth = 200.0f;
         static float graphHeight = 200.0f;
         DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Eklipse::Profiler::GetLastFrameData().ProfileNodes, Eklipse::Profiler::GetData());
 

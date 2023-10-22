@@ -11,12 +11,12 @@ namespace Eklipse
 		{
 			switch (format)
 			{
-				case ImageFormat::UNDEFINED:	return GL_NONE;
-				case ImageFormat::R8:			return GL_RED;
-				case ImageFormat::RGB8:			return GL_RGB;
-				case ImageFormat::RGBA8:		return GL_RGBA;
-				case ImageFormat::BGRA8:		return GL_BGRA;
-				case ImageFormat::D24S8:		return GL_DEPTH24_STENCIL8;
+				case ImageFormat::FORMAT_UNDEFINED:	return GL_NONE;
+				case ImageFormat::R8:				return GL_RED;
+				case ImageFormat::RGB8:				return GL_RGB;
+				case ImageFormat::RGBA8:			return GL_RGBA;
+				case ImageFormat::BGRA8:			return GL_BGRA;
+				case ImageFormat::D24S8:			return GL_DEPTH24_STENCIL8;
 			}
 
 			EK_ASSERT(false, "Wrong image format");

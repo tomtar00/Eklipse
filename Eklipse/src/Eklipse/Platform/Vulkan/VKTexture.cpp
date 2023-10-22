@@ -326,6 +326,12 @@ namespace Eklipse
 			m_image = CreateImage(&m_allocation, textureInfo.width, textureInfo.height, textureInfo.mipMapLevel,
 				VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL, usage);
 
+			if (textureInfo.imageLayout != ImageLayout::LAYOUT_UNDEFINED)
+			{
+				TransitionImageLayout(m_image, format, VK_IMAGE_LAYOUT_UNDEFINED,
+					ConvertToVKLayout(textureInfo.imageLayout), textureInfo.mipMapLevel);
+			}
+
 			m_imageView = CreateImageView(m_image, format, aspect, textureInfo.mipMapLevel);
 			m_sampler = CreateSampler(textureInfo.mipMapLevel);
 		}
@@ -333,10 +339,10 @@ namespace Eklipse
 		{
 			uint32_t singlePixelSize = m_textureInfo.imageFormat & ImageFormat::RGBA32F || m_textureInfo.imageFormat & ImageFormat::RGBA8 ? 4 : 3;
 			uint32_t dataSize = m_textureInfo.width * m_textureInfo.height * singlePixelSize;
-			EK_ASSERT((size == dataSize), "Data is nt equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
+			EK_ASSERT((size == dataSize), "Data is not equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
 
 			{
-				VKStagingBuffer stagingBuffer(data, dataSize);
+				VKStagingBuffer stagingBuffer(data, size/*dataSize*/);
 				VkFormat format = ConvertToVKFormat(m_textureInfo.imageFormat);
 				EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
 
@@ -346,11 +352,11 @@ namespace Eklipse
 				CopyBufferToImage(stagingBuffer.m_buffer, m_image, m_textureInfo.width, m_textureInfo.height);
 
 				// if mip maps are disabled - uncomment
-				//TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-				//   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);	
+				TransitionImageLayout(m_image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+				   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_textureInfo.mipMapLevel);
 			}
 
-			GenerateMipMaps(m_image, m_textureInfo.mipMapLevel, m_textureInfo.width, m_textureInfo.height);
+			//GenerateMipMaps(m_image, m_textureInfo.mipMapLevel, m_textureInfo.width, m_textureInfo.height);
 		}
 		void VKTexture2D::Bind() const
 		{

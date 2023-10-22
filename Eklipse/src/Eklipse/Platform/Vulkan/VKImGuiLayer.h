@@ -23,6 +23,9 @@ namespace Eklipse
 			virtual void ResizeViewport(float width, float height) override;
 
 		private:
+			void SetupDescriptorSets();
+
+		private:
 			GLFWwindow* m_glfwWindow;
 			VkDescriptorPool m_imguiPool;
 
