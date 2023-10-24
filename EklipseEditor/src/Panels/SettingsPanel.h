@@ -3,7 +3,7 @@
 
 namespace Editor
 {
-	class SettingsPanel : public Eklipse::Layer
+	class SettingsPanel : public Eklipse::GuiPanel
 	{
 		virtual void OnGUI(float deltaTime) override;
 	};

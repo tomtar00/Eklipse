@@ -19,33 +19,16 @@ namespace Eklipse
 	}
 	void GlfwWindowSizeCallback(GLFWwindow* window, int width, int height)
 	{
-		bool minimized = width == 0 && height == 0;
-		bool* isMinimized = &((WindowData*)glfwGetWindowUserPointer(window))->minimized;
-
-		if (minimized)
-		{
-			WindowMinimizedEvent event;
-			PROPAGATE_GLFW_EVENT(event);
-		}
-		else if (*isMinimized && !minimized)
-		{
-			WindowMaximizedEvent event;
-			PROPAGATE_GLFW_EVENT(event);
-		}
-		else
-		{
-			WindowResizeEvent event(width, height);
-			PROPAGATE_GLFW_EVENT(event);
-		}
-		*isMinimized = minimized;
+		WindowResizeEvent event(width, height);
+		PROPAGATE_GLFW_EVENT(event);
 	}
-	void GlfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
+	/*void GlfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
 	{
 		FramebufferResizeEvent event(width, height);
 
 		((WindowData*)glfwGetWindowUserPointer(window))->framebufferResized = true;
 		PROPAGATE_GLFW_EVENT(event);
-	}
+	}*/
 	void GlfwWindowCloseCallback(GLFWwindow* window)
 	{
 		WindowCloseEvent event;
@@ -121,13 +104,18 @@ namespace Eklipse
 
 		m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title, nullptr, nullptr);
 		glfwSetWindowTitle(m_window, m_data.title);
-		glfwMakeContextCurrent(m_window);
-		glfwSwapInterval(0);
+
+		if (Renderer::GetAPI() == ApiType::OpenGL)
+		{
+			glfwMakeContextCurrent(m_window);
+			glfwSwapInterval(0);
+		}
+		
 		glfwSetWindowUserPointer(m_window, &m_data);
 
 		glfwSetErrorCallback(GlfwErrorCallback);
 		glfwSetWindowSizeCallback(m_window, GlfwWindowSizeCallback);
-		glfwSetFramebufferSizeCallback(m_window, GlfwFramebufferSizeCallback);
+		//glfwSetFramebufferSizeCallback(m_window, GlfwFramebufferSizeCallback);
 		glfwSetWindowCloseCallback(m_window, GlfwWindowCloseCallback);
 		glfwSetKeyCallback(m_window, GlfwKeyCallback);
 		glfwSetMouseButtonCallback(m_window, GlfwMouseButtonCallback);
@@ -143,6 +131,7 @@ namespace Eklipse
 		EK_CORE_INFO("Window shutdown");
 		glfwDestroyWindow(m_window);
 		glfwTerminate();
+		s_glfwInitialized = false;
 	}
 	void WindowsWindow::Update(float deltaTime)
 	{
@@ -160,6 +149,10 @@ namespace Eklipse
 		EK_PROFILE();
 
 		glfwSwapBuffers(m_window);
+	}
+	void WindowsWindow::WaitEvents()
+	{
+		glfwWaitEvents();
 	}
 	GLFWwindow* WindowsWindow::GetGlfwWindow()
 	{

@@ -12,7 +12,8 @@ namespace Eklipse
 	void LayerStack::PushLayer(Ref<Layer> layer)
 	{
 		layer->OnAttach();
-		m_layers.emplace_back(layer);
+		m_layers.emplace(m_layers.begin() + m_lastLayerIndex, layer);
+		m_lastLayerIndex++;
 	}
 	void LayerStack::PopLayer(Ref<Layer> layer)
 	{
@@ -33,11 +34,33 @@ namespace Eklipse
 
 	void LayerStack::PopOverlay(Ref<Layer> overlay)
 	{
-		auto it = std::find(m_layers.begin() + m_lastLayerIndex, m_layers.end(), overlay);
+		/*auto it = std::find(m_layers.begin() + m_lastLayerIndex, m_layers.end(), overlay);
 		if (it != m_layers.end())
 		{
 			overlay->OnDetach();
 			m_layers.erase(it);
+		}*/
+
+		/*for (auto it = m_layers.begin(); it != m_layers.end(); it++)
+		{
+			if (*it == overlay)
+			{
+				overlay->OnDetach();
+				m_layers.erase(it);
+				break;
+			}
+		}*/
+
+		uint32_t index = 0;
+		for (auto& layer : *this)
+		{
+			if (&*layer.get() == &*overlay.get())
+			{
+				overlay->OnDetach();
+				m_layers.erase(m_layers.begin() + index);
+				break;
+			}
+			index++;
 		}
 	}
 

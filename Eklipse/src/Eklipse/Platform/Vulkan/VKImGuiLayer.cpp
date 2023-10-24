@@ -111,6 +111,7 @@ namespace Eklipse
 
 			ImGui_ImplVulkan_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
+			ImGuiLayer::Shutdown();
 
 			EK_CORE_INFO("Vulkan ImGui layer shut down");
 		}
@@ -137,13 +138,16 @@ namespace Eklipse
 		}
 		void VkImGuiLayer::ResizeViewport(float width, float height)
 		{
-			vkDeviceWaitIdle(g_logicalDevice);
-			g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+			if (width > 0 && height > 0)
+			{
+				vkDeviceWaitIdle(g_logicalDevice);
+				g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
-			g_VKSceneFramebuffer->Resize(width, height);
+				g_VKSceneFramebuffer->Resize(width, height);
 
-			vkFreeDescriptorSets(g_logicalDevice, m_imguiPool, m_imageDescrSets.size(), m_imageDescrSets.data());
-			SetupDescriptorSets();
+				vkFreeDescriptorSets(g_logicalDevice, m_imguiPool, m_imageDescrSets.size(), m_imageDescrSets.data());
+				SetupDescriptorSets();
+			}
 		}
 		void VkImGuiLayer::SetupDescriptorSets()
 		{

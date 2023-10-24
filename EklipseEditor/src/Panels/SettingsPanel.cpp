@@ -25,11 +25,11 @@ namespace Editor
 			Eklipse::RendererSettings::SetMsaaSamples(samples);
 		}
 
-		static const char* APIs[]{ "OpenGL", "Vulkan"};
+		static const char* APIs[]{ "Vulkan", "OpenGL" };
 		static int api;
 		if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
 		{
-			Eklipse::Application::Get().SetAPI((Eklipse::ApiType)api);
+			Eklipse::Application::Get().SetAPI((Eklipse::ApiType)(api+1));
 		}
 
 		ImGui::End();

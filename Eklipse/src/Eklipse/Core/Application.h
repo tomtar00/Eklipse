@@ -41,15 +41,20 @@ namespace Eklipse
 		inline const Ref<Window> GetWindow() const { return m_window; }
 		inline const Scene* GetScene() const { return &m_scene; }
 		inline const bool IsRunning() const { return m_running; }
+		inline const bool ShouldQuit() const { return m_quit; }
 		inline const bool IsMinimized() const { return m_minimized; }
 
-		virtual void OnInitAPI(ApiType api) = 0;
-		virtual void OnShutdownAPI() = 0;
+		virtual void OnInitAPI(ApiType api) {}
+		virtual void OnAPIHasInitialized(ApiType api) {}
+		virtual void OnShutdownAPI() {}
+		virtual void OnAPIHasShutdown() {}
 
 		virtual void Run() = 0;
 
 		void PushLayer(Ref<Layer> layer);
 		void PushOverlay(Ref<Layer> overlay);
+		void PopLayer(Ref<Layer> layer);
+		void PopOverlay(Ref<Layer> overlay);
 
 	private:
 		void OnEventReceived(Event& event);
@@ -64,6 +69,7 @@ namespace Eklipse
 
 	private:
 		bool m_running;
+		bool m_quit;
 		bool m_minimized;
 		inline static Application* s_instance = nullptr;
 		ApplicationInfo m_appInfo{};

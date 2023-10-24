@@ -28,6 +28,7 @@ namespace Eklipse
 	}
 	void Scene::Dispose()
 	{
+		m_registry.clear();
 	}
 	Entity Scene::CreateEntity(const std::string name)
 	{

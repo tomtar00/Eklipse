@@ -1,7 +1,6 @@
 #include "precompiled.h"
 #include "Shader.h"
 
-#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Platform/OpenGL/GLShader.h>
 #include <Eklipse/Platform/Vulkan/VKShader.h>
@@ -221,7 +220,7 @@ namespace Eklipse
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
 
-                Assets::CreateUniformBuffer(name, bufferSize, binding);
+                Renderer::CreateUniformBuffer(name, bufferSize, binding);
             }
             EK_CORE_TRACE("Push constants:");
             for (const auto& pushConstant : resources.push_constant_buffers)

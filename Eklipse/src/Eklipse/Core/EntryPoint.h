@@ -9,10 +9,10 @@ int main(int argc, char** argv)
 	Eklipse::Log::Init();
 	Eklipse::Profiler::Init();
 
-	EK_PROFILE_BEGIN("Startup");
 	auto app = Eklipse::CreateApplication();
 
-	app->Run();
+	while (!app->ShouldQuit())
+		app->Run();
 }
 
 #endif

@@ -10,14 +10,6 @@ namespace Editor
 		EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
 		s_instance = this;
 
-		m_entitiesPanel = Eklipse::CreateRef<EntitiesPanel>();
-		m_settingsPanel = Eklipse::CreateRef<SettingsPanel>();
-		m_statsPanel = Eklipse::CreateRef<StatsPanel>();
-		m_detailsPanel = Eklipse::CreateRef<DetailsPanel>();
-		m_logsPanel = Eklipse::CreateRef<LogsPanel>();
-		m_profilerPanel = Eklipse::CreateRef<ProfilerPanel>();
-		m_viewPanel = Eklipse::CreateRef<ViewPanel>();
-
 		m_editorCamera.m_farPlane = 1000.0f;
 		m_editorCamera.m_nearPlane = 0.1f;
 		m_editorCamera.m_fov = 45.0f;
@@ -30,13 +22,23 @@ namespace Editor
 		m_guiLayerCreateInfo.dockingEnabled = true;
 		m_guiLayerCreateInfo.dockLayouts =
 		{
-			{ "Entities",	ImGuiDir_Left,	Eklipse::Dir_Opposite,	0.20f,  m_entitiesPanel	},
-			{ "Settings",	ImGuiDir_Down,	Eklipse::Dir_Same,		0.60f,	m_settingsPanel	},
-			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f,  m_statsPanel	},
-			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f,	m_detailsPanel	},
-			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f,	m_logsPanel		},
-			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f,	m_profilerPanel	},
-			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f,	m_viewPanel		}
+			{ "Entities",	ImGuiDir_Left,	Eklipse::Dir_Opposite,	0.20f },
+			{ "Settings",	ImGuiDir_Down,	Eklipse::Dir_Same,		0.60f },
+			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f },
+			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f },
+			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
+			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
+			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f }
+		};
+		m_guiLayerCreateInfo.panels =
+		{
+			&m_entitiesPanel,
+			&m_settingsPanel,
+			&m_statsPanel,
+			&m_detailsPanel,
+			&m_logsPanel,
+			&m_profilerPanel,
+			&m_viewPanel
 		};
 
 		EK_INFO("Editor layer attached");
@@ -123,7 +125,7 @@ namespace Editor
 
 		Eklipse::Renderer::Submit();
 	}
-	void EditorLayer::OnInitAPI(Eklipse::ApiType api)
+	void EditorLayer::OnAPIHasInitialized(Eklipse::ApiType api)
 	{
 		// Create default framebuffer (for ImGui)
 		{
@@ -142,8 +144,8 @@ namespace Editor
 		{
 			Eklipse::FramebufferInfo fbInfo{};
 			fbInfo.framebufferType			= Eklipse::FramebufferType::SCENE_VIEW;
-			fbInfo.width					= 512;
-			fbInfo.height					= 512;
+			fbInfo.width					= GetViewPanel().GetViewportSize().x > 0 ? GetViewPanel().GetViewportSize().x : 512;
+			fbInfo.height					= GetViewPanel().GetViewportSize().y > 0 ? GetViewPanel().GetViewportSize().y : 512;
 			fbInfo.numSamples				= Eklipse::RendererSettings::GetMsaaSamples();
 			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } };
 			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::D24S8 };
@@ -151,10 +153,15 @@ namespace Editor
 			m_viewportFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
 		}
 
+		GUI.reset();
+		GUI = Eklipse::ImGuiLayer::Create(GetGuiInfo());
+		Eklipse::Application::Get().PushOverlay(GUI);
 		GUI->Init();
 	}
 	void EditorLayer::OnShutdownAPI()
 	{
+		Eklipse::Application::Get().PopOverlay(GUI);
+		SetEntityNull();
 		GUI->Shutdown();
 		m_defaultFramebuffer->Dispose();
 		m_viewportFramebuffer->Dispose();

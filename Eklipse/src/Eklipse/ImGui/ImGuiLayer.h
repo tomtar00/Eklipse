@@ -6,6 +6,12 @@
 
 namespace Eklipse
 {
+	class GuiPanel
+	{
+	public:
+		virtual void OnGUI(float deltaTime) = 0;
+	};
+
 	enum EK_API ImGuiNodeDirType
 	{
 		Dir_Same		= BIT(0),
@@ -19,7 +25,7 @@ namespace Eklipse
 		ImGuiDir_ dir;
 		int dirType;
 		float ratio;
-		Ref<Layer> layer;
+		//Ref<Layer> layer;
 
 		ImGuiID id;
 	};
@@ -29,6 +35,7 @@ namespace Eklipse
 		bool menuBarEnabled;
 		bool dockingEnabled;
 		std::vector<DockLayoutInfo> dockLayouts;
+		std::vector<GuiPanel*> panels;
 	};
 
 	class EK_API ImGuiLayer : public Eklipse::Layer
@@ -40,6 +47,7 @@ namespace Eklipse
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
+		virtual void OnGUI(float deltaTime) override;
 
 		void Begin();
 		void RenderDockspace();
@@ -47,7 +55,7 @@ namespace Eklipse
 
 	public:
 		virtual void Init() = 0;
-		virtual void Shutdown() = 0;
+		virtual void Shutdown();
 		virtual void NewFrame() = 0;
 		virtual void Render() = 0;
 
@@ -60,11 +68,10 @@ namespace Eklipse
 		static Ref<ImGuiLayer> Create(const GuiLayerConfigInfo& configInfo);
 
 		inline bool IsEnabled() const { return *m_config.enabled; }
-		inline static ImGuiContext* s_ctx = nullptr;
+		inline static ImGuiContext* CTX = nullptr;
 
 	protected:		
 		inline static bool s_initialized = false;
-
 		GuiLayerConfigInfo m_config;
 
 	private:

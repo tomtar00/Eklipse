@@ -47,7 +47,7 @@ namespace Eklipse
 
         auto& dataPointer = pushConstant.dataPointers[memberName];
         EK_ASSERT(dataPointer.size == size, "Push constant '{0}' member '{1}' size mismatch", constantName, memberName);
-        memcpy(dataPointer.data, data, size);
+        std::memcpy(dataPointer.data, data, size); // TODO: Not working in Debug configuration??
     }
 
     void Material::Bind()

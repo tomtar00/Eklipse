@@ -4,30 +4,45 @@
 #include "Settings.h"
 #include "Material.h"
 
+//#include <glm/gtx/string_cast.hpp>
+
 #include <Eklipse/Utils/Stats.h>
-#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
-#include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
 #include <Eklipse/Platform/OpenGL/OpenGLAPI.h>
 
 namespace Eklipse
 {
-	ApiType						Renderer::s_apiType;
+	ApiType	Renderer::s_apiType = ApiType::Vulkan;
+
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
+	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;
 
 	void Renderer::Init()
 	{
-		s_cameraUniformBuffer		= Assets::GetUniformBuffer("uCamera");
-	}	
-	void Renderer::ShutdownPrep()
+		RenderCommand::API.reset();
+		RenderCommand::API = GraphicsAPI::Create();
+		RenderCommand::API->Init();
+
+	}
+	void Renderer::InitParameters()
+	{
+		s_cameraUniformBuffer = Renderer::GetUniformBuffer("uCamera");
+	}
+
+	void Renderer::WaitDeviceIdle()
 	{
 		RenderCommand::API->WaitDeviceIdle();
 	}
-	void Renderer::Shutdown() // TODO: Call this when switching graphics API
+
+	void Renderer::Shutdown()
 	{
-		Assets::Shutdown();
+		for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
+		{
+			uniformBuffer->Dispose();
+		}
+		s_uniformBufferCache.clear();
 		RenderCommand::API->Shutdown();
 	}
 
@@ -105,7 +120,7 @@ namespace Eklipse
 	{
 		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
 
-		if (RenderCommand::API != nullptr)
+		/*if (RenderCommand::API != nullptr)
 		{
 			if (apiType == s_apiType && RenderCommand::API->IsInitialized())
 			{
@@ -115,16 +130,38 @@ namespace Eklipse
 
 			if (RenderCommand::API->IsInitialized())
 			{
-				Application::Get().OnShutdownAPI();
-				RenderCommand::API->Shutdown();
+				Renderer::Shutdown();
 			}
-		}
+		}*/
 
 		s_apiType = apiType;
-		RenderCommand::API.reset();
+		/*RenderCommand::API.reset();
 		RenderCommand::API = GraphicsAPI::Create();
-		RenderCommand::API->Init();
-		
+
 		Application::Get().OnInitAPI(s_apiType);
+		RenderCommand::API->Init();
+		Application::Get().OnAPIHasInitialized(s_apiType);*/
+	}
+	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
+	{
+		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
+		{
+			return s_uniformBufferCache[uniformBufferName];
+		}
+
+		Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
+		s_uniformBufferCache[uniformBufferName] = uniformBuffer;
+		EK_CORE_INFO("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
+		return uniformBuffer;
+	}
+	Ref<UniformBuffer> Renderer::GetUniformBuffer(const std::string& uniformBufferName)
+	{
+		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
+		{
+			return s_uniformBufferCache[uniformBufferName];
+		}
+
+		EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
+		return nullptr;
 	}
 }

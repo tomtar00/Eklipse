@@ -209,6 +209,9 @@ namespace Eklipse
 			vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
 			vkDestroyInstance(g_instance, nullptr);
 
+			g_VKDefaultFramebuffer = nullptr;
+			g_VKSceneFramebuffer = nullptr;
+
 			EK_CORE_INFO("Vulkan shutdown");
 			m_initialized = false;
 		}

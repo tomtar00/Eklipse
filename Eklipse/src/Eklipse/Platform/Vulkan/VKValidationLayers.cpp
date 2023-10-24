@@ -7,7 +7,7 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-#ifdef EK_DEBUG
+#ifndef EK_DIST
 		const bool g_validationLayersEnabled = true;
 #else
 		const bool g_validationLayersEnabled = false;

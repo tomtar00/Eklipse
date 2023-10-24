@@ -3,7 +3,7 @@
 
 namespace Editor
 {
-	class ProfilerPanel : public Eklipse::Layer
+	class ProfilerPanel : public Eklipse::GuiPanel
 	{
 	public:
 		virtual void OnGUI(float deltaTime) override;

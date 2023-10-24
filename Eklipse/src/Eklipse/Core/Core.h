@@ -9,7 +9,7 @@
 		#define EK_API __declspec(dllimport)
 	#endif
 
-	#ifdef EK_DEBUG
+	#ifndef EK_DIST
 		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
 	#else
 		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); }

@@ -30,8 +30,6 @@ namespace Eklipse
     std::unordered_map<std::string, Ref<Shader>, std::hash<std::string>>        Assets::s_shaderCache;
     std::unordered_map<std::string, Ref<Material>, std::hash<std::string>>      Assets::s_materialCache;
 
-    std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Assets::s_uniformBufferCache;
-
     void Assets::Shutdown()
     {
         // Shaders
@@ -39,24 +37,21 @@ namespace Eklipse
         {
             shader->Dispose();
         }
-
-        // Uniform buffers
-        for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
-		{
-			uniformBuffer->Dispose();
-		}
-
+        s_shaderCache.clear();
+        
         // Textures
         for (auto&& [path, texture] : s_textureCache)
 		{
 			texture->Dispose();
 		}
+        s_textureCache.clear();
 
         // Meshes
         for (auto&& [path, mesh] : s_meshCache)
         {
             mesh->GetVertexArray()->Dispose();
         }
+        s_meshCache.clear();
     }
     Ref<Mesh> Assets::GetMesh(const std::string& meshPath)
 	{
@@ -183,27 +178,5 @@ namespace Eklipse
         }
 
         return Material::Create(s_shaderCache[0]);
-    }
-    Ref<UniformBuffer> Assets::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
-    {
-        if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
-		{
-			return s_uniformBufferCache[uniformBufferName];
-		}
-
-        Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
-		s_uniformBufferCache[uniformBufferName] = uniformBuffer;
-        EK_CORE_INFO("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
-		return uniformBuffer;
-    }
-    Ref<UniformBuffer> Assets::GetUniformBuffer(const std::string& uniformBufferName)
-    {
-        if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
-        {
-            return s_uniformBufferCache[uniformBufferName];
-        }
-
-        EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
-        return nullptr;
     }
 }

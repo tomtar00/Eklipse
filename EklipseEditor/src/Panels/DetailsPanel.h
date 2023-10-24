@@ -4,7 +4,7 @@
 
 namespace Editor
 {
-	class DetailsPanel : public Eklipse::Layer
+	class DetailsPanel : public Eklipse::GuiPanel
 	{
 	public:
 		void Setup(std::string& name);

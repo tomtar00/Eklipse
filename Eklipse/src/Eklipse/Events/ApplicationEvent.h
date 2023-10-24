@@ -28,7 +28,7 @@ namespace Eklipse
 		unsigned int m_width, m_height;
 	};
 
-	class EK_API FramebufferResizeEvent : public Event
+	/*class EK_API FramebufferResizeEvent : public Event
 	{
 	public:
 		FramebufferResizeEvent(unsigned int width, unsigned int height)
@@ -50,7 +50,7 @@ namespace Eklipse
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
 	private:
 		unsigned int m_width, m_height;
-	};
+	};*/
 
 	class EK_API WindowCloseEvent : public Event
 	{
@@ -70,7 +70,7 @@ namespace Eklipse
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
 	};
 
-	class EK_API WindowMinimizedEvent : public Event
+	/*class EK_API WindowMinimizedEvent : public Event
 	{
 	public:
 		WindowMinimizedEvent() {}
@@ -104,5 +104,5 @@ namespace Eklipse
 		}
 
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
-	};
+	};*/
 }

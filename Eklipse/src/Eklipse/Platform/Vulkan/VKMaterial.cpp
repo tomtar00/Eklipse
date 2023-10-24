@@ -2,6 +2,7 @@
 #include "VKMaterial.h"
 #include "VK.h"
 
+#include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Scene/Assets.h>
 
 namespace Eklipse
@@ -55,7 +56,7 @@ namespace Eklipse
 					for (auto& ubo : reflection.uniformBuffers)
 					{
 						Ref<VKUniformBuffer> uniformBuffer = std::static_pointer_cast<VKUniformBuffer>(
-							Assets::GetUniformBuffer(ubo.name)
+							Renderer::GetUniformBuffer(ubo.name)
 						);
 
 						VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo;

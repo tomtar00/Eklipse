@@ -14,31 +14,44 @@ namespace Eklipse
 	static ImFont* s_font = nullptr;
 
 	ImGuiLayer::ImGuiLayer(const GuiLayerConfigInfo& configInfo)
-		: m_config(configInfo), m_first_time(true) 
-	{
-		//Init();
-	};
+		: m_config(configInfo), m_first_time(true) {}
 
 	void ImGuiLayer::OnAttach()
 	{
-		EK_ASSERT(s_ctx, "Set ImGui context (s_ctx) before pushing ImGui layer.")
-		ImGui::SetCurrentContext(s_ctx);
+		EK_ASSERT(CTX, "Set ImGui context (s_ctx) before pushing ImGui layer.")
+		ImGui::SetCurrentContext(CTX);
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
 		if (m_config.dockingEnabled)
 		{
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
-		s_font = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", 16);
+
+		if (s_font == nullptr) s_font = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", 16);
 		EK_ASSERT(s_font != nullptr, "Failed to load font");
 
 		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());
 	}
 	void ImGuiLayer::OnDetach()
 	{
+		EK_CORE_INFO("{0} imgui layer detached", typeid(*this).name());
+	}
+	void ImGuiLayer::OnGUI(float deltaTime)
+	{
+		for (auto& panel : m_config.panels)
+		{
+			panel->OnGUI(deltaTime);
+		}
+	}
+	void ImGuiLayer::Shutdown()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->ClearFonts();
+		s_font = nullptr;
+
 		ImGui::DestroyContext();
 
-		EK_CORE_INFO("{0} imgui layer detached", typeid(*this).name());
+		EK_CORE_INFO("{0} imgui layer shutdown", typeid(*this).name());
 	}
 	void ImGuiLayer::Begin()
 	{
@@ -121,11 +134,11 @@ namespace Eklipse
 				ImGui::DockBuilderDockWindow(m_config.dockLayouts[m_config.dockLayouts.size() - 1].name, node_id);
 				ImGui::DockBuilderFinish(dockspace_id);
 
-				for (int i = 0; i < m_config.dockLayouts.size(); i++)
+				/*for (int i = 0; i < m_config.dockLayouts.size(); i++)
 				{
 					auto& dockLayout = m_config.dockLayouts[i];
 					Application::Get().PushOverlay(dockLayout.layer);
-				}
+				}*/
 			}
 			
 		}

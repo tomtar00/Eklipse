@@ -59,13 +59,9 @@ project "Eklipse"
 		}
 
 	filter "configurations:Debug"
+		defines "EK_DEBUG"
 		runtime "Debug"
 		symbols "On"
-
-		defines 
-		{
-			"EK_DEBUG"
-		}
 
 		links
 		{

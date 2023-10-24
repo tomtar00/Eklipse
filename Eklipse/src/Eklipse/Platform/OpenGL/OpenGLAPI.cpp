@@ -100,6 +100,9 @@ namespace Eklipse
 				return;
 			}
 
+			g_GLDefaultFramebuffer = nullptr;
+			g_GLSceneFramebuffer = nullptr;
+
 			EK_CORE_INFO("OpenGL shutdown");
 			m_initialized = false;
 		}

@@ -8,6 +8,8 @@ namespace Eklipse
 	{
 		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) : m_id(0), m_framebufferInfo(framebufferInfo)
 		{
+			m_aspectRatio = (float)framebufferInfo.width / (float)framebufferInfo.height;
+
 			if (framebufferInfo.framebufferType & FramebufferType::DEFAULT)
 			{
 				EK_ASSERT(g_GLDefaultFramebuffer == nullptr, "Default framebuffer already exists!");

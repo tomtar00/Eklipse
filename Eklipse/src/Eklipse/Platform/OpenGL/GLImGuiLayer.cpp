@@ -33,6 +33,7 @@ namespace Eklipse
 
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
+			ImGuiLayer::Shutdown();
 		}
 		void GLImGuiLayer::NewFrame()
 		{

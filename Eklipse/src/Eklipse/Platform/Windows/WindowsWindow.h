@@ -19,6 +19,7 @@ namespace Eklipse
 
 		virtual void SetWindowHint(int attrib, int value) override;
 		virtual void SwapBuffers() override;
+		virtual void WaitEvents() override;
 
 	private:
 		inline static bool s_glfwInitialized = false;

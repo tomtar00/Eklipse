@@ -23,16 +23,16 @@ namespace Editor
 		void OnUpdate(float deltaTime) override;
 		void Render(Eklipse::Scene& scene, float deltaTime);
 
-		void OnInitAPI(Eklipse::ApiType api);
+		void OnAPIHasInitialized(Eklipse::ApiType api);
 		void OnShutdownAPI();
 
 		inline static EditorLayer* Get() { return s_instance; }
 		inline Eklipse::Scene* GetActiveScene() { return m_activeScene; }
 
-		inline EntitiesPanel& GetEntitiesPanel() { return *m_entitiesPanel.get(); }
-		inline DetailsPanel& GetDetailsPanel() { return *m_detailsPanel.get(); }
-		inline LogsPanel& GetLogsPanel() { return *m_logsPanel.get(); }
-		inline ViewPanel& GetViewPanel() { return *m_viewPanel.get(); }
+		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
+		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
+		inline LogsPanel& GetLogsPanel() { return m_logsPanel; }
+		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
 		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
 
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
@@ -56,12 +56,12 @@ namespace Editor
 		Eklipse::Transform m_editorCameraTransform;
 
 		bool m_guiEnabled;
-		Eklipse::Ref<EntitiesPanel> m_entitiesPanel;
-		Eklipse::Ref<DetailsPanel> m_detailsPanel;
-		Eklipse::Ref<LogsPanel> m_logsPanel;
-		Eklipse::Ref<ViewPanel> m_viewPanel;
-		Eklipse::Ref<StatsPanel> m_statsPanel;
-		Eklipse::Ref<SettingsPanel> m_settingsPanel;
-		Eklipse::Ref<ProfilerPanel> m_profilerPanel;
+		EntitiesPanel	m_entitiesPanel;
+		DetailsPanel	m_detailsPanel;
+		LogsPanel		m_logsPanel;
+		ViewPanel		m_viewPanel;
+		StatsPanel		m_statsPanel;
+		SettingsPanel	m_settingsPanel;
+		ProfilerPanel	m_profilerPanel;
 	};
 }

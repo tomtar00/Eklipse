@@ -17,15 +17,10 @@ namespace Eklipse
 		static Ref<Shader>			GetShader(const std::string& shaderPath);
 		static Ref<Material>		GetMaterial(const std::string& materialPath);
 
-		static Ref<UniformBuffer>	CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding);
-		static Ref<UniformBuffer>	GetUniformBuffer(const std::string& uniformBufferName);
-
 	private: // TODO: Reinitialize these maps when graphics api is changed
 		static std::unordered_map<std::string, Ref<Mesh>, std::hash<std::string>>			s_meshCache;
 		static std::unordered_map<std::string, Ref<Texture2D>, std::hash<std::string>>		s_textureCache;
 		static std::unordered_map<std::string, Ref<Shader>, std::hash<std::string>>			s_shaderCache;
 		static std::unordered_map<std::string, Ref<Material>, std::hash<std::string>>		s_materialCache;
-
-		static std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	s_uniformBufferCache;
 	};
 }

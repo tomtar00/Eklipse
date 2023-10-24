@@ -9,8 +9,6 @@ namespace Eklipse
 	{
 		int width{ 0 }, height{ 0 };
 		char* title{ "" };
-		bool minimized{ false };
-		bool framebufferResized{ false };
 
 		std::function<void(Event&)> EventCallback;
 	};
@@ -31,6 +29,7 @@ namespace Eklipse
 		virtual void Update(float deltaTime);
 		virtual void SetWindowHint(int hint, int value) = 0;
 		virtual void SwapBuffers() = 0;
+		virtual void WaitEvents() = 0;
 
 		// platform dependent
 		inline virtual GLFWwindow* GetGlfwWindow() { return nullptr; };
