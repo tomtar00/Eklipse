@@ -14,3 +14,9 @@
 [submodule "Eklipse/vendor/ImGuizmo"]
 	path = Eklipse/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Eklipse/vendor/nativefiledialog"]
+	path = Eklipse/vendor/nativefiledialog
+	url = https://github.com/mlabbe/nativefiledialog
+[submodule "Eklipse/vendor/yaml-cpp"]
+	path = Eklipse/vendor/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp
