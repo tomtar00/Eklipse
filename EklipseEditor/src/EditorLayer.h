@@ -8,6 +8,7 @@
 #include <Panels/StatsPanel.h>
 #include <Panels/SettingsPanel.h>
 #include <Panels/ProfilerPanel.h>
+#include <Panels/AssetBrowser.h>
 
 namespace Editor
 {
@@ -15,19 +16,28 @@ namespace Editor
 	{
 	public:
 		EditorLayer() = delete;
-		EditorLayer(Eklipse::Scene& scene);
+		EditorLayer(Eklipse::Ref<Eklipse::Scene> scene);
 		~EditorLayer() = default;
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnUpdate(float deltaTime) override;
-		void Render(Eklipse::Scene& scene, float deltaTime);
+		void OnGUI(float deltaTime) override;
+		void Render(Eklipse::Ref<Eklipse::Scene> scene, float deltaTime);
 
 		void OnAPIHasInitialized(Eklipse::ApiType api);
 		void OnShutdownAPI();
 
+		void OpenProject();
+		void SaveProject();
+		void SaveProjectAs();
+		void SaveScene();
+
+		void OnProjectLoad();
+		void OnProjectUnload();
+
 		inline static EditorLayer* Get() { return s_instance; }
-		inline Eklipse::Scene* GetActiveScene() { return m_activeScene; }
+		inline Eklipse::Ref<Eklipse::Scene> GetActiveScene() { return m_activeScene; }
 
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
@@ -50,7 +60,7 @@ namespace Editor
 		Eklipse::Ref<Eklipse::Framebuffer> m_defaultFramebuffer;
 		Eklipse::Ref<Eklipse::Framebuffer> m_viewportFramebuffer;
 
-		Eklipse::Scene* m_activeScene;
+		Eklipse::Ref<Eklipse::Scene> m_activeScene;
 		Eklipse::Entity m_selectedEntity;
 		Eklipse::Camera m_editorCamera;
 		Eklipse::Transform m_editorCameraTransform;
@@ -63,5 +73,6 @@ namespace Editor
 		StatsPanel		m_statsPanel;
 		SettingsPanel	m_settingsPanel;
 		ProfilerPanel	m_profilerPanel;
+		AssetBrowser	m_assetBrowserPanel;
 	};
 }

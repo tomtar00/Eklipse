@@ -314,9 +314,8 @@ namespace Eklipse
 
 		//	stbi_image_free(data);
 		//}
-		VKTexture2D::VKTexture2D(const TextureInfo& textureInfo)
+		VKTexture2D::VKTexture2D(const TextureInfo& textureInfo, const std::string& path) : Texture2D(textureInfo, path)
 		{
-			m_textureInfo = textureInfo;
 			VkFormat format = ConvertToVKFormat(textureInfo.imageFormat);
 
 			EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");

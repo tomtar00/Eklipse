@@ -1,12 +1,14 @@
-#include "EditorLayer.h"
+#include <Eklipse.h>
 #include <Eklipse/Core/EntryPoint.h>
+
+#include "EditorLayer.h"
 
 namespace Editor
 {
 	class EklipseEditor : public Eklipse::Application
 	{
 	public:
-		EklipseEditor(Eklipse::ApplicationInfo& info) : Application(info)
+		EklipseEditor(Eklipse::ApplicationInfo& info) : Eklipse::Application(info)
 		{
 			editorLayer = Eklipse::CreateRef<EditorLayer>(m_scene);
 			PushLayer(editorLayer);
@@ -17,14 +19,14 @@ namespace Editor
 			EK_INFO("========== Starting Eklipse Editor ==========");
 
 			Eklipse::ImGuiLayer::CTX = ImGui::CreateContext();
-			Application::Init();
+			Eklipse::Application::Init();
 
 			float deltaTime = 0.0f;
-			while (Application::IsRunning())
+			while (Eklipse::Application::IsRunning())
 			{
-				Application::BeginFrame(&deltaTime);
+				Eklipse::Application::BeginFrame(&deltaTime);
 
-				if (!Application::IsMinimized())
+				if (!Eklipse::Application::IsMinimized())
 				{
 					{
 						EK_PROFILE_NAME("GUI");
@@ -50,12 +52,12 @@ namespace Editor
 					editorLayer->Render(m_scene, deltaTime);
 				}
 
-				Application::EndFrame(deltaTime);	
+				Eklipse::Application::EndFrame(deltaTime);
 			}
 
 			EK_INFO("========== Closing Eklipse Editor ==========");
 
-			Application::Shutdown();
+			Eklipse::Application::Shutdown();
 		}	
 
 		void OnAPIHasInitialized(Eklipse::ApiType api) override

@@ -6,6 +6,12 @@
 
 namespace Eklipse
 {
+	class GuiIcon
+	{
+	public:
+		virtual void* GetID() = 0;
+		static Ref<GuiIcon> Create(const char* path);
+	};
 	class GuiPanel
 	{
 	public:

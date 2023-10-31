@@ -12,7 +12,7 @@ namespace Eklipse
 		class VKMaterial : public Eklipse::Material
 		{
 		public:
-			VKMaterial(Ref<Shader> shader);
+			VKMaterial(const std::filesystem::path& path);
 			virtual ~VKMaterial() = default;
 
 			virtual void Bind() override;

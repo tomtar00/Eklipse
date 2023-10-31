@@ -64,11 +64,13 @@ namespace Eklipse
 
 	protected:
 		TextureInfo m_textureInfo;
+		std::string m_path;
 	};
 
 	class Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(const TextureInfo& textureInfo);
+		Texture2D(const TextureInfo& textureInfo, const std::string& path) { m_textureInfo = textureInfo; m_path = path; }
+		static Ref<Texture2D> Create(const TextureInfo& textureInfo, const std::string& path = "");
 	};
 }

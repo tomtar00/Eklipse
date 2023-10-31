@@ -4,8 +4,6 @@
 #include "Settings.h"
 #include "Material.h"
 
-//#include <glm/gtx/string_cast.hpp>
-
 #include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Core/Application.h>
@@ -14,7 +12,7 @@
 
 namespace Eklipse
 {
-	ApiType	Renderer::s_apiType = ApiType::Vulkan;
+	ApiType	Renderer::s_apiType = ApiType::OpenGL;
 
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
 	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;
@@ -24,11 +22,10 @@ namespace Eklipse
 		RenderCommand::API.reset();
 		RenderCommand::API = GraphicsAPI::Create();
 		RenderCommand::API->Init();
-
 	}
 	void Renderer::InitParameters()
 	{
-		s_cameraUniformBuffer = Renderer::GetUniformBuffer("uCamera");
+		s_cameraUniformBuffer = Renderer::CreateUniformBuffer("uCamera", sizeof(glm::mat4), 0);
 	}
 
 	void Renderer::WaitDeviceIdle()
@@ -66,14 +63,16 @@ namespace Eklipse
 	}
 	void Renderer::RenderScene(Scene& scene)
 	{
+		EK_PROFILE();
+
 		// Geometry
 		auto view = scene.GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
-			auto& transform = transformComponent.GetTransformMatrix();
-			meshComponent.material->SetConstant("pConstants", "Model", &transform, sizeof(glm::mat4));
+			glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
+			meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
 			RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
 		}
 

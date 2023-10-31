@@ -10,7 +10,7 @@ namespace Editor
 		EK_PROFILE();
 
 		ImGui::Begin("Entities");
-		static Eklipse::Scene* scene = EditorLayer::Get()->GetActiveScene();
+		auto& scene = EditorLayer::Get()->GetActiveScene();
 		EK_ASSERT(scene != nullptr, "Scene is null!");
 
 		if (ImGui::BeginPopupContextWindow())
@@ -23,7 +23,7 @@ namespace Editor
 
 		scene->ForEachEntity([&](auto entityID)
 			{
-				Eklipse::Entity entity = { entityID, scene };
+				Eklipse::Entity entity{ entityID, scene.get() };
 				auto& nameComponent = entity.GetComponent<Eklipse::NameComponent>();
 
 				bool expand = ImGui::TreeNodeEx(nameComponent.name.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth);

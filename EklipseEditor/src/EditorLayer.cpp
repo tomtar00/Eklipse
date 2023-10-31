@@ -1,11 +1,17 @@
 #include "EditorLayer.h"
-#include <glm/gtc/quaternion.hpp>
-#include <Eklipse/Scene/Components.h>
 #include <Eklipse/Renderer/Settings.h>
+#include <Eklipse/Scene/Components.h>
+#include <Eklipse/Project/Project.h>
+#include <Eklipse/Scene/Assets.h>
+
+#include <glm/gtc/quaternion.hpp>
+#include <misc/cpp/imgui_stdlib.h>
+#include <filesystem>
+#include <nfd.h>
 
 namespace Editor
 {
-	EditorLayer::EditorLayer(Eklipse::Scene& scene) : m_guiEnabled(true), m_activeScene(&scene)
+	EditorLayer::EditorLayer(Eklipse::Ref<Eklipse::Scene> scene) : m_guiEnabled(true), m_activeScene(scene)
 	{
 		EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
 		s_instance = this;
@@ -16,7 +22,6 @@ namespace Editor
 	}
 	void EditorLayer::OnAttach()
 	{
-		// GUI Layer
 		m_guiLayerCreateInfo.enabled = &m_guiEnabled;
 		m_guiLayerCreateInfo.menuBarEnabled = true;
 		m_guiLayerCreateInfo.dockingEnabled = true;
@@ -28,6 +33,7 @@ namespace Editor
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f },
 			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
 			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
+			{ "Browser",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },	
 			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f }
 		};
 		m_guiLayerCreateInfo.panels =
@@ -38,7 +44,8 @@ namespace Editor
 			&m_detailsPanel,
 			&m_logsPanel,
 			&m_profilerPanel,
-			&m_viewPanel
+			&m_viewPanel,
+			&m_assetBrowserPanel
 		};
 
 		EK_INFO("Editor layer attached");
@@ -105,11 +112,88 @@ namespace Editor
 		m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));	
 		// ===================================
 	}
-	void EditorLayer::Render(Eklipse::Scene& scene, float deltaTime)
+	void EditorLayer::OnGUI(float deltaTime)
+	{
+		static bool openNewProjectPopup = false;
+
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N"))
+				{
+					openNewProjectPopup = true;
+				}
+				if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O"))
+				{
+					OpenProject(); // TODO: save and load created projects list and show it in modal
+				}
+				if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S"))
+				{
+					SaveProject();
+				}
+				if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S"))
+				{
+					SaveProjectAs();
+				}
+				if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr))
+				{
+					SaveScene();
+				}
+				if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
+				{
+					Eklipse::Application::Get().Close();
+				}
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
+
+		if (openNewProjectPopup)
+		{
+			ImGui::OpenPopup("Create New Project");
+			openNewProjectPopup = false;
+		}
+		if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+		{
+			static std::string nameBuffer;
+			static char* outPath = nullptr;
+			ImGui::Text("Project Name: ");
+			ImGui::SameLine();
+			ImGui::InputText("##Project Name", &nameBuffer);
+			ImGui::Text("Project Location: ");
+			ImGui::SameLine();
+			ImGui::Text(outPath == nullptr ? "" : outPath);
+			ImGui::SameLine();
+			if (ImGui::Button("Browse"))
+			{
+				nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
+				//if (result == NFD_CANCEL) return;
+
+				EK_ASSERT(result == NFD_OKAY, "Failed to open directory! {0}", NFD_GetError());
+			}
+			if (ImGui::Button("Create"))
+			{
+				if (nameBuffer.empty()) { EK_WARN("Project name is empty!"); }
+				else if (outPath == nullptr) { EK_WARN("Project path is empty!"); }
+				else
+				{
+					OnProjectUnload();
+					Eklipse::Project::New(outPath, nameBuffer);
+					OnProjectLoad();
+				}
+				free(outPath);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+	}
+	void EditorLayer::Render(Eklipse::Ref<Eklipse::Scene> scene, float deltaTime)
 	{
 		EK_PROFILE();
 
-		m_activeScene = &scene;
+		m_activeScene = scene;
 		
 		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
@@ -157,6 +241,8 @@ namespace Editor
 		GUI = Eklipse::ImGuiLayer::Create(GetGuiInfo());
 		Eklipse::Application::Get().PushOverlay(GUI);
 		GUI->Init();
+
+		m_assetBrowserPanel.Init();
 	}
 	void EditorLayer::OnShutdownAPI()
 	{
@@ -168,5 +254,43 @@ namespace Editor
 
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
+	}
+	void EditorLayer::OpenProject()
+	{
+		nfdchar_t* outPath = nullptr;
+		nfdresult_t result = NFD_OpenDialog("ekproj", nullptr, &outPath);
+		if (result == NFD_CANCEL) return;
+
+		EK_ASSERT(result == NFD_OKAY, "Failed to open project file! {0}", NFD_GetError());
+
+		OnProjectUnload();
+		Eklipse::Project::Load(outPath);
+		OnProjectLoad();
+
+		free(outPath);
+	}
+	void EditorLayer::SaveProject()
+	{
+		Eklipse::Project::SaveActive();
+	}
+	void EditorLayer::SaveProjectAs()
+	{
+		EK_WARN("'SaveProjectAs' not implemented!");
+	}
+	void EditorLayer::SaveScene()
+	{
+		EK_WARN("'SaveScene' not implemented!");
+	}
+	void EditorLayer::OnProjectLoad()
+	{
+		m_assetBrowserPanel.OnContextChanged();
+		Eklipse::Assets::Init(Eklipse::Project::GetActive()->GetProjectDirectory());
+	}
+	void EditorLayer::OnProjectUnload()
+	{
+		if (Eklipse::Project::GetActive() != nullptr)
+		{
+			Eklipse::Assets::Shutdown();
+		}
 	}
 }

@@ -3,11 +3,23 @@
 #include <vulkan/vulkan.h>
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <GLFW/glfw3.h>
+#include "VKTexture.h"
 
 namespace Eklipse
 {
 	namespace Vulkan
 	{
+		class VKImGuiIcon : public GuiIcon
+		{
+		public:
+			VKImGuiIcon(const char* path);
+			virtual void* GetID() override;
+
+		private:
+			Ref<VKTexture2D> m_texture;
+			VkDescriptorSet m_descriptorSet;
+		};
+
 		class VkImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:

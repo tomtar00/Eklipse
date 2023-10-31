@@ -30,6 +30,8 @@ namespace Eklipse
 		if (s_font == nullptr) s_font = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", 16);
 		EK_ASSERT(s_font != nullptr, "Failed to load font");
 
+		IMGUI_CHECKVERSION();
+
 		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());
 	}
 	void ImGuiLayer::OnDetach()
@@ -133,12 +135,6 @@ namespace Eklipse
 				}
 				ImGui::DockBuilderDockWindow(m_config.dockLayouts[m_config.dockLayouts.size() - 1].name, node_id);
 				ImGui::DockBuilderFinish(dockspace_id);
-
-				/*for (int i = 0; i < m_config.dockLayouts.size(); i++)
-				{
-					auto& dockLayout = m_config.dockLayouts[i];
-					Application::Get().PushOverlay(dockLayout.layer);
-				}*/
 			}
 			
 		}
@@ -163,6 +159,17 @@ namespace Eklipse
 			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiLayer>(configInfo);
 		}
 		EK_ASSERT(false, "API {0} not implemented for ImGui Layer creation", int(apiType));
+		return nullptr;
+	}
+	Ref<GuiIcon> GuiIcon::Create(const char* path)
+	{
+		auto apiType = Renderer::GetAPI();
+		switch (apiType)
+		{
+			case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(path);
+			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(path);
+		}
+		EK_ASSERT(false, "API {0} not implemented for ImGui Icon creation", int(apiType));
 		return nullptr;
 	}
 }

@@ -1,11 +1,22 @@
 #pragma once
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <GLFW/glfw3.h>
+#include <Eklipse/Platform/OpenGL/GLTexture.h>
 
 namespace Eklipse
 {
 	namespace OpenGL
 	{
+		class GLImGuiIcon : public GuiIcon
+		{
+		public:
+			GLImGuiIcon(const char* path);
+			virtual void* GetID() override;
+
+		private:
+			Ref<GLTexture2D> m_texture;
+		};
+
 		class GLImGuiLayer : public Eklipse::ImGuiLayer
 		{
 		public:

@@ -11,6 +11,15 @@ namespace Eklipse
 		FRAGMENT,
 		COMPUTE
 	};
+	enum class DataType
+	{
+		NONE,
+		BOOL, 
+		INT, INT2, INT3, INT4,
+		FLOAT, FLOAT2, FLOAT3, FLOAT4, 
+		MAT3, MAT4, 
+		SAMPLER2D
+	};
 
 	// Buffer data
 	struct ShaderUniformMember
@@ -19,6 +28,7 @@ namespace Eklipse
 		size_t size;
 		size_t offset;
 		uint32_t binding;
+		DataType type;
 	};
 	struct ShaderUniformBuffer
 	{
@@ -88,6 +98,8 @@ namespace Eklipse
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
+
+		inline const std::string& GetPath() const { return m_filePath; }
 
 	protected:
 		virtual const std::string GetCacheDirectoryPath() = 0;

@@ -2,10 +2,11 @@ project "EklipseEditor"
 	location "./"
 	kind "ConsoleApp" -- WindowedApp
 	language "C++"
+	cppdialect "C++17"
 	staticruntime "off"
 
-	targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("../obj/" .. outputdir .. "/%{prj.name}")
+	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/obj/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -16,25 +17,27 @@ project "EklipseEditor"
 	includedirs
 	{
 		"src",
-		"../Eklipse/src",
+		"%{wks.location}/Eklipse/src",
 
 		"%{Include.glfw}",
 		"%{Include.glm}",
 		"%{Include.ImGui}",
 		"%{Include.spdlog}",
 		"%{Include.entt}",
-		"%{Include.ImGuizmo}"
+		"%{Include.ImGuizmo}",
+		"%{Include.nativefiledialog}"
 	}
 
 	links
 	{
 		"Eklipse",
 		"ImGui",
-		"ImGuizmo"
+		"ImGuizmo",
+		"NFD",
+		"YAML"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines

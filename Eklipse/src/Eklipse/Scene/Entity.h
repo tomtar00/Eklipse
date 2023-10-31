@@ -2,6 +2,7 @@
 
 #include <entt.hpp>
 #include "Scene.h"
+#include <Eklipse/Core/UUID.h>
 
 namespace Eklipse
 {
@@ -42,9 +43,12 @@ namespace Eklipse
 		
 		inline bool IsNull() const { return m_entityHandle == entt::null; }
 		inline void MarkNull() { m_entityHandle = entt::null; }
-		entt::entity m_entityHandle{ entt::null };
+		inline UUID GetUUID() const { return m_uuid; }
+		inline entt::entity GetHandle() const { return m_entityHandle; }
 	
 	private:
+		entt::entity m_entityHandle{ entt::null };
 		Scene* m_scene = nullptr;
+		UUID m_uuid;
 	};
 }

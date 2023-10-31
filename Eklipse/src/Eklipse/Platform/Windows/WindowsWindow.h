@@ -1,7 +1,5 @@
 #pragma once
 
-#define GLFW_INCLUDE_NONE
-
 #include <Eklipse/Core/Window.h>
 #include <GLFW/glfw3.h>
 

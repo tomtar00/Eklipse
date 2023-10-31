@@ -2,6 +2,7 @@ project "Eklipse"
 	location "./"
 	kind "StaticLib"
 	language "C++"
+	cppdialect "C++17"
 	staticruntime "off"
 
 	targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
@@ -14,6 +15,13 @@ project "Eklipse"
 	{
 		"src/**.h",
 		"src/**.cpp"
+	}
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE",
+		"YAML_CPP_STATIC_DEFINE"
 	}
 
 	includedirs
@@ -32,7 +40,8 @@ project "Eklipse"
 		"%{Include.entt}",
 		"%{Include.ImGuizmo}",
 		"%{Include.shaderc}",
-		"%{Include.SPIRV_Cross}"
+		"%{Include.SPIRV_Cross}",
+		"%{Include.yaml_cpp}"
 	}
 
 	links
@@ -40,16 +49,15 @@ project "Eklipse"
 		"%{Lib.glfw3}",
 		"%{Lib.glfw3_mt}",
 		"%{Lib.glfw3dll}",
-
 		"%{Lib.Vulkan}",
 
 		"ImGui",
 		"ImGuizmo",
-		"Glad"
+		"Glad",
+		"YAML"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines

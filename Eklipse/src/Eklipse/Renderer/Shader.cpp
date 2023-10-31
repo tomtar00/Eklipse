@@ -29,20 +29,20 @@ namespace Eklipse
     {
         switch (stage)
         {
-			case ShaderStage::VERTEX:   return "vertex";
-			case ShaderStage::FRAGMENT: return "fragment";
-			case ShaderStage::COMPUTE:  return "compute";
-		}
-		EK_ASSERT(false, "Wrong shader stage");
-		return "none";
+        case ShaderStage::VERTEX:   return "vertex";
+        case ShaderStage::FRAGMENT: return "fragment";
+        case ShaderStage::COMPUTE:  return "compute";
+        }
+        EK_ASSERT(false, "Wrong shader stage");
+        return "none";
     }
     uint32_t ShaderStageToShaderC(const ShaderStage stage)
     {
         switch (stage)
         {
-            case ShaderStage::VERTEX:   return shaderc_glsl_vertex_shader;
-            case ShaderStage::FRAGMENT: return shaderc_glsl_fragment_shader;
-            case ShaderStage::COMPUTE:  return shaderc_glsl_compute_shader;
+        case ShaderStage::VERTEX:   return shaderc_glsl_vertex_shader;
+        case ShaderStage::FRAGMENT: return shaderc_glsl_fragment_shader;
+        case ShaderStage::COMPUTE:  return shaderc_glsl_compute_shader;
         }
         EK_ASSERT(false, "Unkown shader stage!");
         return 0;
@@ -72,6 +72,31 @@ namespace Eklipse
 		}
         EK_ASSERT(false, "Unkown SPIR-V type! Type: {0} Name: {1}", (uint32_t)type.basetype, name);
         return 0;
+    }
+    static DataType SPIRVTypeToDataType(const spirv_cross::SPIRType type)
+    {
+        if (type.basetype == spirv_cross::SPIRType::Image && type.image.dim == spv::Dim2D) return DataType::SAMPLER2D;
+        if (type.columns == 3 && type.vecsize == 3) return DataType::MAT3;
+        if (type.columns == 4 && type.vecsize == 4) return DataType::MAT4;
+
+        if (type.basetype == spirv_cross::SPIRType::Boolean) return DataType::BOOL;
+        if (type.basetype == spirv_cross::SPIRType::Float)
+        {
+			if (type.vecsize == 1) return DataType::FLOAT;
+			if (type.vecsize == 2) return DataType::FLOAT2;
+			if (type.vecsize == 3) return DataType::FLOAT3;
+			if (type.vecsize == 4) return DataType::FLOAT4;
+		}
+        if (type.basetype == spirv_cross::SPIRType::Int || type.basetype == spirv_cross::SPIRType::UInt)
+        {
+            if (type.vecsize == 1) return DataType::INT;
+            if (type.vecsize == 2) return DataType::INT2;
+            if (type.vecsize == 3) return DataType::INT3;
+            if (type.vecsize == 4) return DataType::INT4;
+        }
+        
+        EK_ASSERT(false, "Unkown SPIR-V type! Type: {0}", (uint32_t)type.basetype);
+        return DataType::NONE;
     }
 
     std::unordered_map<ShaderStage, std::string> Shader::PreProcess(const std::string& source)
@@ -109,6 +134,7 @@ namespace Eklipse
         //options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
         std::filesystem::path cacheDirectory = "Assets/Cache/Shader/Vulkan";
+        CreateCacheDirectoryIfNeeded(cacheDirectory.string());
 
         auto& shaderData = m_vulkanSPIRV;
         shaderData.clear();
@@ -139,6 +165,7 @@ namespace Eklipse
 
                 shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 
+                EK_CORE_ERROR("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
                 std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
                 if (out.is_open())
                 {
@@ -216,7 +243,7 @@ namespace Eklipse
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
                     EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
-                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, memberBinding });
+                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, memberBinding, SPIRVTypeToDataType(memberType) });
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
 
@@ -242,7 +269,7 @@ namespace Eklipse
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
                     EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
-                    pushConstant.members.push_back({ name, memberSize, memberOffset, memberBinding });
+                    pushConstant.members.push_back({ name, memberSize, memberOffset, memberBinding, SPIRVTypeToDataType(memberType) });
                 }
                 reflection.pushConstants.push_back(pushConstant);
             }

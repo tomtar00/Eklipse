@@ -70,7 +70,7 @@ namespace Eklipse
 
 			stbi_image_free(data);
 		}*/
-		GLTexture2D::GLTexture2D(const TextureInfo& textureInfo) : m_id(0)
+		GLTexture2D::GLTexture2D(const TextureInfo& textureInfo, const std::string& path) : Texture2D(textureInfo, path), m_id(0)
 		{
 			m_format = ConvertToGLFormat(textureInfo.imageFormat);
 			m_internalFormat = ConvertToInternalGLFormat(textureInfo.imageFormat);

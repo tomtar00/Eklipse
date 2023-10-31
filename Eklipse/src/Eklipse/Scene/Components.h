@@ -29,7 +29,7 @@ namespace Eklipse
 		Transform transform;
 		glm::mat4 transformMatrix;
 
-		glm::mat4& GetTransformMatrix() const;
+		glm::mat4 GetTransformMatrix() const;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& transform) = default;

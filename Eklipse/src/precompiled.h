@@ -1,6 +1,7 @@
 #pragma once
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
@@ -24,5 +25,6 @@
 #include <thread>
 #include <stack>
 
-#include "Eklipse/Utils/Log.h"
-#include "Eklipse/Profiler/Profiler.h"
+#include <Eklipse/Utils/Stats.h>
+#include <Eklipse/Utils/Log.h>
+#include <Eklipse/Profiler/Profiler.h>

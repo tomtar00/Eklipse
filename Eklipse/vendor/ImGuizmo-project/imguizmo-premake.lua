@@ -2,6 +2,7 @@ project "ImGuizmo"
 	location "./"
 	kind "StaticLib"
 	language "C++"
+	cppdialect "C++17"
 	staticruntime "off"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
@@ -27,7 +28,6 @@ project "ImGuizmo"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 	filter "configurations:Debug"

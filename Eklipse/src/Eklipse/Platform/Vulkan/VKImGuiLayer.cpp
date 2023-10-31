@@ -4,6 +4,9 @@
 #include <Eklipse/Renderer/Settings.h>
 #include <Eklipse/Renderer/RenderCommand.h>
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
+#include <Eklipse/Core/Application.h>
+#include <Eklipse/Scene/Assets.h>
+
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 #include "VK.h"
@@ -12,7 +15,6 @@
 #include "VKSwapChain.h"
 #include "VKPipeline.h"
 #include "VKDescriptor.h"
-#include <Eklipse/Core/Application.h>
 
 namespace Eklipse
 {
@@ -189,5 +191,17 @@ namespace Eklipse
 				image.Dispose();
 			}
 		}*/
-	}
+
+		// ==================== ICONS ===================
+
+		VKImGuiIcon::VKImGuiIcon(const char* path)
+		{
+			m_texture = std::static_pointer_cast<VKTexture2D>(Assets::GetTexture(path));
+			m_descriptorSet = ImGui_ImplVulkan_AddTexture(m_texture->GetSampler(), m_texture->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		void* VKImGuiIcon::GetID()
+		{
+			return m_descriptorSet;
+		}
+}
 }

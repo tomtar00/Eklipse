@@ -8,6 +8,8 @@ namespace Eklipse
 	class Scene
 	{
 	public:
+		Scene();
+
 		void Load();
 		void Dispose();
 

@@ -10,6 +10,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <Eklipse/Utils/File.h>
+
 namespace std
 {
     template<> struct hash<Eklipse::Vertex>
@@ -29,6 +31,39 @@ namespace Eklipse
     std::unordered_map<std::string, Ref<Texture2D>, std::hash<std::string>>     Assets::s_textureCache;
     std::unordered_map<std::string, Ref<Shader>, std::hash<std::string>>        Assets::s_shaderCache;
     std::unordered_map<std::string, Ref<Material>, std::hash<std::string>>      Assets::s_materialCache;
+
+    void Assets::Init(const std::filesystem::path& assetsDirectoryPath)
+    {
+        for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator(assetsDirectoryPath))
+        {
+            if (std::filesystem::is_directory(directoryEntry.path()))
+				continue;
+
+			const auto& path = assetsDirectoryPath / directoryEntry.path();
+			std::string extension = path.extension().string();
+
+            if (extension == ".obj")
+            {
+                EK_CORE_TRACE("Loading model from path '{0}'", path.string());
+				GetMesh(path.string());
+			}
+            else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
+            {
+                EK_CORE_TRACE("Loading texture from path '{0}'", path.string());
+				GetTexture(path.string());
+			}
+            else if (extension == ".eksh")
+            {
+                EK_CORE_TRACE("Loading shader from path '{0}'", path.string());
+				GetShader(path.string());
+			}
+            else if (extension == ".ekmt")
+            {
+                EK_CORE_TRACE("Loading material from path '{0}'", path.string());
+				GetMaterial(path.string());
+			}
+		}
+    }
 
     void Assets::Shutdown()
     {
@@ -115,7 +150,7 @@ namespace Eklipse
             }
         }
 
-        Mesh mesh{ vertices, indices };
+        Mesh mesh{ vertices, indices, meshPath };
         Ref<Mesh> meshRef = CreateRef<Mesh>(mesh);
         s_meshCache[meshPath] = meshRef;
 
@@ -131,7 +166,7 @@ namespace Eklipse
 
         int width, height, channels;
         void* data = stbi_load(texturePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-        EK_ASSERT(data, "Failed to load texture image from location: {0}", texturePath);
+        EK_ASSERT(data, "Failed to load texture from location: {0}", texturePath);
 
         ImageFormat format = ImageFormat::FORMAT_UNDEFINED;
         if (channels == 3)
@@ -148,35 +183,47 @@ namespace Eklipse
         textureInfo.imageAspect = ImageAspect::COLOR;
         textureInfo.imageUsage = ImageUsage::SAMPLED | ImageUsage::TRASNFER_DST;
 
-        Ref<Texture2D> texture = Texture2D::Create(textureInfo);
+        Ref<Texture2D> texture = Texture2D::Create(textureInfo, texturePath);
         texture->SetData(data, width * height * 4/*channels*/);
         s_textureCache[texturePath] = texture;
 
         EK_CORE_INFO("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", texturePath, width, height, channels);
         return texture;
     }
-    Ref<Shader> Assets::GetShader(const std::string& shaderPath)
+    Ref<Shader> Assets::GetShader(const std::string& shaderPath, Operation operation)
     {
         if (s_shaderCache.find(shaderPath) != s_shaderCache.end())
         {
             return s_shaderCache[shaderPath];
         }
 
+        if (operation == Operation::READ_WRITE)
+        {
+            CopyFileContent(shaderPath, "Assets/Shaders/Default3D.eksh");
+        }
+
         Ref<Shader> shader = Shader::Create(shaderPath);
         s_shaderCache[shaderPath] = shader;
+
         EK_CORE_INFO("Loaded shader from path '{0}'", shaderPath);
         return shader;
     }
-    Ref<Material> Assets::GetMaterial(const std::string& materialPath)
+    Ref<Material> Assets::GetMaterial(const std::string& materialPath, Operation operation)
     {
-        // TODO: insert return statement here
-        EK_ASSERT(false, "Getting material from path not implemented!");
-
         if (s_materialCache.find(materialPath) != s_materialCache.end())
         {
             return s_materialCache[materialPath];
         }
 
-        return Material::Create(s_shaderCache[0]);
+        if (operation == Operation::READ_WRITE)
+        {
+            CopyFileContent(materialPath, "Assets/Materials/Default3D.ekmt");
+        }
+
+        auto& material = Material::Create(materialPath);
+        s_materialCache[materialPath] = material;
+
+        EK_CORE_INFO("Loaded material from path '{0}'", materialPath);
+        return material;
     }
 }

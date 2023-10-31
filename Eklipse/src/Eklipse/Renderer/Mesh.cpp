@@ -5,7 +5,7 @@
 
 namespace Eklipse
 {
-	Mesh::Mesh(std::vector<float> vertices, std::vector<uint32_t> indices)
+	Mesh::Mesh(std::vector<float> vertices, std::vector<uint32_t> indices, const std::string& path) : m_path(path)
 	{
 		m_vertexArray = VertexArray::Create();
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);

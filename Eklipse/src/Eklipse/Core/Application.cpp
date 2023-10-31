@@ -2,25 +2,27 @@
 #include "Application.h"
 #include "Input.h"
 
-#include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Scene/Assets.h>
-#include <Eklipse/ImGui/ImGuiLayer.h>
-#include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
-#include <Eklipse/Platform/OpenGL/GlImGuiLayer.h>
+#include <Eklipse/Project/Project.h>
 
 namespace Eklipse
 {
+	Application* Application::s_instance = nullptr;
+
 	ApplicationInfo::ApplicationInfo(const ApplicationInfo& info)
 		: appName(info.appName), windowWidth(info.windowWidth), windowHeight(info.windowHeight) {}
 
 	Application::Application(ApplicationInfo& info) :
 		m_running(true), m_quit(false), m_minimized(false), m_appInfo(info) 
 	{
+		EK_ASSERT(s_instance == nullptr, "Application already exists!");
 		s_instance = this;
-		IMGUI_CHECKVERSION();
+
+		m_scene = CreateRef<Scene>();
 	}
 	Application::~Application()
 	{
+		m_scene->Dispose();
 		m_layerStack.Shutdown();
 		EK_PROFILE_END();
 	}
@@ -40,7 +42,9 @@ namespace Eklipse
 		OnInitAPI(Renderer::GetAPI());
 		Renderer::Init();
 		OnAPIHasInitialized(Renderer::GetAPI());
-		m_scene.Load();
+
+		if (Project::GetActive() != nullptr)
+			Assets::Init(Project::GetActive()->GetProjectDirectory());
 		Renderer::InitParameters();
 
 		EK_PROFILE_END();
@@ -58,7 +62,7 @@ namespace Eklipse
 		OnAPIHasShutdown();
 
 		m_window->Shutdown();
-		m_scene.Dispose();
+		
 	}
 
 	// === Frame Management ===
@@ -75,6 +79,11 @@ namespace Eklipse
 	}
 	void Application::SetAPI(ApiType api)
 	{
+		if (Renderer::GetAPI() == api)
+		{
+			EK_CORE_WARN("API already set to {0}", (int)api);
+			return;
+		}
 		EK_CORE_INFO("Setting API to {0}", (int)api);
 		Renderer::SetAPI(api);
 		m_running = false;
@@ -104,8 +113,7 @@ namespace Eklipse
 	}
 	void Application::OnWindowClose(WindowCloseEvent& event)
 	{
-		m_running = false;
-		m_quit = true;
+		Close();
 	}
 	void Application::OnWindowResized(WindowResizeEvent& event)
 	{
@@ -129,6 +137,12 @@ namespace Eklipse
 	void Application::OnMouseScroll(MouseScrolledEvent& event)
 	{
 		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
+	}
+
+	void Application::Close()
+	{
+		m_running = false;
+		m_quit = true;
 	}
 
 	// === Layer Management ===

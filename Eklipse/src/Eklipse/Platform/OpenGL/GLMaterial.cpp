@@ -3,25 +3,18 @@
 #include "GLShader.h"
 
 #include <Eklipse/Scene/Assets.h>
-#include "GLTexture.h"
 
 namespace Eklipse
 {
 	namespace OpenGL
 	{
-		Ref<Texture2D> s_texture;
-
-		GLMaterial::GLMaterial(Ref<Shader> shader) : Material(shader)
+		GLMaterial::GLMaterial(const std::filesystem::path& path) : Material(path)
 		{
-			m_glShader = std::static_pointer_cast<GLShader>(shader);
-			s_texture = Assets::GetTexture("Assets/Textures/viking_room.png");
+			m_glShader = std::static_pointer_cast<GLShader>(m_shader);
 		}
 		void GLMaterial::Bind()
 		{
 			Material::Bind();
-
-			glActiveTexture(GL_TEXTURE0 + m_shader->GetFragmentReflection().samplers[0].binding);
-			s_texture->Bind();
 
 			for (auto&& [stage, reflection] : m_shader->GetReflections())
 			{
@@ -33,7 +26,7 @@ namespace Eklipse
 						GLint location = glGetUniformLocation(m_glShader->GetID(), constantName.c_str());
 						EK_ASSERT(location != -1, "Uniform {0} not found in shader '{1}'", constantName, m_shader->GetName());
 
-						float* data = (float*)m_pushConstants[pushConstant.name].dataPointers[member.name].data;
+						float* data = static_cast<float*>(m_pushConstants[pushConstant.name].dataPointers[member.name].data);
 						switch (pushConstant.size)
 						{
 							case sizeof(float) :	 glUniform1fv(location, 1, (float*)data); break;
@@ -45,6 +38,14 @@ namespace Eklipse
 							default: EK_ASSERT(false, "Unsupported uniform size: {0}", pushConstant.size);
 						}
 					};
+				}
+
+				uint32_t index = 0;
+				for (auto& sampler : reflection.samplers)
+				{
+					if (m_sampledTextures.size() <= index) break;
+					glActiveTexture(GL_TEXTURE0 + sampler.binding);
+					m_sampledTextures[index++]->Bind();
 				}
 			}
 		}

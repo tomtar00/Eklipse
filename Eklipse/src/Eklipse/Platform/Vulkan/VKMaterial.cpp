@@ -9,9 +9,9 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKMaterial::VKMaterial(Ref<Shader> shader) : Material(shader)
+		VKMaterial::VKMaterial(const std::filesystem::path& path) : Material(path)
 		{
-			m_vkShader = std::static_pointer_cast<VKShader>(shader);
+			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
 			CreateDescriptorSets();
 		}
 		void VKMaterial::Bind()
@@ -76,11 +76,12 @@ namespace Eklipse
 						descriptorWrites.push_back(descriptorWrite);
 						EK_CORE_INFO("Binding uniform buffer '{0}' to descriptor set {1} at binding {2}", ubo.name, i, ubo.binding);
 					}
+
+					uint32_t index = 0;
 					for (auto& sampler : reflection.samplers)
 					{
-						Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(
-							Assets::GetTexture("Assets/Textures/viking_room.png")
-						);
+						if (m_sampledTextures.size() <= index) break;
+						auto& texture = std::static_pointer_cast<VKTexture2D>(m_sampledTextures[index++]);
 
 						VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo;
 						imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -100,67 +101,6 @@ namespace Eklipse
 						EK_CORE_INFO("Binding sampler '{0}' to descriptor set {1} at binding {2}", sampler.name, i, sampler.binding);
 					}
 				}
-
-				// ====================
-				//descriptorWrites.resize(3);
-
-				//// Uniform buffer 0
-				//Ref<VKUniformBuffer> uniformBuffer0 = std::static_pointer_cast<VKUniformBuffer>(
-				//	Assets::GetUniformBuffer("uCamera")
-				//);
-
-				//VkDescriptorBufferInfo bufferInfo0{};
-				//bufferInfo0.buffer = uniformBuffer0->m_buffer;
-				//bufferInfo0.offset = 0;
-				//bufferInfo0.range = 64;
-
-				//descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				//descriptorWrites[0].dstSet = m_descriptorSets[i];
-				//descriptorWrites[0].dstBinding = 0;
-				//descriptorWrites[0].dstArrayElement = 0;
-				//descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				//descriptorWrites[0].descriptorCount = 1;
-				//descriptorWrites[0].pBufferInfo = &bufferInfo0;
-				//descriptorWrites[0].pImageInfo = VK_NULL_HANDLE;
-
-				//// Uniform buffer 1
-				//Ref<VKUniformBuffer> uniformBuffer1 = std::static_pointer_cast<VKUniformBuffer>(
-				//	Assets::GetUniformBuffer("uTransform")
-				//);
-
-				//VkDescriptorBufferInfo bufferInfo1{};
-				//bufferInfo1.buffer = uniformBuffer1->m_buffer;
-				//bufferInfo1.offset = 0;
-				//bufferInfo1.range = 64;
-
-				//descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				//descriptorWrites[1].dstSet = m_descriptorSets[i];
-				//descriptorWrites[1].dstBinding = 1;
-				//descriptorWrites[1].dstArrayElement = 0;
-				//descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				//descriptorWrites[1].descriptorCount = 1;
-				//descriptorWrites[1].pBufferInfo = &bufferInfo1;
-				//descriptorWrites[1].pImageInfo = VK_NULL_HANDLE;
-
-				//// Image sampler
-				//Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(
-				//	Assets::GetTexture("Assets/Textures/viking_room.png")
-				//);
-
-				//VkDescriptorImageInfo imageInfo{};
-				//imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				//imageInfo.imageView = texture->GetImageView();
-				//imageInfo.sampler = texture->GetSampler();
-
-				//descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				//descriptorWrites[2].dstSet = m_descriptorSets[i];
-				//descriptorWrites[2].dstBinding = 2;
-				//descriptorWrites[2].dstArrayElement = 0;
-				//descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				//descriptorWrites[2].descriptorCount = 1;
-				//descriptorWrites[2].pBufferInfo = VK_NULL_HANDLE;
-				//descriptorWrites[2].pImageInfo = &imageInfo;
-				// ====================
 
 				vkUpdateDescriptorSets(g_logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 

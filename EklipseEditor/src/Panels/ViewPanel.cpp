@@ -25,7 +25,7 @@ namespace Editor
 		m_aspectRatio = m_viewportSize.x / m_viewportSize.y;
 
 		ImGuizmo::SetDrawlist();
-
+		ImGuizmo::SetRect(m_viewportPosition.x, m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y);
 		ImGuizmo::DrawGrid(viewMatrix, projMatrix, glm::value_ptr(glm::mat4(1.0f)), 10.0f);
 
 		ImGui::SetCursorPos({ 0, 30.0f });
@@ -72,10 +72,6 @@ namespace Editor
 			auto* matrix = glm::value_ptr(transComp.transformMatrix);
 		
 			ImGuizmo::RecomposeMatrixFromComponents(pos, rot, scale, matrix);
-			auto& viewportPos = EditorLayer::Get()->GetViewPanel().GetViewportPosition();
-			auto& viewportSize = EditorLayer::Get()->GetViewPanel().GetViewportSize();
-			ImGuizmo::SetRect(viewportPos.x, viewportPos.y, viewportSize.x, viewportSize.y);
-		
 			ImGuizmo::Manipulate(viewMatrix, projMatrix, m_gizmoOperation, m_gizmoMode, matrix, nullptr, nullptr);
 			ImGuizmo::DecomposeMatrixToComponents(matrix, pos, rot, scale);
 		}

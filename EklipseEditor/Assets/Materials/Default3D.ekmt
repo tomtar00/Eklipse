@@ -1,0 +1,9 @@
+Name: Default3D.ekmt
+Shader: Assets/Shaders/Default3D.eksh
+PushConstants:
+  pConstants:
+    - Name: Model
+      Type: mat4
+      Data: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+Samplers:
+  texSampler:
