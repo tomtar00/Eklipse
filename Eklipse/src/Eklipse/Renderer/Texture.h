@@ -60,6 +60,7 @@ namespace Eklipse
 
 		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 		virtual void Dispose() = 0;
 
 	protected:

@@ -1,10 +1,11 @@
 #include <precompiled.h>
 #include "OpenGLAPI.h"
-#include <glad/glad.h>
 #include "GL.h"
-#include <Eklipse/Scene/Assets.h>
+
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Renderer/RenderCommand.h>
+
+#include <glad/glad.h>
 
 namespace Eklipse
 {
@@ -123,7 +124,7 @@ namespace Eklipse
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-			auto& spriteShader = Assets::GetShader("Assets/Shaders/Default2D.eksh");
+			auto& spriteShader = Application::Get().GetAssetLibrary()->GetShader("Assets/Shaders/Default2D.eksh"); // TODO: fix this asap
 			spriteShader->Bind();
 			glDisable(GL_DEPTH_TEST);
 			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);

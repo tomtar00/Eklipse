@@ -2,7 +2,6 @@
 #include "Application.h"
 #include "Input.h"
 
-#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Project/Project.h>
 
 namespace Eklipse
@@ -19,10 +18,11 @@ namespace Eklipse
 		s_instance = this;
 
 		m_scene = CreateRef<Scene>();
+		m_assetLibrary = CreateRef<AssetLibrary>();
 	}
 	Application::~Application()
 	{
-		m_scene->Dispose();
+		m_scene->Unload();
 		m_layerStack.Shutdown();
 		EK_PROFILE_END();
 	}
@@ -35,17 +35,22 @@ namespace Eklipse
 		m_running = true;
 		m_quit = false;
 
+		// Init window
 		WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
 		m_window = Window::Create(data);
 		m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
+		// Init API
 		OnInitAPI(Renderer::GetAPI());
 		Renderer::Init();
 		OnAPIHasInitialized(Renderer::GetAPI());
 
-		if (Project::GetActive() != nullptr)
-			Assets::Init(Project::GetActive()->GetProjectDirectory());
+		// Init assets
+		LoadAssets();
 		Renderer::InitParameters();
+
+		// Apply all components in the active scene
+		m_scene->OnAPIHasInitialized();
 
 		EK_PROFILE_END();
 	}
@@ -55,14 +60,13 @@ namespace Eklipse
 
 		Renderer::WaitDeviceIdle();
 
-		Assets::Shutdown();
+		UnloadAssets();
 
 		OnShutdownAPI();
 		Renderer::Shutdown();
 		OnAPIHasShutdown();
 
 		m_window->Shutdown();
-		
 	}
 
 	// === Frame Management ===
@@ -86,8 +90,28 @@ namespace Eklipse
 		}
 		EK_CORE_INFO("Setting API to {0}", (int)api);
 		Renderer::SetAPI(api);
+
 		m_running = false;
 		m_quit = false;
+	}
+
+	// === Scene Management ===
+	void Application::SwitchScene(Ref<Scene> scene)
+	{
+		m_scene->Unload();
+		m_scene.reset();
+		m_scene = scene;
+	}
+	
+	// === Asset Management ===
+	void Application::LoadAssets()
+	{
+		if (Project::GetActive())
+			m_assetLibrary->Load(Project::GetActive()->GetConfig().assetsDirectoryPath);
+	}
+	void Application::UnloadAssets()
+	{
+		m_assetLibrary->Unload();
 	}
 
 	// === Event Handling ===

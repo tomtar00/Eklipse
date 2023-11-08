@@ -58,7 +58,7 @@ namespace Eklipse
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (in.is_open())
 				{
-					EK_CORE_INFO("Reading OpenGL shader cache binaries from path: '{0}'", cachedPath.string());
+					EK_CORE_TRACE("Reading OpenGL shader cache binaries from path: '{0}'", cachedPath.string());
 
 					in.seekg(0, std::ios::end);
 					auto size = in.tellg();
@@ -70,7 +70,7 @@ namespace Eklipse
 				}
 				else
 				{
-					EK_CORE_INFO("Compiling shader at path: '{0}' to OpenGL binaries", m_filePath);
+					EK_CORE_TRACE("Compiling shader at path: '{0}' to OpenGL binaries", m_filePath);
 
 					spirv_cross::CompilerGLSL glslCompiler(spirv);
 					spirv_cross::CompilerGLSL::Options glslOptions;
@@ -86,7 +86,6 @@ namespace Eklipse
 
 					m_openGLSourceCode[stage] = glslCompiler.compile();
 					auto& source = m_openGLSourceCode[stage];
-					EK_CORE_TRACE("OpenGL source code:\n\n{0}", source);
 
 					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
 					EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
@@ -100,6 +99,10 @@ namespace Eklipse
 						out.write((char*)data.data(), data.size() * sizeof(uint32_t));
 						out.flush();
 						out.close();
+					}
+					else
+					{
+						EK_CORE_ERROR("Failed to write OpenGL shader cache binaries to path: '{0}'", cachedPath.string());
 					}
 				}
 			}
@@ -156,7 +159,7 @@ namespace Eklipse
 			m_id = program;
 		}
 
-		GLShader::GLShader(const std::string& filePath) : m_id(0), Shader(filePath)
+		GLShader::GLShader(const Path& filePath) : m_id(0), Shader(filePath)
 		{
 			auto shaderSources = Setup();
 

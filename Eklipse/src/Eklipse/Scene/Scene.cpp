@@ -2,53 +2,85 @@
 #include "Scene.h"
 #include "Entity.h"
 #include "Components.h"
-#include "Assets.h"
-
-#include <yaml-cpp/yaml.h>
+#include "SceneSerializer.h"
+#include <Eklipse/Core/Application.h>
 
 namespace Eklipse
 {
-	//static Ref<Shader>			s_defaultShader;
-	//static Ref<Shader>		s_spriteShader;
-	//static Ref<Material>		s_material;
-
-	Scene::Scene()
+	Scene::Scene(const std::string& name, const Path& saveFilePath) : 
+		m_name(name), m_path(saveFilePath)
 	{
-		CreateEntity("Main Camera").AddComponent<CameraComponent>();
+		if (m_name.empty())
+			m_name = "Untitled";
 	}
 
-	void Scene::Load()
+	void Scene::Unload()
 	{
-		EK_CORE_TRACE("Begin scene load");
+		EK_CORE_TRACE("Begin scene unload");
 
-		//s_spriteShader	= Assets::GetShader("Assets/Shaders/sprite.glsl");
-		//s_defaultShader	= Assets::GetShader("Assets/Shaders/DefaultShader.eksh");
-		//s_material		= Material::Create(s_meshShader);
-		//
-		//Ref<Mesh> viking = Assets::GetMesh("Assets/Models/viking_room.obj");
-
-		
-		//CreateEntity("Viking").AddComponent<MeshComponent>(viking.get(), s_material.get());
-		//CreateEntity("Viking 2").AddComponent<MeshComponent>(viking.get(), s_material.get());
-
-		EK_CORE_TRACE("Scene loaded");
-	}
-	void Scene::Dispose()
-	{
-		EK_CORE_TRACE("Begin scene dispose");
-
-		//s_spriteShader	= nullptr;
-		//s_defaultShader	= nullptr;
-		//s_material		= nullptr;
-
-		m_registry.clear();
+		//m_registry.clear();
 
 		EK_CORE_TRACE("Scene disposed");
 	}
+	void Scene::OnAPIHasInitialized()
+	{
+		ForEachEntity([&](auto entityID)
+		{
+			if (m_registry.all_of<MeshComponent>(entityID))
+			{
+				auto& meshComponent = m_registry.get<MeshComponent>(entityID);
+				if (!meshComponent.meshPath.empty() && !meshComponent.materialPath.empty())
+				{
+					meshComponent.mesh = Eklipse::Application::Get().GetAssetLibrary()->GetMesh(meshComponent.meshPath).get();
+					meshComponent.material = Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
+				}
+			}
+		});
+	}
+
+	Ref<Scene> Scene::New(const std::string& name, const Path& saveFilePath)
+	{
+		auto scene = CreateRef<Scene>(name, saveFilePath);
+		Save(scene);
+		return scene;
+	}
+	void Scene::Save(Ref<Scene> scene)
+	{
+		EK_CORE_TRACE("Saving scene '{0}'", scene->GetName());
+
+		Eklipse::SceneSerializer serializer(scene);
+		serializer.Serialize(scene->GetPath());
+
+		EK_CORE_TRACE("Scene '{0}' saved", scene->GetName());
+	}
+	Ref<Scene> Scene::Load(const Path& saveFilePath)
+	{
+		EK_CORE_TRACE("Loading scene from '{0}'", saveFilePath.string());
+
+		Ref<Scene> scene = CreateRef<Scene>();
+		Eklipse::SceneSerializer serializer(scene);
+		if (serializer.Deserialize(saveFilePath))
+		{
+			EK_CORE_TRACE("Scene '{0}' loaded", scene->GetName());
+			return scene;
+		}
+
+		EK_CORE_ERROR("Failed to load scene '{0}'", saveFilePath.string());
+		return nullptr;
+	}
+
 	Entity Scene::CreateEntity(const std::string name)
 	{
 		Entity entity = { m_registry.create(), this };
 		entity.AddComponent<IDComponent>();
+		entity.AddComponent<NameComponent>(name.empty() ? "Empty Entity" : name);
+		entity.AddComponent<TransformComponent>();
+		return entity;
+	}
+	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
+	{
+		Entity entity = { m_registry.create(), this };
+		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<NameComponent>(name.empty() ? "Empty Entity" : name);
 		entity.AddComponent<TransformComponent>();
 		return entity;

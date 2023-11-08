@@ -1,8 +1,6 @@
 #include "precompiled.h"
 #include "Mesh.h"
 
-#include <Eklipse/Scene/Assets.h>
-
 namespace Eklipse
 {
 	Mesh::Mesh(std::vector<float> vertices, std::vector<uint32_t> indices, const std::string& path) : m_path(path)

@@ -1,13 +1,13 @@
 #include "AssetBrowser.h"
+#include "EditorLayer.h"
 #include <Eklipse/Project/Project.h>
-#include <Eklipse/Scene/Assets.h>
 
 namespace Editor
 {
-	void AssetBrowser::Init()
+	void AssetBrowser::LoadResources()
 	{
-		m_folderIcon = Eklipse::GuiIcon::Create("Assets/Icons/folder.png");
-		m_fileIcon = Eklipse::GuiIcon::Create("Assets/Icons/file.png");
+		m_folderIcon = Eklipse::GuiIcon::Create(EditorLayer::Get().GetAssetLibrary(), "Assets/Icons/folder.png");
+		m_fileIcon = Eklipse::GuiIcon::Create(EditorLayer::Get().GetAssetLibrary(), "Assets/Icons/file.png");
 	}
 
 	void AssetBrowser::OnGUI(float deltaTime)
@@ -22,10 +22,13 @@ namespace Editor
 
 		if (ImGui::BeginPopupContextWindow())
 		{
+			if (ImGui::MenuItem("Create Shader"))
+			{
+				CreateShader(m_currentPath / "NewShader.eksh", "Assets/Shaders/Default3D.eksh");
+			}
 			if (ImGui::MenuItem("Create Material"))
 			{
-				std::string materialName = "/Material.ekmt";
-				Eklipse::Assets::GetMaterial(m_currentPath.string() + materialName, Eklipse::Operation::READ_WRITE);
+				CreateMaterial(m_currentPath / "NewMaterial.ekmt", "Assets/Shaders/Default3D.eksh");
 			}
 
 			ImGui::EndPopup();
@@ -76,6 +79,18 @@ namespace Editor
 				if (directoryEntry.is_directory())
 					m_currentPath /= path.filename();
 			}
+
+			if (ImGui::IsItemClicked())
+			{
+				if (directoryEntry.path().extension() == ".ekmt")
+				{
+					DetailsSelectionInfo info{};
+					info.type = SelectionType::Material;
+					info.material = Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(directoryEntry.path()).get();
+					EditorLayer::Get().SetSelection(info);
+				}
+			}
+
 			ImGui::TextWrapped(filenameString.c_str());
 			ImGui::NextColumn();
 			ImGui::PopID();
@@ -89,5 +104,18 @@ namespace Editor
 	{
 		m_workingDirPath = Eklipse::Project::GetActive()->GetProjectDirectory();
 		m_currentPath = m_workingDirPath;
+	}
+	void AssetBrowser::CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderTemplatePath)
+	{
+		Eklipse::Path shaderPath = "//Shaders/" + (shaderTemplatePath.path().stem().string() + ".eksh");
+		if (!std::filesystem::exists(shaderPath))
+			CreateShader(shaderPath, shaderTemplatePath);
+
+		Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(dstPath, shaderPath);
+	}
+	void AssetBrowser::CreateShader(const Eklipse::Path& dstPath, const Eklipse::Path& templatePath)
+	{
+		Eklipse::CopyFileContent(dstPath, templatePath);
+		Eklipse::Application::Get().GetAssetLibrary()->GetShader(dstPath);
 	}
 }

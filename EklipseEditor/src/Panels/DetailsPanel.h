@@ -11,6 +11,8 @@ namespace Editor
 		
 	private:
 		virtual void OnGUI(float deltaTime) override;
+		void OnEntityGUI(Eklipse::Entity entity);
+		void OnMaterialGUI(Eklipse::Material* material);
 
 	private:
 		std::string m_entityNameBuffer;

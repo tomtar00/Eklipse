@@ -1,9 +1,12 @@
 Name: Default3D.ekmt
-Shader: Assets/Shaders/Default3D.eksh
+Shader: //Shaders/Default3D.eksh
 PushConstants:
   pConstants:
     - Name: Model
       Type: mat4
       Data: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    - Name: Tint
+      Type: vec3
+      Data: [0, 0, 0]
 Samplers:
   texSampler:

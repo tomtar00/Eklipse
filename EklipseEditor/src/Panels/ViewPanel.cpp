@@ -13,15 +13,15 @@ namespace Editor
 		EK_PROFILE();
 
 		ImGui::Begin("View");
-		auto entity = EditorLayer::Get()->GetSelectedEntity();
-		auto& camera = EditorLayer::Get()->GetEditorCamera();
+		//auto entity = EditorLayer::Get()->GetSelection().entity; //EditorLayer::Get()->GetSelectedEntity();
+		auto& camera = EditorLayer::Get().GetEditorCamera();
 		auto* viewMatrix = glm::value_ptr(camera.GetViewMatrix());
 		auto* projMatrix = glm::value_ptr(camera.GetProjectionMatrix());
 
 		// Scene
 		m_viewportPosition = ImGui::GetWindowPos();
 		m_viewportSize = ImGui::GetContentRegionAvail();
-		EditorLayer::Get()->GUI->DrawViewport(m_viewportSize.x, m_viewportSize.y);
+		EditorLayer::Get().GUI->DrawViewport(m_viewportSize.x, m_viewportSize.y);
 		m_aspectRatio = m_viewportSize.x / m_viewportSize.y;
 
 		ImGuizmo::SetDrawlist();
@@ -61,8 +61,9 @@ namespace Editor
 		ImGui::Unindent(2.0f);
 
 		// Gizmos
-		if (!entity.IsNull())
+		if (EditorLayer::Get().GetSelection().type == SelectionType::Entity)
 		{
+			auto entity = EditorLayer::Get().GetSelection().entity;
 			auto& transComp = entity.GetComponent<Eklipse::TransformComponent>();
 		
 			auto* pos = glm::value_ptr(transComp.transform.position);

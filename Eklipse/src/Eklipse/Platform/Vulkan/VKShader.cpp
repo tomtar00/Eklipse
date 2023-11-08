@@ -38,7 +38,7 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VKShader::VKShader(const std::string& filePath) : Shader(filePath)
+		VKShader::VKShader(const Path& filePath) : Shader(filePath)
 		{			
 			auto shaderSources = Setup();
 

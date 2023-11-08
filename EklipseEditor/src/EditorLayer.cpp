@@ -2,7 +2,6 @@
 #include <Eklipse/Renderer/Settings.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Project/Project.h>
-#include <Eklipse/Scene/Assets.h>
 
 #include <glm/gtc/quaternion.hpp>
 #include <misc/cpp/imgui_stdlib.h>
@@ -11,7 +10,7 @@
 
 namespace Editor
 {
-	EditorLayer::EditorLayer(Eklipse::Ref<Eklipse::Scene> scene) : m_guiEnabled(true), m_activeScene(scene)
+	EditorLayer::EditorLayer(Eklipse::Ref<Eklipse::Scene> scene) : m_guiEnabled(true)
 	{
 		EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
 		s_instance = this;
@@ -19,6 +18,8 @@ namespace Editor
 		m_editorCamera.m_farPlane = 1000.0f;
 		m_editorCamera.m_nearPlane = 0.1f;
 		m_editorCamera.m_fov = 45.0f;
+
+		m_assetLibrary = Eklipse::CreateRef<Eklipse::AssetLibrary>();
 	}
 	void EditorLayer::OnAttach()
 	{
@@ -79,8 +80,8 @@ namespace Editor
 
 		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::F))
 		{
-			if (!m_selectedEntity.IsNull())
-				targetPosition = m_selectedEntity.GetComponent<Eklipse::TransformComponent>().transform.position;
+			if (GetSelection().type == SelectionType::Entity)
+				targetPosition = GetSelection().entity.GetComponent<Eklipse::TransformComponent>().transform.position;
 		}
 		else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button1))
 		{
@@ -126,7 +127,7 @@ namespace Editor
 				}
 				if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O"))
 				{
-					OpenProject(); // TODO: save and load created projects list and show it in modal
+					OpenProject(); // TODO: save and load created projects list and show it in modal/window
 				}
 				if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S"))
 				{
@@ -179,11 +180,18 @@ namespace Editor
 				else if (outPath == nullptr) { EK_WARN("Project path is empty!"); }
 				else
 				{
-					OnProjectUnload();
-					Eklipse::Project::New(outPath, nameBuffer);
-					OnProjectLoad();
+					NewProject(outPath, nameBuffer);
 				}
-				free(outPath);
+
+				if (outPath != nullptr)
+					free(outPath);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				if (outPath != nullptr)
+					free(outPath);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
@@ -192,14 +200,12 @@ namespace Editor
 	void EditorLayer::Render(Eklipse::Ref<Eklipse::Scene> scene, float deltaTime)
 	{
 		EK_PROFILE();
-
-		m_activeScene = scene;
 		
 		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
 		// Record scene framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
-		Eklipse::Renderer::RenderScene(*m_activeScene);
+		Eklipse::Renderer::RenderScene(scene);
 		Eklipse::Renderer::EndRenderPass(m_viewportFramebuffer);
 
 		// Record ImGui framebuffer
@@ -242,18 +248,29 @@ namespace Editor
 		Eklipse::Application::Get().PushOverlay(GUI);
 		GUI->Init();
 
-		m_assetBrowserPanel.Init();
+		OnLoadResources();
 	}
 	void EditorLayer::OnShutdownAPI()
 	{
 		Eklipse::Application::Get().PopOverlay(GUI);
-		SetEntityNull();
+		ClearSelection();
+
 		GUI->Shutdown();
 		m_defaultFramebuffer->Dispose();
 		m_viewportFramebuffer->Dispose();
 
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
+
+		m_assetLibrary->Unload();
+	}
+	void EditorLayer::NewProject(const Eklipse::Path& path, const std::string& name)
+	{
+		OnProjectUnload();
+		auto project = Eklipse::Project::New(path, name);
+		auto scene = Eklipse::Scene::New("Untitled", project->GetConfig().startScenePath);
+		OnProjectLoad();
+		Eklipse::Application::Get().SwitchScene(scene);
 	}
 	void EditorLayer::OpenProject()
 	{
@@ -264,13 +281,16 @@ namespace Editor
 		EK_ASSERT(result == NFD_OKAY, "Failed to open project file! {0}", NFD_GetError());
 
 		OnProjectUnload();
-		Eklipse::Project::Load(outPath);
+		auto project = Eklipse::Project::Load(outPath);
+		auto scene = Eklipse::Scene::Load(project->GetConfig().startScenePath);
 		OnProjectLoad();
+		Eklipse::Application::Get().SwitchScene(scene);
 
 		free(outPath);
 	}
 	void EditorLayer::SaveProject()
 	{
+		SaveScene();
 		Eklipse::Project::SaveActive();
 	}
 	void EditorLayer::SaveProjectAs()
@@ -279,18 +299,30 @@ namespace Editor
 	}
 	void EditorLayer::SaveScene()
 	{
-		EK_WARN("'SaveScene' not implemented!");
-	}
-	void EditorLayer::OnProjectLoad()
-	{
-		m_assetBrowserPanel.OnContextChanged();
-		Eklipse::Assets::Init(Eklipse::Project::GetActive()->GetProjectDirectory());
+		Eklipse::Scene::Save(Eklipse::Application::Get().GetScene());
 	}
 	void EditorLayer::OnProjectUnload()
 	{
-		if (Eklipse::Project::GetActive() != nullptr)
-		{
-			Eklipse::Assets::Shutdown();
-		}
+		Eklipse::Renderer::WaitDeviceIdle();
+		Eklipse::Application::Get().UnloadAssets();
+	}
+	void EditorLayer::OnLoadResources()
+	{
+		m_assetBrowserPanel.LoadResources();
+	}
+	void EditorLayer::OnProjectLoad()
+	{
+		ClearSelection();
+		m_assetBrowserPanel.OnContextChanged();
+		Eklipse::Application::Get().LoadAssets();
+	}
+	void EditorLayer::SetSelection(DetailsSelectionInfo info)
+	{
+		m_selectionInfo = info;
+	}
+	void EditorLayer::ClearSelection()
+	{
+		GetSelection().type = SelectionType::None;
+		GetSelection().entity.MarkNull();
 	}
 }

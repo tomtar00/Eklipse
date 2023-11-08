@@ -14,8 +14,6 @@
 
 namespace Eklipse
 {
-    //std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_shaders{};
-
     ShaderStage StringToShaderStage(const std::string& stage)
     {
         if (stage == "vertex")   return ShaderStage::VERTEX;
@@ -98,6 +96,27 @@ namespace Eklipse
         EK_ASSERT(false, "Unkown SPIR-V type! Type: {0}", (uint32_t)type.basetype);
         return DataType::NONE;
     }
+    static std::string DataTypeToString(DataType type)
+    {
+        switch (type)
+        {
+			case DataType::NONE:     return "none";
+			case DataType::BOOL:     return "bool";
+			case DataType::INT:      return "int";
+			case DataType::INT2:     return "int2";
+			case DataType::INT3:     return "int3";
+			case DataType::INT4:     return "int4";
+			case DataType::FLOAT:    return "float";
+			case DataType::FLOAT2:   return "float2";
+			case DataType::FLOAT3:   return "float3";
+			case DataType::FLOAT4:   return "float4";
+			case DataType::MAT3:     return "mat3";
+			case DataType::MAT4:     return "mat4";
+			case DataType::SAMPLER2D:return "sampler2D";
+		}
+		EK_ASSERT(false, "Unkown data type!");
+		return "none";
+	}
 
     std::unordered_map<ShaderStage, std::string> Shader::PreProcess(const std::string& source)
     {
@@ -146,7 +165,7 @@ namespace Eklipse
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (in.is_open())
             {
-                EK_CORE_INFO("Reading Vulkan shader cache binaries from path: '{0}'", cachedPath.string());
+                EK_CORE_TRACE("Reading Vulkan shader cache binaries from path: '{0}'", cachedPath.string());
 
                 in.seekg(0, std::ios::end);
                 auto size = in.tellg();
@@ -158,14 +177,14 @@ namespace Eklipse
             }
             else
             {
-                EK_CORE_INFO("Compiling shader at path: '{0}' to Vulkan binaries", m_filePath);
+                EK_CORE_TRACE("Compiling shader at path: '{0}' to Vulkan binaries", m_filePath);
 
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
                 EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
 
                 shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 
-                EK_CORE_ERROR("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
+                EK_CORE_TRACE("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
                 std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
                 if (out.is_open())
                 {
@@ -174,6 +193,10 @@ namespace Eklipse
                     out.flush();
                     out.close();
                 }
+                else
+                {
+					EK_CORE_ERROR("Failed to write Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
+				}
             }
         }
 
@@ -239,11 +262,13 @@ namespace Eklipse
                     size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
                     uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
                     uint32_t memberBinding = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationBinding);
+                    DataType type = SPIRVTypeToDataType(memberType);
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
                     EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
-                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, memberBinding, SPIRVTypeToDataType(memberType) });
+                    EK_CORE_TRACE("\t\tType: {0}", DataTypeToString(type));
+                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, memberBinding, type });
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
 
@@ -265,11 +290,13 @@ namespace Eklipse
                     size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
                     uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
                     uint32_t memberBinding = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationBinding);
+                    DataType type = SPIRVTypeToDataType(memberType);
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
                     EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
-                    pushConstant.members.push_back({ name, memberSize, memberOffset, memberBinding, SPIRVTypeToDataType(memberType) });
+                    EK_CORE_TRACE("\t\tType: {0}", DataTypeToString(type));
+                    pushConstant.members.push_back({ name, memberSize, memberOffset, memberBinding, type });
                 }
                 reflection.pushConstants.push_back(pushConstant);
             }
@@ -286,7 +313,7 @@ namespace Eklipse
         }
     }
 
-    Ref<Shader> Shader::Create(const std::string& filePath)
+    Ref<Shader> Shader::Create(const Path& filePath)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)
@@ -297,9 +324,9 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Shader creation", int(apiType));
         return nullptr;
     }
-    Shader::Shader(const std::string& filePath) : m_filePath(filePath)
+    Shader::Shader(const Path& filePath) : m_filePath(filePath)
     {
-        m_name = "NO_SHADER_NAME";
+        m_name = filePath.path().stem().string();
     }
     std::unordered_map<ShaderStage, std::string> Shader::Setup()
     {
@@ -307,11 +334,11 @@ namespace Eklipse
 
         std::string source = ReadFileFromPath(m_filePath);
 
-        auto lastSlash = m_filePath.find_last_of("/\\");
+        auto lastSlash = m_filePath.string().find_last_of("/\\");
         lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-        auto lastDot = m_filePath.rfind('.');
+        auto lastDot = m_filePath.string().rfind('.');
         auto count = lastDot == std::string::npos ? m_filePath.size() - lastSlash : lastDot - lastSlash;
-        m_name = m_filePath.substr(lastSlash, count);
+        m_name = m_filePath.string().substr(lastSlash, count);
 
         return PreProcess(source);
     }

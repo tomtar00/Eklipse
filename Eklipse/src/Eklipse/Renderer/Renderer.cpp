@@ -12,7 +12,7 @@
 
 namespace Eklipse
 {
-	ApiType	Renderer::s_apiType = ApiType::OpenGL;
+	ApiType	Renderer::s_apiType = ApiType::Vulkan;
 
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
 	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;
@@ -61,15 +61,16 @@ namespace Eklipse
 
 		framebuffer->Bind();
 	}
-	void Renderer::RenderScene(Scene& scene)
+	void Renderer::RenderScene(Ref<Scene> scene)
 	{
 		EK_PROFILE();
 
 		// Geometry
-		auto view = scene.GetRegistry().view<TransformComponent, MeshComponent>();
+		auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
+			if (meshComponent.mesh == nullptr || meshComponent.material == nullptr) continue;
 
 			glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
 			meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));

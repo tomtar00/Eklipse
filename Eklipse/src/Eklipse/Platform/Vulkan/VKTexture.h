@@ -26,6 +26,7 @@ namespace Eklipse
 
 			virtual void SetData(void* data, uint32_t size) override;
 			virtual void Bind() const override;
+			virtual void Unbind() const override;
 			virtual void Dispose() override;
 
 			inline VkImage GetImage() const { return m_image; }

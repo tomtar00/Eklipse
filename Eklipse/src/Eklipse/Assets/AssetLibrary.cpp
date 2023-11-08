@@ -1,5 +1,5 @@
 #include "precompiled.h"
-#include "Assets.h"
+#include "AssetLibrary.h"
 
 #include <Eklipse/Renderer/Vertex.h>
 #include <glm/gtx/hash.hpp>
@@ -27,82 +27,88 @@ namespace std
 
 namespace Eklipse
 {
-    std::unordered_map<std::string, Ref<Mesh>, std::hash<std::string>>          Assets::s_meshCache;
-    std::unordered_map<std::string, Ref<Texture2D>, std::hash<std::string>>     Assets::s_textureCache;
-    std::unordered_map<std::string, Ref<Shader>, std::hash<std::string>>        Assets::s_shaderCache;
-    std::unordered_map<std::string, Ref<Material>, std::hash<std::string>>      Assets::s_materialCache;
-
-    void Assets::Init(const std::filesystem::path& assetsDirectoryPath)
+    void AssetLibrary::Load(const Path& assetsDirectoryPath)
     {
+        m_assetsDirectoryPath = assetsDirectoryPath;
         for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator(assetsDirectoryPath))
         {
             if (std::filesystem::is_directory(directoryEntry.path()))
-				continue;
+                continue;
 
-			const auto& path = assetsDirectoryPath / directoryEntry.path();
-			std::string extension = path.extension().string();
+            const auto& path = assetsDirectoryPath / directoryEntry.path();
+            std::string extension = path.extension().string();
+            std::string pathString = path.string();
 
             if (extension == ".obj")
             {
-                EK_CORE_TRACE("Loading model from path '{0}'", path.string());
-				GetMesh(path.string());
-			}
-            else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
+                EK_CORE_TRACE("Loading model from path '{0}'", pathString);
+                GetMesh(pathString);
+            }
+            else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp")
             {
-                EK_CORE_TRACE("Loading texture from path '{0}'", path.string());
-				GetTexture(path.string());
-			}
+                EK_CORE_TRACE("Loading texture from path '{0}'", pathString);
+                GetTexture(pathString);
+            }
             else if (extension == ".eksh")
             {
-                EK_CORE_TRACE("Loading shader from path '{0}'", path.string());
-				GetShader(path.string());
-			}
+                EK_CORE_TRACE("Loading shader from path '{0}'", pathString);
+                GetShader(pathString);
+            }
             else if (extension == ".ekmt")
             {
-                EK_CORE_TRACE("Loading material from path '{0}'", path.string());
-				GetMaterial(path.string());
-			}
-		}
+                EK_CORE_TRACE("Loading material from path '{0}'", pathString);
+                GetMaterial(pathString);
+            }
+        }
     }
-
-    void Assets::Shutdown()
+    void AssetLibrary::Unload()
     {
         // Shaders
-        for (auto&& [path, shader] : s_shaderCache)
+        for (auto&& [path, shader] : m_shaderCache)
         {
             shader->Dispose();
         }
-        s_shaderCache.clear();
-        
+        m_shaderCache.clear();
+
         // Textures
-        for (auto&& [path, texture] : s_textureCache)
-		{
-			texture->Dispose();
-		}
-        s_textureCache.clear();
+        for (auto&& [path, texture] : m_textureCache)
+        {
+            texture->Dispose();
+        }
+        m_textureCache.clear();
 
         // Meshes
-        for (auto&& [path, mesh] : s_meshCache)
+        for (auto&& [path, mesh] : m_meshCache)
         {
             mesh->GetVertexArray()->Dispose();
         }
-        s_meshCache.clear();
-    }
-    Ref<Mesh> Assets::GetMesh(const std::string& meshPath)
-	{
-        if (s_meshCache.find(meshPath) != s_meshCache.end())
+        m_meshCache.clear();
+
+        // Materials
+        for (auto&& [path, material] : m_materialCache)
         {
-			return s_meshCache[meshPath];
-		}   
+            material->Dispose();
+        }
+        m_materialCache.clear();
+    }
+
+    Ref<Mesh> AssetLibrary::GetMesh(const Path& meshPath)
+    {
+        auto it = m_meshCache.find(meshPath);
+        if (it != m_meshCache.end())
+        {
+            return it->second;
+        }
 
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.c_str()))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath))
         {
             EK_CORE_ERROR("Failed to load model at location: {0}. {1}", meshPath, warn + err);
+            return nullptr;
         }
 
         std::unordered_map<Vertex, uint32_t, std::hash<Vertex>> uniqueVertices{};
@@ -152,21 +158,27 @@ namespace Eklipse
 
         Mesh mesh{ vertices, indices, meshPath };
         Ref<Mesh> meshRef = CreateRef<Mesh>(mesh);
-        s_meshCache[meshPath] = meshRef;
+        m_meshCache[meshPath] = meshRef;
 
         EK_CORE_INFO("Loaded model from path {0}. Vertices: {1} Indices: {2}", meshPath, vertices.size() / 8, indices.size());
         return meshRef;
-	}
-    Ref<Texture2D> Assets::GetTexture(const std::string& texturePath)
+    }
+    Ref<Texture2D> AssetLibrary::GetTexture(const Path& texturePath)
     {
-        if (s_textureCache.find(texturePath) != s_textureCache.end())
+        auto it = m_textureCache.find(texturePath);
+        if (it != m_textureCache.end())
         {
-			return s_textureCache[texturePath];
-		}
+            return it->second;
+        }
 
         int width, height, channels;
-        void* data = stbi_load(texturePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-        EK_ASSERT(data, "Failed to load texture from location: {0}", texturePath);
+        void* data = stbi_load(texturePath, &width, &height, &channels, STBI_rgb_alpha);
+
+        if (data == nullptr)
+        {
+            EK_CORE_ERROR("Failed to load texture from location: {0}", texturePath);
+            return nullptr;
+        }
 
         ImageFormat format = ImageFormat::FORMAT_UNDEFINED;
         if (channels == 3)
@@ -185,43 +197,35 @@ namespace Eklipse
 
         Ref<Texture2D> texture = Texture2D::Create(textureInfo, texturePath);
         texture->SetData(data, width * height * 4/*channels*/);
-        s_textureCache[texturePath] = texture;
+        m_textureCache[texturePath] = texture;
 
         EK_CORE_INFO("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", texturePath, width, height, channels);
         return texture;
     }
-    Ref<Shader> Assets::GetShader(const std::string& shaderPath, Operation operation)
+    Ref<Shader> AssetLibrary::GetShader(const Path& shaderPath)
     {
-        if (s_shaderCache.find(shaderPath) != s_shaderCache.end())
+        auto it = m_shaderCache.find(shaderPath);
+        if (it != m_shaderCache.end())
         {
-            return s_shaderCache[shaderPath];
-        }
-
-        if (operation == Operation::READ_WRITE)
-        {
-            CopyFileContent(shaderPath, "Assets/Shaders/Default3D.eksh");
+            return it->second;
         }
 
         Ref<Shader> shader = Shader::Create(shaderPath);
-        s_shaderCache[shaderPath] = shader;
+        m_shaderCache[shaderPath] = shader;
 
         EK_CORE_INFO("Loaded shader from path '{0}'", shaderPath);
         return shader;
     }
-    Ref<Material> Assets::GetMaterial(const std::string& materialPath, Operation operation)
+    Ref<Material> AssetLibrary::GetMaterial(const Path& materialPath, const Path& shaderPath)
     {
-        if (s_materialCache.find(materialPath) != s_materialCache.end())
+        auto it = m_materialCache.find(materialPath);
+        if (it != m_materialCache.end())
         {
-            return s_materialCache[materialPath];
+            return it->second;
         }
 
-        if (operation == Operation::READ_WRITE)
-        {
-            CopyFileContent(materialPath, "Assets/Materials/Default3D.ekmt");
-        }
-
-        auto& material = Material::Create(materialPath);
-        s_materialCache[materialPath] = material;
+        auto& material = Material::Create(materialPath, shaderPath);
+        m_materialCache[materialPath] = material;
 
         EK_CORE_INFO("Loaded material from path '{0}'", materialPath);
         return material;

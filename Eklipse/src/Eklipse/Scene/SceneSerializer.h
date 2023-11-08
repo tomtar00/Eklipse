@@ -3,7 +3,6 @@
 #include "Entity.h"
 
 #include <yaml-cpp/yaml.h>
-#include <filesystem>
 
 namespace Eklipse 
 {
@@ -12,8 +11,8 @@ namespace Eklipse
 	public:
 		SceneSerializer(const Ref<Scene> scene);
 
-		bool Serialize(const std::filesystem::path& targetFilePath);
-		bool Deserialize(const std::filesystem::path& sourceFilePath);
+		bool Serialize(const Path& targetFilePath);
+		bool Deserialize(const Path& sourceFilePath);
 
 		void SerializeEntity(YAML::Emitter& out, Entity entity);
 	

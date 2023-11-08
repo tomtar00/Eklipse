@@ -1,7 +1,6 @@
 #pragma once
 
 #include <entt.hpp>
-#include "Scene.h"
 #include <Eklipse/Core/UUID.h>
 
 namespace Eklipse
@@ -18,10 +17,10 @@ namespace Eklipse
 			return m_scene->GetRegistry().all_of<T>(m_entityHandle);
 		}
 		template<typename T, typename... Args>
-		void AddComponent(Args&&... args)
+		T& AddComponent(Args&&... args)
 		{
 			EK_ASSERT(!HasComponent<T>(), "Entity already has component!");
-			m_scene->GetRegistry().emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			return m_scene->GetRegistry().emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 		}
 		template<typename T>
 		T& GetComponent()

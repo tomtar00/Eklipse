@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <Eklipse/Utils/File.h>
 
 namespace Eklipse
 {
@@ -84,9 +85,9 @@ namespace Eklipse
 	class Shader
 	{
 	public:
-		static Ref<Shader> Create(const std::string& filePath);
+		static Ref<Shader> Create(const Path& filePath);
 		Shader() = delete;
-		Shader(const std::string& filePath);
+		Shader(const Path& filePath);
 		virtual ~Shader() = default;
 
 		std::unordered_map<ShaderStage, std::string> Shader::Setup();
@@ -99,7 +100,7 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
-		inline const std::string& GetPath() const { return m_filePath; }
+		inline const Path& GetPath() const { return m_filePath; }
 
 	protected:
 		virtual const std::string GetCacheDirectoryPath() = 0;
@@ -109,24 +110,11 @@ namespace Eklipse
 
 	protected:
 		std::string m_name;
-		std::string m_filePath;
+		Path m_filePath;
 		std::unordered_map<ShaderStage, ShaderReflection> m_reflections;
 
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
 
 		static std::unordered_map<std::string, std::string> s_shaderResources;
 	};
-
-	//class ShaderLibrary
-	//{
-	//public:
-	//	static void Add(const Ref<Shader>& shader);
-	//	static Ref<Shader> Load(const std::string& filePath);
-	//	static Ref<Shader> Get(const std::string& name);
-	//	static bool Contains(const std::string& name);
-	//	static void Dispose();
-
-	//private:
-	//	static std::unordered_map<std::string, Ref<Shader>> m_shaders;
-	//};
 }

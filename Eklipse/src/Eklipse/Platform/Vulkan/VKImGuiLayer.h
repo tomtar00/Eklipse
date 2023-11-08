@@ -12,7 +12,7 @@ namespace Eklipse
 		class VKImGuiIcon : public GuiIcon
 		{
 		public:
-			VKImGuiIcon(const char* path);
+			VKImGuiIcon(const Ref<AssetLibrary> assetLibrary, const Path& path);
 			virtual void* GetID() override;
 
 		private:

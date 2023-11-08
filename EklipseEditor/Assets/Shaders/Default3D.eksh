@@ -11,6 +11,7 @@ layout(binding = 0) uniform Camera
 layout(push_constant) uniform Constants 
 {
 	mat4 Model;
+	vec3 Tint;
 } pConstants;
 
 in vec3 inPosition;
@@ -23,7 +24,7 @@ out vec2 fragTexCoord;
 void main() 
 {
     gl_Position = uCamera.ViewProjection * pConstants.Model * vec4(inPosition, 1.0);
-    fragColor = inColor;
+    fragColor = inColor * pConstants.Tint;
     fragTexCoord = inTexCoord;
 }
 

@@ -25,7 +25,8 @@ project "EklipseEditor"
 		"%{Include.spdlog}",
 		"%{Include.entt}",
 		"%{Include.ImGuizmo}",
-		"%{Include.nativefiledialog}"
+		"%{Include.nativefiledialog}",
+		"%{Include.yaml_cpp}"
 	}
 
 	links
@@ -33,8 +34,7 @@ project "EklipseEditor"
 		"Eklipse",
 		"ImGui",
 		"ImGuizmo",
-		"NFD",
-		"YAML"
+		"NFD"
 	}
 
 	filter "system:windows"

@@ -8,9 +8,12 @@ namespace Editor
 	class AssetBrowser : public Eklipse::GuiPanel
 	{
 	public:
-		void Init();
+		void LoadResources();
 		void OnGUI(float deltaTime) override;
 		void OnContextChanged();
+
+		void CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderTemplatePath);
+		void CreateShader(const Eklipse::Path& dstPath, const Eklipse::Path& templatePath);
 
 	private:
 		std::filesystem::path m_currentPath;

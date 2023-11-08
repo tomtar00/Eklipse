@@ -16,7 +16,7 @@ namespace Editor
 		}
 		
 		static const char* msaaSamples[]{ "Off","x2","x4","x8"};
-		static int m;
+		static int m = 0;
 		if (ImGui::Combo("MSAA", &m, msaaSamples, IM_ARRAYSIZE(msaaSamples)))
 		{
 			int samples = 0;
@@ -26,7 +26,7 @@ namespace Editor
 		}
 
 		static const char* APIs[]{ "Vulkan", "OpenGL" };
-		static int api;
+		static int api = (int)Eklipse::Renderer::GetAPI() - 1;
 		if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
 		{
 			Eklipse::Application::Get().SetAPI((Eklipse::ApiType)(api+1));

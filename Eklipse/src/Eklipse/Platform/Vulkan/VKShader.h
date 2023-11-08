@@ -12,7 +12,7 @@ namespace Eklipse
 		class VKShader : public Eklipse::Shader
 		{
 		public:
-			VKShader(const std::string& filePath);
+			VKShader(const Path& filePath);
 			virtual ~VKShader() = default;
 
 			virtual void Bind() const override;

@@ -2,9 +2,10 @@
 #include "EntitiesPanel.h"
 #include "EditorLayer.h"
 
+#include <Eklipse/Scene/Components.h>
+
 #include <misc/cpp/imgui_stdlib.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <Eklipse/Scene/Components.h>
 
 namespace Editor
 {
@@ -17,22 +18,35 @@ namespace Editor
 		EK_PROFILE();
 
 		ImGui::Begin("Details");
-		auto entity = EditorLayer::Get()->GetSelectedEntity();
 
-		if (entity.IsNull())
+		DetailsSelectionInfo& info = EditorLayer::Get().GetSelection();
+
+		if (info.type == SelectionType::None)
 		{
-			ImGui::End(); 
+			ImGui::End();
 			return;
 		}
 
+		// Split logic based on type
+		if (info.type == SelectionType::Entity)
+		{
+			OnEntityGUI(info.entity);
+		}
+		else if (info.type == SelectionType::Material)
+		{
+			OnMaterialGUI(info.material);
+		}
+
+		ImGui::End();
+	}
+	void DetailsPanel::OnEntityGUI(Eklipse::Entity entity)
+	{
 		// Right-click menu
 		{
 			if (ImGui::BeginPopupContextWindow())
 			{
-				if (ImGui::MenuItem("Add Component 1"))
-					EK_TRACE("Add Component 1");
-				if (ImGui::MenuItem("Add Component 2"))
-					EK_TRACE("Add Component 2");
+				if (!entity.HasComponent<Eklipse::MeshComponent>() && ImGui::MenuItem("Add Mesh Component"))
+					entity.AddComponent<Eklipse::MeshComponent>();
 
 				ImGui::EndPopup();
 			}
@@ -73,9 +87,76 @@ namespace Editor
 		{
 			auto* meshComp = entity.TryGetComponent<Eklipse::MeshComponent>();
 			if (meshComp != nullptr)
-				ImGui::Text("This is a mesh!");
+			{
+				ImGui::InputText("Mesh", &meshComp->meshPath);
+				ImGui::InputText("Material", &meshComp->materialPath);
+				if (ImGui::Button("Apply"))
+				{
+					bool valid = Eklipse::Path::CheckPathValid(meshComp->meshPath, ".obj");	 // TODO: Check other formats
+					valid &= Eklipse::Path::CheckPathValid(meshComp->materialPath, ".ekmt"); // TODO: Check other formats
+
+					if (valid)
+					{
+						meshComp->mesh = Eklipse::Application::Get().GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
+						meshComp->material = Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
+					}
+				}
+			}
+		}
+	}
+	void DetailsPanel::OnMaterialGUI(Eklipse::Material* material)
+	{
+		ImGui::Text(material->GetName().c_str());
+		ImGui::Text("Shader: %s", material->GetShader()->GetName().c_str());
+		ImGui::Spacing();
+
+		for (auto&& [textureSampler, sampler] : material->GetSamplers())
+		{
+			ImGui::PushID(&sampler);
+			ImGui::Text(textureSampler.c_str());
+			ImGui::SameLine();
+			if (ImGui::InputText("##samplerInput", sampler.texturePath.rdbuf()))
+				sampler.texturePath.parseSelf();
+			ImGui::PopID();
+		}
+		for (auto&& [name, pushConstant] : material->GetPushConstants())
+		{
+			ImGui::Spacing();
+			ImGui::Text("%s", name.c_str());
+			for (auto&& [valueName, value] : pushConstant.dataPointers)
+			{
+				if (value.type == Eklipse::DataType::BOOL)
+					ImGui::Checkbox(valueName.c_str(), (bool*)value.data);
+				else if (value.type == Eklipse::DataType::FLOAT)
+					ImGui::InputFloat(valueName.c_str(), (float*)value.data);
+				else if (value.type == Eklipse::DataType::FLOAT2)
+					ImGui::InputFloat2(valueName.c_str(), (float*)value.data);
+				else if (value.type == Eklipse::DataType::FLOAT3)
+					ImGui::InputFloat3(valueName.c_str(), (float*)value.data);
+				else if (value.type == Eklipse::DataType::FLOAT4)
+					ImGui::InputFloat4(valueName.c_str(), (float*)value.data);
+				else if (value.type == Eklipse::DataType::INT)
+					ImGui::InputInt(valueName.c_str(), (int*)value.data);
+				else if (value.type == Eklipse::DataType::INT2)
+					ImGui::InputInt2(valueName.c_str(), (int*)value.data);
+				else if (value.type == Eklipse::DataType::INT3)
+					ImGui::InputInt3(valueName.c_str(), (int*)value.data);
+				else if (value.type == Eklipse::DataType::INT4)
+					ImGui::InputInt4(valueName.c_str(), (int*)value.data);
+			}
 		}
 
-		ImGui::End();
+		if (ImGui::Button("Apply"))
+		{
+			bool allValid = true;
+			for (auto&& [textureSampler, sampler] : material->GetSamplers())
+			{
+				allValid = Eklipse::Path::CheckPathValid(sampler.texturePath, ".png"); // TODO: Check other formats
+				if (!allValid) break;
+			}
+
+			if (allValid)
+				material->ApplyChanges();
+		}
 	}
 }

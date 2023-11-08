@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <Eklipse/Core/Layer.h>
+#include <Eklipse/Assets/AssetLibrary.h>
 
 namespace Eklipse
 {
@@ -10,7 +11,7 @@ namespace Eklipse
 	{
 	public:
 		virtual void* GetID() = 0;
-		static Ref<GuiIcon> Create(const char* path);
+		static Ref<GuiIcon> Create(const Ref<AssetLibrary> assetLibrary, const Path& path);
 	};
 	class GuiPanel
 	{

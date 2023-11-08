@@ -161,13 +161,13 @@ namespace Eklipse
 		EK_ASSERT(false, "API {0} not implemented for ImGui Layer creation", int(apiType));
 		return nullptr;
 	}
-	Ref<GuiIcon> GuiIcon::Create(const char* path)
+	Ref<GuiIcon> GuiIcon::Create(const Ref<AssetLibrary> assetLibrary, const Path& path)
 	{
 		auto apiType = Renderer::GetAPI();
 		switch (apiType)
 		{
-			case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(path);
-			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(path);
+			case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(assetLibrary, path);
+			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(assetLibrary, path);
 		}
 		EK_ASSERT(false, "API {0} not implemented for ImGui Icon creation", int(apiType));
 		return nullptr;

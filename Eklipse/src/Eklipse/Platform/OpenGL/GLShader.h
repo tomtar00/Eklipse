@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLShader : public Eklipse::Shader
 		{
 		public:
-			GLShader(const std::string& filePath);
+			GLShader(const Path& filePath);
 
 			virtual void Bind() const override;
 			virtual void Unbind() const override;

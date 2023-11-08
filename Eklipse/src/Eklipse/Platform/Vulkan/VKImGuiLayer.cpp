@@ -1,20 +1,20 @@
 #include "precompiled.h"
 #include "VkImGuiLayer.h"
 
-#include <Eklipse/Renderer/Settings.h>
-#include <Eklipse/Renderer/RenderCommand.h>
-#include <Eklipse/Platform/Windows/WindowsWindow.h>
-#include <Eklipse/Core/Application.h>
-#include <Eklipse/Scene/Assets.h>
-
-#include <backends/imgui_impl_vulkan.h>
-#include <backends/imgui_impl_glfw.h>
 #include "VK.h"
 #include "VKUtils.h"
 #include "VKCommands.h"
 #include "VKSwapChain.h"
 #include "VKPipeline.h"
 #include "VKDescriptor.h"
+
+#include <Eklipse/Renderer/Settings.h>
+#include <Eklipse/Renderer/RenderCommand.h>
+#include <Eklipse/Platform/Windows/WindowsWindow.h>
+#include <Eklipse/Core/Application.h>
+
+#include <backends/imgui_impl_vulkan.h>
+#include <backends/imgui_impl_glfw.h>
 
 namespace Eklipse
 {
@@ -194,9 +194,9 @@ namespace Eklipse
 
 		// ==================== ICONS ===================
 
-		VKImGuiIcon::VKImGuiIcon(const char* path)
+		VKImGuiIcon::VKImGuiIcon(const Ref<AssetLibrary> assetLibrary, const Path& path)
 		{
-			m_texture = std::static_pointer_cast<VKTexture2D>(Assets::GetTexture(path));
+			m_texture = std::static_pointer_cast<VKTexture2D>(assetLibrary->GetTexture(path));
 			m_descriptorSet = ImGui_ImplVulkan_AddTexture(m_texture->GetSampler(), m_texture->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		void* VKImGuiIcon::GetID()

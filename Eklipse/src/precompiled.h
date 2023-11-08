@@ -28,3 +28,4 @@
 #include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Utils/Log.h>
 #include <Eklipse/Profiler/Profiler.h>
+#include <Eklipse/Utils/File.h>

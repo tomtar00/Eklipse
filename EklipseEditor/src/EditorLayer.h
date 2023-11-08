@@ -12,6 +12,19 @@
 
 namespace Editor
 {
+	enum class SelectionType
+	{
+		None = 0,
+		Entity,
+		Material
+	};
+	struct DetailsSelectionInfo
+	{
+		SelectionType type = SelectionType::None;
+		Eklipse::Entity entity;
+		Eklipse::Material* material;
+	};
+
 	class EditorLayer : public Eklipse::Layer
 	{
 	public:
@@ -28,27 +41,28 @@ namespace Editor
 		void OnAPIHasInitialized(Eklipse::ApiType api);
 		void OnShutdownAPI();
 
+		void NewProject(const Eklipse::Path& path, const std::string& name);
 		void OpenProject();
 		void SaveProject();
 		void SaveProjectAs();
 		void SaveScene();
 
+		void OnLoadResources();
 		void OnProjectLoad();
 		void OnProjectUnload();
 
-		inline static EditorLayer* Get() { return s_instance; }
-		inline Eklipse::Ref<Eklipse::Scene> GetActiveScene() { return m_activeScene; }
+		inline static EditorLayer& Get() { return *s_instance; }
 
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
 		inline LogsPanel& GetLogsPanel() { return m_logsPanel; }
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
 		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
-
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
-		inline void SetSelectedEntity(Eklipse::Entity entity) { m_selectedEntity = entity; }
-		inline Eklipse::Entity GetSelectedEntity() { return m_selectedEntity; }
-		inline void SetEntityNull() { m_selectedEntity.MarkNull(); }
+		inline const Eklipse::Ref<Eklipse::AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
+		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
+		void SetSelection(DetailsSelectionInfo info);
+		void ClearSelection();
 
 		Eklipse::Ref<Eklipse::ImGuiLayer> GUI;
 
@@ -60,10 +74,12 @@ namespace Editor
 		Eklipse::Ref<Eklipse::Framebuffer> m_defaultFramebuffer;
 		Eklipse::Ref<Eklipse::Framebuffer> m_viewportFramebuffer;
 
-		Eklipse::Ref<Eklipse::Scene> m_activeScene;
-		Eklipse::Entity m_selectedEntity;
 		Eklipse::Camera m_editorCamera;
 		Eklipse::Transform m_editorCameraTransform;
+
+		DetailsSelectionInfo m_selectionInfo{};
+		
+		Eklipse::Ref<Eklipse::AssetLibrary> m_assetLibrary;
 
 		bool m_guiEnabled;
 		EntitiesPanel	m_entitiesPanel;

@@ -1,201 +1,14 @@
 #include "precompiled.h"
 #include "Material.h"
 
-#include <Eklipse/Scene/Assets.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Platform/Vulkan/VKMaterial.h>
 #include <Eklipse/Platform/OpenGL/GLMaterial.h>
+#include <Eklipse/Core/Application.h>
+#include <Eklipse/Utils/Yaml.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-
-#include <yaml-cpp/yaml.h>
-
-namespace YAML {
-
-    template<>
-    struct convert<glm::vec2>
-    {
-        static Node encode(const glm::vec2& rhs)
-        {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::vec2& rhs)
-        {
-            if (!node.IsSequence() || node.size() != 2)
-                return false;
-
-            rhs.x = node[0].as<float>();
-            rhs.y = node[1].as<float>();
-            return true;
-        }
-    };
-    template<>
-    struct convert<glm::vec3>
-    {
-        static Node encode(const glm::vec3& rhs)
-        {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.push_back(rhs.z);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::vec3& rhs)
-        {
-            if (!node.IsSequence() || node.size() != 3)
-                return false;
-
-            rhs.x = node[0].as<float>();
-            rhs.y = node[1].as<float>();
-            rhs.z = node[2].as<float>();
-            return true;
-        }
-    };
-    template<>
-    struct convert<glm::vec4>
-    {
-        static Node encode(const glm::vec4& rhs)
-        {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.push_back(rhs.z);
-            node.push_back(rhs.w);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::vec4& rhs)
-        {
-            if (!node.IsSequence() || node.size() != 4)
-                return false;
-
-            rhs.x = node[0].as<float>();
-            rhs.y = node[1].as<float>();
-            rhs.z = node[2].as<float>();
-            rhs.w = node[3].as<float>();
-            return true;
-        }
-    };
-
-    template<>
-    struct convert<glm::mat3>
-    {
-        static Node encode(const glm::mat3& rhs)
-        {
-            Node node;
-            node.push_back(rhs[0]);
-            node.push_back(rhs[1]);
-            node.push_back(rhs[2]);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::mat3& rhs)
-        {
-            rhs[0] = node[0].as<glm::vec3>();
-            rhs[1] = node[1].as<glm::vec3>();
-            rhs[2] = node[2].as<glm::vec3>();
-            return true;
-        }
-    };
-    template<>
-    struct convert<glm::mat4>
-    {
-        static Node encode(const glm::mat4& rhs)
-        {
-            Node node;
-            node.push_back(rhs[0]);
-            node.push_back(rhs[1]);
-            node.push_back(rhs[2]);
-            node.push_back(rhs[3]);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::mat4& rhs)
-        {
-            rhs[0] = node[0].as<glm::vec4>();
-            rhs[1] = node[1].as<glm::vec4>();
-            rhs[2] = node[2].as<glm::vec4>();
-            rhs[3] = node[3].as<glm::vec4>();
-            return true;
-        }
-    };
-
-    template<>
-    struct convert<glm::ivec2>
-    {
-        static Node encode(const glm::ivec2& rhs)
-        {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::ivec2& rhs)
-        {
-            if (!node.IsSequence() || node.size() != 2)
-                return false;
-
-            rhs.x = node[0].as<float>();
-            rhs.y = node[1].as<float>();
-            return true;
-        }
-    };
-    template<>
-    struct convert<glm::ivec3>
-    {
-        static Node encode(const glm::ivec3& rhs)
-        {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.push_back(rhs.z);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::ivec3& rhs)
-        {
-            if (!node.IsSequence() || node.size() != 3)
-                return false;
-
-            rhs.x = node[0].as<float>();
-            rhs.y = node[1].as<float>();
-            rhs.z = node[2].as<float>();
-            return true;
-        }
-    };
-    template<>
-    struct convert<glm::ivec4>
-    {
-        static Node encode(const glm::ivec4& rhs)
-        {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.push_back(rhs.z);
-            node.push_back(rhs.w);
-            node.SetStyle(EmitterStyle::Flow);
-            return node;
-        }
-        static bool decode(const Node& node, glm::ivec4& rhs)
-        {
-            if (!node.IsSequence() || node.size() != 4)
-                return false;
-
-            rhs.x = node[0].as<float>();
-            rhs.y = node[1].as<float>();
-            rhs.z = node[2].as<float>();
-            rhs.w = node[3].as<float>();
-            return true;
-        }
-    };
-}
 
 namespace Eklipse
 {
@@ -225,90 +38,42 @@ namespace Eklipse
         dst = &data;
     }
 
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
-    {
-        out << YAML::Flow;
-        out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-        return out;
-    }
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
-    {
-        out << YAML::Flow;
-        out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-        return out;
-    }
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
-    {
-        out << YAML::Flow;
-        out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-        return out;
-    }
-
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat3& v)
-    {
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v[0] << v[1] << v[2] << YAML::EndSeq;
-		return out;
-	}
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat4& v)
-    {
-        out << YAML::Flow;
-        out << YAML::BeginSeq << v[0] << v[1] << v[2] << v[3] << YAML::EndSeq;
-        return out;
-    }
-
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec2& v)
-    {
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-		return out;
-	}
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec3& v)
-    {
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec4& v)
-    {
-        out << YAML::Flow;
-        out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-        return out;
-    }
-
-    Ref<Material> Eklipse::Material::Create(const std::filesystem::path& path)
+    Ref<Material> Eklipse::Material::Create(const Path& path, const Path& shaderPath)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path);
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderPath);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path, shaderPath);
         }
         EK_ASSERT(false, "API {0} not implemented for Material creation", int(apiType));
         return nullptr;
     }
 
-    Material::Material(const std::filesystem::path& path)
+    Material::Material(const Path& path, const Path& shaderPath) : m_path(path)
     {
-        Deserialize(path);
+        m_name = path.path().stem().string();
 
-        m_name = path.stem().string();
-        Serialize(path);
-    }
-
-    void Material::SetSampler(const std::string& samplerName, const std::filesystem::path& texturePath)
-    {
-        EK_ASSERT(m_samplers.find(samplerName) != m_samplers.end(), "Sampler '{0}' not found in material {1}", samplerName, m_name);
-		m_samplers[samplerName] = texturePath;
+        if (path.isValid(".ekmt"))
+        {
+            Deserialize(path);
+        }
+        else
+        {
+            SetShader(Application::Get().GetAssetLibrary()->GetShader(shaderPath));
+            Serialize(path);
+        }
     }
 
     void Material::Bind()
     {
         m_shader->Bind();
     }
-    void Material::Dispose()
+
+    void Material::ApplyChanges()
     {
-        m_shader->Dispose();
+        Serialize(m_path);
+        Deserialize(m_path);
     }
 
     void Material::SetShader(Ref<Shader> shader)
@@ -335,17 +100,17 @@ namespace Eklipse
             }
             for (auto& samplerRef : reflection.samplers)
             {
-                m_samplers[samplerRef.name] = "";
+                m_samplers[samplerRef.name] = { samplerRef.binding, "", nullptr };
             }
         }
     }
 
-    void Material::Serialize(const std::filesystem::path& path)
+    void Material::Serialize(const Path& path)
     {
         YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "Name" << YAML::Value << m_name;
-        out << YAML::Key << "Shader" << YAML::Value << m_shader->GetPath();
+        out << YAML::Key << "Shader" << YAML::Value << m_shader->GetPath().generic_string();
 
         {
             out << YAML::Key << "PushConstants" << YAML::Value << YAML::BeginMap;
@@ -381,55 +146,57 @@ namespace Eklipse
 
         {
             out << YAML::Key << "Samplers" << YAML::Value << YAML::BeginMap;
-            for (auto&& [samplerName, texturePath] : m_samplers)
+            for (auto&& [samplerName, sampler] : m_samplers)
             {
-				out << YAML::Key << samplerName << YAML::Value << texturePath.string();
+				out << YAML::Key << samplerName << YAML::Value << sampler.texturePath.generic_string();
 			}
 			out << YAML::EndMap;
         }
 
         out << YAML::EndMap;
 
-        std::ofstream fout(path);
+        std::ofstream fout(path.string());
         fout << out.c_str();
     }
-    void Material::Deserialize(const std::filesystem::path& path)
+    void Material::Deserialize(const Path& path)
     {
-        YAML::Node data;
+        YAML::Node yaml;
         try
         {
-            data = YAML::LoadFile(path.string());
+            yaml = YAML::LoadFile(path.string());
         }
-        catch (YAML::ParserException e)
+        catch (std::runtime_error e)
         {
-            EK_CORE_ERROR("Failed to load .ekmat file '{0}'\n     {1}", path.string(), e.what());
+            EK_CORE_ERROR("Failed to load .ekmt file '{0}'\n     {1}", path.string(), e.what());
             return;
         }
 
-        if (!data["Name"])
+        if (!yaml["Name"])
         {
 			EK_CORE_ERROR("Material file '{0}' is missing a name", path.string());
 			return;
 		}
 
-        m_name = data["Name"].as<std::string>();
+        m_name = yaml["Name"].as<std::string>();
 		m_path = path;
 
-        if (!data["Shader"])
+        if (!yaml["Shader"])
         {
             EK_CORE_ERROR("Material file '{0}' is missing a shader path", path.string());
             return;
         }
 
-        m_shader = Assets::GetShader(data["Shader"].as<std::string>());
+        m_shader = Application::Get().GetAssetLibrary()->GetShader(yaml["Shader"].as<std::string>());
         SetShader(m_shader);
 
         for (auto&& [constantName, pushConstant] : m_pushConstants)
         {
-            auto& constantData = data[constantName];
+            auto& constantData = yaml["PushConstants"][constantName];
+
+            uint32_t index = 0;
             for (auto&& [memberName, data] : pushConstant.dataPointers)
             {
-				auto& memberData = constantData[memberName];
+				auto& memberData = constantData[index++]["Data"];
                 try
                 {
                     switch (data.type)
@@ -449,19 +216,42 @@ namespace Eklipse
                 }
                 catch (std::runtime_error e)
                 {
-                    EK_ASSERT("Failed to deserialize .ekmat file '{0}'\n     {1}", path.string(), e.what());
-                    return;
+                    EK_ASSERT(false, "Failed to deserialize .ekmt file '{0}'\n     {1}", path.string(), e.what());
+                    break;
                 }
             }
         }
 
-        m_samplers.clear();
-        for (auto&& [samplerName, texturePath] : m_samplers)
+        for (auto&& [samplerName, sampler] : m_samplers)
         {
-            texturePath = data["Samplers"][samplerName].as<std::string>();
+            sampler.texture = nullptr;
+            sampler.texturePath = "";
 
-            if (texturePath.empty()) continue;
-            m_sampledTextures.push_back(Assets::GetTexture(texturePath.string()));
+            auto pathNode = yaml["Samplers"][samplerName];
+            if (pathNode.IsNull())
+            {
+                EK_CORE_TRACE("Sampler '{0}' not found in material '{1}'", samplerName, m_name);
+                continue;
+            }
+
+            auto path = Path(pathNode.as<std::string>());
+            if (path.empty())
+            {
+                EK_CORE_TRACE("Sampler '{0}' in material '{1}' has an empty path", samplerName, m_name);
+                continue;
+            }
+
+            auto texPtr = Application::Get().GetAssetLibrary()->GetTexture(path);
+            if (texPtr == nullptr)
+            {
+                EK_CORE_TRACE("Sampler '{0}' in material '{1}' failed to load texture '{2}'", samplerName, m_name, path.string());
+                continue;
+            }
+
+            sampler.texturePath = path;
+            sampler.texture = texPtr;
+
+            EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, m_name, path.string());
         }
     }
 }

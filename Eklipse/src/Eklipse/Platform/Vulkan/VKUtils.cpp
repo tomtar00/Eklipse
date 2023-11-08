@@ -117,7 +117,7 @@ namespace Eklipse
 
 			VkShaderModule shaderModule;
 			VkResult res = vkCreateShaderModule(g_logicalDevice, &createInfo, nullptr, &shaderModule);
-			HANDLE_VK_RESULT(res, "Failed to create shader module!");
+			HANDLE_VK_RESULT(res, "CREATE SHADER MODULE");
 
 			return shaderModule;
 		}

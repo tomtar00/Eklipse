@@ -3,13 +3,12 @@
 #include "VK.h"
 
 #include <Eklipse/Renderer/Renderer.h>
-#include <Eklipse/Scene/Assets.h>
 
 namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKMaterial::VKMaterial(const std::filesystem::path& path) : Material(path)
+		VKMaterial::VKMaterial(const Path& path, const Path& shaderPath) : Material(path, shaderPath)
 		{
 			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
 			CreateDescriptorSets();
@@ -30,8 +29,14 @@ namespace Eklipse
 		}
 		void VKMaterial::Dispose()
 		{
-			Material::Dispose();
 			vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
+		}
+		void VKMaterial::ApplyChanges()
+		{
+			Material::ApplyChanges();
+			vkDeviceWaitIdle(g_logicalDevice);
+			Dispose();
+			CreateDescriptorSets();
 		}
 		void VKMaterial::CreateDescriptorSets()
 		{
@@ -74,32 +79,31 @@ namespace Eklipse
 						descriptorWrite.pBufferInfo = bufferInfo;
 
 						descriptorWrites.push_back(descriptorWrite);
-						EK_CORE_INFO("Binding uniform buffer '{0}' to descriptor set {1} at binding {2}", ubo.name, i, ubo.binding);
+						EK_CORE_TRACE("Binding uniform buffer '{0}' to descriptor set {1} at binding {2} for material {3}", ubo.name, i, ubo.binding, m_name);
 					}
+				}
 
-					uint32_t index = 0;
-					for (auto& sampler : reflection.samplers)
-					{
-						if (m_sampledTextures.size() <= index) break;
-						auto& texture = std::static_pointer_cast<VKTexture2D>(m_sampledTextures[index++]);
+				for (auto&& [samplerName, sampler] : m_samplers)
+				{
+					if (sampler.texture == nullptr) continue;
+					auto& texture = std::static_pointer_cast<VKTexture2D>(sampler.texture);
 
-						VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo;
-						imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-						imageInfo->imageView = texture->GetImageView();
-						imageInfo->sampler = texture->GetSampler();
+					VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo;
+					imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo->imageView = texture->GetImageView();
+					imageInfo->sampler = texture->GetSampler();
 
-						VkWriteDescriptorSet descriptorWrite{};
-						descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-						descriptorWrite.dstSet = m_descriptorSets[i];
-						descriptorWrite.dstBinding = sampler.binding;
-						descriptorWrite.dstArrayElement = 0;
-						descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-						descriptorWrite.descriptorCount = 1;
-						descriptorWrite.pImageInfo = imageInfo;
+					VkWriteDescriptorSet descriptorWrite{};
+					descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrite.dstSet = m_descriptorSets[i];
+					descriptorWrite.dstBinding = sampler.binding;
+					descriptorWrite.dstArrayElement = 0;
+					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptorWrite.descriptorCount = 1;
+					descriptorWrite.pImageInfo = imageInfo;
 
-						descriptorWrites.push_back(descriptorWrite);
-						EK_CORE_INFO("Binding sampler '{0}' to descriptor set {1} at binding {2}", sampler.name, i, sampler.binding);
-					}
+					descriptorWrites.push_back(descriptorWrite);
+					EK_CORE_TRACE("Binding sampler '{0}' to descriptor set {1} at binding {2} for material {3} at location '{4}'", samplerName, i, sampler.binding, m_name, sampler.texturePath.string());
 				}
 
 				vkUpdateDescriptorSets(g_logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);

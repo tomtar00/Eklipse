@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLMaterial : public Eklipse::Material
 		{
 		public:
-			GLMaterial(const std::filesystem::path& path);
+			GLMaterial(const Path& path, const Path& shaderPath);
 			virtual ~GLMaterial() = default;
 
 			virtual void Bind() override;

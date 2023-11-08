@@ -8,7 +8,6 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <Eklipse/Core/Application.h>
-#include <Eklipse/Scene/Assets.h>
 
 namespace Eklipse
 {
@@ -64,9 +63,9 @@ namespace Eklipse
 
 		// =============== ICONS ===============
 
-		GLImGuiIcon::GLImGuiIcon(const char* path)
+		GLImGuiIcon::GLImGuiIcon(const Ref<AssetLibrary> assetLibrary, const Path& path)
 		{
-			m_texture = std::static_pointer_cast<GLTexture2D>(Assets::GetTexture(path));
+			m_texture = std::static_pointer_cast<GLTexture2D>(assetLibrary->GetTexture(path));
 		}
 		void* GLImGuiIcon::GetID()
 		{

@@ -361,6 +361,9 @@ namespace Eklipse
 		{
 			//vkBindImageMemory(g_logicalDevice, m_image, m_allocation->GetMemory(), m_allocation->GetOffset());
 		}
+		void VKTexture2D::Unbind() const
+		{
+		}
 		void VKTexture2D::Dispose()
 		{
 			vkDestroySampler(g_logicalDevice, m_sampler, nullptr);

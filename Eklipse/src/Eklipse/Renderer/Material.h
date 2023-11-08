@@ -1,7 +1,6 @@
 #pragma once
 #include <Eklipse/Renderer/Shader.h>
 #include <Eklipse/Renderer/Texture.h>
-#include <filesystem>
 
 namespace Eklipse
 {
@@ -17,41 +16,53 @@ namespace Eklipse
 		Unique<char[]> pushConstantData;
 		size_t pushConstantSize;
 	};
+	struct Sampler2D
+	{
+		uint32_t binding;
+		Path texturePath;
+		Ref<Texture2D> texture;
+	};
 
 	class Material
 	{
 	public:
 		Material() = delete;
-		Material(const std::filesystem::path& path);
+		Material(const Path& path, const Path& shaderPath);
 
 		template <typename T>
 		void SetConstant(const std::string& constantName, const std::string& memberName, const T* data, size_t size);
-		void SetSampler(const std::string& samplerName, const std::filesystem::path& texturePath);
 
 		virtual void Bind();
-		virtual void Dispose();
+		virtual void Dispose() = 0;
+
+		virtual void ApplyChanges();
 
 		void SetShader(Ref<Shader> shader);
-		void Serialize(const std::filesystem::path& path);
-		void Deserialize(const std::filesystem::path& path);
-		inline const std::string& GetName() const { return m_name; }
-		inline const std::filesystem::path& GetPath() const { return m_path; }
+		void Serialize(const Path& path);
+		void Deserialize(const Path& path);
 
-		static Ref<Material> Create(const std::filesystem::path& path);
+		inline const std::string& GetName() const { return m_name; }
+		inline const Path& GetPath() const { return m_path; }
+		inline const Ref<Shader> GetShader() const { return m_shader; }
+		inline const std::unordered_map<std::string, PushConstant>& GetPushConstants() const { return m_pushConstants; }
+		inline std::unordered_map<std::string, Sampler2D>& GetSamplers() { return m_samplers; }
+
+		static Ref<Material> Create(const Path& path, const Path& shaderPath);
 
 	protected:
 		Ref<Shader> m_shader;
-		std::unordered_map<std::string, PushConstant> m_pushConstants;
-		std::unordered_map<std::string, std::filesystem::path> m_samplers;
-		std::vector<Ref<Texture2D>> m_sampledTextures;
+		std::unordered_map<std::string, PushConstant> m_pushConstants{};
+		std::unordered_map<std::string, Sampler2D> m_samplers{};
 
 		std::string m_name;
-		std::filesystem::path m_path;
+		Path m_path;
 	};
 
 	template <typename T>
 	inline void Material::SetConstant(const std::string& constantName, const std::string& memberName, const T* data, size_t size)
 	{
+		EK_PROFILE();
+
 		EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "Push constant '{0}' not found", constantName);
 		auto& pushConstant = m_pushConstants[constantName];
 		EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "Push constant '{0}' member '{1}' not found", constantName, memberName);
