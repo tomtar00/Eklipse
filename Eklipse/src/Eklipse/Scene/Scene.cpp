@@ -31,8 +31,8 @@ namespace Eklipse
 				auto& meshComponent = m_registry.get<MeshComponent>(entityID);
 				if (!meshComponent.meshPath.empty() && !meshComponent.materialPath.empty())
 				{
-					meshComponent.mesh = Eklipse::Application::Get().GetAssetLibrary()->GetMesh(meshComponent.meshPath).get();
-					meshComponent.material = Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
+					meshComponent.mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComponent.meshPath).get();
+					meshComponent.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
 				}
 			}
 		});
@@ -42,6 +42,9 @@ namespace Eklipse
 	{
 		auto scene = CreateRef<Scene>(name, saveFilePath);
 		Save(scene);
+
+		EK_CORE_TRACE("Created new scene '{0}' at location '{1}'", scene->GetName(), saveFilePath.string());
+
 		return scene;
 	}
 	void Scene::Save(Ref<Scene> scene)
@@ -51,7 +54,7 @@ namespace Eklipse
 		Eklipse::SceneSerializer serializer(scene);
 		serializer.Serialize(scene->GetPath());
 
-		EK_CORE_TRACE("Scene '{0}' saved", scene->GetName());
+		EK_CORE_TRACE("Scene '{0}' saved to path '{1}'", scene->GetName(), scene->GetPath().string());
 	}
 	Ref<Scene> Scene::Load(const Path& saveFilePath)
 	{

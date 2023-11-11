@@ -267,10 +267,43 @@ namespace Editor
 	void EditorLayer::NewProject(const Eklipse::Path& path, const std::string& name)
 	{
 		OnProjectUnload();
-		auto project = Eklipse::Project::New(path, name);
-		auto scene = Eklipse::Scene::New("Untitled", project->GetConfig().startScenePath);
-		OnProjectLoad();
-		Eklipse::Application::Get().SwitchScene(scene);
+
+		auto project = Eklipse::Project::New();
+		if (!Eklipse::Project::Exists(path))
+		{
+			// === Create config
+			std::string defaultSceneName = "Unititled";
+			project->GetConfig().name = name;
+			project->GetConfig().assetsDirectoryPath = path.path() / "Assets";
+			project->GetConfig().startScenePath = project->GetConfig().assetsDirectoryPath / "Scenes" / (defaultSceneName + EK_SCENE_FILE_EXTENSION);
+
+			// === Create default scene
+			std::filesystem::create_directories(project->GetConfig().assetsDirectoryPath / "Scenes");
+			auto scene = Eklipse::Scene::New("Untitled", project->GetConfig().startScenePath);
+
+			// === Create default shaders
+			std::filesystem::create_directories(project->GetConfig().assetsDirectoryPath / "Shaders");
+			// Default 2D shader
+			Eklipse::Path dstPath = "//Shaders/Default2D.eksh";
+			Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default2D.eksh");
+			project->GetAssetLibrary()->GetShader(dstPath);
+			// Default 3D shader
+			dstPath = "//Shaders/Default3D.eksh";
+			Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default3D.eksh");
+			project->GetAssetLibrary()->GetShader(dstPath);
+
+			// === Save project
+			std::filesystem::path projectFilePath = path.path() / (name + EK_PROJECT_FILE_EXTENSION);
+			bool saved = Eklipse::Project::Save(project, projectFilePath);
+			EK_ASSERT(saved, "Failed to save project!");
+			OnProjectLoaded();
+
+			Eklipse::Application::Get().SwitchScene(scene);
+		}
+		else
+		{
+			EK_ERROR("Project already exists!");
+		}
 	}
 	void EditorLayer::OpenProject()
 	{
@@ -283,9 +316,9 @@ namespace Editor
 		OnProjectUnload();
 		auto project = Eklipse::Project::Load(outPath);
 		auto scene = Eklipse::Scene::Load(project->GetConfig().startScenePath);
-		OnProjectLoad();
-		Eklipse::Application::Get().SwitchScene(scene);
+		OnProjectLoaded();
 
+		Eklipse::Application::Get().SwitchScene(scene);
 		free(outPath);
 	}
 	void EditorLayer::SaveProject()
@@ -304,17 +337,18 @@ namespace Editor
 	void EditorLayer::OnProjectUnload()
 	{
 		Eklipse::Renderer::WaitDeviceIdle();
-		Eklipse::Application::Get().UnloadAssets();
+		if (Eklipse::Project::GetActive())
+			Eklipse::Project::GetActive()->UnloadAssets();
 	}
 	void EditorLayer::OnLoadResources()
 	{
 		m_assetBrowserPanel.LoadResources();
 	}
-	void EditorLayer::OnProjectLoad()
+	void EditorLayer::OnProjectLoaded()
 	{
 		ClearSelection();
+		Eklipse::Project::GetActive()->LoadAssets();
 		m_assetBrowserPanel.OnContextChanged();
-		Eklipse::Application::Get().LoadAssets();
 	}
 	void EditorLayer::SetSelection(DetailsSelectionInfo info)
 	{

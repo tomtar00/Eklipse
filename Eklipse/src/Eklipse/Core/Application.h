@@ -8,7 +8,7 @@
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Events/MouseEvent.h>
-#include <Eklipse/Assets/AssetLibrary.h>
+#include <Eklipse/Project/Project.h>
 #include <Eklipse/Events/ApplicationEvent.h>
 
 namespace Eklipse
@@ -42,10 +42,6 @@ namespace Eklipse
 		inline const Ref<Scene> GetScene() const { return m_scene; }
 		void SwitchScene(Ref<Scene> scene);
 
-		void LoadAssets();
-		void UnloadAssets();
-		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
-
 		inline const bool IsRunning() const { return m_running; }
 		inline const bool ShouldQuit() const { return m_quit; }
 		inline const bool IsMinimized() const { return m_minimized; }
@@ -73,7 +69,6 @@ namespace Eklipse
 	protected:
 		LayerStack m_layerStack;
 		Ref<Scene> m_scene;
-		Ref<AssetLibrary> m_assetLibrary;
 
 	private:
 		static Application* s_instance;

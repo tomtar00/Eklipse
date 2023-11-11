@@ -48,7 +48,7 @@ namespace Editor
 		void SaveScene();
 
 		void OnLoadResources();
-		void OnProjectLoad();
+		void OnProjectLoaded();
 		void OnProjectUnload();
 
 		inline static EditorLayer& Get() { return *s_instance; }

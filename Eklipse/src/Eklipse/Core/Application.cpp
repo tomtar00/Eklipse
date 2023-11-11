@@ -2,8 +2,6 @@
 #include "Application.h"
 #include "Input.h"
 
-#include <Eklipse/Project/Project.h>
-
 namespace Eklipse
 {
 	Application* Application::s_instance = nullptr;
@@ -18,7 +16,6 @@ namespace Eklipse
 		s_instance = this;
 
 		m_scene = CreateRef<Scene>();
-		m_assetLibrary = CreateRef<AssetLibrary>();
 	}
 	Application::~Application()
 	{
@@ -46,7 +43,8 @@ namespace Eklipse
 		OnAPIHasInitialized(Renderer::GetAPI());
 
 		// Init assets
-		LoadAssets();
+		if (Project::GetActive())
+			Project::GetActive()->LoadAssets();
 		Renderer::InitParameters();
 
 		// Apply all components in the active scene
@@ -60,7 +58,8 @@ namespace Eklipse
 
 		Renderer::WaitDeviceIdle();
 
-		UnloadAssets();
+		if (Project::GetActive())
+			Project::GetActive()->UnloadAssets();
 
 		OnShutdownAPI();
 		Renderer::Shutdown();
@@ -101,17 +100,6 @@ namespace Eklipse
 		m_scene->Unload();
 		m_scene.reset();
 		m_scene = scene;
-	}
-	
-	// === Asset Management ===
-	void Application::LoadAssets()
-	{
-		if (Project::GetActive())
-			m_assetLibrary->Load(Project::GetActive()->GetConfig().assetsDirectoryPath);
-	}
-	void Application::UnloadAssets()
-	{
-		m_assetLibrary->Unload();
 	}
 
 	// === Event Handling ===

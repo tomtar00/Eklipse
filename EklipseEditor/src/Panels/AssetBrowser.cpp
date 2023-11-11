@@ -86,7 +86,7 @@ namespace Editor
 				{
 					DetailsSelectionInfo info{};
 					info.type = SelectionType::Material;
-					info.material = Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(directoryEntry.path()).get();
+					info.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(directoryEntry.path()).get();
 					EditorLayer::Get().SetSelection(info);
 				}
 			}
@@ -111,11 +111,11 @@ namespace Editor
 		if (!std::filesystem::exists(shaderPath))
 			CreateShader(shaderPath, shaderTemplatePath);
 
-		Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(dstPath, shaderPath);
+		Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(dstPath, shaderPath);
 	}
 	void AssetBrowser::CreateShader(const Eklipse::Path& dstPath, const Eklipse::Path& templatePath)
 	{
 		Eklipse::CopyFileContent(dstPath, templatePath);
-		Eklipse::Application::Get().GetAssetLibrary()->GetShader(dstPath);
+		Eklipse::Project::GetActive()->GetAssetLibrary()->GetShader(dstPath);
 	}
 }

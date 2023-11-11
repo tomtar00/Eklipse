@@ -19,7 +19,8 @@ namespace Editor
 		ImGui::Text("Draw calls: %d", stats.drawCalls);
 		ImGui::Text("Total vertices: %d", stats.numVertices);
 
-		DrawAssetLibrary("App assets", Eklipse::Application::Get().GetAssetLibrary());
+		if (Eklipse::Project::GetActive() != nullptr)
+			DrawAssetLibrary("Project assets", Eklipse::Project::GetActive()->GetAssetLibrary());
 		DrawAssetLibrary("Editor assets", EditorLayer::Get().GetAssetLibrary());
 
 		ImGui::End();

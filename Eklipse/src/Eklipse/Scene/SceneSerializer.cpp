@@ -27,6 +27,7 @@ namespace Eklipse
 		std::ofstream fout(targetFilePath.string());
 		fout << out.c_str();
 
+		EK_CORE_TRACE("Serialized scene '{0}' to path '{1}'", m_scene->GetName(), targetFilePath.string());
 		return true;
 	}
 

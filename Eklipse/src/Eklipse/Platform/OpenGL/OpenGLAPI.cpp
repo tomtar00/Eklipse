@@ -124,7 +124,7 @@ namespace Eklipse
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-			auto& spriteShader = Application::Get().GetAssetLibrary()->GetShader("Assets/Shaders/Default2D.eksh"); // TODO: fix this asap
+			auto& spriteShader = Project::GetActive()->GetAssetLibrary()->GetShader("//Shaders/Default2D.eksh");
 			spriteShader->Bind();
 			glDisable(GL_DEPTH_TEST);
 			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);

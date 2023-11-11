@@ -97,8 +97,8 @@ namespace Editor
 
 					if (valid)
 					{
-						meshComp->mesh = Eklipse::Application::Get().GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
-						meshComp->material = Eklipse::Application::Get().GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
+						meshComp->mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
+						meshComp->material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
 					}
 				}
 			}
