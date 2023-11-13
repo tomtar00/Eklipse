@@ -3,8 +3,10 @@
 #include <Eklipse/Renderer/Texture.h>
 #include <Eklipse/Renderer/Shader.h>
 #include <Eklipse/Renderer/Material.h>
-
 #include <Eklipse/Utils/File.h>
+
+#define EK_MATERIAL_EXTENSION ".ekmt"
+#define EK_SHADER_EXTENSION ".eksh"
 
 namespace Eklipse
 {

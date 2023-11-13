@@ -34,7 +34,7 @@ namespace Editor
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f },
 			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
 			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
-			{ "Browser",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },	
+			{ "Files",		ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },	
 			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f }
 		};
 		m_guiLayerCreateInfo.panels =
@@ -46,7 +46,7 @@ namespace Editor
 			&m_logsPanel,
 			&m_profilerPanel,
 			&m_viewPanel,
-			&m_assetBrowserPanel
+			&m_filesPanel
 		};
 
 		EK_INFO("Editor layer attached");
@@ -296,9 +296,9 @@ namespace Editor
 			std::filesystem::path projectFilePath = path.path() / (name + EK_PROJECT_FILE_EXTENSION);
 			bool saved = Eklipse::Project::Save(project, projectFilePath);
 			EK_ASSERT(saved, "Failed to save project!");
-			OnProjectLoaded();
 
 			Eklipse::Application::Get().SwitchScene(scene);
+			OnProjectLoaded();
 		}
 		else
 		{
@@ -316,9 +316,9 @@ namespace Editor
 		OnProjectUnload();
 		auto project = Eklipse::Project::Load(outPath);
 		auto scene = Eklipse::Scene::Load(project->GetConfig().startScenePath);
+		Eklipse::Application::Get().SwitchScene(scene);
 		OnProjectLoaded();
 
-		Eklipse::Application::Get().SwitchScene(scene);
 		free(outPath);
 	}
 	void EditorLayer::SaveProject()
@@ -342,13 +342,15 @@ namespace Editor
 	}
 	void EditorLayer::OnLoadResources()
 	{
-		m_assetBrowserPanel.LoadResources();
+		m_filesPanel.LoadResources();
 	}
 	void EditorLayer::OnProjectLoaded()
 	{
 		ClearSelection();
 		Eklipse::Project::GetActive()->LoadAssets();
-		m_assetBrowserPanel.OnContextChanged();
+		m_filesPanel.OnContextChanged();
+
+		Eklipse::Application::Get().GetScene()->ApplyAllComponents();
 	}
 	void EditorLayer::SetSelection(DetailsSelectionInfo info)
 	{

@@ -5,7 +5,7 @@
 
 namespace Editor
 {
-	class AssetBrowser : public Eklipse::GuiPanel
+	class FilesPanel : public Eklipse::GuiPanel
 	{
 	public:
 		void LoadResources();

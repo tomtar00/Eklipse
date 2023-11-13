@@ -15,7 +15,7 @@ namespace Eklipse
 
 		void Unload();
 
-		void OnAPIHasInitialized();
+		void ApplyAllComponents();
 		
 		static Ref<Scene> New(const std::string& name, const Path& saveFilePath);
 		static void Save(Ref<Scene> scene);

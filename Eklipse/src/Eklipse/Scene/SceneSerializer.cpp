@@ -165,10 +165,12 @@ namespace Eklipse
 			out << YAML::BeginMap;
 
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			out << YAML::Key << "Mesh" << YAML::Value << meshComponent.mesh->GetPath();
-			out << YAML::Key << "Material" << YAML::Value << meshComponent.material->GetPath().generic_string();
+			out << YAML::Key << "Mesh" << YAML::Value << meshComponent.meshPath;
+			out << YAML::Key << "Material" << YAML::Value << meshComponent.materialPath;
 
 			out << YAML::EndMap;
 		}
+
+		out << YAML::EndMap;
 	}
 }

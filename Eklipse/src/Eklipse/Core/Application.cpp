@@ -48,7 +48,7 @@ namespace Eklipse
 		Renderer::InitParameters();
 
 		// Apply all components in the active scene
-		m_scene->OnAPIHasInitialized();
+		m_scene->ApplyAllComponents();
 
 		EK_PROFILE_END();
 	}

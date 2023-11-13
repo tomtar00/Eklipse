@@ -22,7 +22,7 @@ namespace Eklipse
 
 		EK_CORE_TRACE("Scene disposed");
 	}
-	void Scene::OnAPIHasInitialized()
+	void Scene::ApplyAllComponents()
 	{
 		ForEachEntity([&](auto entityID)
 		{

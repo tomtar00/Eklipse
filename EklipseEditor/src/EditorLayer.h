@@ -8,7 +8,7 @@
 #include <Panels/StatsPanel.h>
 #include <Panels/SettingsPanel.h>
 #include <Panels/ProfilerPanel.h>
-#include <Panels/AssetBrowser.h>
+#include <Panels/FilesPanel.h>
 
 namespace Editor
 {
@@ -89,6 +89,6 @@ namespace Editor
 		StatsPanel		m_statsPanel;
 		SettingsPanel	m_settingsPanel;
 		ProfilerPanel	m_profilerPanel;
-		AssetBrowser	m_assetBrowserPanel;
+		FilesPanel		m_filesPanel;
 	};
 }
