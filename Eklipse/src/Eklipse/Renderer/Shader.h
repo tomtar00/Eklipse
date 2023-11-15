@@ -100,11 +100,14 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
+		inline bool Recompile() { Dispose(); return Compile(true); }
+
 		inline const Path& GetPath() const { return m_filePath; }
 
 	protected:
+		virtual bool Compile(bool forceCompile = false) = 0;
 		virtual const std::string GetCacheDirectoryPath() = 0;
-		void CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources);
+		bool CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
 		std::unordered_map<ShaderStage, std::string> PreProcess(const std::string& source);
 		void Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData, const std::string& shaderName);
 

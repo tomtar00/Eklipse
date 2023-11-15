@@ -34,6 +34,13 @@ namespace Eklipse
     template<typename T>
     static void SetData(void* dst, YAML::Node& node)
     {
+        if (node.IsNull()) 
+        {
+            EK_CORE_WARN("Failed to deserialize data, node '{0}' is null", node.Tag());
+            dst = nullptr;
+            return;
+        }
+
         T data = node.as<T>();
         dst = &data;
     }
@@ -196,28 +203,35 @@ namespace Eklipse
             uint32_t index = 0;
             for (auto&& [memberName, data] : pushConstant.dataPointers)
             {
-				auto& memberData = constantData[index++]["Data"];
-                try
+                auto& member = constantData[index++];
+                if (!member.IsDefined() || member.IsNull())
                 {
-                    switch (data.type)
-                    {
-                        case DataType::FLOAT:   SetData<float>(data.data, memberData);      break;
-                        case DataType::FLOAT2:  SetData<glm::vec2>(data.data, memberData);  break;
-                        case DataType::FLOAT3:  SetData<glm::vec3>(data.data, memberData);  break;
-                        case DataType::FLOAT4:  SetData<glm::vec4>(data.data, memberData);  break;
-                        case DataType::MAT3:    SetData<glm::mat3>(data.data, memberData);  break;
-                        case DataType::MAT4:    SetData<glm::mat4>(data.data, memberData);  break;
-                        case DataType::INT:     SetData<int>(data.data, memberData);        break;
-                        case DataType::INT2:    SetData<glm::ivec2>(data.data, memberData); break;
-                        case DataType::INT3:    SetData<glm::ivec3>(data.data, memberData); break;
-                        case DataType::INT4:    SetData<glm::ivec4>(data.data, memberData); break;
-                        case DataType::BOOL:    SetData<bool>(data.data, memberData);       break;
-                    }
+                    EK_CORE_ERROR("Failed to deserialize member at index {0}, node '{1}' is not defined in material '{2}'", index-1, memberName, path.string());
                 }
-                catch (std::runtime_error e)
+                else
                 {
-                    EK_ASSERT(false, "Failed to deserialize .ekmt file '{0}'\n     {1}", path.string(), e.what());
-                    break;
+				    auto& memberData = member["Data"];
+                    try
+                    {
+                        switch (data.type)
+                        {
+                            case DataType::FLOAT:   SetData<float>(data.data, memberData);      break;
+                            case DataType::FLOAT2:  SetData<glm::vec2>(data.data, memberData);  break;
+                            case DataType::FLOAT3:  SetData<glm::vec3>(data.data, memberData);  break;
+                            case DataType::FLOAT4:  SetData<glm::vec4>(data.data, memberData);  break;
+                            case DataType::MAT3:    SetData<glm::mat3>(data.data, memberData);  break;
+                            case DataType::MAT4:    SetData<glm::mat4>(data.data, memberData);  break;
+                            case DataType::INT:     SetData<int>(data.data, memberData);        break;
+                            case DataType::INT2:    SetData<glm::ivec2>(data.data, memberData); break;
+                            case DataType::INT3:    SetData<glm::ivec3>(data.data, memberData); break;
+                            case DataType::INT4:    SetData<glm::ivec4>(data.data, memberData); break;
+                            case DataType::BOOL:    SetData<bool>(data.data, memberData);       break;
+                        }
+                    }
+                    catch (std::runtime_error e)
+                    {
+                        EK_CORE_ERROR("Failed to deserialize .ekmt file '{0}'\n     {1}", path.string(), e.what());
+                    }
                 }
             }
         }

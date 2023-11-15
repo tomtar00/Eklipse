@@ -11,6 +11,7 @@
 #include <stb_image.h>
 
 #include <Eklipse/Utils/File.h>
+#include <Eklipse/Core/Application.h>
 
 namespace std
 {
@@ -29,15 +30,16 @@ namespace Eklipse
 {
     void AssetLibrary::Load(const Path& assetsDirectoryPath)
     {
+        // Load all recognized assets
         m_assetsDirectoryPath = assetsDirectoryPath;
         for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator(assetsDirectoryPath))
         {
             if (std::filesystem::is_directory(directoryEntry.path()))
                 continue;
 
-            const auto& path = assetsDirectoryPath / directoryEntry.path();
-            std::string extension = path.extension().string();
-            std::string pathString = path.string();
+            const auto& path = directoryEntry.path();
+            const std::string extension = path.extension().string();
+            const std::string pathString = path.string();
 
             if (extension == ".obj")
             {
@@ -60,6 +62,11 @@ namespace Eklipse
                 GetMaterial(pathString);
             }
         }
+        EK_CORE_TRACE("Loaded {0} models, {1} textures, {2} shaders and {3} materials", m_meshCache.size(), m_textureCache.size(), m_shaderCache.size(), m_materialCache.size());
+
+        // Monitor assets changes with FileWatch
+        m_fileWatcher = CreateUnique<filewatch::FileWatch<std::string>>(assetsDirectoryPath.string(), CAPTURE_FN(OnFileWatchEvent));
+        EK_CORE_TRACE("Monitoring assets directory '{0}'", assetsDirectoryPath.string());
     }
     void AssetLibrary::Unload()
     {
@@ -229,5 +236,70 @@ namespace Eklipse
 
         EK_CORE_INFO("Loaded material from path '{0}'", materialPath);
         return material;
+    }
+    void AssetLibrary::OnFileWatchEvent(const std::string& path, filewatch::Event change_type)
+    {
+        if (std::filesystem::is_directory(m_assetsDirectoryPath.path() / path))
+			return;
+
+        switch (change_type)
+        {
+            case filewatch::Event::added:
+                EK_CORE_TRACE("File added: {0}", path);
+                break;
+            case filewatch::Event::removed:
+                EK_CORE_TRACE("File removed: {0}", path);
+                break;
+            case filewatch::Event::modified:
+                EK_CORE_TRACE("File modified: {0}", path);
+                {
+                    const std::string extension = std::filesystem::path(path).extension().string();
+					const std::string pathString = Path(m_assetsDirectoryPath.path() / path).string();
+
+                    if (!m_shaderReloadPending && extension == EK_SHADER_EXTENSION)
+                    {
+                        // if shader exists in chache (if is not being created now)
+                        if (m_shaderCache.find(pathString) != m_shaderCache.end())
+                        {
+                            m_shaderReloadPending = true;
+                            Application::Get().SubmitToMainThread([&, pathString]()
+                            {
+                                Eklipse::Renderer::WaitDeviceIdle();
+
+                                const auto shaderRef = GetShader(pathString);
+
+                                EK_CORE_INFO("Recompiling shader from path '{0}'", pathString);
+                                bool recompiledSuccessfully = shaderRef->Recompile();
+                                if (recompiledSuccessfully)
+                                {
+                                    for (auto&& [path, material] : m_materialCache)
+                                    {
+                                        if (material->GetShader() == shaderRef)
+                                        {
+                                            EK_CORE_TRACE("Reloading material at path '{0}', because shader at path '{1}' has been recompiled", material->GetPath().string(), shaderRef->GetPath().string());
+                                            material->SetShader(shaderRef);
+                                            material->ApplyChanges();
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    EK_CORE_ERROR("Failed to recompile shader at path '{0}'", pathString);
+                                }
+
+                                m_shaderReloadPending = false;
+                            });
+                        }  
+                        else
+                        {
+                            EK_CORE_TRACE("Shader at path '{0}' is not in cache, so it will not be recompiled", pathString);
+                        }
+					}
+                }
+                break;
+            default:
+                EK_CORE_TRACE("File event: {0}", path);
+                break;
+        }
     }
 }

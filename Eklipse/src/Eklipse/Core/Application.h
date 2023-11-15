@@ -59,12 +59,16 @@ namespace Eklipse
 		void PopLayer(Ref<Layer> layer);
 		void PopOverlay(Ref<Layer> overlay);
 
+		void SubmitToMainThread(const std::function<void()>& function);
+
 	private:
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
 		void OnMouseMove(MouseMovedEvent& event);
 		void OnMouseScroll(MouseScrolledEvent& event);
+
+		void ExecuteMainThreadQueue();
 
 	protected:
 		LayerStack m_layerStack;
@@ -79,6 +83,9 @@ namespace Eklipse
 		ApplicationInfo m_appInfo{};
 		Ref<Window> m_window;
 		Eklipse::MainLoopTimer m_timer;
+
+		std::vector<std::function<void()>> m_mainThreadQueue;
+		std::mutex m_mainThreadQueueMutex;
 	};
 
 	Ref<Application> CreateApplication();

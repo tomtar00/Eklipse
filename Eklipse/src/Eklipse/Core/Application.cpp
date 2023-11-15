@@ -73,6 +73,8 @@ namespace Eklipse
 	{
 		m_timer.Record();
 		*deltaTime = m_timer.DeltaTime();
+
+		ExecuteMainThreadQueue();
 	}
 	void Application::EndFrame(float deltaTime)
 	{
@@ -151,6 +153,16 @@ namespace Eklipse
 		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
 	}
 
+	void Application::ExecuteMainThreadQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
+
+		for (auto& func : m_mainThreadQueue)
+			func();
+
+		m_mainThreadQueue.clear();
+	}
+
 	void Application::Close()
 	{
 		m_running = false;
@@ -173,5 +185,11 @@ namespace Eklipse
 	void Application::PopOverlay(Ref<Layer> overlay)
 	{
 		m_layerStack.PopOverlay(overlay);
+	}
+	void Application::SubmitToMainThread(const std::function<void()>& function)
+	{
+		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
+
+		m_mainThreadQueue.emplace_back(function);
 	}
 }

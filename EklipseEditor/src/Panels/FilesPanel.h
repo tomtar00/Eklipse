@@ -12,7 +12,7 @@ namespace Editor
 		void OnGUI(float deltaTime) override;
 		void OnContextChanged();
 
-		void CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderTemplatePath);
+		void CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderPath);
 		void CreateShader(const Eklipse::Path& dstPath, const Eklipse::Path& templatePath);
 
 	private:

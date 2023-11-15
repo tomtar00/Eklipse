@@ -40,11 +40,29 @@ namespace Eklipse
 
 		VKShader::VKShader(const Path& filePath) : Shader(filePath)
 		{			
+			Compile();
+		}
+
+		void VKShader::Bind() const 
+		{
+			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+		}
+		void VKShader::Unbind() const {}
+
+		void VKShader::Dispose() const
+		{
+			vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
+			vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
+			vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
+		}
+		bool VKShader::Compile(bool forceCompile)
+		{
 			auto shaderSources = Setup();
+			bool success = true;
 
 			{
 				Timer timer;
-				CompileOrGetVulkanBinaries(shaderSources);
+				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
 
 				// Create modules
 				auto& vertShaderCode = m_vulkanSPIRV[ShaderStage::VERTEX];
@@ -91,27 +109,6 @@ namespace Eklipse
 					}
 				}
 
-				// =============
-				/*descriptorSetLayoutBindings.resize(3);
-				descriptorSetLayoutBindings[0].binding = 0;
-				descriptorSetLayoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorSetLayoutBindings[0].descriptorCount = 1;
-				descriptorSetLayoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-				descriptorSetLayoutBindings[0].pImmutableSamplers = nullptr;
-
-				descriptorSetLayoutBindings[1].binding = 1;
-				descriptorSetLayoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorSetLayoutBindings[1].descriptorCount = 1;
-				descriptorSetLayoutBindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-				descriptorSetLayoutBindings[1].pImmutableSamplers = nullptr;
-
-				descriptorSetLayoutBindings[2].binding = 2;
-				descriptorSetLayoutBindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorSetLayoutBindings[2].descriptorCount = 1;
-				descriptorSetLayoutBindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-				descriptorSetLayoutBindings[2].pImmutableSamplers = nullptr;*/
-				//=============
-
 				m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
 
 				std::vector<VkPushConstantRange> pushConstantRanges;
@@ -154,7 +151,11 @@ namespace Eklipse
 					attributeDescription.push_back(attribute);
 				}
 
-				EK_ASSERT(g_VKSceneFramebuffer != nullptr, "Vulkan Scene Frambuffer is null!");
+				if (g_VKSceneFramebuffer == nullptr)
+				{
+					success = false;
+					EK_CORE_ERROR("Vulkan Scene Framebuffer is null!");
+				}
 				m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKSceneFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
 
 				vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
@@ -162,19 +163,7 @@ namespace Eklipse
 
 				EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
 			}
-		}
-
-		void VKShader::Bind() const 
-		{
-			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-		}
-		void VKShader::Unbind() const {}
-
-		void VKShader::Dispose() const
-		{
-			vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
-			vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
-			vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
+			return success;
 		}
 	}
 }

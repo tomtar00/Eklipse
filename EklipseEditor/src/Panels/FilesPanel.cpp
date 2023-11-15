@@ -156,6 +156,7 @@ namespace Editor
 		}
 
 		ImGui::NewLine();
+		ImGui::Separator();
 
 		static float padding = 32.0f;
 		static float thumbnailSize = 64.0f;
@@ -218,12 +219,8 @@ namespace Editor
 		m_workingDirPath = Eklipse::Project::GetActive()->GetConfig().assetsDirectoryPath;
 		m_currentPath = m_workingDirPath;
 	}
-	void FilesPanel::CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderTemplatePath)
+	void FilesPanel::CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderPath)
 	{
-		Eklipse::Path shaderPath = "//Shaders/" + (shaderTemplatePath.path().stem().string() + EK_SHADER_EXTENSION);
-		if (!std::filesystem::exists(shaderPath))
-			CreateShader(shaderPath, shaderTemplatePath);
-
 		Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(dstPath, shaderPath);
 	}
 	void FilesPanel::CreateShader(const Eklipse::Path& dstPath, const Eklipse::Path& templatePath)

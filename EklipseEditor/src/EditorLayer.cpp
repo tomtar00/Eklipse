@@ -342,6 +342,7 @@ namespace Editor
 	}
 	void EditorLayer::OnLoadResources()
 	{
+		m_assetLibrary->Load("Assets");
 		m_filesPanel.LoadResources();
 	}
 	void EditorLayer::OnProjectLoaded()

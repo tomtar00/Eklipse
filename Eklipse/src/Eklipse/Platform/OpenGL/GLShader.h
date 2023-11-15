@@ -15,13 +15,15 @@ namespace Eklipse
 			virtual void Unbind() const override;
 			virtual void Dispose() const override;
 
+
 			inline uint32_t GetID() const { return m_id; }
 
 		protected:
 			virtual const std::string GetCacheDirectoryPath() override { return "Assets/Cache/Shader/OpenGL"; }
 
 		private:
-			void CompileOrGetOpenGLBinaries();
+			virtual bool Compile(bool forceCompile = false) override;
+			bool CompileOrGetOpenGLBinaries(bool forceCompile);
 			void CreateProgram();
 
 		private:

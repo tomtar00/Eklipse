@@ -142,8 +142,9 @@ namespace Eklipse
 
         return shaderSources;
     }
-    void Shader::CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources)
+    bool Shader::CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile)
     {
+        bool success = true;
         shaderc::Compiler compiler;
         shaderc::CompileOptions options;
         options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
@@ -163,7 +164,7 @@ namespace Eklipse
             std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + VKShaderStageCachedVulkanFileExtension(stage));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-            if (in.is_open())
+            if (!forceCompile && in.is_open())
             {
                 EK_CORE_TRACE("Reading Vulkan shader cache binaries from path: '{0}'", cachedPath.string());
 
@@ -180,27 +181,36 @@ namespace Eklipse
                 EK_CORE_TRACE("Compiling shader at path: '{0}' to Vulkan binaries", m_filePath);
 
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
-                EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
-
-                shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-                EK_CORE_TRACE("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
-                std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-                if (out.is_open())
+                if (module.GetCompilationStatus() != shaderc_compilation_status_success)
                 {
-                    auto& data = shaderData[stage];
-                    out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-                    out.flush();
-                    out.close();
+                    success = false;
+                    EK_CORE_ERROR("Failed to compile shader at path: '{0}'\n\t{1}", m_filePath, module.GetErrorMessage());
                 }
                 else
                 {
-					EK_CORE_ERROR("Failed to write Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
-				}
+                    shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+                    EK_CORE_TRACE("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
+                    std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+                    if (out.is_open())
+                    {
+                        auto& data = shaderData[stage];
+                        out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+                        out.flush();
+                        out.close();
+                    }
+                    else
+                    {
+                        success = false;
+					    EK_CORE_ERROR("Failed to write Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
+				    }
+                }
             }
         }
 
-        Reflect(m_vulkanSPIRV, m_filePath);
+        if (success)
+            Reflect(m_vulkanSPIRV, m_filePath);
+        return success;
     }
     void Shader::Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderStagesData, const std::string& shaderName)
     {

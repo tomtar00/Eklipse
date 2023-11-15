@@ -8,6 +8,8 @@
 #define EK_MATERIAL_EXTENSION ".ekmt"
 #define EK_SHADER_EXTENSION ".eksh"
 
+#include <FileWatch.hpp>
+
 namespace Eklipse
 {
 	class AssetLibrary
@@ -30,11 +32,17 @@ namespace Eklipse
 		const Path& GetAssetsDirectoryPath() const { return m_assetsDirectoryPath; }
 
 	private:
+		void OnFileWatchEvent(const std::string& path, filewatch::Event change_type);
+
+	private:
 		std::unordered_map<std::string, Ref<Mesh>, std::hash<std::string>>			m_meshCache;
 		std::unordered_map<std::string, Ref<Texture2D>, std::hash<std::string>>		m_textureCache;
 		std::unordered_map<std::string, Ref<Shader>, std::hash<std::string>>		m_shaderCache;
 		std::unordered_map<std::string, Ref<Material>, std::hash<std::string>>		m_materialCache;
 
 		Path m_assetsDirectoryPath;
+		Unique<filewatch::FileWatch<std::string>> m_fileWatcher;
+
+		bool m_shaderReloadPending = false;
 	};
 }

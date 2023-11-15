@@ -30,12 +30,14 @@ namespace Eklipse
 		operator std::string() const { return string(); }
 		operator std::filesystem::path() const { return path(); }
 
-		bool operator==(const Path& other) const		{ return m_path == other.m_path; }	
-		bool operator==(const char* other) const		{ return m_path == other; }
-		bool operator==(const std::string other) const	{ return m_path == other; }
-		bool operator!=(const Path& other) const		{ return m_path != other.m_path; }
-		bool operator!=(const char* other) const		{ return m_path != other; }
-		bool operator!=(const std::string other) const	{ return m_path != other; }
+		bool operator==(const Path& other) const		{ return m_genericPath == other.m_genericPath || m_path == other.m_path; }	
+		bool operator==(const char* other) const		{ return m_genericPath == other || m_path == other; }
+		bool operator==(const std::string other) const	{ return m_genericPath == other || m_path == other; }
+
+		bool operator!=(const Path& other) const		{ return !(*this == other); }
+		bool operator!=(const char* other) const		{ return !(*this == other); }
+		bool operator!=(const std::string other) const	{ return !(*this == other); }
+
 		Path operator+(const Path& other) const			{ return m_path + other.m_path; }
 
 	private:

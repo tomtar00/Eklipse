@@ -41,7 +41,8 @@ project "Eklipse"
 		"%{Include.ImGuizmo}",
 		"%{Include.shaderc}",
 		"%{Include.SPIRV_Cross}",
-		"%{Include.yaml_cpp}"
+		"%{Include.yaml_cpp}",
+        "%{Include.filewatch}"
 	}
 
 	links

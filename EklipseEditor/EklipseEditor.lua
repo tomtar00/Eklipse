@@ -26,7 +26,8 @@ project "EklipseEditor"
 		"%{Include.entt}",
 		"%{Include.ImGuizmo}",
 		"%{Include.nativefiledialog}",
-		"%{Include.yaml_cpp}"
+		"%{Include.yaml_cpp}",
+		"%{Include.filewatch}"
 	}
 
 	links

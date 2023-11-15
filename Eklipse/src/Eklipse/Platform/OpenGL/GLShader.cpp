@@ -37,10 +37,11 @@ namespace Eklipse
 			return "";
 		}
 
-		void GLShader::CompileOrGetOpenGLBinaries()
+		bool GLShader::CompileOrGetOpenGLBinaries(bool forceCompile)
 		{
 			auto& shaderData = m_openGLSPIRV;
 
+			bool success = true;
 			shaderc::Compiler compiler;
 			shaderc::CompileOptions options;
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
@@ -56,7 +57,7 @@ namespace Eklipse
 				std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
 
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-				if (in.is_open())
+				if (!forceCompile && in.is_open())
 				{
 					EK_CORE_TRACE("Reading OpenGL shader cache binaries from path: '{0}'", cachedPath.string());
 
@@ -88,24 +89,32 @@ namespace Eklipse
 					auto& source = m_openGLSourceCode[stage];
 
 					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
-					EK_ASSERT(module.GetCompilationStatus() == shaderc_compilation_status_success, "{0}", module.GetErrorMessage());
-					
-					shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-					std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-					if (out.is_open())
+					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
-						auto& data = shaderData[stage];
-						out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-						out.flush();
-						out.close();
+						success = false;
+						EK_CORE_ERROR("Failed to compile shader at path: '{0}'\n\t{1}", m_filePath, module.GetErrorMessage());
 					}
 					else
 					{
-						EK_CORE_ERROR("Failed to write OpenGL shader cache binaries to path: '{0}'", cachedPath.string());
+						shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+						std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+						if (out.is_open())
+						{
+							auto& data = shaderData[stage];
+							out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+							out.flush();
+							out.close();
+						}
+						else
+						{
+							success = false;
+							EK_CORE_ERROR("Failed to write OpenGL shader cache binaries to path: '{0}'", cachedPath.string());
+						}
 					}
 				}
 			}
+			return success;
 		}
 
 		void GLShader::CreateProgram()
@@ -161,15 +170,7 @@ namespace Eklipse
 
 		GLShader::GLShader(const Path& filePath) : m_id(0), Shader(filePath)
 		{
-			auto shaderSources = Setup();
-
-			{
-				Timer timer;
-				CompileOrGetVulkanBinaries(shaderSources);
-				CompileOrGetOpenGLBinaries();
-				CreateProgram();
-				EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
-			}
+			Compile();
 		}
 		void GLShader::Bind() const
 		{
@@ -186,6 +187,21 @@ namespace Eklipse
 		void GLShader::Dispose() const
 		{
 			glDeleteProgram(m_id);
+		}
+		bool GLShader::Compile(bool forceCompile)
+		{
+			auto shaderSources = Setup();
+			bool success = true;
+
+			{
+				Timer timer;
+				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
+				success = success && CompileOrGetOpenGLBinaries(forceCompile);
+				CreateProgram();
+				EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+			}
+
+			return success;
 		}
 	}
 }
