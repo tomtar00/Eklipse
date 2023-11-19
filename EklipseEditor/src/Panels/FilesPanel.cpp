@@ -104,25 +104,24 @@ namespace Editor
 			if (ImGui::BeginPopupModal("Create New Material", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				static std::string materialName = "NewMaterial";
-				static std::string shaderPath = "//Shaders/Default3D.eksh";
+				static Eklipse::Path shaderPath = "//Shaders/Default3D.eksh";
 
-				ImGui::InputText("Material Name", &materialName);
-				if (ImGui::BeginCombo("Shader", shaderPath.c_str()))
+				ImGui::TextUnformatted("Material Name");
+				ImGui::SameLine();
+				ImGui::InputText("##materialName", &materialName);
+				ImGui::InputPath("##shaderid", "Shader", shaderPath, { EK_SHADER_EXTENSION }, [&]()
 				{
-					for (auto& shader : Eklipse::Project::GetActive()->GetAssetLibrary()->GetShaderCache())
-					{
-						if (ImGui::Selectable(shader.first.c_str()))
-						{
-							shaderPath = shader.first;
-						}
-					}
-					ImGui::EndCombo();
-				}
+					EK_CORE_TRACE("Shader path changed to: {0}", shaderPath.string());
+				});
 
 				if (ImGui::Button("Create") && !materialName.empty())
 				{
-					CreateMaterial(m_currentPath / (materialName + EK_MATERIAL_EXTENSION), shaderPath);
-					ImGui::CloseCurrentPopup();
+					if (shaderPath.isValid({ EK_SHADER_EXTENSION }))
+					{
+						CreateMaterial(m_currentPath / (materialName + EK_MATERIAL_EXTENSION), shaderPath);
+						ImGui::CloseCurrentPopup();
+					}
+					else EK_CORE_WARN("Invalid shader path: '{0}'", shaderPath.string());
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel"))

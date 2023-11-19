@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
+#include "ImGuiExtensions.h"
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/Assets/AssetLibrary.h>
 
@@ -32,7 +33,6 @@ namespace Eklipse
 		ImGuiDir_ dir;
 		int dirType;
 		float ratio;
-		//Ref<Layer> layer;
 
 		ImGuiID id;
 	};

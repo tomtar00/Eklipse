@@ -61,7 +61,7 @@ namespace Eklipse
     {
         m_name = path.path().stem().string();
 
-        if (path.isValid(".ekmt"))
+        if (path.isValid({ ".ekmt" }))
         {
             Deserialize(path);
         }
@@ -85,6 +85,12 @@ namespace Eklipse
 
     void Material::SetShader(Ref<Shader> shader)
     {
+        EK_ASSERT(shader != nullptr, "Shader is null");
+        if (m_shader == shader)
+        {
+            return;
+        }
+
         m_shader = shader;
         m_pushConstants.clear();
         m_samplers.clear();
@@ -112,12 +118,87 @@ namespace Eklipse
         }
     }
 
+    void Material::SetShader(const Path& shaderPath)
+    {
+        EK_ASSERT(Project::GetActive(), "No active project");
+		SetShader(Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath));
+    }
+
+    void Material::OnShaderReloaded()
+    {
+        // Applying new shader constants
+        for (auto&& [stage, reflection] : m_shader->GetReflections())
+        {
+            for (auto& pushConstantRef : reflection.pushConstants)
+            {
+                // create new memory block
+                PushConstant pushConstant;
+                pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size);
+                pushConstant.pushConstantSize = pushConstantRef.size;
+
+                auto it = m_pushConstants.find(pushConstantRef.name);
+
+                // if the push constant already exists, copy the available data over
+                if (it != m_pushConstants.end())
+                {
+                    auto& oldPushConstant = it->second;
+
+                    uint32_t offset = 0;
+                    std::unordered_map<std::string, PushConstantData> dataPointers;
+                    for (auto& member : pushConstantRef.members)
+                    {
+                        auto& dataPointer = dataPointers[member.name];
+                        dataPointer = { pushConstant.pushConstantData.get() + offset, member.size, member.type };
+
+                        // if the member already exists, copy the data over
+                        auto it = oldPushConstant.dataPointers.find(member.name);
+                        if (it != oldPushConstant.dataPointers.end())
+                        {
+                            std::memcpy(dataPointer.data, it->second.data, dataPointer.size);
+					    }
+
+                        offset += member.size;
+                    }
+
+                    oldPushConstant.dataPointers = dataPointers;
+                    oldPushConstant.pushConstantData = std::move(pushConstant.pushConstantData);
+                    oldPushConstant.pushConstantSize = pushConstant.pushConstantSize;
+                }
+
+                // otherwise, create a new push constant
+                else
+                {
+                    uint32_t offset = 0;
+                    for (auto& member : pushConstantRef.members)
+                    {
+                        pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + offset, member.size, member.type };
+                        offset += member.size;
+                    }
+
+                    auto& mPushConstant = m_pushConstants[pushConstantRef.name];
+                    mPushConstant.dataPointers = pushConstant.dataPointers;
+                    mPushConstant.pushConstantData = std::move(pushConstant.pushConstantData);
+                    mPushConstant.pushConstantSize = pushConstant.pushConstantSize;
+                }
+            }
+
+            for (auto& samplerRef : reflection.samplers)
+            {
+                auto it = m_samplers.find(samplerRef.name);
+                if (it == m_samplers.end())
+                {
+                    it->second = { samplerRef.binding, "", nullptr };
+				}
+            }
+        }
+    }
+
     void Material::Serialize(const Path& path)
     {
         YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "Name" << YAML::Value << m_name;
-        out << YAML::Key << "Shader" << YAML::Value << m_shader->GetPath().generic_string();
+        out << YAML::Key << "Shader" << YAML::Value << m_shader->GetPath().string();
 
         {
             out << YAML::Key << "PushConstants" << YAML::Value << YAML::BeginMap;
@@ -155,14 +236,14 @@ namespace Eklipse
             out << YAML::Key << "Samplers" << YAML::Value << YAML::BeginMap;
             for (auto&& [samplerName, sampler] : m_samplers)
             {
-				out << YAML::Key << samplerName << YAML::Value << sampler.texturePath.generic_string();
+				out << YAML::Key << samplerName << YAML::Value << sampler.texturePath.string();
 			}
 			out << YAML::EndMap;
         }
 
         out << YAML::EndMap;
 
-        std::ofstream fout(path.string());
+        std::ofstream fout(path.full_string());
         fout << out.c_str();
     }
     void Material::Deserialize(const Path& path)
@@ -170,7 +251,7 @@ namespace Eklipse
         YAML::Node yaml;
         try
         {
-            yaml = YAML::LoadFile(path.string());
+            yaml = YAML::LoadFile(path.full_string());
         }
         catch (std::runtime_error e)
         {
@@ -193,8 +274,9 @@ namespace Eklipse
             return;
         }
 
-        m_shader = Project::GetActive()->GetAssetLibrary()->GetShader(yaml["Shader"].as<std::string>());
-        SetShader(m_shader);
+        Path shaderPath = yaml["Shader"].as<std::string>();
+        auto& shader = Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath);
+        SetShader(shader);
 
         for (auto&& [constantName, pushConstant] : m_pushConstants)
         {

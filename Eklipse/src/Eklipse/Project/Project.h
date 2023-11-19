@@ -11,8 +11,8 @@ namespace Eklipse
 	{
 		std::string name;
 
-		std::filesystem::path startScenePath;
-		std::filesystem::path assetsDirectoryPath;
+		Path startScenePath;
+		Path assetsDirectoryPath;
 	};
 
 	class Project

@@ -38,6 +38,8 @@ namespace Eklipse
 		virtual void ApplyChanges();
 
 		void SetShader(Ref<Shader> shader);
+		void SetShader(const Path& shaderPath);
+		void OnShaderReloaded();
 		void Serialize(const Path& path);
 		void Deserialize(const Path& path);
 
@@ -63,12 +65,12 @@ namespace Eklipse
 	{
 		EK_PROFILE();
 
-		EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "Push constant '{0}' not found", constantName);
+		EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "({0}) Push constant '{1}' not found", m_name, constantName);
 		auto& pushConstant = m_pushConstants[constantName];
-		EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "Push constant '{0}' member '{1}' not found", constantName, memberName);
+		EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "({0}) Push constant '{1}' member '{2}' not found", m_name, constantName, memberName);
 
 		auto& dataPointer = pushConstant.dataPointers[memberName];
-		EK_ASSERT(dataPointer.size == size, "Push constant '{0}' member '{1}' size mismatch. Required = {2} Given = {3}", constantName, memberName, dataPointer.size, size);
+		EK_ASSERT(dataPointer.size == size, "({0}) Push constant '{1}' member '{2}' size mismatch. Required = {3} Given = {4}", m_name, constantName, memberName, dataPointer.size, size);
 
 		std::memcpy(dataPointer.data, data, size);
 	}

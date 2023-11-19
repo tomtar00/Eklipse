@@ -21,7 +21,7 @@ namespace Eklipse
 		{
 		public:
 			VKTexture2D() = default;
-			VKTexture2D(const TextureInfo& textureInfo, const std::string& texturePath);
+			VKTexture2D(const TextureInfo& textureInfo, const Path& texturePath);
 			virtual ~VKTexture2D() = default;
 
 			virtual void SetData(void* data, uint32_t size) override;

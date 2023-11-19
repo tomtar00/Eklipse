@@ -92,8 +92,8 @@ namespace Editor
 				ImGui::InputText("Material", &meshComp->materialPath);
 				if (ImGui::Button("Apply"))
 				{
-					bool valid = Eklipse::Path::CheckPathValid(meshComp->meshPath, ".obj");	 // TODO: Check other formats
-					valid &= Eklipse::Path::CheckPathValid(meshComp->materialPath, ".ekmt"); // TODO: Check other formats
+					bool valid = Eklipse::Path::CheckPathValid(meshComp->meshPath, { ".obj" });	 // TODO: Check other formats
+					valid = valid && Eklipse::Path::CheckPathValid(meshComp->materialPath, { ".ekmt" }); // TODO: Check other formats
 
 					if (valid)
 					{
@@ -106,18 +106,26 @@ namespace Editor
 	}
 	void DetailsPanel::OnMaterialGUI(Eklipse::Material* material)
 	{
-		ImGui::Text(material->GetName().c_str());
-		ImGui::Text("Shader: %s", material->GetShader()->GetName().c_str());
+		ImGui::Text(("Material: " + material->GetName()).c_str());
+		const char* id = material->GetName().c_str();
+
+		ImGui::InputPath(id, "Shader", material->GetShader()->GetPath(), {".eksh"},
+		[&]()
+		{
+			EK_CORE_TRACE("Shader path changed to: {0}", material->GetShader()->GetPath().string());
+			material->SetShader(material->GetShader()->GetPath());
+		});
+
 		ImGui::Spacing();
 
+		uint16_t i = 0;
 		for (auto&& [textureSampler, sampler] : material->GetSamplers())
 		{
-			ImGui::PushID(&sampler);
-			ImGui::Text(textureSampler.c_str());
-			ImGui::SameLine();
-			if (ImGui::InputText("##samplerInput", sampler.texturePath.rdbuf()))
-				sampler.texturePath.parseSelf();
-			ImGui::PopID();
+			ImGui::InputPath(id+(i++), textureSampler.c_str(), sampler.texturePath, {".png", ".jpg"},
+			[&]()
+			{
+				EK_CORE_TRACE("Texture path changed to: {0}", sampler.texturePath.string());
+			});
 		}
 		for (auto&& [name, pushConstant] : material->GetPushConstants())
 		{
@@ -151,8 +159,11 @@ namespace Editor
 			bool allValid = true;
 			for (auto&& [textureSampler, sampler] : material->GetSamplers())
 			{
-				allValid = Eklipse::Path::CheckPathValid(sampler.texturePath, ".png"); // TODO: Check other formats
-				if (!allValid) break;
+				allValid = Eklipse::Path::CheckPathValid(sampler.texturePath, { ".png", ".jpg"}); // TODO: Check other formats
+				if (!allValid) 
+				{
+					break;
+				}
 			}
 
 			if (allValid)

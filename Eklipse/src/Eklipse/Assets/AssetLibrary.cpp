@@ -37,29 +37,29 @@ namespace Eklipse
             if (std::filesystem::is_directory(directoryEntry.path()))
                 continue;
 
-            const auto& path = directoryEntry.path();
-            const std::string extension = path.extension().string();
-            const std::string pathString = path.string();
+            Path relativePath = directoryEntry.path();
+            const std::string extension = relativePath.path().extension().string();
+            const std::string pathString = relativePath.full_string();
 
             if (extension == ".obj")
             {
                 EK_CORE_TRACE("Loading model from path '{0}'", pathString);
-                GetMesh(pathString);
+                GetMesh(relativePath);
             }
             else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp")
             {
                 EK_CORE_TRACE("Loading texture from path '{0}'", pathString);
-                GetTexture(pathString);
+                GetTexture(relativePath);
             }
             else if (extension == ".eksh")
             {
                 EK_CORE_TRACE("Loading shader from path '{0}'", pathString);
-                GetShader(pathString);
+                GetShader(relativePath);
             }
             else if (extension == ".ekmt")
             {
                 EK_CORE_TRACE("Loading material from path '{0}'", pathString);
-                GetMaterial(pathString);
+                GetMaterial(relativePath);
             }
         }
         EK_CORE_TRACE("Loaded {0} models, {1} textures, {2} shaders and {3} materials", m_meshCache.size(), m_textureCache.size(), m_shaderCache.size(), m_materialCache.size());
@@ -112,7 +112,7 @@ namespace Eklipse
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.full_c_str()))
         {
             EK_CORE_ERROR("Failed to load model at location: {0}. {1}", meshPath, warn + err);
             return nullptr;
@@ -179,7 +179,7 @@ namespace Eklipse
         }
 
         int width, height, channels;
-        void* data = stbi_load(texturePath, &width, &height, &channels, STBI_rgb_alpha);
+        void* data = stbi_load(texturePath.full_c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
         if (data == nullptr)
         {
@@ -277,7 +277,7 @@ namespace Eklipse
                                         if (material->GetShader() == shaderRef)
                                         {
                                             EK_CORE_TRACE("Reloading material at path '{0}', because shader at path '{1}' has been recompiled", material->GetPath().string(), shaderRef->GetPath().string());
-                                            material->SetShader(shaderRef);
+                                            material->OnShaderReloaded();
                                             material->ApplyChanges();
                                         }
                                     }

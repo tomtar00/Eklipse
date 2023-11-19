@@ -7,7 +7,7 @@
 
 namespace Eklipse
 {
-    Ref<Texture2D> Texture2D::Create(const TextureInfo& textureInfo, const std::string& path)
+    Ref<Texture2D> Texture2D::Create(const TextureInfo& textureInfo, const Path& path)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)

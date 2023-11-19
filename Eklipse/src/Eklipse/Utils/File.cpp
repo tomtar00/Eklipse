@@ -19,48 +19,80 @@ namespace Eklipse
     }
     void Path::parse(const std::string& path)
     {
-        m_genericPath = path;
-        std::replace(m_genericPath.begin(), m_genericPath.end(), '\\', '/');
-
         m_path = path;
+        std::replace(m_path.begin(), m_path.end(), '\\', '/');
+
         if (m_path.size() >= 2 && m_path[0] == '/' && m_path[1] == '/')
         {
             EK_ASSERT(Project::GetActive() != nullptr, "No project loaded");
-            m_path = (Project::GetActive()->GetConfig().assetsDirectoryPath / m_path.substr(2)).string();
+            m_fullPath = (Project::GetActive()->GetConfig().assetsDirectoryPath / m_path.substr(2)).full_string();
         }
-        std::replace(m_path.begin(), m_path.end(), '\\', '/');
+        else if (Project::GetActive() != nullptr)
+        {
+            auto& assetsPath = Project::GetActive()->GetConfig().assetsDirectoryPath.full_string();
+            if (m_path.substr(0, assetsPath.size()) == assetsPath)
+            {
+				m_fullPath = m_path;
+                m_path = "/" + m_path.substr(assetsPath.size());
+			}
+            else
+            {
+                m_fullPath = std::filesystem::absolute(m_path).string();
+			}
+        }
+        else
+        {
+			m_fullPath = std::filesystem::absolute(m_path).string();
+		}
+        std::replace(m_fullPath.begin(), m_fullPath.end(), '\\', '/');
     }
     void Path::parseSelf()
     {
-        parse(m_genericPath);
+        parse(m_path);
     }
     bool Path::isValid() const
     {
-		return !m_path.empty() && std::filesystem::exists(m_path);
+		return !m_fullPath.empty() && std::filesystem::exists(m_fullPath);
 	}
-    bool Path::isValid(const std::string& requiredExtension) const
+    bool Path::isValid(const std::vector<std::string> requiredExtensions) const
     {
-        return isValid() && path().extension() == requiredExtension;
-    }
-    bool Path::CheckPathValid(const Path& path, const std::string& requiredExtension)
-    {
-        if (!path.isValid())
-        {
-			EK_CORE_ERROR("Invalid path: '{0}'", path.string());
-			return false;
+        bool hasExtension = requiredExtensions.size() == 0;
+        for (const auto& requiredExtension : requiredExtensions)
+		{
+			if (path().extension() == requiredExtension)
+			{
+				hasExtension = true;
+				break;
+			}
 		}
-        if (!path.isValid(requiredExtension))
+        return isValid() && hasExtension;
+    }
+    bool Path::CheckPathValid(const Path& path, const std::vector<std::string> requiredExtensions)
+    {
+        if (!path.isValid(requiredExtensions))
         {
-			EK_CORE_ERROR("Invalid path extension: '{0}'. Required extension: '{1}'", path.string(), requiredExtension);
+			EK_CORE_ERROR("Invalid path extension: '{0}'. Required extensions:", path.string());
+            for (const auto& requiredExtension : requiredExtensions)
+            {
+                EK_CORE_ERROR(" - '{0}'", requiredExtension);
+            }
 			return false;
 		}
 		return true;
     }
 
+    bool Path::IsRelative(const Path& path, Path& base)
+    {
+        auto norm_path = std::filesystem::absolute(path);
+        auto norm_base = std::filesystem::absolute(base);
+
+        return std::mismatch(norm_path.begin(), norm_path.end(), norm_base.begin()).second == norm_base.end();
+    }
+
     std::string ReadFileFromPath(const Path& filename)
     {
         std::string buffer;
-        std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
+        std::ifstream file(filename.full_c_str(), std::ios::in | std::ios::binary);
         EK_ASSERT(file.is_open(), "Failed to open file at '{0}'", filename);
 
         file.seekg(0, std::ios::end);

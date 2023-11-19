@@ -314,7 +314,7 @@ namespace Eklipse
 
 		//	stbi_image_free(data);
 		//}
-		VKTexture2D::VKTexture2D(const TextureInfo& textureInfo, const std::string& path) : Texture2D(textureInfo, path)
+		VKTexture2D::VKTexture2D(const TextureInfo& textureInfo, const Path& path) : Texture2D(textureInfo, path)
 		{
 			VkFormat format = ConvertToVKFormat(textureInfo.imageFormat);
 

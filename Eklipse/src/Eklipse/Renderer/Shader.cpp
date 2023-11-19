@@ -271,14 +271,12 @@ namespace Eklipse
                     const auto& memberType = compiler.get_type(bufferType.member_types[memberIndex]);
                     size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
                     uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
-                    uint32_t memberBinding = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationBinding);
                     DataType type = SPIRVTypeToDataType(memberType);
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
-                    EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
                     EK_CORE_TRACE("\t\tType: {0}", DataTypeToString(type));
-                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, memberBinding, type });
+                    uniformBuffer.members.push_back({ name, memberSize, memberOffset, type });
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
 
@@ -304,9 +302,8 @@ namespace Eklipse
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
-                    EK_CORE_TRACE("\t\tBinding: {0}", memberBinding);
                     EK_CORE_TRACE("\t\tType: {0}", DataTypeToString(type));
-                    pushConstant.members.push_back({ name, memberSize, memberOffset, memberBinding, type });
+                    pushConstant.members.push_back({ name, memberSize, memberOffset, type });
                 }
                 reflection.pushConstants.push_back(pushConstant);
             }

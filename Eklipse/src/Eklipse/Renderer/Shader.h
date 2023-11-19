@@ -28,7 +28,6 @@ namespace Eklipse
 		std::string name;
 		size_t size;
 		size_t offset;
-		uint32_t binding;
 		DataType type;
 	};
 	struct ShaderUniformBuffer
@@ -102,7 +101,7 @@ namespace Eklipse
 
 		inline bool Recompile() { Dispose(); return Compile(true); }
 
-		inline const Path& GetPath() const { return m_filePath; }
+		inline Path& GetPath() { return m_filePath; }
 
 	protected:
 		virtual bool Compile(bool forceCompile = false) = 0;

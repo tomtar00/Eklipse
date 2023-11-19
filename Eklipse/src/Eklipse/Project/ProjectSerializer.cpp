@@ -19,8 +19,8 @@ namespace Eklipse
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "Name" << YAML::Value << config.name;
-				out << YAML::Key << "StartScene" << YAML::Value << config.startScenePath.string();
-				out << YAML::Key << "AssetsDirectory" << YAML::Value << config.assetsDirectoryPath.string();
+				out << YAML::Key << "StartScene" << YAML::Value << config.startScenePath.full_string();
+				out << YAML::Key << "AssetsDirectory" << YAML::Value << config.assetsDirectoryPath.full_string();
 				out << YAML::EndMap;
 			}
 			out << YAML::EndMap;
