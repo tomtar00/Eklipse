@@ -7,8 +7,8 @@ namespace Editor
 {
 	void FilesPanel::LoadResources()
 	{
-		m_folderIcon = Eklipse::GuiIcon::Create(EditorLayer::Get().GetAssetLibrary(), "Assets/Icons/folder.png");
-		m_fileIcon = Eklipse::GuiIcon::Create(EditorLayer::Get().GetAssetLibrary(), "Assets/Icons/file.png");
+		m_folderIcon = Eklipse::GuiIcon::Create(Eklipse::Application::Get().GetAssetLibrary(), "Assets/Icons/folder.png");
+		m_fileIcon = Eklipse::GuiIcon::Create(Eklipse::Application::Get().GetAssetLibrary(), "Assets/Icons/file.png");
 	}
 
 	void FilesPanel::OnGUI(float deltaTime)

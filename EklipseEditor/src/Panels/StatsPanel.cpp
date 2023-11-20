@@ -21,7 +21,7 @@ namespace Editor
 
 		if (Eklipse::Project::GetActive() != nullptr)
 			DrawAssetLibrary("Project assets", Eklipse::Project::GetActive()->GetAssetLibrary());
-		DrawAssetLibrary("Editor assets", EditorLayer::Get().GetAssetLibrary());
+		DrawAssetLibrary("Editor assets", Eklipse::Application::Get().GetAssetLibrary());
 
 		ImGui::End();
 	}

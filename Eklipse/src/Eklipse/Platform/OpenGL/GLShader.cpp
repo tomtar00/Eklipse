@@ -88,6 +88,8 @@ namespace Eklipse
 					m_openGLSourceCode[stage] = glslCompiler.compile();
 					auto& source = m_openGLSourceCode[stage];
 
+					EK_CORE_TRACE("OpenGL shader '{0}' - stage={1} source code:\n{2}", m_name, ShaderStageToString(stage), source);
+
 					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{

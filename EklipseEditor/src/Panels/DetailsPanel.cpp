@@ -136,21 +136,21 @@ namespace Editor
 				if (value.type == Eklipse::DataType::BOOL)
 					ImGui::Checkbox(valueName.c_str(), (bool*)value.data);
 				else if (value.type == Eklipse::DataType::FLOAT)
-					ImGui::InputFloat(valueName.c_str(), (float*)value.data);
+					ImGui::DragFloat(valueName.c_str(), (float*)value.data);
 				else if (value.type == Eklipse::DataType::FLOAT2)
-					ImGui::InputFloat2(valueName.c_str(), (float*)value.data);
+					ImGui::DragFloat2(valueName.c_str(), (float*)value.data);
 				else if (value.type == Eklipse::DataType::FLOAT3)
-					ImGui::InputFloat3(valueName.c_str(), (float*)value.data);
+					ImGui::DragFloat3(valueName.c_str(), (float*)value.data);
 				else if (value.type == Eklipse::DataType::FLOAT4)
-					ImGui::InputFloat4(valueName.c_str(), (float*)value.data);
+					ImGui::DragFloat4(valueName.c_str(), (float*)value.data);
 				else if (value.type == Eklipse::DataType::INT)
-					ImGui::InputInt(valueName.c_str(), (int*)value.data);
+					ImGui::DragInt(valueName.c_str(), (int*)value.data);
 				else if (value.type == Eklipse::DataType::INT2)
-					ImGui::InputInt2(valueName.c_str(), (int*)value.data);
+					ImGui::DragInt2(valueName.c_str(), (int*)value.data);
 				else if (value.type == Eklipse::DataType::INT3)
-					ImGui::InputInt3(valueName.c_str(), (int*)value.data);
+					ImGui::DragInt3(valueName.c_str(), (int*)value.data);
 				else if (value.type == Eklipse::DataType::INT4)
-					ImGui::InputInt4(valueName.c_str(), (int*)value.data);
+					ImGui::DragInt4(valueName.c_str(), (int*)value.data);
 			}
 		}
 

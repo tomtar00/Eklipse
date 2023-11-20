@@ -12,7 +12,7 @@
 
 namespace Eklipse
 {
-	ApiType	Renderer::s_apiType = ApiType::Vulkan;
+	ApiType	Renderer::s_apiType = ApiType::OpenGL;
 
 	static Ref<UniformBuffer>	s_cameraUniformBuffer;
 	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;

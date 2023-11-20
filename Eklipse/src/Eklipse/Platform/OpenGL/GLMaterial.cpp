@@ -22,7 +22,8 @@ namespace Eklipse
 					{
 						std::string constantName = pushConstant.name + "." + member.name;
 						GLint location = glGetUniformLocation(m_glShader->GetID(), constantName.c_str());
-						EK_ASSERT(location != -1, "Uniform {0} not found in shader '{1}'", constantName, m_shader->GetName());
+						EK_ASSERT(location != -1, "Uniform {0} not found in shader '{1}' or the variable is not used", constantName, m_shader->GetName());
+						if (location == -1) continue;
 
 						float* data = static_cast<float*>(m_pushConstants[pushConstant.name].dataPointers[member.name].data);
 						switch (member.type)

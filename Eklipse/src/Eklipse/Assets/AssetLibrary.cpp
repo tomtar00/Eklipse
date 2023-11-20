@@ -258,7 +258,7 @@ namespace Eklipse
 
                     if (!m_shaderReloadPending && extension == EK_SHADER_EXTENSION)
                     {
-                        // if shader exists in chache (if is not being created now)
+                        // if shader exists in chache == if is not being created now (makes sure this compilation doesnt run on shader creation)
                         if (m_shaderCache.find(pathString) != m_shaderCache.end())
                         {
                             m_shaderReloadPending = true;

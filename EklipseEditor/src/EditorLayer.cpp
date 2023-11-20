@@ -18,8 +18,6 @@ namespace Editor
 		m_editorCamera.m_farPlane = 1000.0f;
 		m_editorCamera.m_nearPlane = 0.1f;
 		m_editorCamera.m_fov = 45.0f;
-
-		m_assetLibrary = Eklipse::CreateRef<Eklipse::AssetLibrary>();
 	}
 	void EditorLayer::OnAttach()
 	{
@@ -261,8 +259,6 @@ namespace Editor
 
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
-
-		m_assetLibrary->Unload();
 	}
 	void EditorLayer::NewProject(const Eklipse::Path& path, const std::string& name)
 	{
@@ -342,7 +338,6 @@ namespace Editor
 	}
 	void EditorLayer::OnLoadResources()
 	{
-		m_assetLibrary->Load("Assets");
 		m_filesPanel.LoadResources();
 	}
 	void EditorLayer::OnProjectLoaded()

@@ -38,6 +38,7 @@ namespace Eklipse
 		static Application& Get() { return *s_instance; }
 		inline const ApplicationInfo& GetInfo() const { return m_appInfo; }
 		inline const Ref<Window> GetWindow() const { return m_window; }
+		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
 
 		inline const Ref<Scene> GetScene() const { return m_scene; }
 		void SwitchScene(Ref<Scene> scene);
@@ -73,6 +74,7 @@ namespace Eklipse
 	protected:
 		LayerStack m_layerStack;
 		Ref<Scene> m_scene;
+		Ref<AssetLibrary> m_assetLibrary;
 
 	private:
 		static Application* s_instance;

@@ -16,6 +16,7 @@ namespace Eklipse
 		s_instance = this;
 
 		m_scene = CreateRef<Scene>();
+		m_assetLibrary = CreateRef<AssetLibrary>();
 	}
 	Application::~Application()
 	{
@@ -45,6 +46,8 @@ namespace Eklipse
 		// Init assets
 		if (Project::GetActive())
 			Project::GetActive()->LoadAssets();
+		m_assetLibrary->Load("Assets");
+
 		Renderer::InitParameters();
 
 		// Apply all components in the active scene
@@ -60,6 +63,7 @@ namespace Eklipse
 
 		if (Project::GetActive())
 			Project::GetActive()->UnloadAssets();
+		m_assetLibrary->Unload();
 
 		OnShutdownAPI();
 		Renderer::Shutdown();

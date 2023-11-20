@@ -59,7 +59,6 @@ namespace Editor
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
 		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
-		inline const Eklipse::Ref<Eklipse::AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
 		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
 		void SetSelection(DetailsSelectionInfo info);
 		void ClearSelection();
@@ -78,8 +77,6 @@ namespace Editor
 		Eklipse::Transform m_editorCameraTransform;
 
 		DetailsSelectionInfo m_selectionInfo{};
-		
-		Eklipse::Ref<Eklipse::AssetLibrary> m_assetLibrary;
 
 		bool m_guiEnabled;
 		EntitiesPanel	m_entitiesPanel;
