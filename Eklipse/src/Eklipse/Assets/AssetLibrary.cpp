@@ -266,7 +266,7 @@ namespace Eklipse
                             {
                                 Eklipse::Renderer::WaitDeviceIdle();
 
-                                const auto shaderRef = GetShader(pathString);
+                                auto& shaderRef = GetShader(pathString);
 
                                 EK_CORE_INFO("Recompiling shader from path '{0}'", pathString);
                                 bool recompiledSuccessfully = shaderRef->Recompile();

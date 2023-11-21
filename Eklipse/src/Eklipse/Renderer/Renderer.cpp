@@ -70,7 +70,7 @@ namespace Eklipse
 		for (auto& entity : view)
 		{
 			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
-			if (meshComponent.mesh == nullptr || meshComponent.material == nullptr) continue;
+			if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) continue;
 
 			glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
 			meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));

@@ -31,6 +31,7 @@ namespace Eklipse
 		EK_ASSERT(false, "Unknown data type");
 		return "UNKNOWN";
 	}
+    
     template<typename T>
     static void SetData(void* dst, YAML::Node& node)
     {
@@ -42,7 +43,7 @@ namespace Eklipse
         }
 
         T data = node.as<T>();
-        dst = &data;
+        std::memcpy(dst, &data, sizeof(T));
     }
 
     Ref<Material> Eklipse::Material::Create(const Path& path, const Path& shaderPath)
@@ -71,18 +72,15 @@ namespace Eklipse
             Serialize(path);
         }
     }
-
     void Material::Bind()
     {
         m_shader->Bind();
     }
-
     void Material::ApplyChanges()
     {
         Serialize(m_path);
         Deserialize(m_path);
     }
-
     void Material::SetShader(Ref<Shader> shader)
     {
         EK_ASSERT(shader != nullptr, "Shader is null");
@@ -117,13 +115,11 @@ namespace Eklipse
             }
         }
     }
-
     void Material::SetShader(const Path& shaderPath)
     {
         EK_ASSERT(Project::GetActive(), "No active project");
 		SetShader(Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath));
     }
-
     void Material::OnShaderReloaded()
     {
         // Applying new shader constants
@@ -192,7 +188,6 @@ namespace Eklipse
             }
         }
     }
-
     void Material::Serialize(const Path& path)
     {
         YAML::Emitter out;
@@ -278,6 +273,7 @@ namespace Eklipse
         auto& shader = Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath);
         SetShader(shader);
 
+        /*
         for (auto&& [constantName, pushConstant] : m_pushConstants)
         {
             auto& constantData = yaml["PushConstants"][constantName];
@@ -313,6 +309,57 @@ namespace Eklipse
                     catch (std::runtime_error e)
                     {
                         EK_CORE_ERROR("Failed to deserialize .ekmt file '{0}'\n     {1}", path.string(), e.what());
+                    }
+                }
+            }
+        }
+        */
+
+        auto& constantsNode = yaml["PushConstants"];
+        if (!constantsNode.IsDefined() || constantsNode.IsNull())
+        {
+			EK_CORE_ERROR("Material file '{0}' is missing a push constants node", path.string());
+		}
+        else
+        {
+            for (YAML::iterator it = constantsNode.begin(); it != constantsNode.end(); ++it) 
+            {
+                auto& pushConstant = it->second;
+                std::string& constantName = it->first.as<std::string>();
+                for (YAML::iterator it = pushConstant.begin(); it != pushConstant.end(); ++it)
+                {
+                    auto& member = *it;
+                    std::string memberName = member["Name"].as<std::string>();
+                    if (!member.IsDefined() || member.IsNull())
+                    {
+                        EK_CORE_ERROR("Failed to deserialize. Member '{1}' is not defined in material '{2}'", memberName, path.string());
+                    }
+                    else
+                    {
+                        auto& memberData = member["Data"];
+                        void* data = m_pushConstants[constantName].dataPointers[memberName].data;
+                        std::string memberType = member["Type"].as<std::string>();
+
+                        EK_CORE_WARN("Member '{0}' of type '{1}' in material {2}", memberName, memberType, m_name);
+
+                        try
+                        {
+                            if (memberType == "float")          SetData<float>(data, memberData);
+                            else if (memberType == "float2")    SetData<glm::vec2>(data, memberData);
+                            else if (memberType == "float3")    SetData<glm::vec3>(data, memberData);
+                            else if (memberType == "float4")    SetData<glm::vec4>(data, memberData);
+                            else if (memberType == "mat3")      SetData<glm::mat3>(data, memberData);
+                            else if (memberType == "mat4")      SetData<glm::mat4>(data, memberData);
+                            else if (memberType == "int")       SetData<int>(data, memberData);
+                            else if (memberType == "int2")      SetData<glm::ivec2>(data, memberData);
+                            else if (memberType == "int3")      SetData<glm::ivec3>(data, memberData);
+                            else if (memberType == "int4")      SetData<glm::ivec4>(data, memberData);
+                            else if (memberType == "bool")      SetData<bool>(data, memberData);
+                        }
+                        catch (std::runtime_error e)
+                        {
+                            EK_CORE_ERROR("Failed to deserialize .ekmt file '{0}'\n     {1}", path.string(), e.what());
+                        }
                     }
                 }
             }

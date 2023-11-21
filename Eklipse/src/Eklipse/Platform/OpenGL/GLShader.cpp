@@ -25,7 +25,6 @@ namespace Eklipse
 			EK_ASSERT(false, "Unknown shader stage!");
 			return 0;
 		}
-
 		static const char* GLShaderStageCachedOpenGLFileExtension(const ShaderStage stage)
 		{
 			switch (stage)
@@ -37,6 +36,10 @@ namespace Eklipse
 			return "";
 		}
 
+		GLShader::GLShader(const Path& filePath) : m_id(0), Shader(filePath)
+		{
+			m_isValid = Compile();
+		}
 		bool GLShader::CompileOrGetOpenGLBinaries(bool forceCompile)
 		{
 			auto& shaderData = m_openGLSPIRV;
@@ -118,7 +121,6 @@ namespace Eklipse
 			}
 			return success;
 		}
-
 		void GLShader::CreateProgram()
 		{
 			GLuint program = glCreateProgram();
@@ -169,16 +171,12 @@ namespace Eklipse
 
 			m_id = program;
 		}
-
-		GLShader::GLShader(const Path& filePath) : m_id(0), Shader(filePath)
-		{
-			Compile();
-		}
 		void GLShader::Bind() const
 		{
 			EK_PROFILE();
 
-			glUseProgram(m_id);
+			if (m_isValid)
+				glUseProgram(m_id);
 		}
 		void GLShader::Unbind() const
 		{
@@ -188,7 +186,8 @@ namespace Eklipse
 		}
 		void GLShader::Dispose() const
 		{
-			glDeleteProgram(m_id);
+			if (m_isValid)
+				glDeleteProgram(m_id);
 		}
 		bool GLShader::Compile(bool forceCompile)
 		{
@@ -199,8 +198,12 @@ namespace Eklipse
 				Timer timer;
 				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
 				success = success && CompileOrGetOpenGLBinaries(forceCompile);
-				CreateProgram();
-				EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+				if (success)
+				{
+					CreateProgram();
+					EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+				}
+				else EK_CORE_ERROR("Failed to compile shader '{0}'", m_filePath.full_string());
 			}
 
 			return success;

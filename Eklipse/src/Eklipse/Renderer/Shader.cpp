@@ -331,7 +331,7 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Shader creation", int(apiType));
         return nullptr;
     }
-    Shader::Shader(const Path& filePath) : m_filePath(filePath)
+    Shader::Shader(const Path& filePath) : m_filePath(filePath), m_isValid(false)
     {
         m_name = filePath.path().stem().string();
     }

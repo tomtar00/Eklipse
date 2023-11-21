@@ -48,6 +48,7 @@ namespace Eklipse
 		inline const Ref<Shader> GetShader() const { return m_shader; }
 		inline const std::unordered_map<std::string, PushConstant>& GetPushConstants() const { return m_pushConstants; }
 		inline std::unordered_map<std::string, Sampler2D>& GetSamplers() { return m_samplers; }
+		inline bool IsValid() const { return m_shader != nullptr && m_shader->IsValid(); }
 
 		static Ref<Material> Create(const Path& path, const Path& shaderPath);
 

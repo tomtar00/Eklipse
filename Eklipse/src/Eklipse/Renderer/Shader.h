@@ -99,7 +99,8 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
-		inline bool Recompile() { Dispose(); return Compile(true); }
+		inline bool Recompile() { Dispose(); return m_isValid = Compile(true); }
+		inline bool IsValid() const { return m_isValid; }
 
 		inline Path& GetPath() { return m_filePath; }
 
@@ -113,10 +114,9 @@ namespace Eklipse
 	protected:
 		std::string m_name;
 		Path m_filePath;
+		bool m_isValid;
+
 		std::unordered_map<ShaderStage, ShaderReflection> m_reflections;
-
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
-
-		static std::unordered_map<std::string, std::string> s_shaderResources;
 	};
 }
