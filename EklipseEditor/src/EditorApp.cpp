@@ -10,63 +10,42 @@ namespace Editor
 	public:
 		EklipseEditor(Eklipse::ApplicationInfo& info) : Eklipse::Application(info)
 		{
-			editorLayer = Eklipse::CreateRef<EditorLayer>(m_scene);
+			editorLayer = Eklipse::CreateRef<EditorLayer>();
 			PushLayer(editorLayer);
-		}
-
-		void Run() override
-		{
-			EK_INFO("========== Starting Eklipse Editor ==========");
-
-			Eklipse::ImGuiLayer::CTX = ImGui::CreateContext();
-			Eklipse::Application::Init();
-
-			float deltaTime = 0.0f;
-			while (Eklipse::Application::IsRunning())
-			{
-				Eklipse::Application::BeginFrame(&deltaTime);
-
-				if (!Eklipse::Application::IsMinimized())
-				{
-					{
-						EK_PROFILE_NAME("GUI");
-
-						editorLayer->GUI->Begin();
-						editorLayer->GUI->RenderDockspace();
-						for (auto& layer : m_layerStack)
-						{
-							layer->OnGUI(deltaTime);
-						}
-						editorLayer->GUI->End();
-					}
-
-					{
-						EK_PROFILE_NAME("Update");
-
-						for (auto& layer : m_layerStack)
-						{
-							layer->OnUpdate(deltaTime);
-						}
-					}
-
-					editorLayer->Render(m_scene, deltaTime);
-				}
-
-				Eklipse::Application::EndFrame(deltaTime);
-			}
-
-			EK_INFO("========== Closing Eklipse Editor ==========");
-
-			Eklipse::Application::Shutdown();
 		}	
 
 		void OnAPIHasInitialized(Eklipse::ApiType api) override
 		{
+			Eklipse::ImGuiLayer::CTX = ImGui::CreateContext();
 			editorLayer->OnAPIHasInitialized(api);
 		}
 		void OnShutdownAPI() override
 		{
 			editorLayer->OnShutdownAPI();
+		}
+
+		void OnPreGUI(float deltaTime) override
+		{
+			EK_PROFILE();
+
+			editorLayer->GUI->Begin();
+			editorLayer->GUI->DrawDockspace();
+		}
+		void OnPostGUI(float deltaTime) override
+		{
+			EK_PROFILE();
+
+			editorLayer->GUI->End();
+		}
+		void OnPreUpdate(float deltaTime) override
+		{
+			EK_PROFILE();
+		}
+		void OnPostUpdate(float deltaTime) override
+		{
+			EK_PROFILE();
+
+			editorLayer->Render(m_scene, deltaTime);
 		}
 
 	private:

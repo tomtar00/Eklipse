@@ -67,7 +67,7 @@ namespace Eklipse
 		ImGui::PopFont();
 		ImGui::Render();
 	}
-	void ImGuiLayer::RenderDockspace()
+	void ImGuiLayer::DrawDockspace()
 	{
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
@@ -136,7 +136,6 @@ namespace Eklipse
 				ImGui::DockBuilderDockWindow(m_config.dockLayouts[m_config.dockLayouts.size() - 1].name, node_id);
 				ImGui::DockBuilderFinish(dockspace_id);
 			}
-			
 		}
 
 		ImGui::End();

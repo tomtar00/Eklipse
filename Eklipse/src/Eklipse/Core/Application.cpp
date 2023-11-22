@@ -167,6 +167,50 @@ namespace Eklipse
 		m_mainThreadQueue.clear();
 	}
 
+	void Application::Run()
+	{
+		EK_INFO("========== Starting Eklipse Editor ==========");
+
+		Application::Init();
+
+		float deltaTime = 0.0f;
+		while (Application::IsRunning())
+		{
+			Application::BeginFrame(&deltaTime);
+
+			if (!Application::IsMinimized())
+			{
+				{
+					EK_PROFILE_NAME("GUI");
+
+					OnPreGUI(deltaTime);
+					for (auto& layer : m_layerStack)
+					{
+						layer->OnGUI(deltaTime);
+					}
+					OnPostGUI(deltaTime);
+				}
+
+				{
+					EK_PROFILE_NAME("Update");
+
+					OnPreUpdate(deltaTime);
+					for (auto& layer : m_layerStack)
+					{
+						layer->OnUpdate(deltaTime);
+					}
+					OnPostUpdate(deltaTime);
+				}
+			}
+
+			Application::EndFrame(deltaTime);
+		}
+
+		EK_INFO("========== Closing Eklipse Editor ==========");
+
+		Application::Shutdown();
+	}
+
 	void Application::Close()
 	{
 		m_running = false;

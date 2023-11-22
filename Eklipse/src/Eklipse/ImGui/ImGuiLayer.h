@@ -57,7 +57,7 @@ namespace Eklipse
 		virtual void OnGUI(float deltaTime) override;
 
 		void Begin();
-		void RenderDockspace();
+		void DrawDockspace();
 		void End();
 
 	public:

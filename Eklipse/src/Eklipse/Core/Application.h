@@ -52,8 +52,13 @@ namespace Eklipse
 		virtual void OnShutdownAPI() {}
 		virtual void OnAPIHasShutdown() {}
 
-		virtual void Run() = 0;
+		void Run();
 		void Close();
+
+		virtual void OnPreGUI(float deltaTime) {}
+		virtual void OnPostGUI(float deltaTime) {}
+		virtual void OnPreUpdate(float deltaTime) {}
+		virtual void OnPostUpdate(float deltaTime) {}
 
 		void PushLayer(Ref<Layer> layer);
 		void PushOverlay(Ref<Layer> overlay);

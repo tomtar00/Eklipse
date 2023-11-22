@@ -29,7 +29,7 @@ namespace Editor
 	{
 	public:
 		EditorLayer() = delete;
-		EditorLayer(Eklipse::Ref<Eklipse::Scene> scene);
+		EditorLayer();
 		~EditorLayer() = default;
 
 		void OnAttach() override;

@@ -10,7 +10,7 @@
 
 namespace Editor
 {
-	EditorLayer::EditorLayer(Eklipse::Ref<Eklipse::Scene> scene) : m_guiEnabled(true)
+	EditorLayer::EditorLayer() : m_guiEnabled(true)
 	{
 		EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
 		s_instance = this;
