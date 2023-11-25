@@ -1,7 +1,7 @@
-.vs/
 bin/
 obj/
 
+.vs/
 *.vcxproj
 *.vcxproj.user
 *.vcxproj.filters
@@ -10,5 +10,8 @@ obj/
 .vscode/
 *.code-workspace
 Makefile
+
+*.xcodeworkspace
+*.xcodeproj
 
 EklipseEditor/Assets/Cache

@@ -42,7 +42,8 @@ project "Eklipse"
 		"%{Include.shaderc}",
 		"%{Include.SPIRV_Cross}",
 		"%{Include.yaml_cpp}",
-        "%{Include.filewatch}"
+        "%{Include.filewatch}",
+		"%{Include.nativefiledialog}"
 	}
 
 	links
@@ -55,7 +56,8 @@ project "Eklipse"
 		"ImGui",
 		"ImGuizmo",
 		"Glad",
-		"YAML"
+		"YAML",
+		"NFD"
 	}
 
 	filter "system:windows"

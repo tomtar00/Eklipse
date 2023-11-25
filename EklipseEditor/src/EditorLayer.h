@@ -28,7 +28,6 @@ namespace Editor
 	class EditorLayer : public Eklipse::Layer
 	{
 	public:
-		EditorLayer() = delete;
 		EditorLayer();
 		~EditorLayer() = default;
 

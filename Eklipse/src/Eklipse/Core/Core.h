@@ -21,6 +21,7 @@
 #endif
 
 
+//#define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 #define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(args...); }
 
 #define BIT(x) (1 << x)

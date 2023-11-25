@@ -1,25 +1,24 @@
-project "EklipseEditor"
+project "Eklipse-ScriptAPI"
 	location "./"
-	kind "ConsoleApp" -- WindowedApp
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "off"
 
-	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("%{wks.location}/obj/" .. outputdir .. "/%{prj.name}")
+	targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("../obj/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
-		"src/**.h",
-		"src/**.cpp"
+		"**.h",
+		"**.cpp"
 	}
 
 	includedirs
 	{
-		"src",
 		"%{wks.location}/Eklipse/src",
 
-		"%{Include.glfw}",
+        "%{Include.glfw}",
 		"%{Include.glm}",
 		"%{Include.ImGui}",
 		"%{Include.spdlog}",
@@ -35,12 +34,19 @@ project "EklipseEditor"
 		"Eklipse"
 	}
 
-    -- filter "files:Assets/**"
-    --     buildaction ("Copy")
-    -- filter "files:Resources/**"
-    --     buildaction ("Copy")
+    postbuildcommands
+	{
+        -- copy script api into source
+		"{COPYFILE} EklipseEngine.h %{prj.location}../EklipseEditor/Resources/Scripting/Include",
+        "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{prj.location}../EklipseEditor/Resources/Scripting/Lib"
+    }
 
-	filter "system:windows"
+    defines
+    {
+        "EK_BUILD_DLL"
+    }
+
+    filter "system:windows"
 		systemversion "latest"
 
 		defines

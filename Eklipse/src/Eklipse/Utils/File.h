@@ -27,10 +27,11 @@ namespace Eklipse
 		const std::string& string() const { return m_path; }
 		const std::string& full_string() const { return m_fullPath; }
 		std::filesystem::path path() const { return std::filesystem::path(m_path); }
+		std::filesystem::path full_path() const { return std::filesystem::path(m_fullPath); }
 
 		operator const char*() const { return c_str(); }
 		operator std::string() const { return string(); }
-		operator std::filesystem::path() const { return path(); }
+		operator std::filesystem::path() const { return full_path(); }
 
 		bool operator==(const Path& other) const		{ return m_fullPath == other.m_fullPath || m_path == other.m_path; }	
 		bool operator==(const char* other) const		{ return m_fullPath == other || m_path == other; }

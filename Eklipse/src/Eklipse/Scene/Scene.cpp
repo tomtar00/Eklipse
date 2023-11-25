@@ -43,7 +43,7 @@ namespace Eklipse
 		auto scene = CreateRef<Scene>(name, saveFilePath);
 		Save(scene);
 
-		EK_CORE_TRACE("Created new scene '{0}' at location '{1}'", scene->GetName(), saveFilePath.string());
+		EK_CORE_TRACE("Created new scene '{0}' at location '{1}'", scene->GetName(), saveFilePath.full_string());
 
 		return scene;
 	}
@@ -54,11 +54,11 @@ namespace Eklipse
 		Eklipse::SceneSerializer serializer(scene);
 		serializer.Serialize(scene->GetPath());
 
-		EK_CORE_TRACE("Scene '{0}' saved to path '{1}'", scene->GetName(), scene->GetPath().string());
+		EK_CORE_TRACE("Scene '{0}' saved to path '{1}'", scene->GetName(), scene->GetPath().full_string());
 	}
 	Ref<Scene> Scene::Load(const Path& saveFilePath)
 	{
-		EK_CORE_TRACE("Loading scene from '{0}'", saveFilePath.string());
+		EK_CORE_TRACE("Loading scene from '{0}'", saveFilePath.full_string());
 
 		Ref<Scene> scene = CreateRef<Scene>();
 		Eklipse::SceneSerializer serializer(scene);
@@ -68,7 +68,7 @@ namespace Eklipse
 			return scene;
 		}
 
-		EK_CORE_ERROR("Failed to load scene '{0}'", saveFilePath.string());
+		EK_CORE_ERROR("Failed to load scene '{0}'", saveFilePath.full_string());
 		return nullptr;
 	}
 

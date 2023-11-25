@@ -69,7 +69,7 @@ namespace Eklipse
 		auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
 		for (auto& entity : view)
 		{
-			auto& [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
+			auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 			if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) continue;
 
 			glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
