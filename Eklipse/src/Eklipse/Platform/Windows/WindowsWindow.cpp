@@ -86,6 +86,19 @@ namespace Eklipse
 		MouseMovedEvent event(xPos, yPos);
 		PROPAGATE_GLFW_EVENT(event);
 	}
+	void GlfwWindowFocusCallback(GLFWwindow* window, int focused)
+	{
+		if (focused)
+		{
+			WindowFocusEvent event;
+			PROPAGATE_GLFW_EVENT(event);
+		}
+		else
+		{
+			WindowLostFocusEvent event;
+			PROPAGATE_GLFW_EVENT(event);
+		}
+	}
 
 	WindowsWindow::WindowsWindow(WindowData& data) : Window(data)
 	{
@@ -121,6 +134,7 @@ namespace Eklipse
 		glfwSetMouseButtonCallback(m_window, GlfwMouseButtonCallback);
 		glfwSetScrollCallback(m_window, GlfwScrollCallback);
 		glfwSetCursorPosCallback(m_window, GlfwCursorPosCallback);
+		glfwSetWindowFocusCallback(m_window, GlfwWindowFocusCallback);
 
 		EK_CORE_INFO("Initialized window");
 	}

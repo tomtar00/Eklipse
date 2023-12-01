@@ -18,6 +18,7 @@ project "EklipseEditor"
 	{
 		"src",
 		"%{wks.location}/Eklipse/src",
+		"%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",
 		"%{Include.glm}",
@@ -27,7 +28,8 @@ project "EklipseEditor"
 		"%{Include.ImGuizmo}",
 		"%{Include.nativefiledialog}",
 		"%{Include.yaml_cpp}",
-		"%{Include.filewatch}"
+		"%{Include.filewatch}",
+		"%{Include.dylib}"
 	}
 
 	links

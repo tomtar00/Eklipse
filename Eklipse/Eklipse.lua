@@ -27,6 +27,7 @@ project "Eklipse"
 	includedirs
 	{
 		"src",
+		"%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",
@@ -43,7 +44,8 @@ project "Eklipse"
 		"%{Include.SPIRV_Cross}",
 		"%{Include.yaml_cpp}",
         "%{Include.filewatch}",
-		"%{Include.nativefiledialog}"
+		"%{Include.nativefiledialog}",
+		"%{Include.dylib}"
 	}
 
 	links
@@ -65,8 +67,7 @@ project "Eklipse"
 
 		defines
 		{
-			"EK_PLATFORM_WINDOWS",
-			"EK_BUILD_DLL"
+			"EK_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"

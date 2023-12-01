@@ -20,14 +20,14 @@ namespace Eklipse
 		virtual void OnGUI(float deltaTime) = 0;
 	};
 
-	enum EK_API ImGuiNodeDirType
+	enum ImGuiNodeDirType
 	{
 		Dir_Same		= BIT(0),
 		Dir_Opposite	= BIT(1),
 		Dir_Stack		= BIT(2)
 	};
 
-	struct EK_API DockLayoutInfo
+	struct DockLayoutInfo
 	{
 		char* name;
 		ImGuiDir_ dir;
@@ -36,7 +36,7 @@ namespace Eklipse
 
 		ImGuiID id;
 	};
-	struct EK_API GuiLayerConfigInfo
+	struct GuiLayerConfigInfo
 	{
 		bool* enabled;
 		bool menuBarEnabled;
@@ -45,7 +45,7 @@ namespace Eklipse
 		std::vector<GuiPanel*> panels;
 	};
 
-	class EK_API ImGuiLayer : public Eklipse::Layer
+	class ImGuiLayer : public Eklipse::Layer
 	{
 	public:
 		ImGuiLayer() = delete;

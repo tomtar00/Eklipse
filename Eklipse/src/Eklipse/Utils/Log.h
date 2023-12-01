@@ -6,7 +6,7 @@
 
 namespace Eklipse
 {
-	class EK_API Log
+	class Log
 	{
 	public:
 		Log() = default;

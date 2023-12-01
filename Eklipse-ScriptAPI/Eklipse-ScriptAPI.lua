@@ -10,13 +10,16 @@ project "Eklipse-ScriptAPI"
 
 	files
 	{
-		"**.h",
-		"**.cpp"
+		"src/**.h",
+		"src/**.cpp"
 	}
 
 	includedirs
 	{
 		"%{wks.location}/Eklipse/src",
+
+		"%{Include.ScriptAPI}",
+		"%{Include.dylib}",
 
         "%{Include.glfw}",
 		"%{Include.glm}",
@@ -37,8 +40,8 @@ project "Eklipse-ScriptAPI"
     postbuildcommands
 	{
         -- copy script api into source
-		"{COPYFILE} EklipseEngine.h %{prj.location}../EklipseEditor/Resources/Scripting/Include",
-        "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{prj.location}../EklipseEditor/Resources/Scripting/Lib"
+		"{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
+        "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib"
     }
 
     defines

@@ -117,6 +117,7 @@ namespace Eklipse
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));
+		dispatcher.Dispatch<WindowFocusEvent>(CAPTURE_FN(OnWindowFocus));
 		dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized));
 		dispatcher.Dispatch<MouseMovedEvent>(CAPTURE_FN(OnMouseMove));
 		dispatcher.Dispatch<MouseScrolledEvent>(CAPTURE_FN(OnMouseScroll));
@@ -147,6 +148,15 @@ namespace Eklipse
 
 		m_minimized = false;
 		Renderer::OnWindowResize(m_appInfo.windowWidth, m_appInfo.windowHeight);
+	}
+	void Application::OnWindowFocus(WindowFocusEvent& event)
+	{
+		std::scoped_lock<std::mutex> lock(m_mainThreadWindowForcusQueueMutex);
+
+		for (auto& func : m_mainThreadWindowFocusQueue)
+			func();
+
+		m_mainThreadWindowFocusQueue.clear();
 	}
 	void Application::OnMouseMove(MouseMovedEvent& event)
 	{
@@ -239,5 +249,9 @@ namespace Eklipse
 		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
 
 		m_mainThreadQueue.emplace_back(function);
+	}
+	void Application::SubmitToWindowFocus(const std::function<void()>& function)
+	{
+		m_mainThreadWindowFocusQueue.emplace_back(function);
 	}
 }

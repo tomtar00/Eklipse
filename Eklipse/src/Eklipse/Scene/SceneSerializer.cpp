@@ -24,10 +24,10 @@ namespace Eklipse
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(targetFilePath.string());
+		std::ofstream fout(targetFilePath.full_path());
 		fout << out.c_str();
 
-		EK_CORE_TRACE("Serialized scene '{0}' to path '{1}'", m_scene->GetName(), targetFilePath.string());
+		EK_CORE_TRACE("Serialized scene '{0}' to path '{1}'", m_scene->GetName(), targetFilePath.full_string());
 		return true;
 	}
 

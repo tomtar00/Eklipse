@@ -4,7 +4,7 @@ namespace Eklipse
 {
 	using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
-	class EK_API MainLoopTimer
+	class MainLoopTimer
 	{
 	public:
 		MainLoopTimer();
@@ -20,7 +20,7 @@ namespace Eklipse
 		double m_deltaTime;
 	};
 
-	class EK_API Timer
+	class Timer
 	{
 	public:
 		Timer();

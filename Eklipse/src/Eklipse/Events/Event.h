@@ -7,7 +7,7 @@ namespace Eklipse
 	enum class EventType
 	{
 		None = 0,
-		WindowClose, WindowMiminized, WindowMaximized, WindowResize,
+		WindowClose, WindowMiminized, WindowMaximized, WindowResize, WindowFocus, WindowLostFocus,
 		FramebufferResize,
 		KeyPressed, KeyReleased,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
@@ -23,7 +23,7 @@ namespace Eklipse
 		EventCategoryMouseButton	= BIT(4)
 	};
 
-	class EK_API Event
+	class Event
 	{
 	public:
 		virtual ~Event() = default;

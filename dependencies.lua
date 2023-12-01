@@ -19,6 +19,8 @@ Lib["SPIRV_Cross_GLSL_debug"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-
 Lib["SPIRV_Cross_release"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-release/spirv-cross-core.lib"
 Lib["SPIRV_Cross_GLSL_release"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-release/spirv-cross-glsl.lib"
 
+Include["ScriptAPI"] = "%{wks.location}/Eklipse-ScriptAPI/src"
+
 Include["glm"] = "%{wks.location}/Eklipse/vendor/glm"
 Include["spdlog"] = "%{wks.location}/Eklipse/vendor/spdlog/include"
 Include["Glad"] = "%{wks.location}/Eklipse/vendor/Glad/include"
@@ -31,3 +33,4 @@ Include["entt"] = "%{wks.location}/Eklipse/vendor/entt"
 Include["nativefiledialog"] = "%{wks.location}/Eklipse/vendor/nativefiledialog/src/include"
 Include["yaml_cpp"] = "%{wks.location}/Eklipse/vendor/yaml-cpp/include"
 Include["filewatch"] = "%{wks.location}/Eklipse/vendor/filewatch"
+Include["dylib"] = "%{wks.location}/Eklipse/vendor/dylib"

@@ -10,52 +10,6 @@
 
 namespace Editor
 {
-	struct ScriptConfig
-	{
-		std::string projectName;
-		std::string projectDir;
-
-		std::string includeDir;
-		std::string libDir;
-	};
-	static void replace_all(std::string& str, const std::string& from, const std::string& to)
-	{
-		size_t pos = str.find(from);
-		do
-		{
-			str.replace(pos, from.length(), to);
-			pos = str.find(from, pos + to.length());
-		} 
-		while (pos != std::string::npos);
-	}
-	static bool GenerateLuaScript(const std::string& template_path, const std::string& output_path, const ScriptConfig& config)
-	{
-		std::ifstream template_file(template_path);
-		if (!template_file.is_open())
-		{
-			EK_ERROR("Failed to open template file '{0}'", template_path);
-			return false;
-		}
-		std::stringstream buffer;
-		buffer << template_file.rdbuf();
-		std::string template_content = buffer.str();
-
-		replace_all(template_content, "__PRJ_NAME__", config.projectName);
-		replace_all(template_content, "__PRJ_DIR__", config.projectDir);
-		replace_all(template_content, "__INCLUDE_DIR__", config.includeDir);
-		replace_all(template_content, "__LIB_DIR__", config.libDir);
-
-		std::ofstream output_file(output_path);
-		if (!output_file.is_open())
-		{
-			EK_ERROR("Failed to open output file '{0}'", output_path);
-			return false;
-		}
-		output_file << template_content;
-
-		return true;
-	}
-
 	EditorLayer::EditorLayer() : m_guiEnabled(true)
 	{
 		EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
@@ -313,63 +267,15 @@ namespace Editor
 		auto project = Eklipse::Project::New();
 		if (!Eklipse::Project::Exists(dirPath))
 		{
-			// Create config
-			std::string defaultSceneName = "Unititled";
-			project->GetConfig().name = name;
-			project->GetConfig().assetsDirectoryPath = dirPath.path() / "Assets";
-			project->GetConfig().startScenePath = project->GetConfig().assetsDirectoryPath / "Scenes" / (defaultSceneName + EK_SCENE_FILE_EXTENSION);
+			// Create project directories and copy neccessary files
+			Eklipse::Project::SetupActive(name, dirPath);
 
 			// Create default scene
-			std::filesystem::create_directories(project->GetConfig().assetsDirectoryPath / "Scenes");
 			auto scene = Eklipse::Scene::New("Untitled", project->GetConfig().startScenePath);
-
-			// Create default shaders
-			std::filesystem::create_directories(project->GetConfig().assetsDirectoryPath / "Shaders");
-			// Default 2D shader
-			Eklipse::Path dstPath = "//Shaders/Default2D.eksh";
-			Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default2D.eksh");
-			project->GetAssetLibrary()->GetShader(dstPath);
-			// Default 3D shader
-			dstPath = "//Shaders/Default3D.eksh";
-			Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default3D.eksh");
-			project->GetAssetLibrary()->GetShader(dstPath);
-
-			// Create Scripts directory
-			auto scriptsPath = dirPath / "Scripts";
-			std::filesystem::create_directories(scriptsPath / "Source");
-
-			// Generate premake5.lua with project name
-			auto currentPath = std::filesystem::current_path();
-			ScriptConfig config{};
-			config.projectName = name;
-			config.projectDir = dirPath.full_string();
-			config.includeDir = Eklipse::Path(currentPath / "Resources/Scripting/Include").full_string();
-			config.libDir = Eklipse::Path(currentPath / "Resources/Scripting/Lib").full_string();
-
-			auto premakeDir = scriptsPath / "Resources" / "Premake";
-			std::filesystem::create_directories(premakeDir);
-			auto premakeScriptPath = premakeDir / "premake5.lua";
-			bool success = GenerateLuaScript("Resources/Scripting/Premake/premake5.lua", premakeScriptPath.string(), config);
-			EK_ASSERT(success, "Failed to generate premake5.lua!");
-			EK_INFO("Generated premake5.lua at path '{0}'", premakeScriptPath.string());
-
-			// Run .lua script to generate project files
-#ifdef EK_PLATFORM_WINDOWS
-			std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5.exe vs2022 --file=" + premakeScriptPath.string();
-#elif defined(EK_PLATFORM_LINUX)
-			std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 gmake2 --file=" + scriptPath.string();
-#elif defined(EK_PLATFORM_MACOS)
-			std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 xcode4 --file=" + scriptPath.string();
-#endif
-			system("dir");
-			EK_WARN("Running command: {0}", command);
-			int res = system(command.c_str());
-			EK_ASSERT(res == 0, "Failed to run premake5.lua!");
 
 			// Save project
 			std::filesystem::path projectFilePath = dirPath.path() / (name + EK_PROJECT_FILE_EXTENSION);
-			bool saved = Eklipse::Project::Save(project, projectFilePath);
-			EK_ASSERT(saved, "Failed to save project!");
+			Eklipse::Project::Save(project, projectFilePath);
 
 			Eklipse::Application::Get().SwitchScene(scene);
 			OnProjectLoaded();

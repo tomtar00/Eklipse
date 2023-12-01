@@ -13,7 +13,7 @@
 
 namespace Eklipse
 {
-	struct EK_API ApplicationInfo
+	struct ApplicationInfo
 	{
 		unsigned int windowWidth = 800, windowHeight = 600;
 		char* appName = "Eklipse App";
@@ -22,7 +22,7 @@ namespace Eklipse
 		ApplicationInfo(const ApplicationInfo& info);
 	};
 
-	class EK_API Application
+	class Application
 	{
 	public:
 		Application() = delete;
@@ -66,11 +66,13 @@ namespace Eklipse
 		void PopOverlay(Ref<Layer> overlay);
 
 		void SubmitToMainThread(const std::function<void()>& function);
+		void SubmitToWindowFocus(const std::function<void()>& function);
 
 	private:
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
+		void OnWindowFocus(WindowFocusEvent& event);
 		void OnMouseMove(MouseMovedEvent& event);
 		void OnMouseScroll(MouseScrolledEvent& event);
 
@@ -93,6 +95,9 @@ namespace Eklipse
 
 		std::vector<std::function<void()>> m_mainThreadQueue;
 		std::mutex m_mainThreadQueueMutex;
+
+		std::vector<std::function<void()>> m_mainThreadWindowFocusQueue;
+		std::mutex m_mainThreadWindowForcusQueueMutex;
 	};
 
 	Ref<Application> CreateApplication();

@@ -17,67 +17,67 @@ namespace Eklipse
 		//std::vector<VkDescriptorSet>	g_graphicsDescriptorSets{};
 		//std::vector<VkDescriptorSet>	g_computeDescriptorSets{};
 
-		std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription()
-		{
-			std::vector<VkVertexInputBindingDescription> bindingDescription{1};
+		//std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription()
+		//{
+		//	std::vector<VkVertexInputBindingDescription> bindingDescription{1};
 
-			bindingDescription[0].binding = 0;
-			bindingDescription[0].stride = sizeof(Vertex);
-			bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		//	bindingDescription[0].binding = 0;
+		//	bindingDescription[0].stride = sizeof(Vertex);
+		//	bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			return bindingDescription;
-		}
-		std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions()
-		{
-			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{3};
+		//	return bindingDescription;
+		//}
+		//std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions()
+		//{
+		//	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{3};
 
-			// position attributes
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(Vertex, pos);
+		//	// position attributes
+		//	attributeDescriptions[0].binding = 0;
+		//	attributeDescriptions[0].location = 0;
+		//	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		//	attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
-			// color attributes
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(Vertex, color);
+		//	// color attributes
+		//	attributeDescriptions[1].binding = 0;
+		//	attributeDescriptions[1].location = 1;
+		//	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		//	attributeDescriptions[1].offset = offsetof(Vertex, color);
 
-			// texture coordinates attributes
-			attributeDescriptions[2].binding = 0;
-			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+		//	// texture coordinates attributes
+		//	attributeDescriptions[2].binding = 0;
+		//	attributeDescriptions[2].location = 2;
+		//	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+		//	attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
-			return attributeDescriptions;
-		}
+		//	return attributeDescriptions;
+		//}
 
-		std::vector<VkVertexInputBindingDescription> GetParticleBindingDescription()
-		{
-			std::vector<VkVertexInputBindingDescription> bindingDescription{1};
+		//std::vector<VkVertexInputBindingDescription> GetParticleBindingDescription()
+		//{
+		//	std::vector<VkVertexInputBindingDescription> bindingDescription{1};
 
-			bindingDescription[0].binding = 0;
-			bindingDescription[0].stride = sizeof(Particle);
-			bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		//	bindingDescription[0].binding = 0;
+		//	bindingDescription[0].stride = sizeof(Particle);
+		//	bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			return bindingDescription;
-		}
-		std::vector<VkVertexInputAttributeDescription> GetParticleAttributeDescriptions()
-		{
-			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{2};
+		//	return bindingDescription;
+		//}
+		//std::vector<VkVertexInputAttributeDescription> GetParticleAttributeDescriptions()
+		//{
+		//	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{2};
 
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(Particle, pos);
+		//	attributeDescriptions[0].binding = 0;
+		//	attributeDescriptions[0].location = 0;
+		//	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		//	attributeDescriptions[0].offset = offsetof(Particle, pos);
 
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(Particle, color);
+		//	attributeDescriptions[1].binding = 0;
+		//	attributeDescriptions[1].location = 1;
+		//	attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		//	attributeDescriptions[1].offset = offsetof(Particle, color);
 
-			return attributeDescriptions;
-		}
+		//	return attributeDescriptions;
+		//}
 
 		VkDescriptorSetLayout CreateDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings)
 		{

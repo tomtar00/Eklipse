@@ -4,7 +4,7 @@
 
 namespace Eklipse 
 {
-	class EK_API WindowResizeEvent : public Event
+	class WindowResizeEvent : public Event
 	{
 	public:
 		WindowResizeEvent(unsigned int width, unsigned int height)
@@ -28,7 +28,7 @@ namespace Eklipse
 		unsigned int m_width, m_height;
 	};
 
-	/*class EK_API FramebufferResizeEvent : public Event
+	/*class FramebufferResizeEvent : public Event
 	{
 	public:
 		FramebufferResizeEvent(unsigned int width, unsigned int height)
@@ -52,7 +52,7 @@ namespace Eklipse
 		unsigned int m_width, m_height;
 	};*/
 
-	class EK_API WindowCloseEvent : public Event
+	class WindowCloseEvent : public Event
 	{
 	public:
 		WindowCloseEvent() {}
@@ -62,15 +62,45 @@ namespace Eklipse
 
 		std::string ToString() const override
 		{
-			std::stringstream ss;
-			ss << "WindowCloseEvent";
-			return ss.str();
+			return "WindowCloseEvent";
 		}
 
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
 	};
 
-	/*class EK_API WindowMinimizedEvent : public Event
+	class WindowFocusEvent : public Event
+	{
+	public:
+		WindowFocusEvent() {}
+
+		static EventType GetStaticType() { return EventType::WindowFocus; }
+		virtual EventType GetEventType() const override { return GetStaticType(); }
+
+		std::string ToString() const override
+		{
+			return "WindowFocusEvent";
+		}
+
+		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
+	};
+
+	class WindowLostFocusEvent : public Event
+	{
+	public:
+		WindowLostFocusEvent() {}
+
+		static EventType GetStaticType() { return EventType::WindowLostFocus; }
+		virtual EventType GetEventType() const override { return GetStaticType(); }
+
+		std::string ToString() const override
+		{
+			return "WindowLostFocusEvent";
+		}
+
+		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
+	};
+
+	/*class WindowMinimizedEvent : public Event
 	{
 	public:
 		WindowMinimizedEvent() {}
@@ -88,7 +118,7 @@ namespace Eklipse
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
 	};
 
-	class EK_API WindowMaximizedEvent : public Event
+	class WindowMaximizedEvent : public Event
 	{
 	public:
 		WindowMaximizedEvent() {}

@@ -22,17 +22,19 @@ project "__PRJ_NAME__"
     cppdialect "C++17"
     staticruntime "off"
 
-    targetdir ("../../bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("../../obj/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/Build/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/Build/obj/" .. outputdir .. "/%{prj.name}")
 
     files
     {
-        "Source/**.cpp",
-        "Source/**.h"
+        "%{wks.location}/Scripts/**.cpp",
+        "%{wks.location}/Scripts/**.hpp",
+        "%{wks.location}/Scripts/**.h",
     }
 
     includedirs
     {
+        "%{wks.location}/Scripts",
         "__INCLUDE_DIR__"
     }
     libdirs
@@ -44,26 +46,22 @@ project "__PRJ_NAME__"
         "Eklipse-ScriptAPI"
     }
 
-    filter "system:windows"
-		systemversion "latest"
+    defines
+    {
+        "EK_BUILD_DLL"
+    }
 
-        postbuildcommands
-	    {
-	    	"{COPY} %{cfg.targetdir}\\%{prj.name}.dll ./"
-        }
-
-    filter "system:macos"
-		systemversion "latest"
-
-        postbuildcommands
-	    {
-	    	"{COPY} %{cfg.targetdir}\\%{prj.name}.dylib ./"
-        }
-
-    filter "system:linux"
-		systemversion "latest"
-
-        postbuildcommands
-	    {
-	    	"{COPY} %{cfg.targetdir}\\%{prj.name}.so ./"
-        }
+    extensions = {
+        ["windows"] = ".dll",
+        ["macos"] = ".dylib",
+        ["linux"] = ".so"
+    }
+    
+    for system, ext in pairs(extensions) do
+        filter("system:" .. system)
+            systemversion "latest"
+            postbuildcommands
+            {
+                "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Build"
+            }
+    end

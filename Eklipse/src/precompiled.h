@@ -24,6 +24,7 @@
 #include <optional>
 #include <thread>
 #include <stack>
+#include <regex>
 
 #include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Utils/Log.h>
