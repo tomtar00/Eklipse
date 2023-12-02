@@ -38,6 +38,35 @@ namespace Eklipse
 		});
 	}
 
+	void Scene::OnSceneStart()
+	{
+		ForEachEntity([&](auto entityID)
+		{
+			if (m_registry.all_of<ScriptComponent>(entityID))
+			{
+				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
+				if (scriptComponent.script != nullptr)
+					scriptComponent.script->OnCreate();
+			}
+		});
+	}
+	void Scene::OnSceneUpdate(float deltaTime)
+	{
+		ForEachEntity([&](auto entityID)
+		{
+			if (m_registry.all_of<ScriptComponent>(entityID))
+			{
+				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
+				if (scriptComponent.script != nullptr)
+					scriptComponent.script->OnUpdate(deltaTime);
+			}
+		});
+	}
+	void Scene::OnSceneStop()
+	{
+		
+	}
+
 	Ref<Scene> Scene::New(const std::string& name, const Path& saveFilePath)
 	{
 		auto scene = CreateRef<Scene>(name, saveFilePath);

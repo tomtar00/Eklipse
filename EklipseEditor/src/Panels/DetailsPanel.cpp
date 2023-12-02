@@ -48,6 +48,9 @@ namespace Editor
 				if (!entity.HasComponent<Eklipse::MeshComponent>() && ImGui::MenuItem("Add Mesh Component"))
 					entity.AddComponent<Eklipse::MeshComponent>();
 
+				if (!entity.HasComponent<Eklipse::ScriptComponent>() && ImGui::MenuItem("Add Script Component"))
+					entity.AddComponent<Eklipse::ScriptComponent>();
+
 				ImGui::EndPopup();
 			}
 		}
@@ -100,6 +103,31 @@ namespace Editor
 						meshComp->mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
 						meshComp->material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
 					}
+				}
+			}
+		}
+
+		// Script
+		{
+			auto* scriptComp = entity.TryGetComponent<Eklipse::ScriptComponent>();
+			if (scriptComp != nullptr)
+			{
+				Eklipse::ClassMap& classes = Eklipse::Project::GetScriptClasses();
+				if (ImGui::BeginCombo("Script", scriptComp->scriptName.c_str()))
+				{
+					for (auto&& [className, classInfo] : classes)
+					{
+						bool isSelected = (scriptComp->scriptName.c_str() == className);
+						if (ImGui::Selectable(className.c_str(), isSelected))
+						{
+							if (scriptComp->script != nullptr)
+								scriptComp->DestroyScript();
+							scriptComp->SetScript(className, classInfo);
+						}
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
 				}
 			}
 		}

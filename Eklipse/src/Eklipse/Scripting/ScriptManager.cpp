@@ -25,6 +25,10 @@ namespace Eklipse
 		if (std::filesystem::exists(scriptLibraryFilePath))
 		{
 			LinkLibrary(scriptLibraryFilePath);
+
+			m_parser.Clear();
+			m_parser.ParseDirectory(project->GetConfig().scriptsSourceDirectoryPath);
+
 			FetchFactoryFunctions();
 		}
 		else
@@ -92,29 +96,45 @@ namespace Eklipse
 			}
 		}
 
+		factoryFile << "using namespace EklipseEngine;\n";
 		factoryFile << "using namespace EklipseEngine::ReflectionAPI;\n";
+		factoryFile << "\n";
+
+		factoryFile << "#ifdef EK_PLATFORM_WINDOWS"							<< "\n"
+					<< "\t" << "#define EK_EXPORT __declspec(dllexport)"	<< "\n"
+					<< "#else"												<< "\n"
+					<< "\t" << "#define EK_EXPORT"							<< "\n"
+					<< "#endif"												<< "\n";	
+
 		factoryFile << "\n";
 
 		m_parser.Clear();
 		m_parser.ParseDirectory(scriptsSourceDirPath);
 
-		factoryFile << "extern \"C\"\n";
-		factoryFile << "{\n";
-
-		// generate script factory functions
-		for (const auto& [className, classInfo] : m_parser.GetClasses())
+		if (m_parser.GetClasses().empty())
 		{
-			factoryFile << "\t" << "EK_API void Get__" << className << "(ClassInfo& info)\n";
-			factoryFile << "\t" << "{\n";
-			factoryFile << "\t" << "	info.create = []()->Script* { return new " << className << "(); };\n";
-			for (const auto& [memberName, memberInfo] : classInfo.members)
-			{
-				factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
-			}
-			factoryFile << "\t" << "}\n";
+			EK_CORE_WARN("No script classes found!");
 		}
+		else
+		{
+			factoryFile << "extern \"C\"\n";
+			factoryFile << "{\n";
 
-		factoryFile << "}";
+			// generate script factory functions
+			for (const auto& [className, classInfo] : m_parser.GetClasses())
+			{
+				factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
+				factoryFile << "\t" << "{\n";
+				factoryFile << "\t" << "	info.create = []()->Script* { return new " << className << "(); };\n";
+				for (const auto& [memberName, memberInfo] : classInfo.members)
+				{
+					factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
+				}
+				factoryFile << "\t" << "}\n";
+			}
+
+			factoryFile << "}";
+		}
 	}
 	void ScriptManager::CompileScripts(const std::filesystem::path& sourceDirectoryPath)
 	{

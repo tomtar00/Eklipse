@@ -27,7 +27,7 @@ project "Eklipse"
 	includedirs
 	{
 		"src",
-		"%{Include.ScriptAPI}",
+        "%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",
@@ -61,6 +61,13 @@ project "Eklipse"
 		"YAML",
 		"NFD"
 	}
+
+	-- postbuildcommands
+	-- {
+    --     -- copy script api into resources
+	-- 	"{COPYFILE} %{prj.location}/src/Eklipse/Scripting/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
+    --     "{COPYFILE} %{cfg.targetdir}/Eklipse.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib"
+    -- }
 
 	filter "system:windows"
 		systemversion "latest"

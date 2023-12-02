@@ -2,10 +2,12 @@
 #include <string>
 #include <unordered_map>
 
-#ifdef EK_BUILD_DLL
-	#define EK_API __declspec(dllexport)
-#else
-	#define EK_API __declspec(dllimport)
+#ifdef EK_PLATFORM_WINDOWS
+	#ifdef EK_BUILD_DLL
+		#define EK_API __declspec(dllexport)
+	#else
+		#define EK_API __declspec(dllimport)
+	#endif
 #endif
 
 namespace EklipseEngine
@@ -18,6 +20,7 @@ namespace EklipseEngine
 	};
 
 	EK_API void Log(const char* message);
+	EK_API void Close();
 
 	namespace ReflectionAPI
 	{

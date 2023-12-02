@@ -40,6 +40,8 @@ namespace Eklipse
 
 		static bool Exists(const std::filesystem::path& projectDirPath);
 
+		static ClassMap& GetScriptClasses() { return s_activeProject->m_scriptManager.GetClasses(); }
+
 	private:
 		std::filesystem::path m_projectDirectory;
 		ProjectConfig m_config;

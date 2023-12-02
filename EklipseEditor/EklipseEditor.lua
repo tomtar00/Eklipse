@@ -18,7 +18,8 @@ project "EklipseEditor"
 	{
 		"src",
 		"%{wks.location}/Eklipse/src",
-		"%{Include.ScriptAPI}",
+
+        "%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",
 		"%{Include.glm}",

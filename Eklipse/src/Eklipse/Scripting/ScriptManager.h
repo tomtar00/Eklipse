@@ -35,6 +35,8 @@ namespace Eklipse
 
 		void RecompileAll();
 
+		ClassMap& GetClasses() { return m_parser.GetClasses(); }
+
 	private:
 		Unique<filewatch::FileWatch<std::string>> m_libraryWatcher;
 		Unique<filewatch::FileWatch<std::string>> m_sourceWatcher;

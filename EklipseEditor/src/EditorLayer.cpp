@@ -201,6 +201,8 @@ namespace Editor
 		
 		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
+		scene->OnSceneUpdate(deltaTime);
+
 		// Record scene framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
 		Eklipse::Renderer::RenderScene(scene);

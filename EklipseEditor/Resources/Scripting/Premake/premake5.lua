@@ -46,10 +46,20 @@ project "__PRJ_NAME__"
         "Eklipse-ScriptAPI"
     }
 
-    defines
-    {
-        "EK_BUILD_DLL"
-    }
+    filter "configurations:Debug"
+		defines "EK_DEBUG"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		defines "EK_RELEASE"
+		runtime "Release"
+		optimize "On"
+
+	filter "configurations:Dist"
+		defines "EK_DIST"
+		runtime "Release"
+		optimize "On"
 
     extensions = {
         ["windows"] = ".dll",
@@ -60,6 +70,10 @@ project "__PRJ_NAME__"
     for system, ext in pairs(extensions) do
         filter("system:" .. system)
             systemversion "latest"
+            defines
+            {
+                "EK_PLATFORM_" .. string.upper(system)
+            }
             postbuildcommands
             {
                 "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Build"

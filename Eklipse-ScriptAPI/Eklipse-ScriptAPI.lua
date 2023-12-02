@@ -41,7 +41,9 @@ project "Eklipse-ScriptAPI"
 	{
         -- copy script api into source
 		"{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
-        "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib"
+        "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
+        --"{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
+        "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.dll ../bin/" .. outputdir .. "/EklipseEditor"
     }
 
     defines
