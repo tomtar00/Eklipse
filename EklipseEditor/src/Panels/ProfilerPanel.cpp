@@ -180,9 +180,11 @@ namespace Editor
         if (indent > 0.0f) ImGui::Unindent(indent);
     }
 
-    void ProfilerPanel::OnGUI(float deltaTime)
+    bool ProfilerPanel::OnGUI(float deltaTime)
     {
         EK_PROFILE();
+
+        if (!GuiPanel::OnGUI(deltaTime)) return false;
 
         ImGui::Begin("Profiler");
 
@@ -224,5 +226,7 @@ namespace Editor
             ImGui::EndTable();
         }
         ImGui::End();
+
+        return true;
     }
 }

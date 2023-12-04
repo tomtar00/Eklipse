@@ -171,4 +171,5 @@ namespace Eklipse
 		EK_ASSERT(false, "API {0} not implemented for ImGui Icon creation", int(apiType));
 		return nullptr;
 	}
+	GuiPanel::GuiPanel() : m_visible(true) {}
 }

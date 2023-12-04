@@ -15,7 +15,25 @@ namespace Eklipse
 		model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, transform.scale);
 
-		// Should set transformMatrix here, but it's not working for some reason
+		// TODO: Should set transformMatrix here, but it's not working for some reason
 		return model;
+	}
+	void ScriptComponent::SetScript(const std::string& name, const EklipseEngine::ReflectionAPI::ClassInfo& info)
+	{
+		if (info.create != nullptr)
+		{
+			script = info.create();
+			scriptName = name; 
+			classInfo = info; 
+		}
+		else
+		{
+			EK_ERROR("Script '{0}' does not have a create function!", name);
+		}
+	}
+	void ScriptComponent::DestroyScript()
+	{
+		delete script;
+		script = nullptr;
 	}
 }

@@ -9,7 +9,7 @@ namespace Editor
 	{
 	public:
 		void LoadResources();
-		void OnGUI(float deltaTime) override;
+		bool OnGUI(float deltaTime) override;
 		void OnContextChanged();
 
 		void CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderPath);

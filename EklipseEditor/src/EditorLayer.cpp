@@ -33,7 +33,8 @@ namespace Editor
 			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
 			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
 			{ "Files",		ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },	
-			{ "View",		ImGuiDir_None,	Eklipse::Dir_Opposite,	0.50f }
+			{ "View",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.50f },
+			{ "Debug",		ImGuiDir_Down,	Eklipse::Dir_Stack,		0.50f }
 		};
 		m_guiLayerCreateInfo.panels =
 		{
@@ -44,7 +45,8 @@ namespace Editor
 			&m_logsPanel,
 			&m_profilerPanel,
 			&m_viewPanel,
-			&m_filesPanel
+			&m_filesPanel,
+			&Eklipse::Application::Get().GetDebugPanel()
 		};
 
 		EK_INFO("Editor layer attached");
@@ -142,6 +144,14 @@ namespace Editor
 				if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
 				{
 					Eklipse::Application::Get().Close();
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Window"))
+			{
+				if (ImGui::MenuItemEx("Debug", nullptr, nullptr))
+				{
+					Eklipse::Application::Get().GetDebugPanel().SetVisible(true);
 				}
 				ImGui::EndMenu();
 			}

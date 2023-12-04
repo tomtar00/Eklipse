@@ -5,9 +5,10 @@
 
 namespace Editor
 {
-	void EntitiesPanel::OnGUI(float deltaTime)
+	bool EntitiesPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
+		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
 		ImGui::Begin("Entities");
 		auto& scene = Eklipse::Application::Get().GetScene();
@@ -57,5 +58,6 @@ namespace Editor
 		});
 
 		ImGui::End();
+		return true;
 	}
 }

@@ -5,6 +5,6 @@ namespace Editor
 {
 	class SettingsPanel : public Eklipse::GuiPanel
 	{
-		virtual void OnGUI(float deltaTime) override;
+		virtual bool OnGUI(float deltaTime) override;
 	};
 }

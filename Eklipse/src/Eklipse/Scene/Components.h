@@ -65,7 +65,7 @@ namespace Eklipse
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent& script) = default;
 
-		void SetScript(const std::string& name, const EklipseEngine::ReflectionAPI::ClassInfo& info) { scriptName = name; classInfo = info; script = classInfo.create(); }
-		void DestroyScript() { delete script; script = nullptr; }
+		void SetScript(const std::string& name, const EklipseEngine::ReflectionAPI::ClassInfo& info);
+		void DestroyScript();
 	};
 }

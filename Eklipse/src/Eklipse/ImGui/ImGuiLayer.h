@@ -17,7 +17,13 @@ namespace Eklipse
 	class GuiPanel
 	{
 	public:
-		virtual void OnGUI(float deltaTime) = 0;
+		GuiPanel();
+		virtual bool OnGUI(float deltaTime) { return IsVisible(); };
+	public:
+		void SetVisible(bool visible) { m_visible = visible; }
+		bool IsVisible() const { return m_visible; }
+	private:
+		bool m_visible = true;
 	};
 
 	enum ImGuiNodeDirType

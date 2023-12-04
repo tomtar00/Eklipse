@@ -8,9 +8,11 @@
 
 namespace Editor
 {
-	void ViewPanel::OnGUI(float deltaTime)
+	bool ViewPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
+
+		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
 		ImGui::Begin("View");
 		//auto entity = EditorLayer::Get()->GetSelection().entity; //EditorLayer::Get()->GetSelectedEntity();
@@ -78,5 +80,7 @@ namespace Editor
 		}
 
 		ImGui::End();
+
+		return true;
 	}
 }

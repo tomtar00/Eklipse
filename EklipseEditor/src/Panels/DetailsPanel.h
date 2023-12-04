@@ -10,7 +10,7 @@ namespace Editor
 		void Setup(std::string& name);
 		
 	private:
-		virtual void OnGUI(float deltaTime) override;
+		virtual bool OnGUI(float deltaTime) override;
 		void OnEntityGUI(Eklipse::Entity entity);
 		void OnMaterialGUI(Eklipse::Material* material);
 

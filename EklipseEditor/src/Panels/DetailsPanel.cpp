@@ -13,9 +13,11 @@ namespace Editor
 	{
 		m_entityNameBuffer = name;
 	}
-	void DetailsPanel::OnGUI(float deltaTime)
+	bool DetailsPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
+
+		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
 		ImGui::Begin("Details");
 
@@ -24,7 +26,7 @@ namespace Editor
 		if (info.type == SelectionType::None)
 		{
 			ImGui::End();
-			return;
+			return true;
 		}
 
 		// Split logic based on type
@@ -38,6 +40,7 @@ namespace Editor
 		}
 
 		ImGui::End();
+		return true;
 	}
 	void DetailsPanel::OnEntityGUI(Eklipse::Entity entity)
 	{
@@ -69,16 +72,16 @@ namespace Editor
 		// Transform
 		{
 			auto& transComp = entity.GetComponent<Eklipse::TransformComponent>();
-
 			ImGui::DragFloat3("Position", glm::value_ptr(transComp.transform.position), 0.1f);
 			ImGui::DragFloat3("Rotation", glm::value_ptr(transComp.transform.rotation), 0.1f);
 			ImGui::DragFloat3("Scale", glm::value_ptr(transComp.transform.scale), 0.1f);
+			ImGui::Spacing();
 		}
 
 		// Camera
 		{
 			auto* cameraComp = entity.TryGetComponent<Eklipse::CameraComponent>();
-			if (cameraComp)
+			if (cameraComp && ImGui::CollapsingHeader("Camera"))
 			{
 				ImGui::SliderFloat("FOV", &cameraComp->camera.m_fov, 0.0f, 180.0f);
 				ImGui::SliderFloat("Near", &cameraComp->camera.m_nearPlane, 0.01f, 1000.0f);
@@ -89,14 +92,14 @@ namespace Editor
 		// Mesh
 		{
 			auto* meshComp = entity.TryGetComponent<Eklipse::MeshComponent>();
-			if (meshComp != nullptr)
+			if (meshComp != nullptr && ImGui::CollapsingHeader("Mesh"))
 			{
-				ImGui::InputText("Mesh", &meshComp->meshPath);
-				ImGui::InputText("Material", &meshComp->materialPath);
+				ImGui::InputText("Mesh##Input", &meshComp->meshPath);
+				ImGui::InputText("Material##Input", &meshComp->materialPath);
 				if (ImGui::Button("Apply"))
 				{
 					bool valid = Eklipse::Path::CheckPathValid(meshComp->meshPath, { ".obj" });	 // TODO: Check other formats
-					valid = valid && Eklipse::Path::CheckPathValid(meshComp->materialPath, { ".ekmt" }); // TODO: Check other formats
+					valid = valid && Eklipse::Path::CheckPathValid(meshComp->materialPath, { EK_MATERIAL_EXTENSION });
 
 					if (valid)
 					{
@@ -110,12 +113,11 @@ namespace Editor
 		// Script
 		{
 			auto* scriptComp = entity.TryGetComponent<Eklipse::ScriptComponent>();
-			if (scriptComp != nullptr)
+			if (scriptComp != nullptr && ImGui::CollapsingHeader("Script"))
 			{
-				Eklipse::ClassMap& classes = Eklipse::Project::GetScriptClasses();
-				if (ImGui::BeginCombo("Script", scriptComp->scriptName.c_str()))
+				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
 				{
-					for (auto&& [className, classInfo] : classes)
+					for (auto&& [className, classInfo] : Eklipse::Project::GetScriptClasses())
 					{
 						bool isSelected = (scriptComp->scriptName.c_str() == className);
 						if (ImGui::Selectable(className.c_str(), isSelected))
@@ -137,7 +139,7 @@ namespace Editor
 		ImGui::Text(("Material: " + material->GetName()).c_str());
 		const char* id = material->GetName().c_str();
 
-		ImGui::InputPath(id, "Shader", material->GetShader()->GetPath(), {".eksh"},
+		ImGui::InputPath(id, "Shader", material->GetShader()->GetPath(), { EK_SHADER_EXTENSION },
 		[&]()
 		{
 			EK_CORE_TRACE("Shader path changed to: {0}", material->GetShader()->GetPath().string());

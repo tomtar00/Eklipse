@@ -128,6 +128,8 @@ public:
 
         if (!m_handle)
             throw load_error("Could not load library \"" + final_path + final_name + "\"\n" + get_error_description());
+
+        m_loaded = true;
     }
 
     dylib(const std::string &dir_path, const std::string &lib_name, bool decorations = add_filename_decorations)
@@ -264,7 +266,26 @@ public:
         return m_handle;
     }
 
+    void free() {
+        if (!m_loaded)
+            return;
+		if (!m_handle)
+			throw std::logic_error("The dynamic library handle is null.");
+#if (defined(_WIN32) || defined(_WIN64))
+        int success = close(m_handle) != 0;
+#else
+        int success = close(m_handle) == 0;
+#endif
+        if (!success)
+        {
+            throw load_error("Could not free library \n" + get_error_description());
+        }
+        m_loaded = false;
+        m_handle = nullptr;
+	}
+
 protected:
+    bool m_loaded{false};
     native_handle_type m_handle{nullptr};
 
     static native_handle_type open(const char *path) noexcept {
@@ -279,8 +300,8 @@ protected:
         return DYLIB_WIN_OTHER(GetProcAddress, dlsym)(lib, name);
     }
 
-    static void close(native_handle_type lib) noexcept {
-        DYLIB_WIN_OTHER(FreeLibrary, dlclose)(lib);
+    static int close(native_handle_type lib) noexcept {
+        return int(DYLIB_WIN_OTHER(FreeLibrary, dlclose)(lib));
     }
 
     static std::string get_error_description() noexcept {

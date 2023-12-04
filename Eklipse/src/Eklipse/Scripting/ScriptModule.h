@@ -17,32 +17,38 @@ namespace Eklipse
 		NEEDS_RECOMPILATION
 	};
 
-	class ScriptManager
+	class ScriptModule
 	{
 	public:
-		ScriptManager() = default;
-		~ScriptManager() = default;
+		ScriptModule() = default;
+		~ScriptModule() = default;
 
 		void Load(Ref<Project> project);
 		void Unload();
-
-		void OnSourceWatchEvent(const std::string& path, filewatch::Event change_type);
-
-		void LinkLibrary(const std::filesystem::path& libraryFilePath);
-		void GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
-		void CompileScripts(const std::filesystem::path& sourceDirectoryPath);
-		void FetchFactoryFunctions();
 
 		void RecompileAll();
 
 		ClassMap& GetClasses() { return m_parser.GetClasses(); }
 
 	private:
-		Unique<filewatch::FileWatch<std::string>> m_libraryWatcher;
+		void StartWatchingSource();
+		void StopWatchingSource();
+		void OnSourceWatchEvent(const std::string& path, filewatch::Event change_type);
+
+		void LinkLibrary(const std::filesystem::path& libraryFilePath);
+		void UnlinkLibrary();
+
+		void GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
+		void CompileScripts(const std::filesystem::path& sourceDirectoryPath);
+		void FetchFactoryFunctions();
+
+	private:
+		ScriptsState m_state = ScriptsState::NONE;
 		Unique<filewatch::FileWatch<std::string>> m_sourceWatcher;
 
-		ScriptsState m_state = ScriptsState::NONE;
 		Ref<dylib> m_library;
+		std::filesystem::path m_libraryPath;
+
 		ScriptParser m_parser;
 	};
 }

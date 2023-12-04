@@ -1,6 +1,6 @@
 #pragma once
 #include <Eklipse/Assets/AssetLibrary.h>
-#include <Eklipse/Scripting/ScriptManager.h>
+#include <Eklipse/Scripting/ScriptModule.h>
 
 #define EK_PROJECT_FILE_EXTENSION ".ekproj"
 #define EK_SCENE_FILE_EXTENSION ".eksc"
@@ -46,7 +46,7 @@ namespace Eklipse
 		std::filesystem::path m_projectDirectory;
 		ProjectConfig m_config;
 		Ref<AssetLibrary> m_assetLibrary;
-		ScriptManager m_scriptManager;
+		ScriptModule m_scriptManager;
 
 		static Ref<Project> s_activeProject;
 	};

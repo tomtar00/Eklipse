@@ -11,8 +11,12 @@ namespace Editor
 		m_fileIcon = Eklipse::GuiIcon::Create(Eklipse::Application::Get().GetAssetLibrary(), "Assets/Icons/file.png");
 	}
 
-	void FilesPanel::OnGUI(float deltaTime)
+	bool FilesPanel::OnGUI(float deltaTime)
 	{
+		EK_PROFILE();
+
+		if (!GuiPanel::OnGUI(deltaTime)) return false;
+
 		ImGui::Begin("Files");
 		if (m_workingDirPath.empty())
 		{
@@ -23,7 +27,7 @@ namespace Editor
 				EditorLayer::Get().OpenProject();
 			}
 			ImGui::End();
-			return;
+			return true;
 		}
 
 		// Right click menu
@@ -212,6 +216,7 @@ namespace Editor
 		//ImGui::SliderFloat("Thumbnail Size", &thumbnailSize, 16, 128);
 
 		ImGui::End();
+		return true;
 	}
 	void FilesPanel::OnContextChanged()
 	{

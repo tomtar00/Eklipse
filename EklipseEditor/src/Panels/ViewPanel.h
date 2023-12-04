@@ -7,7 +7,7 @@ namespace Editor
 	class ViewPanel : public Eklipse::GuiPanel
 	{
 	public:
-		virtual void OnGUI(float deltaTime) override;
+		virtual bool OnGUI(float deltaTime) override;
 		float GetAspectRatio() const { return m_aspectRatio; }
 
 		inline ImVec2 GetViewportSize() const { return m_viewportSize; }

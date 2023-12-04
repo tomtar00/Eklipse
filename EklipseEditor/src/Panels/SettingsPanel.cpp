@@ -3,9 +3,11 @@
 
 namespace Editor
 {
-	void SettingsPanel::OnGUI(float deltaTime)
+	bool SettingsPanel::OnGUI(float deltaTime)
 	{
 		EK_PROFILE();
+
+		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
 		ImGui::Begin("Settings");
 
@@ -33,5 +35,7 @@ namespace Editor
 		}
 
 		ImGui::End();
+
+		return true;
 	}
 }

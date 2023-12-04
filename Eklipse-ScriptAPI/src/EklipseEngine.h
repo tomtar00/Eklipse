@@ -14,9 +14,15 @@ namespace EklipseEngine
 {
 	EK_API class Script
 	{
+	//public:
+	//	Script(uint32_t entity);
+
 	public:
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float deltaTime) = 0;
+	//private:
+	//	Transform& GetTransform();
+	//	uint32_t m_entityHandle;
 	};
 
 	EK_API void Log(const char* message);
