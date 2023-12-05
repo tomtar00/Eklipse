@@ -37,35 +37,37 @@ namespace Eklipse
             if (std::filesystem::is_directory(directoryEntry.path()))
                 continue;
 
-            Path relativePath = directoryEntry.path();
+            Path relativePath = std::filesystem::relative(directoryEntry.path());
+            if (relativePath.empty())
+				relativePath = directoryEntry.path();
             const std::string extension = relativePath.path().extension().string();
             const std::string pathString = relativePath.full_string();
 
             if (extension == ".obj")
             {
-                EK_CORE_TRACE("Loading model from path '{0}'", pathString);
+                EK_CORE_TRACE("Loading model from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetMesh(relativePath);
             }
             else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp")
             {
-                EK_CORE_TRACE("Loading texture from path '{0}'", pathString);
+                EK_CORE_TRACE("Loading texture from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetTexture(relativePath);
             }
             else if (extension == ".eksh")
             {
-                EK_CORE_TRACE("Loading shader from path '{0}'", pathString);
+                EK_CORE_TRACE("Loading shader from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetShader(relativePath);
             }
             else if (extension == ".ekmt")
             {
-                EK_CORE_TRACE("Loading material from path '{0}'", pathString);
+                EK_CORE_TRACE("Loading material from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetMaterial(relativePath);
             }
         }
         EK_CORE_TRACE("Loaded {0} models, {1} textures, {2} shaders and {3} materials", m_meshCache.size(), m_textureCache.size(), m_shaderCache.size(), m_materialCache.size());
 
         // Monitor assets changes with FileWatch
-        m_fileWatcher = CreateUnique<filewatch::FileWatch<std::string>>(assetsDirectoryPath.string(), CAPTURE_FN(OnFileWatchEvent));
+        m_fileWatcher = CreateUnique<filewatch::FileWatch<std::string>>(assetsDirectoryPath.full_string(), CAPTURE_FN(OnFileWatchEvent));
         EK_CORE_TRACE("Monitoring assets directory '{0}'", assetsDirectoryPath.string());
     }
     void AssetLibrary::Unload()

@@ -340,12 +340,7 @@ namespace Eklipse
         CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
 
         std::string source = ReadFileFromPath(m_filePath);
-
-        auto lastSlash = m_filePath.string().find_last_of("/\\");
-        lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-        auto lastDot = m_filePath.string().rfind('.');
-        auto count = lastDot == std::string::npos ? m_filePath.size() - lastSlash : lastDot - lastSlash;
-        m_name = m_filePath.string().substr(lastSlash, count);
+        m_name = m_filePath.path().stem().string();
 
         return PreProcess(source);
     }

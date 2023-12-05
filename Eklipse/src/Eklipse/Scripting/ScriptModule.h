@@ -25,7 +25,7 @@ namespace Eklipse
 
 		void Load(Ref<Project> project);
 		void Unload();
-
+		bool IsLibraryLoaded() const { return m_library != nullptr; }
 		void RecompileAll();
 
 		ClassMap& GetClasses() { return m_parser.GetClasses(); }

@@ -21,6 +21,7 @@ project "__PRJ_NAME__"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
+    symbols "Off"
 
     targetdir ("%{wks.location}/Build/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/Build/obj/" .. outputdir .. "/%{prj.name}")
@@ -49,7 +50,6 @@ project "__PRJ_NAME__"
     filter "configurations:Debug"
 		defines "EK_DEBUG"
 		runtime "Debug"
-		symbols "On"
 
 	filter "configurations:Release"
 		defines "EK_RELEASE"

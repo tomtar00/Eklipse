@@ -129,7 +129,7 @@ namespace Eklipse
         int res = system(command.c_str());
         EK_ASSERT(res == 0, "Failed to run premake5.lua!");
 
-        s_activeProject->m_scriptManager.Load(s_activeProject);
+        s_activeProject->m_scriptModule.Load(s_activeProject);
 	}
     Ref<Project> Project::Load(const std::filesystem::path& projectFilePath)
     {
@@ -141,7 +141,7 @@ namespace Eklipse
             project->m_projectDirectory = projectFilePath.parent_path();
             s_activeProject = project;
 
-            s_activeProject->m_scriptManager.Load(s_activeProject);
+            s_activeProject->m_scriptModule.Load(s_activeProject);
 
             return s_activeProject;
         }

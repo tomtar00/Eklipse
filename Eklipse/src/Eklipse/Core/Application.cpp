@@ -42,7 +42,7 @@ namespace Eklipse
 		OnInitAPI(Renderer::GetAPI());
 		Renderer::Init();
 		OnAPIHasInitialized(Renderer::GetAPI());
-
+		
 		// Init assets
 		if (Project::GetActive())
 			Project::GetActive()->LoadAssets();

@@ -30,7 +30,8 @@ namespace Eklipse
 	{
 		Dir_Same		= BIT(0),
 		Dir_Opposite	= BIT(1),
-		Dir_Stack		= BIT(2)
+		Dir_Stack		= BIT(2),
+		Dir_Rest		= BIT(3)
 	};
 
 	struct DockLayoutInfo

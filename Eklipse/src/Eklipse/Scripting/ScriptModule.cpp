@@ -13,8 +13,6 @@
 
 namespace Eklipse
 {
-	static HMODULE lib;
-
 	void ScriptModule::Load(Ref<Project> project)
 	{
 		m_libraryPath = project->GetConfig().buildDirectoryPath / (project->GetConfig().name + EK_SCRIPT_LIBRARY_EXTENSION);
@@ -41,7 +39,7 @@ namespace Eklipse
 
 	void ScriptModule::StartWatchingSource()
 	{
-		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
+		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.full_string();
 		EK_CORE_TRACE("ScriptManager::StartWatchingSource: {0}", sourcePath);
 
 		m_sourceWatcher = CreateUnique<filewatch::FileWatch<std::string>>(sourcePath, CAPTURE_FN(OnSourceWatchEvent));
@@ -67,6 +65,7 @@ namespace Eklipse
 		{
 			UnlinkLibrary();
 			m_library = CreateRef<dylib>(libraryFilePath);
+			m_parser.Clear();
 
 			EK_CORE_INFO("Linked successfully to library: '{0}'", libraryFilePath.string());
 		}
@@ -83,6 +82,8 @@ namespace Eklipse
 			{
 				m_library->free();
 				m_library.reset();
+
+				EK_CORE_TRACE("Unlinked successfully from library. {0}", m_libraryPath.string());
 			}
 		}
 		catch (const std::exception e)
@@ -180,7 +181,7 @@ namespace Eklipse
 	}
 	void ScriptModule::FetchFactoryFunctions()
 	{
-		/*EK_ASSERT(m_library, "Script library is not loaded!");
+		EK_ASSERT(m_library, "Script library is not loaded!");
 
 		for (auto&& [className, classInfo] : m_parser.GetClasses())
 		{
@@ -192,7 +193,7 @@ namespace Eklipse
 			{
 				EK_CORE_ERROR("Failed to fetch factory function for class {0}: {1}", className, e.what());
 			}
-		}*/
+		}
 	}
 	void ScriptModule::RecompileAll()
 	{
@@ -213,6 +214,7 @@ namespace Eklipse
 		else
 		{
 			EK_CORE_ERROR("Recompilation failed!");
+			EK_ASSERT(false, "Recompilation failed!");
 		}
 
 		StartWatchingSource();

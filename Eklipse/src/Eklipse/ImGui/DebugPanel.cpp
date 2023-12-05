@@ -58,18 +58,39 @@ namespace Eklipse
 
 		if (Eklipse::Project::GetActive() != nullptr && ImGui::CollapsingHeader("Project"))
 		{
-			ImGui::Indent();
-			auto& config = Eklipse::Project::GetActive()->GetConfig();
-			ImGui::Text("Name: %s", config.name.c_str());
-			ImGui::Text("Assets path: %s", config.assetsDirectoryPath.string().c_str());
-			ImGui::Text("Start scene path: %s", config.startScenePath.string().c_str());
-			ImGui::Text("Scripts path: %s", config.scriptsDirectoryPath.c_str());
-			ImGui::Text("Scripts source path: %s", config.scriptsSourceDirectoryPath.c_str());
-			ImGui::Text("Scripts build path: %s", config.buildDirectoryPath.c_str());
+			auto project = Eklipse::Project::GetActive();
 
-			ImGui::Text("Scripts");
 			ImGui::Indent();
-			for (auto&& [name, config] : Eklipse::Project::GetActive()->GetScriptClasses())
+
+			ImGui::SeparatorText("Config");
+			if (ImGui::BeginTable("Config##Table", 2))
+			{
+				auto& config = project->GetConfig();
+				
+				std::vector<std::pair<const char*, const char*>> data =
+				{
+					{ "Name",					config.name.c_str() },
+					{ "Assets path",			config.assetsDirectoryPath.full_c_str() },
+					{ "Start scene path",		config.startScenePath.full_c_str() },
+					{ "Scripts path",			config.scriptsDirectoryPath.full_c_str() },
+					{ "Scripts source path",	config.scriptsSourceDirectoryPath.full_c_str() },
+					{ "Scripts build path",		config.buildDirectoryPath.full_c_str() },
+				};
+
+				for (int i = 0; i < data.size(); ++i) 
+				{
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::TextUnformatted(data[i].first);
+					ImGui::TableSetColumnIndex(1);
+					ImGui::TextUnformatted(data[i].second);
+				}
+
+				ImGui::EndTable();
+			}
+
+			ImGui::SeparatorText("Scripts");
+			for (auto&& [name, config] : project->GetScriptClasses())
 			{
 				if (ImGui::CollapsingHeader(name.c_str()))
 				{
@@ -80,7 +101,25 @@ namespace Eklipse
 					}
 				}
 			}
-			ImGui::Unindent();
+
+			ImGui::SeparatorText("Dynamic library");
+			ImGui::Text("Library loaded: %s", (project->GetScriptModule().IsLibraryLoaded() ? "true" : "false"));
+
+			if (ImGui::Button("Load library"))
+			{
+				project->GetScriptModule().Load(project);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Unload library"))
+			{
+				project->GetScriptModule().Unload();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Recompile all"))
+			{
+				project->GetScriptModule().RecompileAll();
+			}
+
 			ImGui::Unindent();
 		}
 

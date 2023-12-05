@@ -33,7 +33,7 @@ namespace Editor
 			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
 			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
 			{ "Files",		ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },	
-			{ "View",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.50f },
+			{ "View",		ImGuiDir_Up,	Eklipse::Dir_Rest,		0.50f },
 			{ "Debug",		ImGuiDir_Down,	Eklipse::Dir_Stack,		0.50f }
 		};
 		m_guiLayerCreateInfo.panels =

@@ -37,7 +37,7 @@ namespace Eklipse
         // if is absolute
         else if (m_path.size() > 1 && m_path[1] == ':' && Project::GetActive() != nullptr)
         {
-            auto& assetsPath = Project::GetActive()->GetConfig().assetsDirectoryPath.string();
+            auto& assetsPath = Project::GetActive()->GetConfig().assetsDirectoryPath.full_string();
             if (!assetsPath.empty() && m_path.substr(0, assetsPath.size()) == assetsPath)
             {
 				m_fullPath = m_path;

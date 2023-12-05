@@ -25,6 +25,7 @@ namespace Eklipse
 		~Project() = default;
 		inline ProjectConfig& GetConfig() { return m_config; }
 		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
+		inline ScriptModule& GetScriptModule() { return m_scriptModule; }
 		static Ref<Project> GetActive() { return s_activeProject; }
 		static const std::filesystem::path& GetProjectDirectory();
 
@@ -40,13 +41,13 @@ namespace Eklipse
 
 		static bool Exists(const std::filesystem::path& projectDirPath);
 
-		static ClassMap& GetScriptClasses() { return s_activeProject->m_scriptManager.GetClasses(); }
+		static ClassMap& GetScriptClasses() { return s_activeProject->m_scriptModule.GetClasses(); }
 
 	private:
 		std::filesystem::path m_projectDirectory;
 		ProjectConfig m_config;
 		Ref<AssetLibrary> m_assetLibrary;
-		ScriptModule m_scriptManager;
+		ScriptModule m_scriptModule;
 
 		static Ref<Project> s_activeProject;
 	};

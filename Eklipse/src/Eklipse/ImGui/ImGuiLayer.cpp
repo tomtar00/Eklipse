@@ -104,7 +104,6 @@ namespace Eklipse
 				ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
 				ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
-				ImGuiID out_id = -1;
 				ImGuiID out_opp_id = -1;
 				ImGuiID node_id = dockspace_id;
 				for (size_t i = 0; i < m_config.dockLayouts.size() - 1; i++)
@@ -124,13 +123,13 @@ namespace Eklipse
 					}
 					else if (dockLayout.dirType & Dir_Stack)
 					{
-						auto& prevDockLayout = m_config.dockLayouts[i - 1];
-						dockLayout.id = prevDockLayout.id;
+						dockLayout.id = m_config.dockLayouts[i - 1].id;
 					}
-				}
-				for (int i = 0; i < m_config.dockLayouts.size() - 1; i++)
-				{
-					auto& dockLayout = m_config.dockLayouts[i];
+					else if (dockLayout.dirType & Dir_Rest)
+					{
+						dockLayout.id = node_id;
+					}
+
 					ImGui::DockBuilderDockWindow(dockLayout.name, dockLayout.id);
 				}
 				ImGui::DockBuilderDockWindow(m_config.dockLayouts[m_config.dockLayouts.size() - 1].name, node_id);
