@@ -17,6 +17,10 @@ namespace Eklipse
 
 		m_scene = CreateRef<Scene>();
 		m_assetLibrary = CreateRef<AssetLibrary>();
+
+		// TODO: if terminal is enabled, add the terminal sink to the log
+		Log::AddCoreSink(m_terminalPanel.GetTerminal()->GetSink());
+		Log::AddClientSink(m_terminalPanel.GetTerminal()->GetSink());
 	}
 	Application::~Application()
 	{
@@ -167,16 +171,6 @@ namespace Eklipse
 		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
 	}
 
-	void Application::ExecuteMainThreadQueue()
-	{
-		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
-
-		for (auto& func : m_mainThreadQueue)
-			func();
-
-		m_mainThreadQueue.clear();
-	}
-
 	void Application::Run()
 	{
 		EK_INFO("========== Starting Eklipse Editor ==========");
@@ -220,7 +214,6 @@ namespace Eklipse
 
 		Application::Shutdown();
 	}
-
 	void Application::Close()
 	{
 		m_running = false;
@@ -244,11 +237,22 @@ namespace Eklipse
 	{
 		m_layerStack.PopOverlay(overlay);
 	}
+
+	// === Queues ===
 	void Application::SubmitToMainThread(const std::function<void()>& function)
 	{
 		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
 
 		m_mainThreadQueue.emplace_back(function);
+	}
+	void Application::ExecuteMainThreadQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
+
+		for (auto& func : m_mainThreadQueue)
+			func();
+
+		m_mainThreadQueue.clear();
 	}
 	void Application::SubmitToWindowFocus(const std::function<void()>& function)
 	{

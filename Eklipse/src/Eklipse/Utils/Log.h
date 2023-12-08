@@ -15,6 +15,9 @@ namespace Eklipse
 
 		inline static std::shared_ptr<spdlog::logger>& coreLogger() { return m_coreLogger; }
 		inline static std::shared_ptr<spdlog::logger>& clientLogger() { return m_clientLogger; }
+
+		inline static void AddCoreSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { m_coreLogger->sinks().push_back(sink); }
+		inline static void AddClientSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { m_clientLogger->sinks().push_back(sink); }
 		
 	private:
 		static std::shared_ptr<spdlog::logger> m_coreLogger;
@@ -29,8 +32,6 @@ namespace Eklipse
 	#define EK_CORE_WARN(...)		SPDLOG_LOGGER_WARN(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	#define EK_CORE_ERROR(...)		SPDLOG_LOGGER_ERROR(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	#define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), __VA_ARGS__)
-	// #define EK_CORE_ERROR(...)		SPDLOG_LOGGER_ERROR(Eklipse::Log::coreLogger(), "File: {0}:{1} ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-	// #define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), "File: {0}:{1} CRITICAL ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
 	
 	#define EK_TRACE(...)			SPDLOG_LOGGER_TRACE(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_TEST(...)			SPDLOG_LOGGER_DEBUG(Eklipse::Log::clientLogger(), __VA_ARGS__)
@@ -38,8 +39,6 @@ namespace Eklipse
 	#define EK_WARN(...)			SPDLOG_LOGGER_WARN(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), __VA_ARGS__)
-	//#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), "File: {0}:{1} ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-	//#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), "File: {0}:{1} CRITICAL ERROR: {2}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
 
 	#define VMA_DEBUG_LOG(format, ...) SPDLOG_LOGGER_TRACE(Eklipse::Log::coreLogger(), format) // TODO: Formatting not working
 

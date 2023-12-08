@@ -103,18 +103,26 @@ namespace Eklipse
 			}
 
 			ImGui::SeparatorText("Dynamic library");
-			ImGui::Text("Library loaded: %s", (project->GetScriptModule().IsLibraryLoaded() ? "true" : "false"));
+			if (ImGui::BeginTable("Library##Table", 2))
+			{
+				std::vector<std::pair<const char*, const char*>> data =
+				{
+					{ "Library loaded",			(project->GetScriptModule().IsLibraryLoaded() ? "true" : "false")	},
+					{ "Library state",			project->GetScriptModule().GetState().c_str()						},
+				};
 
-			if (ImGui::Button("Load library"))
-			{
-				project->GetScriptModule().Load(project);
+				for (int i = 0; i < data.size(); ++i)
+				{
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::TextUnformatted(data[i].first);
+					ImGui::TableSetColumnIndex(1);
+					ImGui::TextUnformatted(data[i].second);
+				}
+
+				ImGui::EndTable();
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("Unload library"))
-			{
-				project->GetScriptModule().Unload();
-			}
-			ImGui::SameLine();
+
 			if (ImGui::Button("Recompile all"))
 			{
 				project->GetScriptModule().RecompileAll();

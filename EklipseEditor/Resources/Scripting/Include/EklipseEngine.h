@@ -14,18 +14,16 @@ namespace EklipseEngine
 {
 	EK_API class Script
 	{
-	//public:
-	//	Script(uint32_t entity);
-
 	public:
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float deltaTime) = 0;
-	//private:
-	//	Transform& GetTransform();
-	//	uint32_t m_entityHandle;
+	private:
+		size_t m_entity;
 	};
 
-	EK_API void Log(const char* message);
+	EK_API void Log(const char* message, ...);
+	EK_API void LogWarn(const char* message, ...);
+	EK_API void LogError(const char* message, ...);
 
 	namespace ReflectionAPI
 	{
@@ -37,7 +35,6 @@ namespace EklipseEngine
 		EK_API struct ClassInfo
 		{
 			Script* (*create)();
-
 			std::string baseClass;
 			std::unordered_map<std::string, ClassMemberInfo> members;
 		};

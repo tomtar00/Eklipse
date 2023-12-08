@@ -15,16 +15,22 @@ namespace Eklipse
 {
 	void ScriptModule::Load(Ref<Project> project)
 	{
+		SetState(ScriptsState::NONE);
 		m_libraryPath = project->GetConfig().buildDirectoryPath / (project->GetConfig().name + EK_SCRIPT_LIBRARY_EXTENSION);
 		if (std::filesystem::exists(m_libraryPath))
 		{
-			LinkLibrary(m_libraryPath);
+			if (LinkLibrary(m_libraryPath))
+			{
+				m_parser.Clear();
+				m_parser.ParseDirectory(project->GetConfig().scriptsSourceDirectoryPath);
 
-			m_parser.Clear();
-			m_parser.ParseDirectory(project->GetConfig().scriptsSourceDirectoryPath);
-
-			FetchFactoryFunctions();
-			StartWatchingSource();
+				FetchFactoryFunctions();
+				StartWatchingSource();
+			}
+			else
+			{
+				RecompileAll();
+			}
 		}
 		else
 		{
@@ -55,23 +61,24 @@ namespace Eklipse
 			return;
 
 		EK_CORE_TRACE("ScriptManager::OnSourceWatchEvent: {0}", path);
-		m_state = ScriptsState::NEEDS_RECOMPILATION;
+		SetState(ScriptsState::NEEDS_RECOMPILATION);
 		Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
 	}
 
-	void ScriptModule::LinkLibrary(const std::filesystem::path& libraryFilePath)
+	bool ScriptModule::LinkLibrary(const std::filesystem::path& libraryFilePath)
 	{
 		try 
 		{
 			UnlinkLibrary();
 			m_library = CreateRef<dylib>(libraryFilePath);
-			m_parser.Clear();
 
 			EK_CORE_INFO("Linked successfully to library: '{0}'", libraryFilePath.string());
+			return true;
 		}
 		catch (const std::exception e)
 		{
 			EK_CORE_ERROR("Library link failure at path '{0}'.\n{1}", libraryFilePath.string(), e.what());
+			return false;
 		}
 	}
 	void ScriptModule::UnlinkLibrary()
@@ -80,8 +87,8 @@ namespace Eklipse
 		{
 			if (m_library)
 			{
-				m_library->free();
 				m_library.reset();
+				m_parser.Clear();
 
 				EK_CORE_TRACE("Unlinked successfully from library. {0}", m_libraryPath.string());
 			}
@@ -115,8 +122,7 @@ namespace Eklipse
 		}
 
 		factoryFile << "using namespace EklipseEngine;\n";
-		factoryFile << "using namespace EklipseEngine::ReflectionAPI;\n";
-		factoryFile << "\n";
+		factoryFile << "using namespace EklipseEngine::Reflections;\n\n";
 
 		factoryFile << "#ifdef EK_PLATFORM_WINDOWS"							<< "\n"
 					<< "\t" << "#define EK_EXPORT __declspec(dllexport)"	<< "\n"
@@ -144,7 +150,7 @@ namespace Eklipse
 				// config fill fucntion
 				factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
 				factoryFile << "\t" << "{\n";
-				factoryFile << "\t" << "	info.create = []()->Script* { return new " << className << "(); };\n";
+				factoryFile << "\t" << "	info.create = [](size_t entity)->Script* { return new " << className << "(entity); };\n";
 				for (const auto& [memberName, memberInfo] : classInfo.members)
 				{
 					factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
@@ -157,7 +163,7 @@ namespace Eklipse
 	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath)
 	{
 		EK_ASSERT(std::filesystem::exists(sourceDirectoryPath), "Source directory does not exist!");
-		m_state = ScriptsState::COMPILING;
+		SetState(ScriptsState::COMPILING);
 		std::string command;
 
 #ifdef EK_PLATFORM_WINDOWS
@@ -177,7 +183,7 @@ namespace Eklipse
 		EK_CORE_TRACE("Compiling scripts: {0}", command);
 		int res = system(command.c_str());
 		EK_CORE_TRACE("Compilation result: {0}", res);
-		m_state = (res == 1) ? ScriptsState::COMPILATION_FAILED : ScriptsState::COMPILATION_SUCCEEDED;
+		SetState((res == 1) ? ScriptsState::COMPILATION_FAILED : ScriptsState::COMPILATION_SUCCEEDED);
 	}
 	void ScriptModule::FetchFactoryFunctions()
 	{
@@ -187,12 +193,26 @@ namespace Eklipse
 		{
 			try 
 			{
-				m_library->get_function<void(EklipseEngine::ReflectionAPI::ClassInfo&)>("Get__" + className)(classInfo);
+				m_library->get_function<void(EklipseEngine::Reflections::ClassInfo&)>("Get__" + className)(classInfo);
 			}
 			catch (const std::exception& e) 
 			{
 				EK_CORE_ERROR("Failed to fetch factory function for class {0}: {1}", className, e.what());
 			}
+		}
+	}
+	void ScriptModule::SetState(ScriptsState state)
+	{
+		m_state = state;
+		EK_CORE_TRACE("ScriptModule state changed to {0}", (int)m_state);
+		switch (m_state)
+		{
+			case ScriptsState::NONE:					m_stateString = "NONE";						break;
+			case ScriptsState::COMPILING:				m_stateString = "COMPILING";				break;
+			case ScriptsState::COMPILATION_FAILED:		m_stateString = "COMPILATION_FAILED";		break;
+			case ScriptsState::COMPILATION_SUCCEEDED:	m_stateString = "COMPILATION_SUCCEEDED";	break;
+			case ScriptsState::NEEDS_RECOMPILATION:		m_stateString = "NEEDS_RECOMPILATION";		break;
+			default:									m_stateString = "UNKNOWN";					break;
 		}
 	}
 	void ScriptModule::RecompileAll()
@@ -201,20 +221,30 @@ namespace Eklipse
 		
 		Unload();
 
-		const auto& scriptsDirPath = Project::GetActive()->GetConfig().scriptsDirectoryPath;
-		GenerateFactoryFile(scriptsDirPath / "Resources" / "Generated");
+		GenerateFactoryFile(Project::GetActive()->GetConfig().scriptsDirectoryPath / "Resources" / "Generated");
 		CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath);
+
 		if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
 		{
-			LinkLibrary(m_libraryPath);
-			FetchFactoryFunctions();
+			// link to new version of the library	
 
-			EK_CORE_INFO("Recompilation finished!");
+			EK_CORE_INFO("Recompilation successfull!");
 		}
 		else
 		{
+			// link to previous version of the library
+
 			EK_CORE_ERROR("Recompilation failed!");
-			EK_ASSERT(false, "Recompilation failed!");
+		}
+
+		if (std::filesystem::exists(m_libraryPath))
+		{
+			LinkLibrary(m_libraryPath);
+			FetchFactoryFunctions();
+		}
+		else
+		{
+			EK_CORE_ERROR("Library not found at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
 		}
 
 		StartWatchingSource();

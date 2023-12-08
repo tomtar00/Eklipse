@@ -35,7 +35,8 @@ project "EklipseEditor"
 
 	links
 	{
-		"Eklipse"
+		"Eklipse",
+		"Eklipse-ScriptAPI"
 	}
 
     -- filter "files:Assets/**"

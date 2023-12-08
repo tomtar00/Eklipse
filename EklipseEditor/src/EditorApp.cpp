@@ -1,5 +1,6 @@
 #include <Eklipse.h>
 #include <Eklipse/Core/EntryPoint.h>
+#include <ScriptAPI.h>
 
 #include "EditorLayer.h"
 
@@ -12,6 +13,15 @@ namespace Editor
 		{
 			editorLayer = Eklipse::CreateRef<EditorLayer>();
 			PushLayer(editorLayer);
+
+			ScriptAPI::ScriptingConfig config{};
+			// Logging
+			{
+				config.loggerConfig.name	= "SCRIPT";
+				config.loggerConfig.pattern = "%^[%T] %n: %v%$";
+				config.loggerConfig.sink	= GetTerminal()->GetSink();
+			}
+			ScriptAPI::Init(config);
 		}	
 
 		void OnAPIHasInitialized(Eklipse::ApiType api) override

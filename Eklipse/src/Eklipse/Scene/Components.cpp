@@ -1,5 +1,6 @@
 #include "precompiled.h"
 #include "Components.h"
+#include "Entity.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -18,11 +19,11 @@ namespace Eklipse
 		// TODO: Should set transformMatrix here, but it's not working for some reason
 		return model;
 	}
-	void ScriptComponent::SetScript(const std::string& name, const EklipseEngine::ReflectionAPI::ClassInfo& info)
+	void ScriptComponent::SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, size_t entityID)
 	{
 		if (info.create != nullptr)
 		{
-			script = info.create();
+			script = info.create(entityID);
 			scriptName = name; 
 			classInfo = info; 
 		}

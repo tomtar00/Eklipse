@@ -30,9 +30,9 @@ namespace Editor
 			{ "Settings",	ImGuiDir_Down,	Eklipse::Dir_Same,		0.60f },
 			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f },
 			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f },
-			{ "Logs",		ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
-			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
-			{ "Files",		ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },	
+			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
+			{ "Files",		ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
+			{ "Terminal",	ImGuiDir_Right,	Eklipse::Dir_Same,		0.50f },
 			{ "View",		ImGuiDir_Up,	Eklipse::Dir_Rest,		0.50f },
 			{ "Debug",		ImGuiDir_Down,	Eklipse::Dir_Stack,		0.50f }
 		};
@@ -42,11 +42,11 @@ namespace Editor
 			&m_settingsPanel,
 			&m_statsPanel,
 			&m_detailsPanel,
-			&m_logsPanel,
 			&m_profilerPanel,
 			&m_viewPanel,
 			&m_filesPanel,
-			&Eklipse::Application::Get().GetDebugPanel()
+			&Eklipse::Application::Get().GetDebugPanel(),
+			&Eklipse::Application::Get().GetTerminalPanel()
 		};
 
 		EK_INFO("Editor layer attached");
@@ -59,58 +59,61 @@ namespace Editor
 	{
 		EK_PROFILE_NAME("Editor");
 
-		// =================================== CAMERA
-		static float pitch = 0.0f;
-		static float yaw = 0.0f;
-		static float distance = 10.0f;
-		if (Eklipse::Input::IsScrollingUp())
+		// == CAMERA =================================
+		if (m_canControlEditorCamera)
 		{
-			distance -= 0.5f;
-		}
-		if (Eklipse::Input::IsScrollingDown())
-		{
-			distance += 0.5f;
-		}
-		distance = glm::clamp(distance, 1.0f, 100.0f);
+			static float pitch = 0.0f;
+			static float yaw = 0.0f;
+			static float distance = 10.0f;
+			if (Eklipse::Input::IsScrollingUp())
+			{
+				distance -= 0.5f;
+			}
+			if (Eklipse::Input::IsScrollingDown())
+			{
+				distance += 0.5f;
+			}
+			distance = glm::clamp(distance, 1.0f, 100.0f);
 
-		static glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-		static glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+			static glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+			static glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
-		// TODO: check if input was started in view window
+			// TODO: check if input was started in view window
 
-		if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::F))
-		{
-			if (GetSelection().type == SelectionType::Entity)
-				targetPosition = GetSelection().entity.GetComponent<Eklipse::TransformComponent>().transform.position;
-		}
-		else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button1))
-		{
-			float mouseXDelta = -Eklipse::Input::GetMouseDeltaX();
-			float mouseYDelta = Eklipse::Input::GetMouseDeltaY();
+			if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::F))
+			{
+				if (GetSelection().type == SelectionType::Entity)
+					targetPosition = GetSelection().entity.GetComponent<Eklipse::TransformComponent>().transform.position;
+			}
+			else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button1))
+			{
+				float mouseXDelta = -Eklipse::Input::GetMouseDeltaX();
+				float mouseYDelta = Eklipse::Input::GetMouseDeltaY();
 
-			pitch -= mouseYDelta * deltaTime * 100.f;
-			pitch = glm::clamp(pitch, -89.0f, 89.0f);
-			yaw -= mouseXDelta * deltaTime * 100.f;		
-		}
-		else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button2))
-		{
-			float mouseXDelta = Eklipse::Input::GetMouseDeltaX();
-			float mouseYDelta = -Eklipse::Input::GetMouseDeltaY();
+				pitch -= mouseYDelta * deltaTime * 100.f;
+				pitch = glm::clamp(pitch, -89.0f, 89.0f);
+				yaw -= mouseXDelta * deltaTime * 100.f;
+			}
+			else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button2))
+			{
+				float mouseXDelta = Eklipse::Input::GetMouseDeltaX();
+				float mouseYDelta = -Eklipse::Input::GetMouseDeltaY();
 
+				glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
+				glm::vec3 cameraRight = glm::normalize(glm::cross(cameraDir, cameraUp));
+				targetPosition += (mouseXDelta * cameraRight + mouseYDelta * cameraUp) * deltaTime * 5.f;
+			}
+
+			glm::vec3 cameraPosition{};
+			cameraPosition.x = distance * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+			cameraPosition.y = distance * sin(glm::radians(pitch));
+			cameraPosition.z = distance * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+			cameraPosition += targetPosition;
+
+			m_editorCameraTransform.position = cameraPosition;
 			glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
-			glm::vec3 cameraRight = glm::normalize(glm::cross(cameraDir, cameraUp));
-			targetPosition += (mouseXDelta * cameraRight + mouseYDelta * cameraUp) * deltaTime * 5.f;
+			m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));
 		}
-
-		glm::vec3 cameraPosition{};
-		cameraPosition.x = distance * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-		cameraPosition.y = distance * sin(glm::radians(pitch));
-		cameraPosition.z = distance * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-		cameraPosition += targetPosition;
-
-		m_editorCameraTransform.position = cameraPosition;
-		glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
-		m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));	
 		// ===================================
 	}
 	void EditorLayer::OnGUI(float deltaTime)

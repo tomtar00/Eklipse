@@ -34,3 +34,4 @@ Include["nativefiledialog"] = "%{wks.location}/Eklipse/vendor/nativefiledialog/s
 Include["yaml_cpp"] = "%{wks.location}/Eklipse/vendor/yaml-cpp/include"
 Include["filewatch"] = "%{wks.location}/Eklipse/vendor/filewatch"
 Include["dylib"] = "%{wks.location}/Eklipse/vendor/dylib"
+Include["ImTerm"] = "%{wks.location}/Eklipse/vendor/ImTerm"

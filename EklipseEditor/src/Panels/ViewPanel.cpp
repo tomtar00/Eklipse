@@ -14,11 +14,13 @@ namespace Editor
 
 		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
+
 		ImGui::Begin("View");
-		//auto entity = EditorLayer::Get()->GetSelection().entity; //EditorLayer::Get()->GetSelectedEntity();
 		auto& camera = EditorLayer::Get().GetEditorCamera();
 		auto* viewMatrix = glm::value_ptr(camera.GetViewMatrix());
 		auto* projMatrix = glm::value_ptr(camera.GetProjectionMatrix());
+
+		EditorLayer::Get().SetCanControlEditorCamera(ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_DockHierarchy));
 
 		// Scene
 		m_viewportPosition = ImGui::GetWindowPos();

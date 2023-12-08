@@ -11,6 +11,7 @@
 #include <Eklipse/Project/Project.h>
 #include <Eklipse/Events/ApplicationEvent.h>
 #include <Eklipse/ImGui/DebugPanel.h>
+#include <Eklipse/ImGui/Terminal/TerminalPanel.h>
 
 namespace Eklipse
 {
@@ -41,6 +42,8 @@ namespace Eklipse
 		inline const Ref<Window> GetWindow() const { return m_window; }
 		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
 		inline DebugPanel& GetDebugPanel() { return m_debugPanel; }
+		inline TerminalPanel& GetTerminalPanel() { return m_terminalPanel; }
+		inline Unique<Terminal>& GetTerminal() { return m_terminalPanel.GetTerminal(); }
 
 		inline const Ref<Scene> GetScene() const { return m_scene; }
 		void SwitchScene(Ref<Scene> scene);
@@ -85,6 +88,7 @@ namespace Eklipse
 		Ref<Scene> m_scene;
 		Ref<AssetLibrary> m_assetLibrary;
 		DebugPanel m_debugPanel;
+		TerminalPanel m_terminalPanel;
 
 	private:
 		static Application* s_instance;

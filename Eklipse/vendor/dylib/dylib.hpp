@@ -266,24 +266,6 @@ public:
         return m_handle;
     }
 
-    void free() {
-        if (!m_loaded)
-            return;
-		if (!m_handle)
-			throw std::logic_error("The dynamic library handle is null.");
-#if (defined(_WIN32) || defined(_WIN64))
-        int success = close(m_handle) != 0;
-#else
-        int success = close(m_handle) == 0;
-#endif
-        if (!success)
-        {
-            throw load_error("Could not free library \n" + get_error_description());
-        }
-        m_loaded = false;
-        m_handle = nullptr;
-	}
-
 protected:
     bool m_loaded{false};
     native_handle_type m_handle{nullptr};

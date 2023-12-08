@@ -60,12 +60,12 @@ namespace Eklipse
 	{
 		EklipseEngine::Script* script;
 		std::string scriptName;
-		EklipseEngine::ReflectionAPI::ClassInfo classInfo;
+		EklipseEngine::Reflections::ClassInfo classInfo;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent& script) = default;
 
-		void SetScript(const std::string& name, const EklipseEngine::ReflectionAPI::ClassInfo& info);
+		void SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, size_t entityID);
 		void DestroyScript();
 	};
 }

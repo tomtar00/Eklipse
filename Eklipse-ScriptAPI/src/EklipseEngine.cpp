@@ -1,29 +1,23 @@
 #include "EklipseEngine.h"
+#include "ScriptAPI.h"
+
 #include <Eklipse.h>
-
-#include <spdlog/sinks/stdout_color_sinks.h>
-
-using namespace Eklipse;
 
 namespace EklipseEngine
 {
-    static std::shared_ptr<spdlog::logger> logger;
-    void Log(const char* message)
+    EK_API void Log(const char* message, ...)
+    {		
+        va_list args;
+        ScriptAPI::Logger->info(message, args);
+    }
+    EK_API void LogWarn(const char* message, ...)
     {
-        if (!logger)
-        {
-            logger = spdlog::stdout_color_mt("TEST");
-        }
-		
-        logger->info(message);
-
-	    //EK_INFO(message);
+        va_list args;
+        ScriptAPI::Logger->warn(message, args);
+    }
+    EK_API void LogError(const char* message, ...)
+    {
+        va_list args;
+        ScriptAPI::Logger->error(message, args);
     }
 }
-
-
-//Transform& EklipseEngine::Script::GetTransform()
-//{
-//	auto& entt = Application::Get().GetScene()->GetRegistry().get<entt::entity>(m_entityHandle);
-//	return entt.GetComponent<Transform>().transform;
-//}

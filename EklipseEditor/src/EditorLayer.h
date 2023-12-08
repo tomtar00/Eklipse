@@ -3,7 +3,6 @@
 
 #include <Panels/EntitiesPanel.h>
 #include <Panels/ViewPanel.h>
-#include <Panels/LogsPanel.h>
 #include <Panels/DetailsPanel.h>
 #include <Panels/StatsPanel.h>
 #include <Panels/SettingsPanel.h>
@@ -54,11 +53,12 @@ namespace Editor
 
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
-		inline LogsPanel& GetLogsPanel() { return m_logsPanel; }
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
 		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
+
+		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl; }
 		void SetSelection(DetailsSelectionInfo info);
 		void ClearSelection();
 
@@ -74,13 +74,13 @@ namespace Editor
 
 		Eklipse::Camera m_editorCamera;
 		Eklipse::Transform m_editorCameraTransform;
+		bool m_canControlEditorCamera = false;
 
 		DetailsSelectionInfo m_selectionInfo{};
 
 		bool m_guiEnabled;
 		EntitiesPanel	m_entitiesPanel;
 		DetailsPanel	m_detailsPanel;
-		LogsPanel		m_logsPanel;
 		ViewPanel		m_viewPanel;
 		StatsPanel		m_statsPanel;
 		SettingsPanel	m_settingsPanel;

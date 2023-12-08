@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	using ClassMap = std::unordered_map<std::string, EklipseEngine::ReflectionAPI::ClassInfo>;
+	using ClassMap = std::unordered_map<std::string, EklipseEngine::Reflections::ClassInfo>;
 
 	class ScriptParser
 	{

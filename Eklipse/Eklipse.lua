@@ -27,7 +27,7 @@ project "Eklipse"
 	includedirs
 	{
 		"src",
-        "%{Include.ScriptAPI}",
+		"%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",

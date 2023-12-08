@@ -124,7 +124,7 @@ namespace Editor
 						{
 							if (scriptComp->script != nullptr)
 								scriptComp->DestroyScript();
-							scriptComp->SetScript(className, classInfo);
+							scriptComp->SetScript(className, classInfo, entity.);
 						}
 						if (isSelected)
 							ImGui::SetItemDefaultFocus();
