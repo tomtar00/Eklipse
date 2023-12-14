@@ -1,7 +1,8 @@
 #pragma once
 
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include <Eklipse/Core/UUID.h>
+#include <Eklipse/Scene/Scene.h>
 
 namespace Eklipse
 {

@@ -15,3 +15,5 @@ Makefile
 *.xcodeproj
 
 EklipseEditor/Assets/Cache
+EklipseEditor/Resources/Scripting/Include
+EklipseEditor/Resources/Scripting/Lib

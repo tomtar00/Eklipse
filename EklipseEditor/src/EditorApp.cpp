@@ -1,8 +1,7 @@
 #include <Eklipse.h>
 #include <Eklipse/Core/EntryPoint.h>
-#include <ScriptAPI.h>
-
 #include "EditorLayer.h"
+#include <ScriptAPI.h>
 
 namespace Editor
 {

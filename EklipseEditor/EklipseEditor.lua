@@ -19,7 +19,7 @@ project "EklipseEditor"
 		"src",
 		"%{wks.location}/Eklipse/src",
 
-        "%{Include.ScriptAPI}",
+		"%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",
 		"%{Include.glm}",
@@ -39,10 +39,18 @@ project "EklipseEditor"
 		"Eklipse-ScriptAPI"
 	}
 
-    -- filter "files:Assets/**"
-    --     buildaction ("Copy")
-    -- filter "files:Resources/**"
-    --     buildaction ("Copy")
+	defines
+	{
+		"EK_ENABLE_ASSERTS",
+
+		"SPDLOG_COMPILED_LIB"
+	}
+
+	postbuildcommands
+	{
+		"{COPYDIR} %{prj.location}/Assets %{cfg.targetdir}/Assets",
+		"{COPYDIR} %{prj.location}/Resources %{cfg.targetdir}/Resources"
+	}
 
 	filter "system:windows"
 		systemversion "latest"

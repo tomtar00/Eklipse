@@ -1,47 +1,70 @@
 #pragma once
-#include <string>
-#include <unordered_map>
-
-#ifdef EK_PLATFORM_WINDOWS
-	#ifdef EK_BUILD_DLL
-		#define EK_API __declspec(dllexport)
-	#else
-		#define EK_API __declspec(dllimport)
-	#endif
-#endif
 
 namespace EklipseEngine
 {
+	template<typename T>
+	using Unique = std::unique_ptr<T>;
+	template<typename T, typename ... Args>
+	constexpr Unique<T> CreateUnique(Args&& ... args)
+	{
+		return std::make_unique<T>(std::forward<Args>(args)...);
+	}
+
+	template<typename T>
+	using Ref = std::shared_ptr<T>;
+	template<typename T, typename ... Args>
+	constexpr Ref<T> CreateRef(Args&& ... args)
+	{
+		return std::make_shared<T>(std::forward<Args>(args)...);
+	}
+
+	EK_API class Entity
+	{
+	public:
+		template<typename T>
+		bool HasComponent()
+		{
+			return m_entity->HasComponent<T>();
+		}
+		template<typename T, typename... Args>
+		T& AddComponent(Args&&... args)
+		{
+			return m_entity->AddComponent<T>(std::forward<Args>(args)...);
+		}
+		template<typename T>
+		T& GetComponent()
+		{
+			return m_entity->GetComponent<T>();
+		}
+		template<typename T>
+		T* TryGetComponent()
+		{
+			return m_entity->TryGetComponent<T>();
+		}
+		template<typename T>
+		void RemoveComponent()
+		{
+			m_entity->RemoveComponent<T>();
+		}
+
+	private:
+		class EntityImpl;
+		Ref<EntityImpl> m_entity;
+	};
 	EK_API class Script
 	{
 	public:
-		Script(size_t entity) : m_entity(entity) {}
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float deltaTime) = 0;
 
-	//protected:
-	//	Transform& GetTransform() { return Eklipse::GetTransform(m_entity); }
+		Ref<Entity> GetEntity();
+		void SetEntity(Ref<Entity> entity);
 
 	private:
-		size_t m_entity;
+		Ref<Entity> m_entity;
 	};
 
 	EK_API void Log(const char* message, ...);
 	EK_API void LogWarn(const char* message, ...);
 	EK_API void LogError(const char* message, ...);
-
-	namespace Reflections
-	{
-		EK_API struct ClassMemberInfo
-		{
-			std::string type;
-			size_t offset;
-		};
-		EK_API struct ClassInfo
-		{
-			Script* (*create)(size_t entityID);
-			std::string baseClass;
-			std::unordered_map<std::string, ClassMemberInfo> members;
-		};
-	}
 }

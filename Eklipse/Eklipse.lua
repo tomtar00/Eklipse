@@ -19,15 +19,17 @@ project "Eklipse"
 
 	defines
 	{
+		"EK_ENABLE_ASSERTS",
+
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE",
-		"YAML_CPP_STATIC_DEFINE"
+		"YAML_CPP_STATIC_DEFINE",
+		"SPDLOG_COMPILED_LIB",
 	}
 
 	includedirs
 	{
 		"src",
-		"%{Include.ScriptAPI}",
 
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",
@@ -55,6 +57,7 @@ project "Eklipse"
 		"%{Lib.glfw3dll}",
 		"%{Lib.Vulkan}",
 
+		"spdlog",
 		"ImGui",
 		"ImGuizmo",
 		"Glad",
@@ -62,20 +65,19 @@ project "Eklipse"
 		"NFD"
 	}
 
-	-- postbuildcommands
-	-- {
-    --     -- copy script api into resources
-	-- 	"{COPYFILE} %{prj.location}/src/Eklipse/Scripting/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
-    --     "{COPYFILE} %{cfg.targetdir}/Eklipse.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib"
-    -- }
-
 	filter "system:windows"
 		systemversion "latest"
 
 		defines
 		{
-			"EK_PLATFORM_WINDOWS"
+			"EK_PLATFORM_WINDOWS",
+			"EK_BUILD_DLL"
 		}
+
+		-- postbuildcommands
+		-- {
+		-- 	"{COPYFILE} %{cfg.targetdir}/Eklipse.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib"
+		-- }
 
 	filter "configurations:Debug"
 		defines "EK_DEBUG"

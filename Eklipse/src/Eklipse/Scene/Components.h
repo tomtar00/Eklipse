@@ -6,7 +6,9 @@
 #include <Eklipse/Renderer/Material.h>
 #include <Eklipse/Renderer/Mesh.h>
 #include <Eklipse/Core/UUID.h>
-#include <EklipseEngine.h>
+
+#include <Eklipse/Scripting/Script.h>
+#include <Eklipse/Scripting/Reflections.h>
 
 namespace Eklipse
 {
@@ -58,14 +60,14 @@ namespace Eklipse
 
 	struct ScriptComponent
 	{
-		EklipseEngine::Script* script;
+		Script* script;
 		std::string scriptName;
-		EklipseEngine::Reflections::ClassInfo classInfo;
+		ClassInfo classInfo;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent& script) = default;
 
-		void SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, size_t entityID);
+		void SetScript(const std::string& name, const ClassInfo& info, Entity entity);
 		void DestroyScript();
 	};
 }

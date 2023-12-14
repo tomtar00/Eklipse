@@ -1,24 +1,38 @@
 #pragma once
-
 #include <memory>
+
+#ifdef EK_ENABLE_ASSERTS
+	#include <Eklipse/Utils/Log.h>
+#else
+	#define EK_ASSERT(x, ...)
+#endif
 
 #ifdef EK_PLATFORM_WINDOWS
 
-	#ifndef EK_DIST
-		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
+	#ifdef EK_BUILD_DLL
+		#define EK_API __declspec(dllexport)
 	#else
-		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); }
+		#define EK_API __declspec(dllimport)
+	#endif
+
+	#ifdef EK_ENABLE_ASSERTS
+		#ifndef EK_DIST
+			#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
+		#else
+			#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); }
+		#endif
 	#endif
 
 #else
 	#error Engine only supports Windows!
-	#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); exit(-1); }
+	#ifdef EK_ENABLE_ASSERTS
+		#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); exit(-1); }
+	#endif
 #endif
 
 
 //#define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 #define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(args...); }
-
 #define BIT(x) (1 << x)
 #define NAME_T(x) x
 #define STRINGIFY(x) #x

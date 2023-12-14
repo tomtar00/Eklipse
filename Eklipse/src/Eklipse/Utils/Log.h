@@ -1,6 +1,4 @@
 #pragma once
-
-#include <Eklipse/Core/Core.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
 
@@ -13,15 +11,15 @@ namespace Eklipse
 		
 		static void Init();
 
-		inline static std::shared_ptr<spdlog::logger>& coreLogger() { return m_coreLogger; }
-		inline static std::shared_ptr<spdlog::logger>& clientLogger() { return m_clientLogger; }
+		inline static std::shared_ptr<spdlog::logger>& coreLogger() { return s_coreLogger; }
+		inline static std::shared_ptr<spdlog::logger>& clientLogger() { return s_clientLogger; }
 
-		inline static void AddCoreSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { m_coreLogger->sinks().push_back(sink); }
-		inline static void AddClientSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { m_clientLogger->sinks().push_back(sink); }
+		inline static void AddCoreSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { s_coreLogger->sinks().push_back(sink); }
+		inline static void AddClientSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { s_clientLogger->sinks().push_back(sink); }
 		
 	private:
-		static std::shared_ptr<spdlog::logger> m_coreLogger;
-		static std::shared_ptr<spdlog::logger> m_clientLogger;
+		static std::shared_ptr<spdlog::logger> s_coreLogger;
+		static std::shared_ptr<spdlog::logger> s_clientLogger;
 	};
 }
 

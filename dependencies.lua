@@ -21,8 +21,8 @@ Lib["SPIRV_Cross_GLSL_release"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/li
 
 Include["ScriptAPI"] = "%{wks.location}/Eklipse-ScriptAPI/src"
 
-Include["glm"] = "%{wks.location}/Eklipse/vendor/glm"
 Include["spdlog"] = "%{wks.location}/Eklipse/vendor/spdlog/include"
+Include["glm"] = "%{wks.location}/Eklipse/vendor/glm"
 Include["Glad"] = "%{wks.location}/Eklipse/vendor/Glad/include"
 Include["ImGui"] = "%{wks.location}/Eklipse/vendor/imgui"
 Include["ImGuizmo"] = "%{wks.location}/Eklipse/vendor/ImGuizmo"

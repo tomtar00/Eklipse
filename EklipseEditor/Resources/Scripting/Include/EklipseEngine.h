@@ -1,42 +1,32 @@
 #pragma once
+
+#include <iostream>
+#include <memory>
+#include <vector>
 #include <string>
+#include <sstream>
+#include <functional>
+#include <map>
 #include <unordered_map>
+#include <set>
+#include <stdexcept>
+#include <fstream>
+#include <algorithm>
+#include <chrono>
+#include <random>
+#include <stacktrace>
+#include <optional>
+#include <thread>
+#include <stack>
+#include <regex>
+#include <array>
+#include <cstdarg>
 
-#ifdef EK_PLATFORM_WINDOWS
-	#ifdef EK_BUILD_DLL
-		#define EK_API __declspec(dllexport)
-	#else
-		#define EK_API __declspec(dllimport)
-	#endif
-#endif
+#include "Internal.h"
 
-namespace EklipseEngine
+namespace Eklipse
 {
-	EK_API class Script
-	{
-	public:
-		virtual void OnCreate() = 0;
-		virtual void OnUpdate(float deltaTime) = 0;
-	private:
-		size_t m_entity;
-	};
-
 	EK_API void Log(const char* message, ...);
 	EK_API void LogWarn(const char* message, ...);
 	EK_API void LogError(const char* message, ...);
-
-	namespace ReflectionAPI
-	{
-		EK_API struct ClassMemberInfo
-		{
-			std::string type;
-			size_t offset;
-		};
-		EK_API struct ClassInfo
-		{
-			Script* (*create)();
-			std::string baseClass;
-			std::unordered_map<std::string, ClassMemberInfo> members;
-		};
-	}
 }

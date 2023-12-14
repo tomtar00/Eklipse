@@ -25,8 +25,10 @@
 #include <thread>
 #include <stack>
 #include <regex>
+#include <array>
+#include <cstdarg>
 
+#include <Eklipse/Core/Core.h>
 #include <Eklipse/Utils/Stats.h>
-#include <Eklipse/Utils/Log.h>
 #include <Eklipse/Profiler/Profiler.h>
 #include <Eklipse/Utils/File.h>

@@ -22,6 +22,7 @@ include "../Eklipse/Eklipse.lua"
 include "../EklipseEditor/EklipseEditor.lua"
 include "../Eklipse-ScriptAPI/Eklipse-ScriptAPI.lua"
 
+include "../Eklipse/vendor/spdlog-project/spdlog-premake.lua"
 include "../Eklipse/vendor/ImGui-project/imgui-premake.lua"
 include "../Eklipse/vendor/ImGuizmo-project/imguizmo-premake.lua"
 include "../Eklipse/vendor/Glad/glad-premake.lua"

@@ -156,7 +156,7 @@ namespace Eklipse
 		ButtonMiddle = Button2
 	};
 
-	class Input
+	EK_API class Input
 	{
 	public:
 		friend class Application;
