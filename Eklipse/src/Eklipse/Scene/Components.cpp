@@ -19,11 +19,11 @@ namespace Eklipse
 		// TODO: Should set transformMatrix here, but it's not working for some reason
 		return model;
 	}
-	void ScriptComponent::SetScript(const std::string& name, const ClassInfo& info, Entity entity)
+	void ScriptComponent::SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity)
 	{
 		if (info.create != nullptr)
 		{
-			script = info.create(entity);
+			script = info.create(CreateRef<EklipseEngine::EntityImpl>(entity));
 			scriptName = name; 
 			classInfo = info; 
 		}

@@ -120,7 +120,8 @@ namespace Eklipse
 			}
 		}
 
-		factoryFile << "using namespace Eklipse;\n\n";
+		factoryFile << "using namespace EklipseEngine;\n";
+		factoryFile << "using namespace EklipseEngine::Reflections;\n\n";
 
 		factoryFile << "#ifdef EK_PLATFORM_WINDOWS"							<< "\n"
 					<< "\t" << "#define EK_EXPORT __declspec(dllexport)"	<< "\n"
@@ -148,7 +149,7 @@ namespace Eklipse
 				// config fill fucntion
 				factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
 				factoryFile << "\t" << "{\n";
-				factoryFile << "\t" << "	info.create = [](Entity entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
+				factoryFile << "\t" << "	info.create = [](Ref<EntityImpl> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
 				for (const auto& [memberName, memberInfo] : classInfo.members)
 				{
 					factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
@@ -191,7 +192,7 @@ namespace Eklipse
 		{
 			try 
 			{
-				m_library->get_function<void(ClassInfo&)>("Get__" + className)(classInfo);
+				m_library->get_function<void(EklipseEngine::Reflections::ClassInfo&)>("Get__" + className)(classInfo);
 			}
 			catch (const std::exception& e) 
 			{

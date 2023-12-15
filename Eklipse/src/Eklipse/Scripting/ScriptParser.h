@@ -1,9 +1,9 @@
 #pragma once
-#include "Reflections.h"
+#include <ScriptAPI/Reflections.h>
 
 namespace Eklipse
 {
-	using ClassMap = std::unordered_map<std::string, ClassInfo>;
+	using ClassMap = std::unordered_map<std::string, EklipseEngine::Reflections::ClassInfo>;
 
 	class ScriptParser
 	{

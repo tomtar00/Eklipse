@@ -31,6 +31,8 @@ project "Eklipse"
 	{
 		"src",
 
+		"%{Include.ScriptAPI}",
+
 		"%{Include.glfw}",	
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",

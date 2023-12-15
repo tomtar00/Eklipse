@@ -8,6 +8,9 @@ project "Eklipse-ScriptAPI"
 	targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("../obj/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "precompiled.h"
+	pchsource "src/precompiled.cpp"
+
 	files
 	{
 		"src/**.h",
@@ -39,7 +42,7 @@ project "Eklipse-ScriptAPI"
     postbuildcommands
 	{
 		"{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
-		"{COPYFILE} %{prj.location}/src/Internal.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
+		"{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
 
         "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
         "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.dll ../bin/" .. outputdir .. "/EklipseEditor"

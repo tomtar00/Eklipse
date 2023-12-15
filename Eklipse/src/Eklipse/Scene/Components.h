@@ -1,14 +1,13 @@
 #pragma once
-#include <glm/glm.hpp>
-
 #include "Transform.h"
 #include "Camera.h"
+
+#include <glm/glm.hpp>
 #include <Eklipse/Renderer/Material.h>
 #include <Eklipse/Renderer/Mesh.h>
 #include <Eklipse/Core/UUID.h>
 
-#include <Eklipse/Scripting/Script.h>
-#include <Eklipse/Scripting/Reflections.h>
+#include <EklipseScriptAPI.h>
 
 namespace Eklipse
 {
@@ -60,14 +59,14 @@ namespace Eklipse
 
 	struct ScriptComponent
 	{
-		Script* script;
+		EklipseEngine::Script* script;
 		std::string scriptName;
-		ClassInfo classInfo;
+		EklipseEngine::Reflections::ClassInfo classInfo;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent& script) = default;
 
-		void SetScript(const std::string& name, const ClassInfo& info, Entity entity);
+		void SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity);
 		void DestroyScript();
 	};
 }
