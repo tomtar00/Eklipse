@@ -1,55 +1,39 @@
 #pragma once
 #include "Core.h"
 
+#define EK_CREATE_EXPLICIT_ENTITY_TEMPLATES(T) \
+		template EK_API bool Entity::HasComponent<T>(); \
+		template EK_API T Entity::AddComponent<T>(); \
+		template EK_API T Entity::GetComponent<T>(); \
+		template EK_API void Entity::RemoveComponent<T>(); \
+
+namespace Eklipse
+{
+	class Entity;
+}
+
 namespace EklipseEngine
 {
-	class EntityImpl
-	{
-		template<typename T>
-		bool HasComponent();
-		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args);
-		template<typename T>
-		Ref<T> GetComponent();
-		template<typename T>
-		T* TryGetComponent();
-		template<typename T>
-		void RemoveComponent();
-	};
 	class EK_API Entity
 	{
 	public:
 		Entity() = delete;
-		Entity(Ref<EntityImpl> entity) : m_entity(entity) {}
+		Entity(Ref<Eklipse::Entity> entity);
 
 		template<typename T>
-		bool HasComponent()
-		{
-			return m_entity->HasComponent<T>();
-		}
+		bool HasComponent();
+
 		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args)
-		{
-			return m_entity->AddComponent<T>(std::forward<Args>(args)...);
-		}
+		T AddComponent(Args&&... args);
+
 		template<typename T>
-		Ref<T> GetComponent()
-		{
-			return CreateRef<T>(m_entity->GetComponent<T>());
-		}
+		T GetComponent();
+
 		template<typename T>
-		T* TryGetComponent()
-		{
-			return m_entity->TryGetComponent<T>();
-		}
-		template<typename T>
-		void RemoveComponent()
-		{
-			m_entity->RemoveComponent<T>();
-		}
+		void RemoveComponent();
 
 	private:
-		Ref<EntityImpl> m_entity;
+		Ref<Eklipse::Entity> m_entity;
 	};
 
 	class EK_API Script
@@ -59,7 +43,7 @@ namespace EklipseEngine
 		virtual void OnUpdate(float deltaTime) = 0;
 
 		Ref<Entity> GetEntity();
-		void SetEntity(Ref<EntityImpl> entity);
+		void SetEntity(Ref<Eklipse::Entity> entity);
 
 	private:
 		Ref<Entity> m_entity;

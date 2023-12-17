@@ -23,7 +23,8 @@ namespace Eklipse
 	{
 		if (info.create != nullptr)
 		{
-			script = info.create(CreateRef<EklipseEngine::EntityImpl>(entity));
+			//script = info.create(CreateRef<EklipseEngine::EntityImpl>(entity));
+			script = info.create(CreateRef<Entity>(entity));
 			scriptName = name; 
 			classInfo = info; 
 		}

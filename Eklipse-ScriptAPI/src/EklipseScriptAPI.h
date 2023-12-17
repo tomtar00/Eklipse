@@ -54,7 +54,7 @@ namespace EklipseEngine
         template<typename T>
         void RemoveComponent()
         {
-          class EntityImpl;  m_entity->RemoveComponent<decltype(T::_impl::_comp)>();
+            return m_entity->RemoveComponent<decltype(T::_impl::_comp)>();
         }
 
         Eklipse::Entity m_entity;

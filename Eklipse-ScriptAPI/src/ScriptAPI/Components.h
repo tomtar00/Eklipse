@@ -1,6 +1,12 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "Core.h"
+#include "Script.h"
+
+namespace Eklipse
+{
+	class TransformComponent;
+}
 
 namespace EklipseEngine
 {
@@ -8,7 +14,10 @@ namespace EklipseEngine
 	{
 	private:
 		class TransformImpl;
+
 	public:
+		using Impl = typename TransformImpl;
+		using Comp = typename Eklipse::TransformComponent;
 		Transform(Ref<TransformImpl> impl);
 
 		glm::vec3& GetPosition();
