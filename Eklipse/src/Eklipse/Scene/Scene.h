@@ -19,6 +19,8 @@ namespace Eklipse
 		void OnSceneStart();
 		void OnSceneUpdate(float deltaTime);
 		void OnSceneStop();
+
+		void ReloadScripts();
 		
 		static Ref<Scene> New(const std::string& name, const Path& saveFilePath);
 		static void Save(Ref<Scene> scene);
@@ -26,6 +28,7 @@ namespace Eklipse
 
 		Entity CreateEntity(const std::string name = "");
 		Entity CreateEntity(UUID uuid, const std::string& name = "");
+		Entity GetEntity(UUID uuid);
 		void DestroyEntity(Entity entity);
 
 		template<typename Func>
@@ -43,5 +46,7 @@ namespace Eklipse
 
 		std::string m_name;
 		Path m_path;
+
+		std::unordered_map<UUID, entt::entity> m_entityMap;
 	};
 }

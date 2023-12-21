@@ -85,12 +85,16 @@ namespace Eklipse
         s_activeProject->GetConfig().startScenePath = s_activeProject->GetConfig().assetsDirectoryPath / "Scenes" / (defaultSceneName + EK_SCENE_FILE_EXTENSION);
         s_activeProject->GetConfig().scriptsDirectoryPath = projectDirectory / "Scripts";
         s_activeProject->GetConfig().scriptsSourceDirectoryPath = s_activeProject->GetConfig().scriptsDirectoryPath / "Source";
-        s_activeProject->GetConfig().buildDirectoryPath = projectDirectory / "Build";
+        s_activeProject->GetConfig().scriptBuildDirectoryPath = projectDirectory / "Build";
+        s_activeProject->GetConfig().scriptResourcesDirectoryPath = s_activeProject->GetConfig().scriptsDirectoryPath / "Resources";
+        s_activeProject->GetConfig().scriptGeneratedDirectoryPath = s_activeProject->GetConfig().scriptResourcesDirectoryPath / "Generated";
+        s_activeProject->GetConfig().scriptPremakeDirectoryPath = s_activeProject->GetConfig().scriptResourcesDirectoryPath / "Premake";
 
         std::filesystem::create_directories(s_activeProject->GetConfig().assetsDirectoryPath / "Scenes");
         std::filesystem::create_directories(s_activeProject->GetConfig().assetsDirectoryPath / "Shaders");
         std::filesystem::create_directories(s_activeProject->GetConfig().scriptsSourceDirectoryPath);
-        std::filesystem::create_directories(s_activeProject->GetConfig().buildDirectoryPath);
+        std::filesystem::create_directories(s_activeProject->GetConfig().scriptBuildDirectoryPath);
+        std::filesystem::create_directories(s_activeProject->GetConfig().scriptPremakeDirectoryPath);
 
         // Default 2D shader
         Eklipse::Path dstPath = "//Shaders/Default2D.eksh";
@@ -101,10 +105,7 @@ namespace Eklipse
         Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default3D.eksh");
         s_activeProject->GetAssetLibrary()->GetShader(dstPath);
 
-        // Generate premake5.lua
-        auto premakeDir = s_activeProject->GetConfig().scriptsDirectoryPath / "Resources" / "Premake";
-        std::filesystem::create_directories(premakeDir);
-
+        // Lua
         auto currentPath = std::filesystem::current_path();
         ScriptConfig config{};
         config.projectName = name;
@@ -112,7 +113,7 @@ namespace Eklipse
         config.includeDir = Eklipse::Path(currentPath / "Resources/Scripting/Include").full_string();
         config.libDir = Eklipse::Path(currentPath / "Resources/Scripting/Lib").full_string();
 
-        auto premakeScriptPath = premakeDir / "premake5.lua";
+        auto premakeScriptPath = s_activeProject->GetConfig().scriptPremakeDirectoryPath / "premake5.lua";
         bool success = GenerateLuaScript("Resources/Scripting/Premake/premake5.lua", premakeScriptPath.string(), config);
         EK_ASSERT(success, "Failed to generate premake5.lua!");
         EK_CORE_INFO("Generated premake5.lua at path '{0}'", premakeScriptPath.string());

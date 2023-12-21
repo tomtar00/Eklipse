@@ -6,7 +6,7 @@
 
 namespace EklipseEngine
 {
-	EK_API void Log(const char* message, ...);
-	EK_API void LogWarn(const char* message, ...);
-	EK_API void LogError(const char* message, ...);
+	EK_API void Log(const std::string& message, ...);
+	EK_API void LogWarn(const std::string& message, ...);
+	EK_API void LogError(const std::string& message, ...);
 }

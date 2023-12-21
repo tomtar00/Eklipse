@@ -21,8 +21,12 @@ namespace Eklipse
 				out << YAML::Key << "Name" << YAML::Value << config.name;
 				out << YAML::Key << "StartScene" << YAML::Value << config.startScenePath.full_string();
 				out << YAML::Key << "AssetsDirectory" << YAML::Value << config.assetsDirectoryPath.full_string();
-				out << YAML::Key << "BuildDirectory" << YAML::Value << config.buildDirectoryPath.full_string();
+
 				out << YAML::Key << "ScriptsDirectory" << YAML::Value << config.scriptsDirectoryPath.full_string();
+				out << YAML::Key << "ScriptsResourcesDirectory" << YAML::Value << config.scriptResourcesDirectoryPath.full_string();
+				out << YAML::Key << "ScriptsGeneratedDirectory" << YAML::Value << config.scriptGeneratedDirectoryPath.full_string();
+				out << YAML::Key << "ScriptsPremakeDirectory" << YAML::Value << config.scriptPremakeDirectoryPath.full_string();
+				out << YAML::Key << "ScriptsBuildDirectory" << YAML::Value << config.scriptBuildDirectoryPath.full_string();
 				out << YAML::Key << "ScriptsSourceDirectory" << YAML::Value << config.scriptsSourceDirectoryPath.full_string();
 				out << YAML::EndMap;
 			}
@@ -56,8 +60,12 @@ namespace Eklipse
 		config.name = projectNode["Name"].as<std::string>();
 		config.startScenePath = projectNode["StartScene"].as<std::string>();
 		config.assetsDirectoryPath = projectNode["AssetsDirectory"].as<std::string>();
-		config.buildDirectoryPath = projectNode["BuildDirectory"].as<std::string>();
+
 		config.scriptsDirectoryPath = projectNode["ScriptsDirectory"].as<std::string>();
+		config.scriptResourcesDirectoryPath = projectNode["ScriptsResourcesDirectory"].as<std::string>();
+		config.scriptGeneratedDirectoryPath = projectNode["ScriptsGeneratedDirectory"].as<std::string>();
+		config.scriptPremakeDirectoryPath = projectNode["ScriptsPremakeDirectory"].as<std::string>();
+		config.scriptBuildDirectoryPath = projectNode["ScriptsBuildDirectory"].as<std::string>();
 		config.scriptsSourceDirectoryPath = projectNode["ScriptsSourceDirectory"].as<std::string>();
 		return true;
 	}

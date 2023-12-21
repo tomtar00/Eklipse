@@ -33,6 +33,6 @@ namespace EklipseEngine
 		void Scale(glm::vec3& scale);
 
 	private:
-		Ref<TransformImpl> _impl;
+		Ref<TransformImpl> m_impl;
 	};
 }

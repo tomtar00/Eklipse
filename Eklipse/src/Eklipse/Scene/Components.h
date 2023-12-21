@@ -68,5 +68,14 @@ namespace Eklipse
 
 		void SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity);
 		void DestroyScript();
+
+		template<typename T>
+		T* GetScriptValue(size_t offset) {
+			return (T*)((char*)script + offset);
+		}
+		template<typename T>
+		void SetScriptValue(size_t offset, T value) {
+			*(T*)((char*)script + offset) = value;
+		}
 	};
 }

@@ -23,8 +23,8 @@ project "__PRJ_NAME__"
     staticruntime "off"
     symbols "Off"
 
-    targetdir ("%{wks.location}/Build/bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("%{wks.location}/Build/obj/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/Scripts/Build/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/Scripts/Build/obj/" .. outputdir .. "/%{prj.name}")
 
     files
     {
@@ -76,6 +76,6 @@ project "__PRJ_NAME__"
             }
             postbuildcommands
             {
-                "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Build"
+                "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Scripts/Build"
             }
     end

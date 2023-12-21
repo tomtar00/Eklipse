@@ -13,8 +13,12 @@ namespace Eklipse
 
 		Path startScenePath;
 		Path assetsDirectoryPath;
-		Path buildDirectoryPath;
+
 		Path scriptsDirectoryPath;
+		Path scriptResourcesDirectoryPath;
+		Path scriptGeneratedDirectoryPath;
+		Path scriptPremakeDirectoryPath;
+		Path scriptBuildDirectoryPath;
 		Path scriptsSourceDirectoryPath;
 	};
 

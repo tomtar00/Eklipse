@@ -15,14 +15,14 @@ namespace EklipseEngine
     void Transform::TransformImpl::Rotate(glm::vec3& rotation)        { _comp->transform.rotation += rotation; }
     void Transform::TransformImpl::Scale(glm::vec3& scale)            { _comp->transform.scale += scale; }
 
-    Transform::Transform(Ref<TransformImpl> impl) : _impl(impl) {}
-    glm::vec3& Transform::GetPosition()                 { return _impl->GetPosition(); }
-    glm::vec3& Transform::GetRotation()                 { return _impl->GetRotation(); }
-    glm::vec3& Transform::GetScale()                    { return _impl->GetScale(); }
-    void Transform::SetPosition(glm::vec3& position)    { _impl->SetPosition(position); }
-    void Transform::SetRotation(glm::vec3& rotation)    { _impl->SetRotation(rotation); }
-    void Transform::SetScale(glm::vec3& scale)          { _impl->SetScale(scale); }
-    void Transform::Translate(glm::vec3& translation)   { _impl->Translate(translation); }
-    void Transform::Rotate(glm::vec3& rotation)         { _impl->Rotate(rotation); }
-    void Transform::Scale(glm::vec3& scale)             { _impl->Scale(scale); }
+    Transform::Transform(Ref<TransformImpl> impl) : m_impl(impl) {}
+    glm::vec3& Transform::GetPosition()                 { return m_impl->GetPosition(); }
+    glm::vec3& Transform::GetRotation()                 { return m_impl->GetRotation(); }
+    glm::vec3& Transform::GetScale()                    { return m_impl->GetScale(); }
+    void Transform::SetPosition(glm::vec3& position)    { m_impl->SetPosition(position); }
+    void Transform::SetRotation(glm::vec3& rotation)    { m_impl->SetRotation(rotation); }
+    void Transform::SetScale(glm::vec3& scale)          { m_impl->SetScale(scale); }
+    void Transform::Translate(glm::vec3& translation)   { m_impl->Translate(translation); }
+    void Transform::Rotate(glm::vec3& rotation)         { m_impl->Rotate(rotation); }
+    void Transform::Scale(glm::vec3& scale)             { m_impl->Scale(scale); }
 }

@@ -16,7 +16,7 @@ namespace Eklipse
 	void ScriptModule::Load(Ref<Project> project)
 	{
 		SetState(ScriptsState::NONE);
-		m_libraryPath = project->GetConfig().buildDirectoryPath / (project->GetConfig().name + EK_SCRIPT_LIBRARY_EXTENSION);
+		m_libraryPath = project->GetConfig().scriptBuildDirectoryPath / (project->GetConfig().name + EK_SCRIPT_LIBRARY_EXTENSION);
 		if (std::filesystem::exists(m_libraryPath))
 		{
 			if (LinkLibrary(m_libraryPath))
@@ -58,6 +58,9 @@ namespace Eklipse
 	{
 		std::string extension = std::filesystem::path(path).extension().string();
 		if (extension != ".h" && extension != ".hpp" && extension != ".cpp")
+			return;
+
+		if (m_state == ScriptsState::NEEDS_RECOMPILATION)
 			return;
 
 		EK_CORE_TRACE("ScriptManager::OnSourceWatchEvent: {0}", path);
@@ -149,7 +152,7 @@ namespace Eklipse
 				// config fill fucntion
 				factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
 				factoryFile << "\t" << "{\n";
-				factoryFile << "\t" << "	info.create = [](Ref<EntityImpl> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
+				factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
 				for (const auto& [memberName, memberInfo] : classInfo.members)
 				{
 					factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
@@ -223,19 +226,6 @@ namespace Eklipse
 		GenerateFactoryFile(Project::GetActive()->GetConfig().scriptsDirectoryPath / "Resources" / "Generated");
 		CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath);
 
-		if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
-		{
-			// link to new version of the library	
-
-			EK_CORE_INFO("Recompilation successfull!");
-		}
-		else
-		{
-			// link to previous version of the library
-
-			EK_CORE_ERROR("Recompilation failed!");
-		}
-
 		if (std::filesystem::exists(m_libraryPath))
 		{
 			LinkLibrary(m_libraryPath);
@@ -244,6 +234,20 @@ namespace Eklipse
 		else
 		{
 			EK_CORE_ERROR("Library not found at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
+		}
+
+		if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
+		{
+			// link to new version of the library	
+
+			EK_CORE_INFO("Recompilation successfull!");
+			Application::Get().GetScene()->ReloadScripts();
+		}
+		else
+		{
+			// link to previous version of the library
+
+			EK_CORE_ERROR("Recompilation failed!");
 		}
 
 		StartWatchingSource();

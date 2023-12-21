@@ -15,6 +15,10 @@ namespace Eklipse
 		bool Deserialize(const Path& sourceFilePath);
 
 		void SerializeEntity(YAML::Emitter& out, Entity entity);
+		void DeserializeAllScriptProperties();
+
+	private:
+		void DeserializeScriptProperties(Entity entity, YAML::Node& propertiesNode);
 	
 	private:
 		Ref<Scene> m_scene;

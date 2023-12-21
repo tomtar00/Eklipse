@@ -18,7 +18,14 @@ namespace Eklipse
 	{
 		EK_CORE_TRACE("Begin scene unload");
 
-		//m_registry.clear();
+		ForEachEntity([&](auto entityID)
+		{
+			if (m_registry.all_of<ScriptComponent>(entityID))
+			{
+				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
+				scriptComponent.DestroyScript();
+			}
+		});
 
 		EK_CORE_TRACE("Scene disposed");
 	}
@@ -67,6 +74,29 @@ namespace Eklipse
 		
 	}
 
+	void Scene::ReloadScripts()
+	{
+		EK_CORE_INFO("Reloading scripts...");
+
+		auto& scriptClasses = Eklipse::Project::GetScriptClasses();
+		ForEachEntity([&](auto entityID)
+		{
+			if (m_registry.all_of<ScriptComponent>(entityID))
+			{
+				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
+				scriptComponent.DestroyScript();
+				auto it = scriptClasses.find(scriptComponent.scriptName);
+				if (it != scriptClasses.end())
+					scriptComponent.SetScript(it->first, it->second, Entity(entityID, this));
+				else
+					EK_CORE_ERROR("Failed to reload script '{0}'", scriptComponent.scriptName);
+			}
+		});
+
+		Eklipse::SceneSerializer serializer(Application::Get().GetScene());
+		serializer.DeserializeAllScriptProperties();
+	}
+
 	Ref<Scene> Scene::New(const std::string& name, const Path& saveFilePath)
 	{
 		auto scene = CreateRef<Scene>(name, saveFilePath);
@@ -103,11 +133,7 @@ namespace Eklipse
 
 	Entity Scene::CreateEntity(const std::string name)
 	{
-		Entity entity = { m_registry.create(), this };
-		entity.AddComponent<IDComponent>();
-		entity.AddComponent<NameComponent>(name.empty() ? "Empty Entity" : name);
-		entity.AddComponent<TransformComponent>();
-		return entity;
+		return CreateEntity(UUID(), name);
 	}
 	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
 	{
@@ -115,10 +141,21 @@ namespace Eklipse
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<NameComponent>(name.empty() ? "Empty Entity" : name);
 		entity.AddComponent<TransformComponent>();
+
+		m_entityMap[uuid] = entity.GetHandle();
+
 		return entity;
+	}
+	Entity Scene::GetEntity(UUID uuid)
+	{
+		auto it = m_entityMap.find(uuid);
+		if (it != m_entityMap.end())
+			return { it->second, this };
+		return {};
 	}
 	void Scene::DestroyEntity(Entity entity)
 	{
+		m_entityMap.erase(entity.GetUUID());
 		m_registry.destroy(entity.GetHandle());
 	}
 }

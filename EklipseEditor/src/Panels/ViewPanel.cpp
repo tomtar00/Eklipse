@@ -14,7 +14,7 @@ namespace Editor
 
 		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
-
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("View");
 		auto& camera = EditorLayer::Get().GetEditorCamera();
 		auto* viewMatrix = glm::value_ptr(camera.GetViewMatrix());
@@ -82,6 +82,7 @@ namespace Editor
 		}
 
 		ImGui::End();
+		ImGui::PopStyleVar();
 
 		return true;
 	}

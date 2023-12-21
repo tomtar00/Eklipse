@@ -40,7 +40,7 @@ namespace Eklipse
 		}
 		catch (YAML::ParserException e)
 		{
-			EK_CORE_ERROR("Failed to load .hazel file '{0}'\n     {1}", sourceFilePath, e.what());
+			EK_CORE_ERROR("Failed to load .eksc file '{0}'\n     {1}", sourceFilePath, e.what());
 			return false;
 		}
 
@@ -95,6 +95,18 @@ namespace Eklipse
 					mc.meshPath = meshComponent["Mesh"].as<std::string>();
 					mc.materialPath = meshComponent["Material"].as<std::string>();
 				}
+
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent)
+				{
+					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					sc.scriptName = scriptComponent["Name"].as<std::string>();
+
+					sc.SetScript(sc.scriptName, Project::GetScriptClasses()[sc.scriptName], deserializedEntity);
+
+					auto properties = scriptComponent["Properties"];
+					DeserializeScriptProperties(deserializedEntity, properties);
+				}
 			}
 		}
 
@@ -107,6 +119,8 @@ namespace Eklipse
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
+
+		EK_CORE_DBG("Serializing entity with ID = {0}", entity.GetUUID());
 
 		if (entity.HasComponent<IDComponent>())
 		{
@@ -171,6 +185,113 @@ namespace Eklipse
 			out << YAML::EndMap;
 		}
 
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap;
+
+			auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+			out << YAML::Key << "Name" << YAML::Value << scriptComponent.scriptName;
+
+			out << YAML::Key << "Properties" << YAML::Value;
+			out << YAML::BeginSeq;
+			for (auto&& [name, member] : scriptComponent.classInfo.members)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << YAML::Value << name;
+				out << YAML::Key << "Type" << YAML::Value << member.type;
+				out << YAML::Key << "Offset" << YAML::Value << member.offset;
+
+				if (member.type == "int")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<int>(member.offset);
+				else if (member.type == "float")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<float>(member.offset);
+				else if (member.type == "bool")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<bool>(member.offset);
+				else if (member.type == "std::string")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<std::string>(member.offset);
+				else if (member.type == "glm::vec2")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::vec2>(member.offset);
+				else if (member.type == "glm::vec3")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::vec3>(member.offset);
+				else if (member.type == "glm::vec4")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::vec4>(member.offset);
+				else if (member.type == "glm::mat4")
+					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::mat4>(member.offset);
+				else
+					EK_CORE_WARN("Unknown type '{0}' for script property '{1}'", member.type, name);
+
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
 		out << YAML::EndMap;
+	}
+	void SceneSerializer::DeserializeAllScriptProperties()
+	{
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(m_scene->GetPath().full_string());
+		}
+		catch (YAML::ParserException e)
+		{
+			EK_CORE_ERROR("Failed to load .eksc file '{0}'\n     {1}", m_scene->GetPath().full_string(), e.what());
+			return;
+		}
+
+		if (!data["Scene"])
+			return;
+
+		std::string sceneName = data["Scene"].as<std::string>();
+		EK_CORE_DBG("Deserializing scene '{0}'", sceneName);
+
+		auto entitiesNodes = data["Entities"];
+		for (auto entityNode : entitiesNodes)
+		{
+			Entity entity = m_scene->GetEntity(entityNode["Entity"].as<uint64_t>());
+
+			// get script component node
+			auto scriptComponent = entityNode["ScriptComponent"];
+			if (scriptComponent)
+			{
+				auto properties = scriptComponent["Properties"];
+				if (properties)
+					DeserializeScriptProperties(entity, properties);
+			}
+		}
+	}
+	void SceneSerializer::DeserializeScriptProperties(Entity entity, YAML::Node& propertiesNode)
+	{
+		if (propertiesNode)
+		{
+			auto& sc = entity.GetComponent<ScriptComponent>();
+			for (auto property : propertiesNode)
+			{
+				std::string name = property["Name"].as<std::string>();
+				std::string type = property["Type"].as<std::string>();
+				uint32_t offset = property["Offset"].as<uint32_t>();
+
+				if (type == "int")
+					sc.SetScriptValue<int>(offset, property["Value"].as<int>());
+				else if (type == "float")
+					sc.SetScriptValue<float>(offset, property["Value"].as<float>());
+				else if (type == "bool")
+					sc.SetScriptValue<bool>(offset, property["Value"].as<bool>());
+				else if (type == "std::string")
+					sc.SetScriptValue<std::string>(offset, property["Value"].as<std::string>());
+				else if (type == "glm::vec2")
+					sc.SetScriptValue<glm::vec2>(offset, property["Value"].as<glm::vec2>());
+				else if (type == "glm::vec3")
+					sc.SetScriptValue<glm::vec3>(offset, property["Value"].as<glm::vec3>());
+				else if (type == "glm::vec4")
+					sc.SetScriptValue<glm::vec4>(offset, property["Value"].as<glm::vec4>());
+				else if (type == "glm::mat4")
+					sc.SetScriptValue<glm::mat4>(offset, property["Value"].as<glm::mat4>());
+				else
+					EK_CORE_WARN("Unknown type '{0}' for script property '{1}'", type, name);
+			}
+		}
 	}
 }

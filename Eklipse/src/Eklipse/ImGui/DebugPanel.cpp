@@ -74,7 +74,7 @@ namespace Eklipse
 					{ "Start scene path",		config.startScenePath.full_c_str() },
 					{ "Scripts path",			config.scriptsDirectoryPath.full_c_str() },
 					{ "Scripts source path",	config.scriptsSourceDirectoryPath.full_c_str() },
-					{ "Scripts build path",		config.buildDirectoryPath.full_c_str() },
+					{ "Scripts build path",		config.scriptBuildDirectoryPath.full_c_str() },
 				};
 
 				for (int i = 0; i < data.size(); ++i) 

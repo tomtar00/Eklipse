@@ -94,6 +94,7 @@ namespace Editor
 			auto* meshComp = entity.TryGetComponent<Eklipse::MeshComponent>();
 			if (meshComp != nullptr && ImGui::CollapsingHeader("Mesh"))
 			{
+				ImGui::Indent();
 				ImGui::InputText("Mesh##Input", &meshComp->meshPath);
 				ImGui::InputText("Material##Input", &meshComp->materialPath);
 				if (ImGui::Button("Apply"))
@@ -107,14 +108,17 @@ namespace Editor
 						meshComp->material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
 					}
 				}
+				ImGui::Unindent();
 			}
 		}
 
 		// Script
 		{
+			// script switch combo
 			auto* scriptComp = entity.TryGetComponent<Eklipse::ScriptComponent>();
 			if (scriptComp != nullptr && ImGui::CollapsingHeader("Script"))
 			{
+				ImGui::Indent();
 				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
 				{
 					for (auto&& [className, classInfo] : Eklipse::Project::GetScriptClasses())
@@ -131,6 +135,36 @@ namespace Editor
 					}
 					ImGui::EndCombo();
 				}
+				ImGui::Unindent();
+			}
+
+			// script properties
+			
+			if (scriptComp != nullptr && scriptComp->script != nullptr)
+			{
+				ImGui::Spacing();
+				ImGui::Text("Properties");
+				ImGui::Spacing();
+
+				ImGui::Indent();
+				for (auto&& [name, member] : scriptComp->classInfo.members)
+				{
+					if (member.type == "bool")
+						ImGui::Checkbox(name.c_str(), scriptComp->GetScriptValue<bool>(member.offset));
+					else if (member.type == "int")
+						ImGui::DragInt(name.c_str(), scriptComp->GetScriptValue<int>(member.offset));
+					else if (member.type == "float")
+						ImGui::DragFloat(name.c_str(), scriptComp->GetScriptValue<float>(member.offset));
+					else if (member.type == "std::string")
+						ImGui::InputText(name.c_str(), scriptComp->GetScriptValue<std::string>(member.offset));
+					else if (member.type == "glm::vec2")
+						ImGui::DragFloat2(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(member.offset)));
+					else if (member.type == "glm::vec3")
+						ImGui::DragFloat3(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(member.offset)));
+					else if (member.type == "glm::vec4")
+						ImGui::DragFloat4(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(member.offset)));
+				}
+				ImGui::Unindent();
 			}
 		}
 	}
