@@ -78,4 +78,12 @@ namespace Eklipse
 			*(T*)((char*)script + offset) = value;
 		}
 	};
+
+	template<typename... Component>
+	struct ComponentGroup
+	{
+	};
+
+	using AllComponents =
+		ComponentGroup<TransformComponent, MeshComponent, CameraComponent, ScriptComponent>;
 }

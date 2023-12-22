@@ -223,7 +223,7 @@ namespace Eklipse
 		
 		Unload();
 
-		GenerateFactoryFile(Project::GetActive()->GetConfig().scriptsDirectoryPath / "Resources" / "Generated");
+		GenerateFactoryFile(Project::GetActive()->GetConfig().scriptGeneratedDirectoryPath);
 		CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath);
 
 		if (std::filesystem::exists(m_libraryPath))
@@ -238,15 +238,11 @@ namespace Eklipse
 
 		if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
 		{
-			// link to new version of the library	
-
 			EK_CORE_INFO("Recompilation successfull!");
-			Application::Get().GetScene()->ReloadScripts();
+			Scene::ReloadScripts(Application::Get().GetActiveScene());
 		}
 		else
 		{
-			// link to previous version of the library
-
 			EK_CORE_ERROR("Recompilation failed!");
 		}
 

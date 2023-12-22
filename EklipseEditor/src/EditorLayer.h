@@ -11,15 +11,21 @@
 
 namespace Editor
 {
+	enum class EditorState
+	{
+		EDITING,
+		PLAYING,
+		PAUSED
+	};
 	enum class SelectionType
 	{
-		None = 0,
-		Entity,
-		Material
+		NONE = 0,
+		ENTITY,
+		MATERIAL
 	};
 	struct DetailsSelectionInfo
 	{
-		SelectionType type = SelectionType::None;
+		SelectionType type = SelectionType::NONE;
 		Eklipse::Entity entity;
 		Eklipse::Material* material;
 	};
@@ -34,7 +40,7 @@ namespace Editor
 		void OnDetach() override;
 		void OnUpdate(float deltaTime) override;
 		void OnGUI(float deltaTime) override;
-		void Render(Eklipse::Ref<Eklipse::Scene> scene, float deltaTime);
+		void RenderActiveScene(float deltaTime);
 
 		void OnAPIHasInitialized(Eklipse::ApiType api);
 		void OnShutdownAPI();
@@ -44,6 +50,10 @@ namespace Editor
 		void SaveProject();
 		void SaveProjectAs();
 		void SaveScene();
+
+		void OnScenePlay();
+		void OnSceneStop();
+		void OnScenePause();
 
 		void OnLoadResources();
 		void OnProjectLoaded();
@@ -68,14 +78,14 @@ namespace Editor
 		inline static EditorLayer* s_instance = nullptr;
 
 		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
-
+		Eklipse::Ref<Eklipse::Scene> m_editorScene;
 		Eklipse::Ref<Eklipse::Framebuffer> m_defaultFramebuffer;
 		Eklipse::Ref<Eklipse::Framebuffer> m_viewportFramebuffer;
-
 		Eklipse::Camera m_editorCamera;
 		Eklipse::Transform m_editorCameraTransform;
 		bool m_canControlEditorCamera = false;
 
+		EditorState m_editorState = EditorState::EDITING;
 		DetailsSelectionInfo m_selectionInfo{};
 
 		bool m_guiEnabled;

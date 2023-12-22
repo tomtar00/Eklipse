@@ -44,8 +44,9 @@ namespace Eklipse
 		inline DebugPanel& GetDebugPanel() { return m_debugPanel; }
 		inline TerminalPanel& GetTerminalPanel() { return m_terminalPanel; }
 		inline Unique<Terminal>& GetTerminal() { return m_terminalPanel.GetTerminal(); }
+		inline const Ref<Scene> GetActiveScene() const { return m_activeScene; }
+		inline void SetActiveScene(Ref<Scene> scene) { m_activeScene = scene; }
 
-		inline const Ref<Scene> GetScene() const { return m_scene; }
 		void SwitchScene(Ref<Scene> scene);
 
 		inline const bool IsRunning() const { return m_running; }
@@ -85,8 +86,8 @@ namespace Eklipse
 
 	protected:
 		LayerStack m_layerStack;
-		Ref<Scene> m_scene;
 		Ref<AssetLibrary> m_assetLibrary;
+		Ref<Scene> m_activeScene;
 		DebugPanel m_debugPanel;
 		TerminalPanel m_terminalPanel;
 

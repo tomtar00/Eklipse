@@ -201,7 +201,7 @@ namespace Editor
 				if (directoryEntry.path().extension() == EK_MATERIAL_EXTENSION)
 				{
 					DetailsSelectionInfo info{};
-					info.type = SelectionType::Material;
+					info.type = SelectionType::MATERIAL;
 					info.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(directoryEntry.path()).get();
 					EditorLayer::Get().SetSelection(info);
 				}

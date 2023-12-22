@@ -15,7 +15,6 @@ namespace Eklipse
 		EK_ASSERT(s_instance == nullptr, "Application already exists!");
 		s_instance = this;
 
-		m_scene = CreateRef<Scene>();
 		m_assetLibrary = CreateRef<AssetLibrary>();
 
 		// TODO: if terminal is enabled, add the terminal sink to the log
@@ -24,7 +23,6 @@ namespace Eklipse
 	}
 	Application::~Application()
 	{
-		m_scene->Unload();
 		m_layerStack.Shutdown();
 		EK_PROFILE_END();
 	}
@@ -55,7 +53,7 @@ namespace Eklipse
 		Renderer::InitParameters();
 
 		// Apply all components in the active scene
-		m_scene->ApplyAllComponents();
+		// m_scene->ApplyAllComponents();
 
 		EK_PROFILE_END();
 	}
@@ -102,14 +100,6 @@ namespace Eklipse
 
 		m_running = false;
 		m_quit = false;
-	}
-
-	// === Scene Management ===
-	void Application::SwitchScene(Ref<Scene> scene)
-	{
-		m_scene->Unload();
-		m_scene.reset();
-		m_scene = scene;
 	}
 
 	// === Event Handling ===
@@ -169,6 +159,12 @@ namespace Eklipse
 	void Application::OnMouseScroll(MouseScrolledEvent& event)
 	{
 		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
+	}
+
+	void Application::SwitchScene(Ref<Scene> scene)
+	{
+		m_activeScene.reset();
+		m_activeScene = scene;
 	}
 
 	void Application::Run()

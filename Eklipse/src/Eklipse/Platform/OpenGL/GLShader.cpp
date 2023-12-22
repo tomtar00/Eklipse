@@ -201,7 +201,7 @@ namespace Eklipse
 				if (success)
 				{
 					CreateProgram();
-					EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
 				}
 				else EK_CORE_ERROR("Failed to compile shader '{0}'", m_filePath.full_string());
 			}

@@ -23,18 +23,18 @@ namespace Editor
 
 		DetailsSelectionInfo& info = EditorLayer::Get().GetSelection();
 
-		if (info.type == SelectionType::None)
+		if (info.type == SelectionType::NONE)
 		{
 			ImGui::End();
 			return true;
 		}
 
 		// Split logic based on type
-		if (info.type == SelectionType::Entity)
+		if (info.type == SelectionType::ENTITY)
 		{
 			OnEntityGUI(info.entity);
 		}
-		else if (info.type == SelectionType::Material)
+		else if (info.type == SelectionType::MATERIAL)
 		{
 			OnMaterialGUI(info.material);
 		}

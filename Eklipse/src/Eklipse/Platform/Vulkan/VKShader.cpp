@@ -166,7 +166,7 @@ namespace Eklipse
 					vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
 					vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
 
-					EK_CORE_WARN("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
 				}
 				else EK_CORE_ERROR("Shader compilation failed ({0})", m_filePath.full_string());
 			}

@@ -12,19 +12,19 @@ namespace Eklipse
 	public:
 		Scene() = default;
 		Scene(const std::string& name, const Path& saveFilePath);
-
-		void Unload();
+		~Scene();
 
 		void ApplyAllComponents();
+
 		void OnSceneStart();
 		void OnSceneUpdate(float deltaTime);
 		void OnSceneStop();
-
-		void ReloadScripts();
 		
+		static Ref<Scene> Copy(Ref<Scene> other);
 		static Ref<Scene> New(const std::string& name, const Path& saveFilePath);
-		static void Save(Ref<Scene> scene);
 		static Ref<Scene> Load(const Path& saveFilePath);
+		static void Save(Ref<Scene> scene);
+		static void ReloadScripts(Ref<Scene> scene);
 
 		Entity CreateEntity(const std::string name = "");
 		Entity CreateEntity(UUID uuid, const std::string& name = "");
@@ -33,7 +33,6 @@ namespace Eklipse
 
 		template<typename Func>
 		inline void ForEachEntity(Func& func) { m_registry.each(func); }
-
 		entt::registry& GetRegistry() { return m_registry; }
 		const std::string& GetName() const { return m_name; }
 		const Path& GetPath() const { return m_path; }

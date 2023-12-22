@@ -7,16 +7,53 @@
 
 namespace Eklipse
 {
+	template<typename... Component>
+	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		([&]()
+		{
+			auto view = src.view<Component>();
+			for (auto srcEntity : view)
+			{
+				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
+
+				auto& srcComponent = src.get<Component>(srcEntity);
+				dst.emplace_or_replace<Component>(dstEntity, srcComponent);
+			}
+		}(), ...);
+	}
+
+	template<typename... Component>
+	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		CopyComponent<Component...>(dst, src, enttMap);
+	}
+
+	template<typename... Component>
+	static void CopyComponentIfExists(Entity dst, Entity src)
+	{
+		([&]()
+			{
+				if (src.HasComponent<Component>())
+					dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+			}(), ...);
+	}
+
+	template<typename... Component>
+	static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
+	{
+		CopyComponentIfExists<Component...>(dst, src);
+	}
+
 	Scene::Scene(const std::string& name, const Path& saveFilePath) : 
 		m_name(name), m_path(saveFilePath)
 	{
 		if (m_name.empty())
 			m_name = "Untitled";
 	}
-
-	void Scene::Unload()
+	Scene::~Scene()
 	{
-		EK_CORE_TRACE("Begin scene unload");
+		EK_CORE_TRACE("Begin scene '{0}' unload", m_name);
 
 		ForEachEntity([&](auto entityID)
 		{
@@ -29,6 +66,7 @@ namespace Eklipse
 
 		EK_CORE_TRACE("Scene disposed");
 	}
+
 	void Scene::ApplyAllComponents()
 	{
 		ForEachEntity([&](auto entityID)
@@ -59,6 +97,8 @@ namespace Eklipse
 	}
 	void Scene::OnSceneUpdate(float deltaTime)
 	{
+		EK_PROFILE();
+
 		ForEachEntity([&](auto entityID)
 		{
 			if (m_registry.all_of<ScriptComponent>(entityID))
@@ -71,30 +111,51 @@ namespace Eklipse
 	}
 	void Scene::OnSceneStop()
 	{
-		
+		// TODO: clean up scene
 	}
 
-	void Scene::ReloadScripts()
+	void Scene::ReloadScripts(Ref<Scene> scene)
 	{
 		EK_CORE_INFO("Reloading scripts...");
 
 		auto& scriptClasses = Eklipse::Project::GetScriptClasses();
-		ForEachEntity([&](auto entityID)
+		scene->ForEachEntity([&](auto entityID)
 		{
-			if (m_registry.all_of<ScriptComponent>(entityID))
+			if (scene->GetRegistry().all_of<ScriptComponent>(entityID))
 			{
-				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
+				auto& scriptComponent = scene->GetRegistry().get<ScriptComponent>(entityID);
 				scriptComponent.DestroyScript();
 				auto it = scriptClasses.find(scriptComponent.scriptName);
 				if (it != scriptClasses.end())
-					scriptComponent.SetScript(it->first, it->second, Entity(entityID, this));
+					scriptComponent.SetScript(it->first, it->second, Entity(entityID, scene.get()));
 				else
 					EK_CORE_ERROR("Failed to reload script '{0}'", scriptComponent.scriptName);
 			}
 		});
 
-		Eklipse::SceneSerializer serializer(Application::Get().GetScene());
+		Eklipse::SceneSerializer serializer(scene);
 		serializer.DeserializeAllScriptProperties();
+	}
+
+	Ref<Scene> Scene::Copy(Ref<Scene> other)
+	{
+		Ref<Scene> newScene = CreateRef<Scene>();
+
+		auto& srcSceneRegistry = other->m_registry;
+		auto& dstSceneRegistry = newScene->m_registry;
+		std::unordered_map<UUID, entt::entity> enttMap;
+
+		srcSceneRegistry.view<IDComponent>().each([&](auto entityID, auto& idComponent)
+		{
+			UUID uuid = idComponent.ID;
+			const auto& name = srcSceneRegistry.get<NameComponent>(entityID).name;
+			Entity newEntity = newScene->CreateEntity(uuid, name);
+			enttMap[uuid] = newEntity.GetHandle();
+		});
+
+		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		return newScene;
 	}
 
 	Ref<Scene> Scene::New(const std::string& name, const Path& saveFilePath)

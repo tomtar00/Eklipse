@@ -11,20 +11,20 @@ namespace Editor
 		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
 		ImGui::Begin("Entities");
-		auto& scene = Eklipse::Application::Get().GetScene();
-		EK_ASSERT(scene != nullptr, "Scene is null!");
+		if (!m_sceneContext)
+			EK_CORE_WARN("Scene context in entity panel is null!");
 
 		if (ImGui::BeginPopupContextWindow())
 		{
 			if (ImGui::MenuItem("New Entity"))
-				scene->CreateEntity();
+				m_sceneContext->CreateEntity();
 
 			ImGui::EndPopup();
 		}
 
-		scene->ForEachEntity([&](auto entityID)
+		m_sceneContext->ForEachEntity([&](auto entityID)
 		{
-			Eklipse::Entity entity{ entityID, scene.get() };
+			Eklipse::Entity entity{ entityID, m_sceneContext.get() };
 			auto& nameComponent = entity.GetComponent<Eklipse::NameComponent>();
 
 			bool expand = ImGui::TreeNodeEx(nameComponent.name.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth);
@@ -32,7 +32,7 @@ namespace Editor
 			if (ImGui::IsItemClicked())
 			{
 				DetailsSelectionInfo info{};
-				info.type = SelectionType::Entity;
+				info.type = SelectionType::ENTITY;
 				info.entity = entity;
 				EditorLayer::Get().SetSelection(info);
 
@@ -44,7 +44,7 @@ namespace Editor
 				if (ImGui::MenuItem("Delete Entity"))
 				{
 					EditorLayer::Get().ClearSelection();
-					scene->DestroyEntity(entity);
+					m_sceneContext->DestroyEntity(entity);
 				}
 
 				ImGui::EndPopup();
@@ -59,5 +59,9 @@ namespace Editor
 
 		ImGui::End();
 		return true;
+	}
+	void EntitiesPanel::SetContext(Eklipse::Ref<Eklipse::Scene> scene)
+	{
+		m_sceneContext = scene;
 	}
 }

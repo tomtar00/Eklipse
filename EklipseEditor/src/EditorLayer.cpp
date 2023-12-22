@@ -49,6 +49,10 @@ namespace Editor
 			&Eklipse::Application::Get().GetTerminalPanel()
 		};
 
+		m_editorScene = Eklipse::CreateRef<Eklipse::Scene>();
+		m_entitiesPanel.SetContext(m_editorScene);
+		Eklipse::Application::Get().SwitchScene(m_editorScene);
+
 		EK_INFO("Editor layer attached");
 	}
 	void EditorLayer::OnDetach()
@@ -82,7 +86,7 @@ namespace Editor
 
 			if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::F))
 			{
-				if (GetSelection().type == SelectionType::Entity)
+				if (GetSelection().type == SelectionType::ENTITY)
 					targetPosition = GetSelection().entity.GetComponent<Eklipse::TransformComponent>().transform.position;
 			}
 			else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button1))
@@ -158,6 +162,22 @@ namespace Editor
 				}
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("Scene"))
+			{
+				if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P"))
+				{
+					OnScenePlay();
+				}
+				if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P"))
+				{
+					OnScenePause();
+				}
+				if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q"))
+				{
+					OnSceneStop();
+				}
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndMainMenuBar();
 		}
@@ -208,17 +228,18 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 	}
-	void EditorLayer::Render(Eklipse::Ref<Eklipse::Scene> scene, float deltaTime)
+	void EditorLayer::RenderActiveScene(float deltaTime)
 	{
 		EK_PROFILE();
 		
 		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
-		scene->OnSceneUpdate(deltaTime);
+		if (m_editorState == EditorState::PLAYING)
+			Eklipse::Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
 
 		// Record scene framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
-		Eklipse::Renderer::RenderScene(scene);
+		Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene());
 		Eklipse::Renderer::EndRenderPass(m_viewportFramebuffer);
 
 		// Record ImGui framebuffer
@@ -311,9 +332,13 @@ namespace Editor
 		OnProjectUnload();
 		auto project = Eklipse::Project::Load(outPath);
 		auto scene = Eklipse::Scene::Load(project->GetConfig().startScenePath);
-		Eklipse::Application::Get().SwitchScene(scene);
-		OnProjectLoaded();
 
+		Eklipse::Application::Get().SwitchScene(scene);
+		m_editorScene.reset();
+		m_editorScene = scene;
+		m_entitiesPanel.SetContext(m_editorScene);
+
+		OnProjectLoaded();
 		free(outPath);
 	}
 	void EditorLayer::SaveProject()
@@ -327,7 +352,41 @@ namespace Editor
 	}
 	void EditorLayer::SaveScene()
 	{
-		Eklipse::Scene::Save(Eklipse::Application::Get().GetScene());
+		Eklipse::Scene::Save(m_editorScene);
+	}
+	void EditorLayer::OnScenePlay()
+	{
+		if (m_editorState == EditorState::PLAYING)
+			return;
+
+		m_editorState = EditorState::PLAYING;
+		m_canControlEditorCamera = false;
+
+		Eklipse::Application::Get().SetActiveScene(Eklipse::Scene::Copy(m_editorScene));
+		Eklipse::Application::Get().GetActiveScene()->OnSceneStart();
+
+		m_entitiesPanel.SetContext(Eklipse::Application::Get().GetActiveScene());
+	}
+	void EditorLayer::OnSceneStop()
+	{
+		if (m_editorState == EditorState::EDITING)
+			return;
+
+		m_editorState = EditorState::EDITING;
+		m_canControlEditorCamera = true;
+
+		Eklipse::Application::Get().GetActiveScene()->OnSceneStop();
+		Eklipse::Application::Get().SetActiveScene(m_editorScene);
+
+		m_entitiesPanel.SetContext(Eklipse::Application::Get().GetActiveScene());
+	}
+	void EditorLayer::OnScenePause()
+	{
+		if (m_editorState == EditorState::PAUSED)
+			return;
+
+		m_editorState = EditorState::PAUSED;
+		m_canControlEditorCamera = false;
 	}
 	void EditorLayer::OnProjectUnload()
 	{
@@ -345,7 +404,7 @@ namespace Editor
 		Eklipse::Project::GetActive()->LoadAssets();
 		m_filesPanel.OnContextChanged();
 
-		Eklipse::Application::Get().GetScene()->ApplyAllComponents();
+		m_editorScene->ApplyAllComponents();
 	}
 	void EditorLayer::SetSelection(DetailsSelectionInfo info)
 	{
@@ -353,7 +412,7 @@ namespace Editor
 	}
 	void EditorLayer::ClearSelection()
 	{
-		GetSelection().type = SelectionType::None;
+		GetSelection().type = SelectionType::NONE;
 		GetSelection().entity.MarkNull();
 	}
 }

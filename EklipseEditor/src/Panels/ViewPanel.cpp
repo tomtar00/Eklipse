@@ -65,7 +65,7 @@ namespace Editor
 		ImGui::Unindent(2.0f);
 
 		// Gizmos
-		if (EditorLayer::Get().GetSelection().type == SelectionType::Entity)
+		if (EditorLayer::Get().GetSelection().type == SelectionType::ENTITY)
 		{
 			auto entity = EditorLayer::Get().GetSelection().entity;
 			auto& transComp = entity.GetComponent<Eklipse::TransformComponent>();

@@ -214,7 +214,7 @@ namespace Eklipse
     }
     void Shader::Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderStagesData, const std::string& shaderName)
     {
-        EK_CORE_WARN("Shader::Reflect - {0}", shaderName);
+        EK_CORE_DBG("Shader::Reflect - {0}", shaderName);
         for (auto&& [stage, shaderData] : shaderStagesData)
         {
             EK_CORE_TRACE("Stage: {0}", ShaderStageToString(stage));
@@ -353,40 +353,4 @@ namespace Eklipse
     {
         return m_reflections;
     }
-
-    //////////////////////////////////////////////////////////////////
-    // SHADER LIBRARY ////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-
-   /* void ShaderLibrary::Add(const Ref<Shader>& shader)
-    {
-        if (Contains(shader->GetName()))
-        {
-            EK_CORE_WARN("Shader library already contains shader '{0}'", shader->GetName());
-            return;
-        }
-
-        m_shaders[shader->GetName()] = shader;
-        EK_CORE_INFO("Adding shader '{0}' to library", shader->GetName());
-    }
-    Ref<Shader> ShaderLibrary::Load(const std::string& filePath)
-    {
-        auto shader = Shader::Create(filePath);
-        Add(shader);
-        return shader;
-    }
-    Ref<Shader> ShaderLibrary::Get(const std::string& name)
-    {
-        EK_ASSERT(Contains(name), "Shader '{0}' not present in library", name);
-        return m_shaders[name];
-    }
-    bool ShaderLibrary::Contains(const std::string& name)
-    {
-        return m_shaders.find(name) != m_shaders.end();
-    }
-    void ShaderLibrary::Dispose()
-    {
-        for (auto& shader : m_shaders)
-            shader.second->Dispose();
-    }*/
 }
