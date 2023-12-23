@@ -52,8 +52,8 @@ namespace Eklipse
 
 		Renderer::InitParameters();
 
-		// Apply all components in the active scene
-		// m_scene->ApplyAllComponents();
+		// Apply all components in the active scene - TODO: refactor
+		m_activeScene->ApplyAllComponents();
 
 		EK_PROFILE_END();
 	}

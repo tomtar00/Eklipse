@@ -22,6 +22,18 @@ namespace Eklipse
 			}
 		}(), ...);
 	}
+	/*static void CopyScriptComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		auto view = src.view<ScriptComponent>();
+		for (auto srcEntity : view)
+		{
+			entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
+
+			auto& scriptComponent = src.get<ScriptComponent>(srcEntity);
+			scriptComponent.SetScript(scriptComponent.scriptName, scriptComponent.classInfo, Entity(dstEntity, this));
+			dst.emplace_or_replace<ScriptComponent>(dstEntity, scriptComponent);
+		}
+	}*/
 
 	template<typename... Component>
 	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -33,10 +45,10 @@ namespace Eklipse
 	static void CopyComponentIfExists(Entity dst, Entity src)
 	{
 		([&]()
-			{
-				if (src.HasComponent<Component>())
-					dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
-			}(), ...);
+		{
+			if (src.HasComponent<Component>())
+				dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+		}(), ...);
 	}
 
 	template<typename... Component>
@@ -55,63 +67,54 @@ namespace Eklipse
 	{
 		EK_CORE_TRACE("Begin scene '{0}' unload", m_name);
 
-		ForEachEntity([&](auto entityID)
-		{
-			if (m_registry.all_of<ScriptComponent>(entityID))
-			{
-				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
-				scriptComponent.DestroyScript();
-			}
-		});
+		OnSceneStop();
 
 		EK_CORE_TRACE("Scene disposed");
 	}
 
 	void Scene::ApplyAllComponents()
 	{
-		ForEachEntity([&](auto entityID)
+		m_registry.view<MeshComponent>().each([&](auto entityID, auto& meshComponent)
 		{
-			if (m_registry.all_of<MeshComponent>(entityID))
+			if (!meshComponent.meshPath.empty() && !meshComponent.materialPath.empty())
 			{
-				auto& meshComponent = m_registry.get<MeshComponent>(entityID);
-				if (!meshComponent.meshPath.empty() && !meshComponent.materialPath.empty())
-				{
-					meshComponent.mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComponent.meshPath).get();
-					meshComponent.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
-				}
+				meshComponent.mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComponent.meshPath).get();
+				meshComponent.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
 			}
 		});
 	}
 
 	void Scene::OnSceneStart()
 	{
-		ForEachEntity([&](auto entityID)
+		// set main camera
+		/*m_registry.view<CameraComponent>().each([&](auto entityID, auto& cameraComponent)
 		{
-			if (m_registry.all_of<ScriptComponent>(entityID))
-			{
-				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
-				if (scriptComponent.script != nullptr)
-					scriptComponent.script->OnCreate();
-			}
+			if (cameraComponent.camera.IsMainCamera())
+				Application::Get().SetMainCamera(&cameraComponent.camera);
+		});*/
+
+		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
+		{
+			if (scriptComponent.script != nullptr)
+				scriptComponent.script->OnCreate();
 		});
 	}
 	void Scene::OnSceneUpdate(float deltaTime)
 	{
 		EK_PROFILE();
 
-		ForEachEntity([&](auto entityID)
+		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
 		{
-			if (m_registry.all_of<ScriptComponent>(entityID))
-			{
-				auto& scriptComponent = m_registry.get<ScriptComponent>(entityID);
-				if (scriptComponent.script != nullptr)
-					scriptComponent.script->OnUpdate(deltaTime);
-			}
+			if (scriptComponent.script != nullptr)
+				scriptComponent.script->OnUpdate(deltaTime);
 		});
 	}
 	void Scene::OnSceneStop()
 	{
-		// TODO: clean up scene
+		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
+		{
+			scriptComponent.DestroyScript();
+		});
 	}
 
 	void Scene::ReloadScripts(Ref<Scene> scene)
@@ -119,18 +122,14 @@ namespace Eklipse
 		EK_CORE_INFO("Reloading scripts...");
 
 		auto& scriptClasses = Eklipse::Project::GetScriptClasses();
-		scene->ForEachEntity([&](auto entityID)
+		scene->GetRegistry().view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
 		{
-			if (scene->GetRegistry().all_of<ScriptComponent>(entityID))
-			{
-				auto& scriptComponent = scene->GetRegistry().get<ScriptComponent>(entityID);
-				scriptComponent.DestroyScript();
-				auto it = scriptClasses.find(scriptComponent.scriptName);
-				if (it != scriptClasses.end())
-					scriptComponent.SetScript(it->first, it->second, Entity(entityID, scene.get()));
-				else
-					EK_CORE_ERROR("Failed to reload script '{0}'", scriptComponent.scriptName);
-			}
+			scriptComponent.DestroyScript();
+			auto it = scriptClasses.find(scriptComponent.scriptName);
+			if (it != scriptClasses.end())
+				scriptComponent.SetScript(it->first, it->second, Entity(entityID, scene.get()));
+			else
+				EK_CORE_ERROR("Failed to reload script '{0}'", scriptComponent.scriptName);
 		});
 
 		Eklipse::SceneSerializer serializer(scene);
@@ -154,6 +153,37 @@ namespace Eklipse
 		});
 
 		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		auto view = srcSceneRegistry.view<ScriptComponent>();
+		for (auto srcEntity : view)
+		{
+			entt::entity dstEntity = enttMap.at(srcSceneRegistry.get<IDComponent>(srcEntity).ID);
+
+			auto& srcComponent = srcSceneRegistry.get<ScriptComponent>(srcEntity);
+			auto dstComponent = srcComponent;
+			dstComponent.SetScript(dstComponent.scriptName, dstComponent.classInfo, Entity(dstEntity, newScene.get()));
+
+			// TODO: refactor
+			for (auto& [memberName, member] : srcComponent.classInfo.members)
+			{
+				if (member.type == "int")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<int>(member.offset));
+				else if (member.type == "float")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<float>(member.offset));
+				else if (member.type == "bool")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<bool>(member.offset));
+				else if (member.type == "std::string")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<std::string>(member.offset));
+				else if (member.type == "glm::vec2")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<glm::vec2>(member.offset));
+				else if (member.type == "glm::vec3")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<glm::vec3>(member.offset));
+				else if (member.type == "glm::vec4")
+					dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<glm::vec4>(member.offset));
+			}
+
+			dstSceneRegistry.emplace_or_replace<ScriptComponent>(dstEntity, dstComponent);
+		}
 
 		return newScene;
 	}

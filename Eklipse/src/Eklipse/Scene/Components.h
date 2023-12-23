@@ -80,10 +80,8 @@ namespace Eklipse
 	};
 
 	template<typename... Component>
-	struct ComponentGroup
-	{
-	};
+	struct ComponentGroup {};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, MeshComponent, CameraComponent, ScriptComponent>;
+		ComponentGroup<TransformComponent, MeshComponent, CameraComponent>;
 }

@@ -11,11 +11,11 @@
 
 namespace Editor
 {
-	enum class EditorState
+	enum EditorState
 	{
-		EDITING,
-		PLAYING,
-		PAUSED
+		EDITING = BIT(1),
+		PLAYING = BIT(2),
+		PAUSED	= BIT(3),
 	};
 	enum class SelectionType
 	{
@@ -54,6 +54,7 @@ namespace Editor
 		void OnScenePlay();
 		void OnSceneStop();
 		void OnScenePause();
+		void OnSceneResume();
 
 		void OnLoadResources();
 		void OnProjectLoaded();
@@ -68,7 +69,7 @@ namespace Editor
 		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
 
-		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl; }
+		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl && (m_editorState & EditorState::EDITING); }
 		void SetSelection(DetailsSelectionInfo info);
 		void ClearSelection();
 

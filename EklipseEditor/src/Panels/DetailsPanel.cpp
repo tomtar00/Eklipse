@@ -48,11 +48,14 @@ namespace Editor
 		{
 			if (ImGui::BeginPopupContextWindow())
 			{
-				if (!entity.HasComponent<Eklipse::MeshComponent>() && ImGui::MenuItem("Add Mesh Component"))
+				if (ImGui::MenuItem("Add Mesh Component") && !entity.HasComponent<Eklipse::MeshComponent>())
 					entity.AddComponent<Eklipse::MeshComponent>();
 
-				if (!entity.HasComponent<Eklipse::ScriptComponent>() && ImGui::MenuItem("Add Script Component"))
+				if (ImGui::MenuItem("Add Script Component") && !entity.HasComponent<Eklipse::ScriptComponent>())
 					entity.AddComponent<Eklipse::ScriptComponent>();
+
+				if (ImGui::MenuItem("Add Camera Component") && !entity.HasComponent<Eklipse::CameraComponent>())
+					entity.AddComponent<Eklipse::CameraComponent>();
 
 				ImGui::EndPopup();
 			}
@@ -114,11 +117,12 @@ namespace Editor
 
 		// Script
 		{
-			// script switch combo
 			auto* scriptComp = entity.TryGetComponent<Eklipse::ScriptComponent>();
 			if (scriptComp != nullptr && ImGui::CollapsingHeader("Script"))
 			{
 				ImGui::Indent();
+
+				// script switch combo
 				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
 				{
 					for (auto&& [className, classInfo] : Eklipse::Project::GetScriptClasses())
@@ -135,35 +139,33 @@ namespace Editor
 					}
 					ImGui::EndCombo();
 				}
-				ImGui::Unindent();
-			}
-
-			// script properties
 			
-			if (scriptComp != nullptr && scriptComp->script != nullptr)
-			{
-				ImGui::Spacing();
-				ImGui::Text("Properties");
-				ImGui::Spacing();
-
-				ImGui::Indent();
-				for (auto&& [name, member] : scriptComp->classInfo.members)
+				// script properties
+				if (scriptComp != nullptr && scriptComp->script != nullptr)
 				{
-					if (member.type == "bool")
-						ImGui::Checkbox(name.c_str(), scriptComp->GetScriptValue<bool>(member.offset));
-					else if (member.type == "int")
-						ImGui::DragInt(name.c_str(), scriptComp->GetScriptValue<int>(member.offset));
-					else if (member.type == "float")
-						ImGui::DragFloat(name.c_str(), scriptComp->GetScriptValue<float>(member.offset));
-					else if (member.type == "std::string")
-						ImGui::InputText(name.c_str(), scriptComp->GetScriptValue<std::string>(member.offset));
-					else if (member.type == "glm::vec2")
-						ImGui::DragFloat2(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(member.offset)));
-					else if (member.type == "glm::vec3")
-						ImGui::DragFloat3(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(member.offset)));
-					else if (member.type == "glm::vec4")
-						ImGui::DragFloat4(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(member.offset)));
+					ImGui::Spacing();
+					ImGui::Text("Properties");
+					ImGui::Spacing();
+
+					for (auto&& [name, member] : scriptComp->classInfo.members)
+					{
+						if (member.type == "bool")
+							ImGui::Checkbox(name.c_str(), scriptComp->GetScriptValue<bool>(member.offset));
+						else if (member.type == "int")
+							ImGui::DragInt(name.c_str(), scriptComp->GetScriptValue<int>(member.offset));
+						else if (member.type == "float")
+							ImGui::DragFloat(name.c_str(), scriptComp->GetScriptValue<float>(member.offset));
+						else if (member.type == "std::string")
+							ImGui::InputText(name.c_str(), scriptComp->GetScriptValue<std::string>(member.offset));
+						else if (member.type == "glm::vec2")
+							ImGui::DragFloat2(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(member.offset)));
+						else if (member.type == "glm::vec3")
+							ImGui::DragFloat3(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(member.offset)));
+						else if (member.type == "glm::vec4")
+							ImGui::DragFloat4(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(member.offset)));
+					}
 				}
+
 				ImGui::Unindent();
 			}
 		}

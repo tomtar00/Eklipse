@@ -164,15 +164,19 @@ namespace Editor
 			}
 			if (ImGui::BeginMenu("Scene"))
 			{
-				if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P"))
+				if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, m_editorState & EditorState::EDITING))
 				{
 					OnScenePlay();
 				}
-				if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P"))
+				if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, m_editorState & EditorState::PLAYING))
 				{
 					OnScenePause();
 				}
-				if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q"))
+				if (ImGui::MenuItemEx("Resume", nullptr, "Ctrl+Shift+R", false, m_editorState & EditorState::PAUSED))
+				{
+					OnSceneResume();
+				}
+				if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q", false, m_editorState & (EditorState::PLAYING | EditorState::PAUSED)))
 				{
 					OnSceneStop();
 				}
@@ -232,9 +236,10 @@ namespace Editor
 	{
 		EK_PROFILE();
 		
+		// TODO: set camera from scene when playing
 		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
-		if (m_editorState == EditorState::PLAYING)
+		if (m_editorState & EditorState::PLAYING)
 			Eklipse::Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
 
 		// Record scene framebuffer
@@ -356,7 +361,7 @@ namespace Editor
 	}
 	void EditorLayer::OnScenePlay()
 	{
-		if (m_editorState == EditorState::PLAYING)
+		if (m_editorState & EditorState::PLAYING)
 			return;
 
 		m_editorState = EditorState::PLAYING;
@@ -366,10 +371,11 @@ namespace Editor
 		Eklipse::Application::Get().GetActiveScene()->OnSceneStart();
 
 		m_entitiesPanel.SetContext(Eklipse::Application::Get().GetActiveScene());
+		ClearSelection();
 	}
 	void EditorLayer::OnSceneStop()
 	{
-		if (m_editorState == EditorState::EDITING)
+		if (m_editorState & EditorState::EDITING)
 			return;
 
 		m_editorState = EditorState::EDITING;
@@ -379,13 +385,22 @@ namespace Editor
 		Eklipse::Application::Get().SetActiveScene(m_editorScene);
 
 		m_entitiesPanel.SetContext(Eklipse::Application::Get().GetActiveScene());
+		ClearSelection();
 	}
 	void EditorLayer::OnScenePause()
 	{
-		if (m_editorState == EditorState::PAUSED)
+		if (m_editorState & EditorState::PAUSED)
 			return;
 
 		m_editorState = EditorState::PAUSED;
+		m_canControlEditorCamera = false;
+	}
+	void EditorLayer::OnSceneResume()
+	{
+		if (m_editorState & EditorState::PLAYING)
+			return;
+
+		m_editorState = EditorState::PLAYING;
 		m_canControlEditorCamera = false;
 	}
 	void EditorLayer::OnProjectUnload()
