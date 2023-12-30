@@ -18,9 +18,13 @@ namespace Eklipse
 		float m_nearPlane = 0.1f;
 		float m_farPlane = 100.0f;
 
+		inline bool* IsMain() { return &m_isMain; }
+
 	private:
 		glm::mat4 m_viewProj;
 		glm::mat4 m_viewMatrix;
 		glm::mat4 m_projectionMatrix;
+
+		bool m_isMain;
 	};
 }

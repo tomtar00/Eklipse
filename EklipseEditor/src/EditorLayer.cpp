@@ -232,25 +232,29 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 	}
-	void EditorLayer::RenderActiveScene(float deltaTime)
+	void EditorLayer::DrawFrame(float deltaTime)
 	{
 		EK_PROFILE();
-		
-		// TODO: set camera from scene when playing
-		Eklipse::Renderer::BeginFrame(m_editorCamera, m_editorCameraTransform);
 
 		if (m_editorState & EditorState::PLAYING)
 			Eklipse::Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
+		
+		Eklipse::Renderer::BeginFrame();
 
-		// Record scene framebuffer
+		// === Record scene framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
-		Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene());
+		if (m_editorState & EditorState::EDITING)
+			Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene(), m_editorCamera, m_editorCameraTransform);
+		else
+			Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene());
 		Eklipse::Renderer::EndRenderPass(m_viewportFramebuffer);
+		// ============================
 
-		// Record ImGui framebuffer
+		// === Record ImGui framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_defaultFramebuffer);
 		GUI->Render();
 		Eklipse::Renderer::EndRenderPass(m_defaultFramebuffer);
+		// ============================
 
 		Eklipse::Renderer::Submit();
 	}

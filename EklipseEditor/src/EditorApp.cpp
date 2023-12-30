@@ -54,7 +54,7 @@ namespace Editor
 		{
 			EK_PROFILE();
 
-			editorLayer->RenderActiveScene(deltaTime);
+			editorLayer->DrawFrame(deltaTime);
 		}
 
 	private:

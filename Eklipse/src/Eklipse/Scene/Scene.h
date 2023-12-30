@@ -3,6 +3,9 @@
 #include <Eklipse/Core/UUID.h>
 #include <Eklipse/Utils/File.h>
 
+#include <Eklipse/Scene/Camera.h>
+#include <Eklipse/Scene/Transform.h>
+
 namespace Eklipse
 {
 	class Entity;
@@ -31,6 +34,9 @@ namespace Eklipse
 		Entity GetEntity(UUID uuid);
 		void DestroyEntity(Entity entity);
 
+		Camera* GetMainCamera() { return m_mainCamera; }
+		Transform* GetMainCameraTransform() { return m_mainCameraTransform; }
+
 		template<typename Func>
 		inline void ForEachEntity(Func& func) { m_registry.each(func); }
 		entt::registry& GetRegistry() { return m_registry; }
@@ -41,11 +47,13 @@ namespace Eklipse
 		void SetPath(const Path& path) { m_path = path; }
 
 	private:
-		entt::registry m_registry;
-
 		std::string m_name;
 		Path m_path;
 
+		entt::registry m_registry;
 		std::unordered_map<UUID, entt::entity> m_entityMap;
+
+		Camera* m_mainCamera;
+		Transform* m_mainCameraTransform;
 	};
 }

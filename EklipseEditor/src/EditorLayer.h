@@ -40,7 +40,7 @@ namespace Editor
 		void OnDetach() override;
 		void OnUpdate(float deltaTime) override;
 		void OnGUI(float deltaTime) override;
-		void RenderActiveScene(float deltaTime);
+		void DrawFrame(float deltaTime);
 
 		void OnAPIHasInitialized(Eklipse::ApiType api);
 		void OnShutdownAPI();
@@ -61,7 +61,7 @@ namespace Editor
 		void OnProjectUnload();
 
 		inline static EditorLayer& Get() { return *s_instance; }
-
+		inline EditorState GetEditorState() { return m_editorState; }
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }

@@ -43,15 +43,15 @@ namespace Eklipse
 		RenderCommand::API->Shutdown();
 	}
 
-	void Renderer::BeginFrame(Camera& camera, Transform& cameraTransform)
+	void Renderer::BeginFrame()
 	{
 		EK_PROFILE();
 
 		Stats::Get().Reset();
 
-		camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
+		/*camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
 		auto& viewProjection = camera.GetViewProjectionMatrix();
-		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
+		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));*/
 
 		RenderCommand::API->BeginFrame();
 	}
@@ -61,9 +61,13 @@ namespace Eklipse
 
 		framebuffer->Bind();
 	}
-	void Renderer::RenderScene(Ref<Scene> scene)
+	void Renderer::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
 	{
 		EK_PROFILE();
+
+		camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
+		auto& viewProjection = camera.GetViewProjectionMatrix();
+		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
 
 		// Geometry
 		auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
@@ -78,6 +82,17 @@ namespace Eklipse
 		}
 
 		// ...
+	}
+	void Renderer::RenderScene(Ref<Scene> scene)
+	{
+		auto camera = scene->GetMainCamera();
+		auto cameraTransform = scene->GetMainCameraTransform();
+
+		// TODO: Handle no main camera on scene
+		EK_ASSERT(camera, "Main camera is null!");
+		EK_ASSERT(cameraTransform, "Main camera transform is null!");
+
+		RenderScene(scene, *camera, *cameraTransform);
 	}
 	void Renderer::EndRenderPass(Ref<Framebuffer> framebuffer)
 	{
@@ -120,27 +135,7 @@ namespace Eklipse
 	{
 		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
 
-		/*if (RenderCommand::API != nullptr)
-		{
-			if (apiType == s_apiType && RenderCommand::API->IsInitialized())
-			{
-				EK_CORE_WARN("{0} API already set and initialized!", (int)apiType);
-				return;
-			}
-
-			if (RenderCommand::API->IsInitialized())
-			{
-				Renderer::Shutdown();
-			}
-		}*/
-
 		s_apiType = apiType;
-		/*RenderCommand::API.reset();
-		RenderCommand::API = GraphicsAPI::Create();
-
-		Application::Get().OnInitAPI(s_apiType);
-		RenderCommand::API->Init();
-		Application::Get().OnAPIHasInitialized(s_apiType);*/
 	}
 	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
 	{

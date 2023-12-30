@@ -87,11 +87,14 @@ namespace Eklipse
 	void Scene::OnSceneStart()
 	{
 		// set main camera
-		/*m_registry.view<CameraComponent>().each([&](auto entityID, auto& cameraComponent)
+		m_registry.view<CameraComponent>().each([&](auto entityID, auto& cameraComponent)
 		{
-			if (cameraComponent.camera.IsMainCamera())
-				Application::Get().SetMainCamera(&cameraComponent.camera);
-		});*/
+			if (*cameraComponent.camera.IsMain())
+			{
+				m_mainCamera = &cameraComponent.camera;
+				m_mainCameraTransform = &m_registry.get<TransformComponent>(entityID).transform;
+			}
+		});
 
 		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
 		{
