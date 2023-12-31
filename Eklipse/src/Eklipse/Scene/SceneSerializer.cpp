@@ -47,22 +47,26 @@ namespace Eklipse
 		if (!data["Scene"])
 			return false;
 
-		std::string sceneName = data["Scene"].as<std::string>();
+		std::string sceneName;
+		TryDeserailize<std::string>(data, "Scene", &sceneName);
 		m_scene->SetName(sceneName);
 		m_scene->SetPath(sourceFilePath);
-		EK_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+		EK_CORE_DBG("Deserializing scene '{0}'", sceneName);
 
 		auto entities = data["Entities"];
 		if (entities)
 		{
 			for (auto entity : entities)
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>();
+				uint64_t uuid;
+				TryDeserailize<uint64_t>(entity, "Entity", &uuid);
 
 				std::string name;
 				auto nameComponent = entity["NameComponent"];
 				if (nameComponent)
-					name = nameComponent["Name"].as<std::string>();
+				{
+					TryDeserailize<std::string>(nameComponent, "Name", &name);
+				}
 
 				EK_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
@@ -72,9 +76,10 @@ namespace Eklipse
 				if (transformComponent)
 				{
 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
-					tc.transform.position = transformComponent["Position"].as<glm::vec3>();
-					tc.transform.rotation = transformComponent["Rotation"].as<glm::vec3>();
-					tc.transform.scale = transformComponent["Scale"].as<glm::vec3>();
+
+					TryDeserailize<glm::vec3>(transformComponent, "Position", &tc.transform.position);
+					TryDeserailize<glm::vec3>(transformComponent, "Rotation", &tc.transform.rotation);
+					TryDeserailize<glm::vec3>(transformComponent, "Scale", &tc.transform.scale);
 				}
 
 				auto cameraComponent = entity["CameraComponent"];
@@ -83,24 +88,26 @@ namespace Eklipse
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 					auto& cameraProps = cameraComponent["Camera"];
 
-					cc.camera.m_fov = (cameraProps["FOV"].as<float>());
-					cc.camera.m_nearPlane = (cameraProps["Near"].as<float>());
-					cc.camera.m_farPlane = (cameraProps["Far"].as<float>());
+					TryDeserailize<bool>(cameraProps, "IsMain", &cc.camera.m_isMain);
+					TryDeserailize<float>(cameraProps, "FOV", &cc.camera.m_fov);
+					TryDeserailize<float>(cameraProps, "Near", &cc.camera.m_nearPlane);
+					TryDeserailize<float>(cameraProps, "Far", &cc.camera.m_farPlane);
 				}
 
 				auto meshComponent = entity["MeshComponent"];
 				if (meshComponent)
 				{
 					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
-					mc.meshPath = meshComponent["Mesh"].as<std::string>();
-					mc.materialPath = meshComponent["Material"].as<std::string>();
+
+					TryDeserailize<std::string>(meshComponent, "Mesh", &mc.meshPath);
+					TryDeserailize<std::string>(meshComponent, "Material", &mc.materialPath);
 				}
 
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent)
 				{
 					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
-					sc.scriptName = scriptComponent["Name"].as<std::string>();
+					TryDeserailize<std::string>(scriptComponent, "Name", &sc.scriptName);
 
 					sc.SetScript(sc.scriptName, Project::GetScriptClasses()[sc.scriptName], deserializedEntity);
 
@@ -167,9 +174,12 @@ namespace Eklipse
 
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap;
+			out << YAML::Key << "IsMain" << YAML::Value << camera.m_isMain;
 			out << YAML::Key << "FOV" << YAML::Value << camera.m_fov;
 			out << YAML::Key << "Near" << YAML::Value << camera.m_nearPlane;
 			out << YAML::Key << "Far" << YAML::Value << camera.m_farPlane;
+			out << YAML::EndMap;
+
 			out << YAML::EndMap;
 		}
 
@@ -274,21 +284,21 @@ namespace Eklipse
 				uint32_t offset = property["Offset"].as<uint32_t>();
 
 				if (type == "int")
-					sc.SetScriptValue<int>(offset, property["Value"].as<int>());
+					sc.SetScriptValue<int>(offset, TryDeserailize(property, "Value", 0));
 				else if (type == "float")
-					sc.SetScriptValue<float>(offset, property["Value"].as<float>());
+					sc.SetScriptValue<float>(offset, TryDeserailize(property, "Value", 0.0f));
 				else if (type == "bool")
-					sc.SetScriptValue<bool>(offset, property["Value"].as<bool>());
+					sc.SetScriptValue<bool>(offset, TryDeserailize(property, "Value", false));
 				else if (type == "std::string")
-					sc.SetScriptValue<std::string>(offset, property["Value"].as<std::string>());
+					sc.SetScriptValue<std::string>(offset, TryDeserailize(property, "Value", std::string{}));
 				else if (type == "glm::vec2")
-					sc.SetScriptValue<glm::vec2>(offset, property["Value"].as<glm::vec2>());
+					sc.SetScriptValue<glm::vec2>(offset, TryDeserailize(property, "Value", glm::vec2{}));
 				else if (type == "glm::vec3")
-					sc.SetScriptValue<glm::vec3>(offset, property["Value"].as<glm::vec3>());
+					sc.SetScriptValue<glm::vec3>(offset, TryDeserailize(property, "Value", glm::vec3{}));
 				else if (type == "glm::vec4")
-					sc.SetScriptValue<glm::vec4>(offset, property["Value"].as<glm::vec4>());
+					sc.SetScriptValue<glm::vec4>(offset, TryDeserailize(property, "Value", glm::vec4{}));
 				else if (type == "glm::mat4")
-					sc.SetScriptValue<glm::mat4>(offset, property["Value"].as<glm::mat4>());
+					sc.SetScriptValue<glm::mat4>(offset, TryDeserailize(property, "Value", glm::mat4{}));
 				else
 					EK_CORE_WARN("Unknown type '{0}' for script property '{1}'", type, name);
 			}

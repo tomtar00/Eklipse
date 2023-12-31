@@ -164,19 +164,19 @@ namespace Editor
 			}
 			if (ImGui::BeginMenu("Scene"))
 			{
-				if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, m_editorState & EditorState::EDITING))
+				if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, m_editorState & EDITING))
 				{
 					OnScenePlay();
 				}
-				if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, m_editorState & EditorState::PLAYING))
+				if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, m_editorState & PLAYING))
 				{
 					OnScenePause();
 				}
-				if (ImGui::MenuItemEx("Resume", nullptr, "Ctrl+Shift+R", false, m_editorState & EditorState::PAUSED))
+				if (ImGui::MenuItemEx("Resume", nullptr, "Ctrl+Shift+R", false, m_editorState & PAUSED))
 				{
 					OnSceneResume();
 				}
-				if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q", false, m_editorState & (EditorState::PLAYING | EditorState::PAUSED)))
+				if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q", false, m_editorState & (PLAYING | PAUSED)))
 				{
 					OnSceneStop();
 				}
@@ -236,14 +236,14 @@ namespace Editor
 	{
 		EK_PROFILE();
 
-		if (m_editorState & EditorState::PLAYING)
+		if (m_editorState & PLAYING)
 			Eklipse::Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
 		
 		Eklipse::Renderer::BeginFrame();
 
 		// === Record scene framebuffer
 		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
-		if (m_editorState & EditorState::EDITING)
+		if (m_editorState & EDITING)
 			Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene(), m_editorCamera, m_editorCameraTransform);
 		else
 			Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene());
@@ -365,10 +365,10 @@ namespace Editor
 	}
 	void EditorLayer::OnScenePlay()
 	{
-		if (m_editorState & EditorState::PLAYING)
+		if (m_editorState & PLAYING)
 			return;
 
-		m_editorState = EditorState::PLAYING;
+		m_editorState = PLAYING;
 		m_canControlEditorCamera = false;
 
 		Eklipse::Application::Get().SetActiveScene(Eklipse::Scene::Copy(m_editorScene));
@@ -379,10 +379,10 @@ namespace Editor
 	}
 	void EditorLayer::OnSceneStop()
 	{
-		if (m_editorState & EditorState::EDITING)
+		if (m_editorState & EDITING)
 			return;
 
-		m_editorState = EditorState::EDITING;
+		m_editorState = EDITING;
 		m_canControlEditorCamera = true;
 
 		Eklipse::Application::Get().GetActiveScene()->OnSceneStop();
@@ -393,18 +393,18 @@ namespace Editor
 	}
 	void EditorLayer::OnScenePause()
 	{
-		if (m_editorState & EditorState::PAUSED)
+		if (m_editorState & PAUSED)
 			return;
 
-		m_editorState = EditorState::PAUSED;
+		m_editorState = PAUSED;
 		m_canControlEditorCamera = false;
 	}
 	void EditorLayer::OnSceneResume()
 	{
-		if (m_editorState & EditorState::PLAYING)
+		if (m_editorState & PLAYING)
 			return;
 
-		m_editorState = EditorState::PLAYING;
+		m_editorState = PLAYING;
 		m_canControlEditorCamera = false;
 	}
 	void EditorLayer::OnProjectUnload()

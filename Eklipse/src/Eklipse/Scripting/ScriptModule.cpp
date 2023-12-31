@@ -102,7 +102,7 @@ namespace Eklipse
 		}
 	}
 
-	void ScriptModule::GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath)
+	bool ScriptModule::GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath)
 	{
 		if (!std::filesystem::exists(targetDirectoryPath))
 			std::filesystem::create_directories(targetDirectoryPath);
@@ -140,27 +140,28 @@ namespace Eklipse
 		if (m_parser.GetClasses().empty())
 		{
 			EK_CORE_WARN("No script classes found!");
+			return false;
 		}
-		else
-		{
-			factoryFile << "extern \"C\"\n";
-			factoryFile << "{\n";
+		
+		factoryFile << "extern \"C\"\n";
+		factoryFile << "{\n";
 
-			// generate script export functions
-			for (const auto& [className, classInfo] : m_parser.GetClasses())
+		// generate script export functions
+		for (const auto& [className, classInfo] : m_parser.GetClasses())
+		{
+			// config fill fucntion
+			factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
+			factoryFile << "\t" << "{\n";
+			factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
+			for (const auto& [memberName, memberInfo] : classInfo.members)
 			{
-				// config fill fucntion
-				factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
-				factoryFile << "\t" << "{\n";
-				factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
-				for (const auto& [memberName, memberInfo] : classInfo.members)
-				{
-					factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
-				}
-				factoryFile << "\t" << "}\n";
+				factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
 			}
-			factoryFile << "}";
+			factoryFile << "\t" << "}\n";
 		}
+		factoryFile << "}";
+		
+		return true;
 	}
 	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath)
 	{
@@ -223,7 +224,12 @@ namespace Eklipse
 		
 		Unload();
 
-		GenerateFactoryFile(Project::GetActive()->GetConfig().scriptGeneratedDirectoryPath);
+		bool hasCodeToCompile = GenerateFactoryFile(Project::GetActive()->GetConfig().scriptGeneratedDirectoryPath);
+		if (!hasCodeToCompile)
+		{
+			return;
+		}
+
 		CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath);
 
 		if (std::filesystem::exists(m_libraryPath))
@@ -243,7 +249,7 @@ namespace Eklipse
 		}
 		else
 		{
-			EK_CORE_ERROR("Recompilation failed!");
+			EK_CORE_ERROR("Recompilation failed! Script source code has syntax errors or scripts contain only declaration, without definitions");
 		}
 
 		StartWatchingSource();

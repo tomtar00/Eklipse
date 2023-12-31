@@ -89,7 +89,7 @@ namespace Eklipse
 		// set main camera
 		m_registry.view<CameraComponent>().each([&](auto entityID, auto& cameraComponent)
 		{
-			if (*cameraComponent.camera.IsMain())
+			if (cameraComponent.camera.m_isMain)
 			{
 				m_mainCamera = &cameraComponent.camera;
 				m_mainCameraTransform = &m_registry.get<TransformComponent>(entityID).transform;

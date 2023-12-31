@@ -48,11 +48,6 @@ namespace Eklipse
 		EK_PROFILE();
 
 		Stats::Get().Reset();
-
-		/*camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
-		auto& viewProjection = camera.GetViewProjectionMatrix();
-		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));*/
-
 		RenderCommand::API->BeginFrame();
 	}
 	void Renderer::BeginRenderPass(Ref<Framebuffer> framebuffer)
@@ -74,7 +69,10 @@ namespace Eklipse
 		for (auto& entity : view)
 		{
 			auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
+
+#ifdef EK_DEBUG
 			if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) continue;
+#endif
 
 			glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
 			meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
@@ -88,11 +86,19 @@ namespace Eklipse
 		auto camera = scene->GetMainCamera();
 		auto cameraTransform = scene->GetMainCameraTransform();
 
-		// TODO: Handle no main camera on scene
-		EK_ASSERT(camera, "Main camera is null!");
-		EK_ASSERT(cameraTransform, "Main camera transform is null!");
-
-		RenderScene(scene, *camera, *cameraTransform);
+#ifdef EK_DEBUG
+		if (!camera)
+		{
+			EK_CORE_ERROR("No main camera present on the scene!");
+			return;
+		}
+		else if (!cameraTransform)
+		{
+			EK_CORE_ERROR("Main camera transform is null!");
+		}
+		else
+#endif
+			RenderScene(scene, *camera, *cameraTransform);
 	}
 	void Renderer::EndRenderPass(Ref<Framebuffer> framebuffer)
 	{

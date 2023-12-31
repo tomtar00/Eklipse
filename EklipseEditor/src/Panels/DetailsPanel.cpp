@@ -86,7 +86,7 @@ namespace Editor
 			auto* cameraComp = entity.TryGetComponent<Eklipse::CameraComponent>();
 			if (cameraComp && ImGui::CollapsingHeader("Camera"))
 			{
-				ImGui::Checkbox("Is Main", cameraComp->camera.IsMain());
+				ImGui::Checkbox("Is Main", &cameraComp->camera.m_isMain);
 				ImGui::SliderFloat("FOV", &cameraComp->camera.m_fov, 0.0f, 180.0f);
 				ImGui::SliderFloat("Near", &cameraComp->camera.m_nearPlane, 0.01f, 1000.0f);
 				ImGui::SliderFloat("Far", &cameraComp->camera.m_farPlane, 0.01f, 1000.0f);

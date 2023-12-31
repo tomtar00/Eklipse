@@ -14,7 +14,14 @@ namespace Editor
 
 		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		if (EditorLayer::Get().GetEditorState() & EDITING)
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		else
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1, 1 });
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1);
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 1.0f, 0, 0, 1.0f });
+		}
 		ImGui::Begin("View");
 		auto& camera = EditorLayer::Get().GetEditorCamera();
 		auto* viewMatrix = glm::value_ptr(camera.GetViewMatrix());
@@ -28,7 +35,7 @@ namespace Editor
 		EditorLayer::Get().GUI->DrawViewport(m_viewportSize.x, m_viewportSize.y);
 		m_aspectRatio = m_viewportSize.x / m_viewportSize.y;
 
-		if (EditorLayer::Get().GetEditorState() == EDITING)
+		if (EditorLayer::Get().GetEditorState() & EDITING)
 		{
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(m_viewportPosition.x, m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y);
@@ -85,7 +92,13 @@ namespace Editor
 		}
 
 		ImGui::End();
-		ImGui::PopStyleVar();
+		if (EditorLayer::Get().GetEditorState() & EDITING)
+			ImGui::PopStyleVar();
+		else
+		{
+			ImGui::PopStyleVar(2);
+			ImGui::PopStyleColor();
+		}
 
 		return true;
 	}

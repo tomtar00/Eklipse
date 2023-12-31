@@ -40,7 +40,7 @@ namespace Eklipse
 		bool LinkLibrary(const std::filesystem::path& libraryFilePath);
 		void UnlinkLibrary();
 
-		void GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
+		bool GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
 		void CompileScripts(const std::filesystem::path& sourceDirectoryPath);
 		void FetchFactoryFunctions();
 
