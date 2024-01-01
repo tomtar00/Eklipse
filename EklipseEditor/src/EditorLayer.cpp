@@ -1,5 +1,4 @@
 #include "EditorLayer.h"
-#include <Eklipse/Renderer/Settings.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Project/Project.h>
 
@@ -8,7 +7,7 @@
 #include <filesystem>
 #include <nfd.h>
 
-namespace Editor
+namespace Eklipse
 {
 	EditorLayer::EditorLayer() : m_guiEnabled(true)
 	{
@@ -26,15 +25,15 @@ namespace Editor
 		m_guiLayerCreateInfo.dockingEnabled = true;
 		m_guiLayerCreateInfo.dockLayouts =
 		{
-			{ "Entities",	ImGuiDir_Left,	Eklipse::Dir_Opposite,	0.20f },
-			{ "Settings",	ImGuiDir_Down,	Eklipse::Dir_Same,		0.60f },
-			{ "Stats",		ImGuiDir_Down,	Eklipse::Dir_Same,		0.50f },
-			{ "Details",	ImGuiDir_Right,	Eklipse::Dir_Opposite,	0.25f },
-			{ "Profiler",	ImGuiDir_Down,	Eklipse::Dir_Opposite,	0.30f },
-			{ "Files",		ImGuiDir_Down,	Eklipse::Dir_Stack,		1.00f },
-			{ "Terminal",	ImGuiDir_Right,	Eklipse::Dir_Same,		0.50f },
-			{ "View",		ImGuiDir_Up,	Eklipse::Dir_Rest,		0.50f },
-			{ "Debug",		ImGuiDir_Down,	Eklipse::Dir_Stack,		0.50f }
+			{ "Entities",	ImGuiDir_Left,	Dir_Opposite,	0.20f },
+			{ "Settings",	ImGuiDir_Down,	Dir_Same,		0.60f },
+			{ "Stats",		ImGuiDir_Down,	Dir_Same,		0.50f },
+			{ "Details",	ImGuiDir_Right,	Dir_Opposite,	0.25f },
+			{ "Profiler",	ImGuiDir_Down,	Dir_Opposite,	0.30f },
+			{ "Files",		ImGuiDir_Down,	Dir_Stack,		1.00f },
+			{ "Terminal",	ImGuiDir_Right,	Dir_Same,		0.50f },
+			{ "View",		ImGuiDir_Up,	Dir_Rest,		0.50f },
+			{ "Debug",		ImGuiDir_Down,	Dir_Stack,		0.50f }
 		};
 		m_guiLayerCreateInfo.panels =
 		{
@@ -45,13 +44,13 @@ namespace Editor
 			&m_profilerPanel,
 			&m_viewPanel,
 			&m_filesPanel,
-			&Eklipse::Application::Get().GetDebugPanel(),
-			&Eklipse::Application::Get().GetTerminalPanel()
+			&Application::Get().GetDebugPanel(),
+			&Application::Get().GetTerminalPanel()
 		};
 
-		m_editorScene = Eklipse::CreateRef<Eklipse::Scene>();
+		m_editorScene = CreateRef<Scene>();
 		m_entitiesPanel.SetContext(m_editorScene);
-		Eklipse::Application::Get().SwitchScene(m_editorScene);
+		Application::Get().SwitchScene(m_editorScene);
 
 		EK_INFO("Editor layer attached");
 	}
@@ -69,11 +68,11 @@ namespace Editor
 			static float pitch = 0.0f;
 			static float yaw = 0.0f;
 			static float distance = 10.0f;
-			if (Eklipse::Input::IsScrollingUp())
+			if (Input::IsScrollingUp())
 			{
 				distance -= 0.5f;
 			}
-			if (Eklipse::Input::IsScrollingDown())
+			if (Input::IsScrollingDown())
 			{
 				distance += 0.5f;
 			}
@@ -84,24 +83,24 @@ namespace Editor
 
 			// TODO: check if input was started in view window
 
-			if (Eklipse::Input::IsKeyDown(Eklipse::KeyCode::F))
+			if (Input::IsKeyDown(KeyCode::F))
 			{
 				if (GetSelection().type == SelectionType::ENTITY)
-					targetPosition = GetSelection().entity.GetComponent<Eklipse::TransformComponent>().transform.position;
+					targetPosition = GetSelection().entity.GetComponent<TransformComponent>().transform.position;
 			}
-			else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button1))
+			else if (Input::IsMouseButtonDown(MouseCode::Button1))
 			{
-				float mouseXDelta = -Eklipse::Input::GetMouseDeltaX();
-				float mouseYDelta = Eklipse::Input::GetMouseDeltaY();
+				float mouseXDelta = -Input::GetMouseDeltaX();
+				float mouseYDelta = Input::GetMouseDeltaY();
 
 				pitch -= mouseYDelta * deltaTime * 100.f;
 				pitch = glm::clamp(pitch, -89.0f, 89.0f);
 				yaw -= mouseXDelta * deltaTime * 100.f;
 			}
-			else if (Eklipse::Input::IsMouseButtonDown(Eklipse::MouseCode::Button2))
+			else if (Input::IsMouseButtonDown(MouseCode::Button2))
 			{
-				float mouseXDelta = Eklipse::Input::GetMouseDeltaX();
-				float mouseYDelta = -Eklipse::Input::GetMouseDeltaY();
+				float mouseXDelta = Input::GetMouseDeltaX();
+				float mouseYDelta = -Input::GetMouseDeltaY();
 
 				glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
 				glm::vec3 cameraRight = glm::normalize(glm::cross(cameraDir, cameraUp));
@@ -118,6 +117,24 @@ namespace Editor
 			glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
 			m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));
 		}
+		// ===================================
+
+		// == DRAW ===========================
+		Renderer::BeginRenderPass(m_viewportFramebuffer);
+
+		if (m_editorState & PLAYING)
+			Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
+
+		if (m_editorState & EDITING)
+			Renderer::RenderScene(Application::Get().GetActiveScene(), m_editorCamera, m_editorCameraTransform);
+		else
+			Renderer::RenderScene(Application::Get().GetActiveScene());
+
+		Renderer::EndRenderPass(m_viewportFramebuffer);
+
+		Renderer::BeginRenderPass(m_defaultFramebuffer);
+		GUI->Render();
+		Renderer::EndRenderPass(m_defaultFramebuffer);
 		// ===================================
 	}
 	void EditorLayer::OnGUI(float deltaTime)
@@ -150,7 +167,7 @@ namespace Editor
 				}
 				if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
 				{
-					Eklipse::Application::Get().Close();
+					Application::Get().Close();
 				}
 				ImGui::EndMenu();
 			}
@@ -158,7 +175,7 @@ namespace Editor
 			{
 				if (ImGui::MenuItemEx("Debug", nullptr, nullptr))
 				{
-					Eklipse::Application::Get().GetDebugPanel().SetVisible(true);
+					Application::Get().GetDebugPanel().SetVisible(true);
 				}
 				ImGui::EndMenu();
 			}
@@ -232,70 +249,44 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 	}
-	void EditorLayer::DrawFrame(float deltaTime)
-	{
-		EK_PROFILE();
-
-		if (m_editorState & PLAYING)
-			Eklipse::Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
-		
-		Eklipse::Renderer::BeginFrame();
-
-		// === Record scene framebuffer
-		Eklipse::Renderer::BeginRenderPass(m_viewportFramebuffer);
-		if (m_editorState & EDITING)
-			Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene(), m_editorCamera, m_editorCameraTransform);
-		else
-			Eklipse::Renderer::RenderScene(Eklipse::Application::Get().GetActiveScene());
-		Eklipse::Renderer::EndRenderPass(m_viewportFramebuffer);
-		// ============================
-
-		// === Record ImGui framebuffer
-		Eklipse::Renderer::BeginRenderPass(m_defaultFramebuffer);
-		GUI->Render();
-		Eklipse::Renderer::EndRenderPass(m_defaultFramebuffer);
-		// ============================
-
-		Eklipse::Renderer::Submit();
-	}
-	void EditorLayer::OnAPIHasInitialized(Eklipse::ApiType api)
+	void EditorLayer::OnAPIHasInitialized(ApiType api)
 	{
 		// Create default framebuffer (for ImGui)
 		{
-			Eklipse::FramebufferInfo fbInfo{};
-			fbInfo.framebufferType			= Eklipse::FramebufferType::DEFAULT;
-			fbInfo.width					= Eklipse::Application::Get().GetInfo().windowWidth;
-			fbInfo.height					= Eklipse::Application::Get().GetInfo().windowHeight;
+			FramebufferInfo fbInfo{};
+			fbInfo.framebufferType			= FramebufferType::DEFAULT;
+			fbInfo.width					= Application::Get().GetInfo().windowWidth;
+			fbInfo.height					= Application::Get().GetInfo().windowHeight;
 			fbInfo.numSamples				= 1;
-			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } };
-			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::FORMAT_UNDEFINED };
+			fbInfo.colorAttachmentInfos		= { { ImageFormat::RGBA8 } };
+			fbInfo.depthAttachmentInfo		= { ImageFormat::FORMAT_UNDEFINED };
 
-			m_defaultFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
+			m_defaultFramebuffer = Framebuffer::Create(fbInfo);
 		}
 
 		// Create off-screen framebuffer (for scene view)
 		{
-			Eklipse::FramebufferInfo fbInfo{};
-			fbInfo.framebufferType			= Eklipse::FramebufferType::SCENE_VIEW;
+			FramebufferInfo fbInfo{};
+			fbInfo.framebufferType			= FramebufferType::SCENE_VIEW;
 			fbInfo.width					= GetViewPanel().GetViewportSize().x > 0 ? GetViewPanel().GetViewportSize().x : 512;
 			fbInfo.height					= GetViewPanel().GetViewportSize().y > 0 ? GetViewPanel().GetViewportSize().y : 512;
-			fbInfo.numSamples				= Eklipse::RendererSettings::GetMsaaSamples();
-			fbInfo.colorAttachmentInfos		= { { Eklipse::ImageFormat::RGBA8 } };
-			fbInfo.depthAttachmentInfo		= { Eklipse::ImageFormat::D24S8 };
+			fbInfo.numSamples				= RendererSettings::GetMsaaSamples();
+			fbInfo.colorAttachmentInfos		= { { ImageFormat::RGBA8 } };
+			fbInfo.depthAttachmentInfo		= { ImageFormat::D24S8 };
 
-			m_viewportFramebuffer = Eklipse::Framebuffer::Create(fbInfo);
+			m_viewportFramebuffer = Framebuffer::Create(fbInfo);
 		}
 
 		GUI.reset();
-		GUI = Eklipse::ImGuiLayer::Create(GetGuiInfo());
-		Eklipse::Application::Get().PushOverlay(GUI);
+		GUI = ImGuiLayer::Create(GetGuiInfo());
+		Application::Get().PushOverlay(GUI);
 		GUI->Init();
 
 		OnLoadResources();
 	}
 	void EditorLayer::OnShutdownAPI()
 	{
-		Eklipse::Application::Get().PopOverlay(GUI);
+		Application::Get().PopOverlay(GUI);
 		ClearSelection();
 
 		GUI->Shutdown();
@@ -305,24 +296,24 @@ namespace Editor
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
 	}
-	void EditorLayer::NewProject(const Eklipse::Path& dirPath, const std::string& name)
+	void EditorLayer::NewProject(const Path& dirPath, const std::string& name)
 	{
 		OnProjectUnload();
 
-		auto project = Eklipse::Project::New();
-		if (!Eklipse::Project::Exists(dirPath))
+		auto project = Project::New();
+		if (!Project::Exists(dirPath))
 		{
 			// Create project directories and copy neccessary files
-			Eklipse::Project::SetupActive(name, dirPath);
+			Project::SetupActive(name, dirPath);
 
 			// Create default scene
-			auto scene = Eklipse::Scene::New("Untitled", project->GetConfig().startScenePath);
+			auto scene = Scene::New("Untitled", project->GetConfig().startScenePath);
 
 			// Save project
 			std::filesystem::path projectFilePath = dirPath.path() / (name + EK_PROJECT_FILE_EXTENSION);
-			Eklipse::Project::Save(project, projectFilePath);
+			Project::Save(project, projectFilePath);
 
-			Eklipse::Application::Get().SwitchScene(scene);
+			Application::Get().SwitchScene(scene);
 			OnProjectLoaded();
 		}
 		else
@@ -339,10 +330,10 @@ namespace Editor
 		EK_ASSERT(result == NFD_OKAY, "Failed to open project file! {0}", NFD_GetError());
 
 		OnProjectUnload();
-		auto project = Eklipse::Project::Load(outPath);
-		auto scene = Eklipse::Scene::Load(project->GetConfig().startScenePath);
+		auto project = Project::Load(outPath);
+		auto scene = Scene::Load(project->GetConfig().startScenePath);
 
-		Eklipse::Application::Get().SwitchScene(scene);
+		Application::Get().SwitchScene(scene);
 		m_editorScene.reset();
 		m_editorScene = scene;
 		m_entitiesPanel.SetContext(m_editorScene);
@@ -353,7 +344,7 @@ namespace Editor
 	void EditorLayer::SaveProject()
 	{
 		SaveScene();
-		Eklipse::Project::SaveActive();
+		Project::SaveActive();
 	}
 	void EditorLayer::SaveProjectAs()
 	{
@@ -361,7 +352,7 @@ namespace Editor
 	}
 	void EditorLayer::SaveScene()
 	{
-		Eklipse::Scene::Save(m_editorScene);
+		Scene::Save(m_editorScene);
 	}
 	void EditorLayer::OnScenePlay()
 	{
@@ -371,10 +362,10 @@ namespace Editor
 		m_editorState = PLAYING;
 		m_canControlEditorCamera = false;
 
-		Eklipse::Application::Get().SetActiveScene(Eklipse::Scene::Copy(m_editorScene));
-		Eklipse::Application::Get().GetActiveScene()->OnSceneStart();
+		Application::Get().SetActiveScene(Scene::Copy(m_editorScene));
+		Application::Get().GetActiveScene()->OnSceneStart();
 
-		m_entitiesPanel.SetContext(Eklipse::Application::Get().GetActiveScene());
+		m_entitiesPanel.SetContext(Application::Get().GetActiveScene());
 		ClearSelection();
 	}
 	void EditorLayer::OnSceneStop()
@@ -385,10 +376,10 @@ namespace Editor
 		m_editorState = EDITING;
 		m_canControlEditorCamera = true;
 
-		Eklipse::Application::Get().GetActiveScene()->OnSceneStop();
-		Eklipse::Application::Get().SetActiveScene(m_editorScene);
+		Application::Get().GetActiveScene()->OnSceneStop();
+		Application::Get().SetActiveScene(m_editorScene);
 
-		m_entitiesPanel.SetContext(Eklipse::Application::Get().GetActiveScene());
+		m_entitiesPanel.SetContext(Application::Get().GetActiveScene());
 		ClearSelection();
 	}
 	void EditorLayer::OnScenePause()
@@ -409,9 +400,9 @@ namespace Editor
 	}
 	void EditorLayer::OnProjectUnload()
 	{
-		Eklipse::Renderer::WaitDeviceIdle();
-		if (Eklipse::Project::GetActive())
-			Eklipse::Project::GetActive()->UnloadAssets();
+		Renderer::WaitDeviceIdle();
+		if (Project::GetActive())
+			Project::GetActive()->UnloadAssets();
 	}
 	void EditorLayer::OnLoadResources()
 	{
@@ -420,7 +411,7 @@ namespace Editor
 	void EditorLayer::OnProjectLoaded()
 	{
 		ClearSelection();
-		Eklipse::Project::GetActive()->LoadAssets();
+		Project::GetActive()->LoadAssets();
 		m_filesPanel.OnContextChanged();
 
 		m_editorScene->ApplyAllComponents();

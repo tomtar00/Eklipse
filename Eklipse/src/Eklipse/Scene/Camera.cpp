@@ -7,7 +7,7 @@
 
 namespace Eklipse
 {
-    void Camera::UpdateViewProjectionMatrix(Transform transform, float aspectRatio)
+    void Camera::UpdateViewProjectionMatrix(Transform& transform, float aspectRatio)
     {
         EK_PROFILE();
 

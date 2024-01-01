@@ -39,21 +39,16 @@ namespace Eklipse
 			{
 				DestroyImageViews(g_swapChainImageViews);
 				vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
-				for (uint32_t i = 0; i < g_swapChainImageCount; i++)
-				{
-					vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
-				}
 			}
-			else
+
+			for (uint32_t i = 0; i < g_swapChainImageCount; i++)
 			{
-				for (uint32_t i = 0; i < g_swapChainImageCount; i++)
-				{
-					for (auto& colorAttachment : m_framebufferAttachments[i].colorAttachments)
-						colorAttachment->Dispose();
+				for (auto& colorAttachment : m_framebufferAttachments[i].colorAttachments)
+					colorAttachment->Dispose();
+				if (m_framebufferAttachments[i].depthAttachment)
 					m_framebufferAttachments[i].depthAttachment->Dispose();
 
-					vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
-				}
+				vkDestroyFramebuffer(g_logicalDevice, m_framebuffers[i], nullptr);
 			}
 		}
 		VkRenderPass VKFramebuffer::CreateRenderPass()
@@ -177,8 +172,15 @@ namespace Eklipse
 		}
 		void VKFramebuffer::Build()
 		{	
+			m_framebuffers.resize(g_swapChainImageCount);
+			m_framebufferAttachments.resize(g_swapChainImageCount);
+
 			if (m_framebufferInfo.framebufferType & FramebufferType::DEFAULT)
 			{
+				if (m_framebufferInfo.colorAttachmentInfos.size() > 1)
+				{
+					EK_CORE_WARN("Eklipse only supports 1 color attachment for default framebuffer!");
+				}
 				VkFormat desiredFormat = ConvertToVKFormat(m_framebufferInfo.colorAttachmentInfos[0].textureFormat);
 				g_swapChainImageFormat = desiredFormat;
 				g_swapChain = CreateSwapChain(m_framebufferInfo.width, m_framebufferInfo.height,
@@ -191,13 +193,35 @@ namespace Eklipse
 
 				m_renderPass = CreateRenderPass();
 				m_framebuffers.resize(g_swapChainImageCount);
+				m_framebufferAttachments.resize(g_swapChainImageCount);
 				for (size_t i = 0; i < g_swapChainImageViews.size(); ++i)
 				{
+					std::vector<VkImageView> attachments;
+
+					attachments.push_back(g_swapChainImageViews[i]);
+
+					auto& depthAttachmentInfo = m_framebufferInfo.depthAttachmentInfo;
+					if (depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED)
+					{
+						TextureInfo textureInfo{};
+						textureInfo.width = m_framebufferInfo.width;
+						textureInfo.height = m_framebufferInfo.height;
+						textureInfo.mipMapLevel = 1;
+						textureInfo.samples = m_framebufferInfo.numSamples;
+						textureInfo.imageFormat = depthAttachmentInfo.textureFormat;
+						textureInfo.imageAspect = ImageAspect::DEPTH;
+						textureInfo.imageUsage = ImageUsage::DEPTH_ATTACHMENT;
+
+						Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(Texture2D::Create(textureInfo));
+						m_framebufferAttachments[i].depthAttachment = texture;
+						attachments.push_back(texture->GetImageView());
+					}
+
 					VkFramebufferCreateInfo framebufferInfo{};
 					framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 					framebufferInfo.renderPass		= m_renderPass;
-					framebufferInfo.attachmentCount = 1;
-					framebufferInfo.pAttachments	= &g_swapChainImageViews[i];
+					framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+					framebufferInfo.pAttachments	= attachments.data();
 					framebufferInfo.width			= m_framebufferInfo.width;
 					framebufferInfo.height			= m_framebufferInfo.height;
 					framebufferInfo.layers			= 1;

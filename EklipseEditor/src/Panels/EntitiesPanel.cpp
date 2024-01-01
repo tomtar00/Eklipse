@@ -3,7 +3,7 @@
 
 #include <Eklipse/Scene/Components.h>
 
-namespace Editor
+namespace Eklipse
 {
 	bool EntitiesPanel::OnGUI(float deltaTime)
 	{
@@ -24,8 +24,8 @@ namespace Editor
 
 		m_sceneContext->ForEachEntity([&](auto entityID)
 		{
-			Eklipse::Entity entity{ entityID, m_sceneContext.get() };
-			auto& nameComponent = entity.GetComponent<Eklipse::NameComponent>();
+			Entity entity{ entityID, m_sceneContext.get() };
+			auto& nameComponent = entity.GetComponent<NameComponent>();
 
 			bool expand = ImGui::TreeNodeEx(nameComponent.name.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth);
 			
@@ -60,7 +60,7 @@ namespace Editor
 		ImGui::End();
 		return true;
 	}
-	void EntitiesPanel::SetContext(Eklipse::Ref<Eklipse::Scene> scene)
+	void EntitiesPanel::SetContext(Ref<Scene> scene)
 	{
 		m_sceneContext = scene;
 	}

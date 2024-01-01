@@ -61,8 +61,7 @@ namespace Eklipse
 		EK_PROFILE();
 
 		camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
-		auto& viewProjection = camera.GetViewProjectionMatrix();
-		s_cameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
+		s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
 
 		// Geometry
 		auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();

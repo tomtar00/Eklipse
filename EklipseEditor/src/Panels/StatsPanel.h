@@ -1,9 +1,9 @@
 #pragma once
 #include <Eklipse.h>
 
-namespace Editor
+namespace Eklipse
 {
-	class StatsPanel : public Eklipse::GuiPanel
+	class StatsPanel : public GuiPanel
 	{
 	public:
 		virtual bool OnGUI(float deltaTime) override;		

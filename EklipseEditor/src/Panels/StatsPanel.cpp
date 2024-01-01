@@ -3,7 +3,7 @@
 #include <Eklipse/Utils/Stats.h>
 #include "EditorLayer.h"
 
-namespace Editor
+namespace Eklipse
 {
 	bool StatsPanel::OnGUI(float deltaTime)
 	{
@@ -13,7 +13,7 @@ namespace Editor
 
 		ImGui::Begin("Stats");
 
-		auto& stats = Eklipse::Stats::Get();
+		auto& stats = Stats::Get();
 
 		ImGui::Text("FPS: %f", stats.fps);
 		ImGui::Text("Frame time: %f ms", stats.frameTime * 1000);

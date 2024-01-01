@@ -3,12 +3,12 @@
 #include <Eklipse/Project/Project.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-namespace Editor
+namespace Eklipse
 {
 	void FilesPanel::LoadResources()
 	{
-		m_folderIcon = Eklipse::GuiIcon::Create(Eklipse::Application::Get().GetAssetLibrary(), "Assets/Icons/folder.png");
-		m_fileIcon = Eklipse::GuiIcon::Create(Eklipse::Application::Get().GetAssetLibrary(), "Assets/Icons/file.png");
+		m_folderIcon = GuiIcon::Create(Application::Get().GetAssetLibrary(), "Assets/Icons/folder.png");
+		m_fileIcon = GuiIcon::Create(Application::Get().GetAssetLibrary(), "Assets/Icons/file.png");
 	}
 
 	bool FilesPanel::OnGUI(float deltaTime)
@@ -90,7 +90,7 @@ namespace Editor
 
 				if (ImGui::Button("Create") && !shaderName.empty())
 				{
-					Eklipse::Path templatePath = "//Shaders/Default3D.eksh";
+					Path templatePath = "//Shaders/Default3D.eksh";
 					if (templateOption == 1)
 						templatePath = "//Shaders/Default2D.eksh";
 
@@ -108,7 +108,7 @@ namespace Editor
 			if (ImGui::BeginPopupModal("Create New Material", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				static std::string materialName = "NewMaterial";
-				static Eklipse::Path shaderPath = "//Shaders/Default3D.eksh";
+				static Path shaderPath = "//Shaders/Default3D.eksh";
 
 				ImGui::TextUnformatted("Material Name");
 				ImGui::SameLine();
@@ -177,7 +177,7 @@ namespace Editor
 			std::string filenameString = path.filename().string();
 
 			ImGui::PushID(filenameString.c_str());
-			Eklipse::Ref<Eklipse::GuiIcon> icon = directoryEntry.is_directory() ? m_folderIcon : m_fileIcon;
+			Ref<GuiIcon> icon = directoryEntry.is_directory() ? m_folderIcon : m_fileIcon;
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			ImGui::ImageButton((ImTextureID)icon->GetID(), { thumbnailSize, thumbnailSize });
 
@@ -202,7 +202,7 @@ namespace Editor
 				{
 					DetailsSelectionInfo info{};
 					info.type = SelectionType::MATERIAL;
-					info.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(directoryEntry.path()).get();
+					info.material = Project::GetActive()->GetAssetLibrary()->GetMaterial(directoryEntry.path()).get();
 					EditorLayer::Get().SetSelection(info);
 				}
 			}
@@ -220,16 +220,16 @@ namespace Editor
 	}
 	void FilesPanel::OnContextChanged()
 	{
-		m_workingDirPath = Eklipse::Project::GetActive()->GetConfig().assetsDirectoryPath;
+		m_workingDirPath = Project::GetActive()->GetConfig().assetsDirectoryPath;
 		m_currentPath = m_workingDirPath;
 	}
-	void FilesPanel::CreateMaterial(const Eklipse::Path& dstPath, const Eklipse::Path& shaderPath)
+	void FilesPanel::CreateMaterial(const Path& dstPath, const Path& shaderPath)
 	{
-		Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(dstPath, shaderPath);
+		Project::GetActive()->GetAssetLibrary()->GetMaterial(dstPath, shaderPath);
 	}
-	void FilesPanel::CreateShader(const Eklipse::Path& dstPath, const Eklipse::Path& templatePath)
+	void FilesPanel::CreateShader(const Path& dstPath, const Path& templatePath)
 	{
-		Eklipse::CopyFileContent(dstPath, templatePath);
-		Eklipse::Project::GetActive()->GetAssetLibrary()->GetShader(dstPath);
+		CopyFileContent(dstPath, templatePath);
+		Project::GetActive()->GetAssetLibrary()->GetShader(dstPath);
 	}
 }

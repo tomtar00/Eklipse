@@ -9,7 +9,7 @@
 #include <Panels/ProfilerPanel.h>
 #include <Panels/FilesPanel.h>
 
-namespace Editor
+namespace Eklipse
 {
 	enum EditorState
 	{
@@ -26,11 +26,11 @@ namespace Editor
 	struct DetailsSelectionInfo
 	{
 		SelectionType type = SelectionType::NONE;
-		Eklipse::Entity entity;
-		Eklipse::Material* material;
+		Entity entity;
+		Material* material;
 	};
 
-	class EditorLayer : public Eklipse::Layer
+	class EditorLayer : public Layer
 	{
 	public:
 		EditorLayer();
@@ -40,12 +40,11 @@ namespace Editor
 		void OnDetach() override;
 		void OnUpdate(float deltaTime) override;
 		void OnGUI(float deltaTime) override;
-		void DrawFrame(float deltaTime);
 
-		void OnAPIHasInitialized(Eklipse::ApiType api);
+		void OnAPIHasInitialized(ApiType api);
 		void OnShutdownAPI();
 
-		void NewProject(const Eklipse::Path& path, const std::string& name);
+		void NewProject(const Path& path, const std::string& name);
 		void OpenProject();
 		void SaveProject();
 		void SaveProjectAs();
@@ -65,25 +64,25 @@ namespace Editor
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
-		inline Eklipse::Camera& GetEditorCamera() { return m_editorCamera; }
-		inline Eklipse::GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
+		inline Camera& GetEditorCamera() { return m_editorCamera; }
+		inline GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
 
 		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl && (m_editorState & EditorState::EDITING); }
 		void SetSelection(DetailsSelectionInfo info);
 		void ClearSelection();
 
-		Eklipse::Ref<Eklipse::ImGuiLayer> GUI;
+		Ref<ImGuiLayer> GUI;
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
 
-		Eklipse::GuiLayerConfigInfo m_guiLayerCreateInfo{};
-		Eklipse::Ref<Eklipse::Scene> m_editorScene;
-		Eklipse::Ref<Eklipse::Framebuffer> m_defaultFramebuffer;
-		Eklipse::Ref<Eklipse::Framebuffer> m_viewportFramebuffer;
-		Eklipse::Camera m_editorCamera;
-		Eklipse::Transform m_editorCameraTransform;
+		GuiLayerConfigInfo m_guiLayerCreateInfo{};
+		Ref<Scene> m_editorScene;
+		Ref<Framebuffer> m_defaultFramebuffer;
+		Ref<Framebuffer> m_viewportFramebuffer;
+		Camera m_editorCamera;
+		Transform m_editorCameraTransform;
 		bool m_canControlEditorCamera = false;
 
 		EditorState m_editorState = EditorState::EDITING;

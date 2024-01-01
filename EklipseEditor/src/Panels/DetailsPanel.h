@@ -2,17 +2,17 @@
 #include <Eklipse.h>
 #include <Eklipse/Scene/Entity.h>
 
-namespace Editor
+namespace Eklipse
 {
-	class DetailsPanel : public Eklipse::GuiPanel
+	class DetailsPanel : public GuiPanel
 	{
 	public:
 		void Setup(std::string& name);
 		
 	private:
 		virtual bool OnGUI(float deltaTime) override;
-		void OnEntityGUI(Eklipse::Entity entity);
-		void OnMaterialGUI(Eklipse::Material* material);
+		void OnEntityGUI(Entity entity);
+		void OnMaterialGUI(Material* material);
 
 	private:
 		std::string m_entityNameBuffer;

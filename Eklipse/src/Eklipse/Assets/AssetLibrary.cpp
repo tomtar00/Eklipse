@@ -32,6 +32,10 @@ namespace Eklipse
     {
         // Load all recognized assets
         m_assetsDirectoryPath = assetsDirectoryPath;
+        if (!std::filesystem::exists(assetsDirectoryPath.path()))
+		{
+			std::filesystem::create_directories(assetsDirectoryPath.path());
+		}
         for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator(assetsDirectoryPath))
         {
             if (std::filesystem::is_directory(directoryEntry.path()))

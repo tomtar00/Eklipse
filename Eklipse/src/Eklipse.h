@@ -6,6 +6,7 @@
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <Eklipse/Core/Input.h>
+#include <Eklipse/Renderer/Settings.h>
 
 // #include <Eklipse/Renderer/Renderer.h>
 // #include <Eklipse/Scene/Components.h>

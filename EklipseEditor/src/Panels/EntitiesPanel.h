@@ -1,15 +1,15 @@
 #pragma once
 #include <Eklipse.h>
 
-namespace Editor
+namespace Eklipse
 {
-	class EntitiesPanel : public Eklipse::GuiPanel
+	class EntitiesPanel : public GuiPanel
 	{
 	public:
 		virtual bool OnGUI(float deltaTime) override;
-		void SetContext(Eklipse::Ref<Eklipse::Scene> scene);
+		void SetContext(Ref<Scene> scene);
 
 	private:
-		Eklipse::Ref<Eklipse::Scene> m_sceneContext = nullptr;
+		Ref<Scene> m_sceneContext = nullptr;
 	};
 }

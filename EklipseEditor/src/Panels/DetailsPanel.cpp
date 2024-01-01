@@ -7,7 +7,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Editor
+namespace Eklipse
 {
 	void DetailsPanel::Setup(std::string& name)
 	{
@@ -42,20 +42,20 @@ namespace Editor
 		ImGui::End();
 		return true;
 	}
-	void DetailsPanel::OnEntityGUI(Eklipse::Entity entity)
+	void DetailsPanel::OnEntityGUI(Entity entity)
 	{
 		// Right-click menu
 		{
 			if (ImGui::BeginPopupContextWindow())
 			{
-				if (ImGui::MenuItem("Add Mesh Component") && !entity.HasComponent<Eklipse::MeshComponent>())
-					entity.AddComponent<Eklipse::MeshComponent>();
+				if (ImGui::MenuItem("Add Mesh Component") && !entity.HasComponent<MeshComponent>())
+					entity.AddComponent<MeshComponent>();
 
-				if (ImGui::MenuItem("Add Script Component") && !entity.HasComponent<Eklipse::ScriptComponent>())
-					entity.AddComponent<Eklipse::ScriptComponent>();
+				if (ImGui::MenuItem("Add Script Component") && !entity.HasComponent<ScriptComponent>())
+					entity.AddComponent<ScriptComponent>();
 
-				if (ImGui::MenuItem("Add Camera Component") && !entity.HasComponent<Eklipse::CameraComponent>())
-					entity.AddComponent<Eklipse::CameraComponent>();
+				if (ImGui::MenuItem("Add Camera Component") && !entity.HasComponent<CameraComponent>())
+					entity.AddComponent<CameraComponent>();
 
 				ImGui::EndPopup();
 			}
@@ -67,14 +67,14 @@ namespace Editor
 			{
 				if (m_entityNameBuffer.size() > 0)
 				{
-					entity.GetComponent<Eklipse::NameComponent>().name = m_entityNameBuffer;
+					entity.GetComponent<NameComponent>().name = m_entityNameBuffer;
 				}
 			}
 		}
 
 		// Transform
 		{
-			auto& transComp = entity.GetComponent<Eklipse::TransformComponent>();
+			auto& transComp = entity.GetComponent<TransformComponent>();
 			ImGui::DragFloat3("Position", glm::value_ptr(transComp.transform.position), 0.1f);
 			ImGui::DragFloat3("Rotation", glm::value_ptr(transComp.transform.rotation), 0.1f);
 			ImGui::DragFloat3("Scale", glm::value_ptr(transComp.transform.scale), 0.1f);
@@ -83,7 +83,7 @@ namespace Editor
 
 		// Camera
 		{
-			auto* cameraComp = entity.TryGetComponent<Eklipse::CameraComponent>();
+			auto* cameraComp = entity.TryGetComponent<CameraComponent>();
 			if (cameraComp && ImGui::CollapsingHeader("Camera"))
 			{
 				ImGui::Checkbox("Is Main", &cameraComp->camera.m_isMain);
@@ -95,7 +95,7 @@ namespace Editor
 
 		// Mesh
 		{
-			auto* meshComp = entity.TryGetComponent<Eklipse::MeshComponent>();
+			auto* meshComp = entity.TryGetComponent<MeshComponent>();
 			if (meshComp != nullptr && ImGui::CollapsingHeader("Mesh"))
 			{
 				ImGui::Indent();
@@ -103,13 +103,13 @@ namespace Editor
 				ImGui::InputText("Material##Input", &meshComp->materialPath);
 				if (ImGui::Button("Apply"))
 				{
-					bool valid = Eklipse::Path::CheckPathValid(meshComp->meshPath, { ".obj" });	 // TODO: Check other formats
-					valid = valid && Eklipse::Path::CheckPathValid(meshComp->materialPath, { EK_MATERIAL_EXTENSION });
+					bool valid = Path::CheckPathValid(meshComp->meshPath, { ".obj" });	 // TODO: Check other formats
+					valid = valid && Path::CheckPathValid(meshComp->materialPath, { EK_MATERIAL_EXTENSION });
 
 					if (valid)
 					{
-						meshComp->mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
-						meshComp->material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
+						meshComp->mesh = Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
+						meshComp->material = Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
 					}
 				}
 				ImGui::Unindent();
@@ -118,7 +118,7 @@ namespace Editor
 
 		// Script
 		{
-			auto* scriptComp = entity.TryGetComponent<Eklipse::ScriptComponent>();
+			auto* scriptComp = entity.TryGetComponent<ScriptComponent>();
 			if (scriptComp != nullptr && ImGui::CollapsingHeader("Script"))
 			{
 				ImGui::Indent();
@@ -126,7 +126,7 @@ namespace Editor
 				// script switch combo
 				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
 				{
-					for (auto&& [className, classInfo] : Eklipse::Project::GetScriptClasses())
+					for (auto&& [className, classInfo] : Project::GetScriptClasses())
 					{
 						bool isSelected = (scriptComp->scriptName.c_str() == className);
 						if (ImGui::Selectable(className.c_str(), isSelected))
@@ -171,7 +171,7 @@ namespace Editor
 			}
 		}
 	}
-	void DetailsPanel::OnMaterialGUI(Eklipse::Material* material)
+	void DetailsPanel::OnMaterialGUI(Material* material)
 	{
 		ImGui::Text(("Material: " + material->GetName()).c_str());
 		const char* id = material->GetName().c_str();
@@ -200,23 +200,23 @@ namespace Editor
 			ImGui::Text("%s", name.c_str());
 			for (auto&& [valueName, value] : pushConstant.dataPointers)
 			{
-				if (value.type == Eklipse::DataType::BOOL)
+				if (value.type == DataType::BOOL)
 					ImGui::Checkbox(valueName.c_str(), (bool*)value.data);
-				else if (value.type == Eklipse::DataType::FLOAT)
+				else if (value.type == DataType::FLOAT)
 					ImGui::DragFloat(valueName.c_str(), (float*)value.data);
-				else if (value.type == Eklipse::DataType::FLOAT2)
+				else if (value.type == DataType::FLOAT2)
 					ImGui::DragFloat2(valueName.c_str(), (float*)value.data);
-				else if (value.type == Eklipse::DataType::FLOAT3)
+				else if (value.type == DataType::FLOAT3)
 					ImGui::DragFloat3(valueName.c_str(), (float*)value.data);
-				else if (value.type == Eklipse::DataType::FLOAT4)
+				else if (value.type == DataType::FLOAT4)
 					ImGui::DragFloat4(valueName.c_str(), (float*)value.data);
-				else if (value.type == Eklipse::DataType::INT)
+				else if (value.type == DataType::INT)
 					ImGui::DragInt(valueName.c_str(), (int*)value.data);
-				else if (value.type == Eklipse::DataType::INT2)
+				else if (value.type == DataType::INT2)
 					ImGui::DragInt2(valueName.c_str(), (int*)value.data);
-				else if (value.type == Eklipse::DataType::INT3)
+				else if (value.type == DataType::INT3)
 					ImGui::DragInt3(valueName.c_str(), (int*)value.data);
-				else if (value.type == Eklipse::DataType::INT4)
+				else if (value.type == DataType::INT4)
 					ImGui::DragInt4(valueName.c_str(), (int*)value.data);
 			}
 		}
@@ -226,7 +226,7 @@ namespace Editor
 			bool allValid = true;
 			for (auto&& [textureSampler, sampler] : material->GetSamplers())
 			{
-				allValid = Eklipse::Path::CheckPathValid(sampler.texturePath, { ".png", ".jpg"}); // TODO: Check other formats
+				allValid = Path::CheckPathValid(sampler.texturePath, { ".png", ".jpg"}); // TODO: Check other formats
 				if (!allValid) 
 				{
 					break;

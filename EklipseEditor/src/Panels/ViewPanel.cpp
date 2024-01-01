@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Editor
+namespace Eklipse
 {
 	bool ViewPanel::OnGUI(float deltaTime)
 	{
@@ -44,29 +44,29 @@ namespace Editor
 			ImGui::SetCursorPos({ 0, 30.0f });
 			ImGui::Indent(2.0f);
 			static int operation = 0;
-			if (ImGui::RadioButton("Translate [Q]", &operation, 0) || Eklipse::Input::IsKeyDown(Eklipse::KeyCode::Q))
+			if (ImGui::RadioButton("Translate [Q]", &operation, 0) || Input::IsKeyDown(KeyCode::Q))
 			{
 				m_gizmoOperation = ImGuizmo::TRANSLATE;
 				operation = 0;
 			}
-			if (ImGui::RadioButton("Rotate [W]", &operation, 1) || Eklipse::Input::IsKeyDown(Eklipse::KeyCode::W))
+			if (ImGui::RadioButton("Rotate [W]", &operation, 1) || Input::IsKeyDown(KeyCode::W))
 			{
 				m_gizmoOperation = ImGuizmo::ROTATE;
 				operation = 1;
 			}
-			if (ImGui::RadioButton("Scale [E]", &operation, 2) || Eklipse::Input::IsKeyDown(Eklipse::KeyCode::E))
+			if (ImGui::RadioButton("Scale [E]", &operation, 2) || Input::IsKeyDown(KeyCode::E))
 			{
 				m_gizmoOperation = ImGuizmo::SCALE;
 				operation = 2;
 			}
 			ImGui::Spacing();
 			static int mode = 0;
-			if (ImGui::RadioButton("World [A]", &mode, 0) || Eklipse::Input::IsKeyDown(Eklipse::KeyCode::A))
+			if (ImGui::RadioButton("World [A]", &mode, 0) || Input::IsKeyDown(KeyCode::A))
 			{
 				m_gizmoMode = ImGuizmo::WORLD;
 				mode = 0;
 			}
-			if (ImGui::RadioButton("Local [S]", &mode, 1) || Eklipse::Input::IsKeyDown(Eklipse::KeyCode::S))
+			if (ImGui::RadioButton("Local [S]", &mode, 1) || Input::IsKeyDown(KeyCode::S))
 			{
 				m_gizmoMode = ImGuizmo::LOCAL;
 				mode = 1;
@@ -77,7 +77,7 @@ namespace Editor
 			if (EditorLayer::Get().GetSelection().type == SelectionType::ENTITY)
 			{
 				auto entity = EditorLayer::Get().GetSelection().entity;
-				auto& transComp = entity.GetComponent<Eklipse::TransformComponent>();
+				auto& transComp = entity.GetComponent<TransformComponent>();
 			
 				auto* pos = glm::value_ptr(transComp.transform.position);
 				auto* rot = glm::value_ptr(transComp.transform.rotation);

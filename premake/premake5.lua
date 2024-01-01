@@ -21,6 +21,7 @@ outputdir = "%{cfg.system}/%{cfg.buildcfg}-%{cfg.architecture}"
 include "../Eklipse/Eklipse.lua"
 include "../EklipseEditor/EklipseEditor.lua"
 include "../Eklipse-ScriptAPI/Eklipse-ScriptAPI.lua"
+include "../Runtime/Runtime.lua"
 
 include "../Eklipse/vendor/spdlog-project/spdlog-premake.lua"
 include "../Eklipse/vendor/ImGui-project/imgui-premake.lua"

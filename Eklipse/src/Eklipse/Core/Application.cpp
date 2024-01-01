@@ -53,7 +53,8 @@ namespace Eklipse
 		Renderer::InitParameters();
 
 		// Apply all components in the active scene - TODO: refactor
-		m_activeScene->ApplyAllComponents();
+		if (m_activeScene)
+			m_activeScene->ApplyAllComponents();
 
 		EK_PROFILE_END();
 	}
@@ -169,7 +170,7 @@ namespace Eklipse
 
 	void Application::Run()
 	{
-		EK_INFO("========== Starting Eklipse Editor ==========");
+		EK_INFO("========== Starting Eklipse Engine ==========");
 
 		Application::Init();
 
@@ -194,19 +195,19 @@ namespace Eklipse
 				{
 					EK_PROFILE_NAME("Update");
 
-					OnPreUpdate(deltaTime);
+					Renderer::BeginFrame();
 					for (auto& layer : m_layerStack)
 					{
 						layer->OnUpdate(deltaTime);
 					}
-					OnPostUpdate(deltaTime);
+					Renderer::Submit();
 				}
 			}
 
 			Application::EndFrame(deltaTime);
 		}
 
-		EK_INFO("========== Closing Eklipse Editor ==========");
+		EK_INFO("========== Closing Eklipse Engine ==========");
 
 		Application::Shutdown();
 	}

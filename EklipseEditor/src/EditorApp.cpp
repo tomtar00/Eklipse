@@ -1,16 +1,17 @@
 #include <Eklipse.h>
 #include <Eklipse/Core/EntryPoint.h>
-#include "EditorLayer.h"
 #include <EklipseScriptAPI.h>
 
-namespace Editor
+#include "EditorLayer.h"
+
+namespace Eklipse
 {
-	class EklipseEditor : public Eklipse::Application
+	class EklipseEditor : public Application
 	{
 	public:
-		EklipseEditor(Eklipse::ApplicationInfo& info) : Eklipse::Application(info)
+		EklipseEditor(ApplicationInfo& info) : Application(info)
 		{
-			editorLayer = Eklipse::CreateRef<EditorLayer>();
+			editorLayer = CreateRef<EditorLayer>();
 			PushLayer(editorLayer);
 
 			EklipseScriptAPI::ScriptingConfig config{};
@@ -23,9 +24,9 @@ namespace Editor
 			EklipseScriptAPI::Init(config);
 		}	
 
-		void OnAPIHasInitialized(Eklipse::ApiType api) override
+		void OnAPIHasInitialized(ApiType api) override
 		{
-			Eklipse::ImGuiLayer::CTX = ImGui::CreateContext();
+			ImGuiLayer::CTX = ImGui::CreateContext();
 			editorLayer->OnAPIHasInitialized(api);
 		}
 		void OnShutdownAPI() override
@@ -46,19 +47,9 @@ namespace Editor
 
 			editorLayer->GUI->End();
 		}
-		void OnPreUpdate(float deltaTime) override
-		{
-			EK_PROFILE();
-		}
-		void OnPostUpdate(float deltaTime) override
-		{
-			EK_PROFILE();
-
-			editorLayer->DrawFrame(deltaTime);
-		}
 
 	private:
-		Eklipse::Ref<EditorLayer> editorLayer;
+		Ref<EditorLayer> editorLayer;
 	};
 }
 
@@ -69,5 +60,5 @@ Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication()
 	info.windowWidth = 1600;
 	info.windowHeight = 900;
 
-	return Eklipse::CreateRef<Editor::EklipseEditor>(info);
+	return Eklipse::CreateRef<Eklipse::EklipseEditor>(info);
 }

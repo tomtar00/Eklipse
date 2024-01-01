@@ -1,7 +1,7 @@
 #include "SettingsPanel.h"
 #include <Eklipse/Renderer/Settings.h>
 
-namespace Editor
+namespace Eklipse
 {
 	bool SettingsPanel::OnGUI(float deltaTime)
 	{
@@ -14,7 +14,7 @@ namespace Editor
 		static bool v;
 		if (ImGui::Checkbox("V-Sync", &v))
 		{
-			Eklipse::RendererSettings::SetVsync(v);
+			RendererSettings::SetVsync(v);
 		}
 		
 		static const char* msaaSamples[]{ "Off","x2","x4","x8"};
@@ -24,14 +24,14 @@ namespace Editor
 			int samples = 0;
 			if (m > 0)
 				samples = pow(2, m);
-			Eklipse::RendererSettings::SetMsaaSamples(samples);
+			RendererSettings::SetMsaaSamples(samples);
 		}
 
 		static const char* APIs[]{ "Vulkan", "OpenGL" };
-		static int api = (int)Eklipse::Renderer::GetAPI() - 1;
+		static int api = (int)Renderer::GetAPI() - 1;
 		if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
 		{
-			Eklipse::Application::Get().SetAPI((Eklipse::ApiType)(api+1));
+			Application::Get().SetAPI((ApiType)(api+1));
 		}
 
 		ImGui::End();

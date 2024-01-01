@@ -63,8 +63,8 @@ namespace Eklipse
 
 		virtual void OnPreGUI(float deltaTime) {}
 		virtual void OnPostGUI(float deltaTime) {}
-		virtual void OnPreUpdate(float deltaTime) {}
-		virtual void OnPostUpdate(float deltaTime) {}
+		//virtual void OnPreUpdate(float deltaTime) {}
+		//virtual void OnSubmitFrame(float deltaTime) {}
 
 		void PushLayer(Ref<Layer> layer);
 		void PushOverlay(Ref<Layer> overlay);

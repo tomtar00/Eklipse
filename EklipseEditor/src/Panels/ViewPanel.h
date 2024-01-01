@@ -2,9 +2,9 @@
 #include <Eklipse.h>
 #include <ImGuizmo.h>
 
-namespace Editor
+namespace Eklipse
 {
-	class ViewPanel : public Eklipse::GuiPanel
+	class ViewPanel : public GuiPanel
 	{
 	public:
 		virtual bool OnGUI(float deltaTime) override;

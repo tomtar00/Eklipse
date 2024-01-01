@@ -8,7 +8,7 @@ namespace Eklipse
 	{
 	public:
 		Camera() = default;
-		void UpdateViewProjectionMatrix(Transform transform, float aspectRatio);
+		void UpdateViewProjectionMatrix(Transform& transform, float aspectRatio);
 
 		inline const glm::mat4& GetViewProjectionMatrix() const { return m_viewProj; }
 		inline const glm::mat4& GetViewMatrix() const { return m_viewMatrix; }

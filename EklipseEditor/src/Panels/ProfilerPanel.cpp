@@ -1,6 +1,6 @@
 #include "ProfilerPanel.h"
 
-namespace Editor
+namespace Eklipse
 {
     static ImColor GetColorByIndex(size_t index)
     {
@@ -14,7 +14,7 @@ namespace Editor
             default: return 0xFFFFFFFF;
         }
     }
-    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, std::vector<Eklipse::ProfilerNode>& lastestFrame, std::vector<Eklipse::ProfilerFrameData>& framesData)
+    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, std::vector<ProfilerNode>& lastestFrame, std::vector<ProfilerFrameData>& framesData)
     {
         drawList->AddRectFilled(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }, 0x55555555);
 
@@ -29,7 +29,7 @@ namespace Editor
         static float heightRatio = -1.0f;
         ImVec2 localPos, localSize, globalPos, globalSize;
 
-        if (Eklipse::Profiler::IsProfilingCurrentFrame())
+        if (Profiler::IsProfilingCurrentFrame())
         {
             heightRatio = -1.0f;
             for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
@@ -101,14 +101,14 @@ namespace Editor
             }
         }
     }
-    static void DrawTable(float indent, std::vector<Eklipse::ProfilerNode>& data, bool ascending, int columnIndex, uint32_t i)
+    static void DrawTable(float indent, std::vector<ProfilerNode>& data, bool ascending, int columnIndex, uint32_t i)
     {
-        if (Eklipse::Profiler::IsProfilingCurrentFrame())
+        if (Profiler::IsProfilingCurrentFrame())
         {
             if (columnIndex == 1)
             {
                 std::sort(data.begin(), data.end(),
-                    [ascending](Eklipse::ProfilerNode const& a, Eklipse::ProfilerNode const& b)
+                    [ascending](ProfilerNode const& a, ProfilerNode const& b)
                     {
                         return ascending ? a.threadId < b.threadId : a.threadId > b.threadId;
                     }
@@ -117,7 +117,7 @@ namespace Editor
             else if (columnIndex == 2)
             {
                 std::sort(data.begin(), data.end(),
-                    [ascending](Eklipse::ProfilerNode const& a, Eklipse::ProfilerNode const& b)
+                    [ascending](ProfilerNode const& a, ProfilerNode const& b)
                     {
                         return ascending ? a.numCalls < b.numCalls : a.numCalls > b.numCalls;
                     }
@@ -126,7 +126,7 @@ namespace Editor
             else if (columnIndex == 3)
             {
                 std::sort(data.begin(), data.end(),
-                    [ascending](Eklipse::ProfilerNode const& a, Eklipse::ProfilerNode const& b)
+                    [ascending](ProfilerNode const& a, ProfilerNode const& b)
                     { 
                         return ascending ? a.execTimeMs < b.execTimeMs : a.execTimeMs > b.execTimeMs;
                     }
@@ -188,12 +188,12 @@ namespace Editor
 
         ImGui::Begin("Profiler");
 
-        static std::vector<Eklipse::ProfilerNode> data{};
-        static std::vector<Eklipse::ProfilerFrameData> framesData{};
-        if (Eklipse::Profiler::IsProfilingCurrentFrame())
+        static std::vector<ProfilerNode> data{};
+        static std::vector<ProfilerFrameData> framesData{};
+        if (Profiler::IsProfilingCurrentFrame())
         {
-            data = Eklipse::Profiler::GetLastFrameData().ProfileNodes;
-            framesData = Eklipse::Profiler::GetData();
+            data = Profiler::GetLastFrameData().ProfileNodes;
+            framesData = Profiler::GetData();
         }
 
         ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -201,7 +201,7 @@ namespace Editor
         auto pos = ImGui::GetCursorScreenPos();
         static float labelWidth = 200.0f;
         static float graphHeight = 200.0f;
-        DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Eklipse::Profiler::GetLastFrameData().ProfileNodes, Eklipse::Profiler::GetData());
+        DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetLastFrameData().ProfileNodes, Profiler::GetData());
 
         ImGui::SetCursorPos({ 8.0f, graphHeight + 35.0f });
         if (ImGui::BeginTable("Profiler", 4, ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
