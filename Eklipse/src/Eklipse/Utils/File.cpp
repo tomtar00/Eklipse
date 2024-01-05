@@ -30,18 +30,20 @@ namespace Eklipse
         // if is asset relative
         if (m_path.size() > 1 && m_path[0] == '/' && m_path[1] == '/')
         {
-            EK_ASSERT(Project::GetActive() != nullptr, "No project loaded");
-            m_fullPath = (Project::GetActive()->GetConfig().assetsDirectoryPath / m_path.substr(2)).full_string();
+            if (Project::GetActive() != nullptr)
+                m_fullPath = (Project::GetActive()->GetConfig().assetsDirectoryPath / m_path.substr(2)).string();
+            else
+                m_fullPath = (Project::GetRuntimeConfig()->assetsDirectoryPath / m_path.substr(2)).string();
         }
 
         // if is absolute
         else if (m_path.size() > 1 && m_path[1] == ':' && Project::GetActive() != nullptr)
         {
-            auto& assetsPath = Project::GetActive()->GetConfig().assetsDirectoryPath.full_string();
-            if (!assetsPath.empty() && m_path.substr(0, assetsPath.size()) == assetsPath)
+            auto& assetsPath = Project::GetActive()->GetConfig().assetsDirectoryPath;
+            if (!assetsPath.empty() && m_path.substr(0, assetsPath.string().size()) == assetsPath)
             {
 				m_fullPath = m_path;
-                m_path = "/" + m_path.substr(assetsPath.size());
+                m_path = "/" + m_path.substr(assetsPath.string().size());
 			}
             else
             {
@@ -99,15 +101,15 @@ namespace Eklipse
         return std::mismatch(norm_path.begin(), norm_path.end(), norm_base.begin()).second == norm_base.end();
     }
 
-    std::string ReadFileFromPath(const Path& filename)
+    std::string ReadFileFromPath(const std::filesystem::path& filename)
     {
         std::string buffer;
-        std::ifstream file(filename.full_c_str(), std::ios::in | std::ios::binary);
-        EK_ASSERT(file.is_open(), "Failed to open file at '{0}'", filename.full_c_str());
+        std::ifstream file(filename, std::ios::in | std::ios::binary);
+        EK_ASSERT(file.is_open(), "Failed to open file at '{0}'", filename.string());
 
         file.seekg(0, std::ios::end);
         size_t fileSize = (size_t)file.tellg();
-        EK_ASSERT(fileSize > 0, "Failed to get file size at '{0}'", filename.full_c_str());
+        EK_ASSERT(fileSize > 0, "Failed to get file size at '{0}'", filename.string());
 
         buffer.resize(fileSize);
         file.seekg(0, std::ios::beg);
@@ -116,14 +118,16 @@ namespace Eklipse
 
         return buffer;
     }
-    void Eklipse::CopyFileContent(const Path& destination, const Path& source)
+    void Eklipse::CopyFileContent(const std::filesystem::path& destination, const std::filesystem::path& source)
     {
-        EK_ASSERT(!destination.empty() && !source.empty(), "Source or destination path is empty. destionation={0} source={1}", destination.string(), source.string());
-        EK_ASSERT(destination != source, "Source and destination are the same");
+        EK_ASSERT(!destination.empty() && !source.empty(), "Copy file error. Source or destination path is empty. destionation={0} source={1}", destination.string(), source.string());
+        EK_ASSERT(destination != source, "Copy file error. Source and destination are the same. destionation={0} source={1}", destination.string(), source.string());
 
-        std::ifstream sourceFile(source.full_c_str(), std::ios::binary);
-        std::ofstream destFile(destination.full_c_str(), std::ios::binary);
+        std::ifstream sourceFile(source, std::ios::binary);
+        std::ofstream destFile(destination, std::ios::binary);
 
         destFile << sourceFile.rdbuf();
+
+        EK_CORE_DBG("Copied file content from '{0}' to '{1}'", source.string(), destination.string());
     }
 }

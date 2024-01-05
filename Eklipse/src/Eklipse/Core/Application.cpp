@@ -168,6 +168,13 @@ namespace Eklipse
 		m_activeScene = scene;
 	}
 
+	const Ref<AssetLibrary> Application::GetMainAssetLibrary() const
+	{
+		if (Project::GetActive())
+			return Project::GetActive()->GetAssetLibrary();
+		return m_assetLibrary;
+	}
+
 	void Application::Run()
 	{
 		EK_INFO("========== Starting Eklipse Engine ==========");

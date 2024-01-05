@@ -3,14 +3,6 @@
 #include <Eklipse/Project/Project.h>
 #include <Eklipse/Core/Application.h>
 
-#ifdef EK_PLATFORM_WINDOWS
-	#define EK_SCRIPT_LIBRARY_EXTENSION ".dll"
-#elif defined(EK_PLATFORM_LINUX)
-	#define EK_SCRIPT_LIBRARY_EXTENSION ".so"
-#elif defined(EK_PLATFORM_MACOS)
-	#define EK_SCRIPT_LIBRARY_EXTENSION ".dylib"
-#endif
-
 namespace Eklipse
 {
 	void ScriptModule::Load(Ref<Project> project)
@@ -45,7 +37,7 @@ namespace Eklipse
 
 	void ScriptModule::StartWatchingSource()
 	{
-		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.full_string();
+		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
 		EK_CORE_TRACE("ScriptManager::StartWatchingSource: {0}", sourcePath);
 
 		m_sourceWatcher = CreateUnique<filewatch::FileWatch<std::string>>(sourcePath, CAPTURE_FN(OnSourceWatchEvent));
@@ -70,7 +62,7 @@ namespace Eklipse
 
 	bool ScriptModule::LinkLibrary(const std::filesystem::path& libraryFilePath)
 	{
-		try 
+		try
 		{
 			UnlinkLibrary();
 			m_library = CreateRef<dylib>(libraryFilePath);
@@ -119,18 +111,18 @@ namespace Eklipse
 			std::string fileExtension = entry.path().extension().string();
 			if (fileExtension == ".h" || fileExtension == ".hpp")
 			{
-				factoryFile << "#include \"" << std::filesystem::relative(entry.path(), scriptsSourceDirPath.path().parent_path()).string() << "\"\n";
+				factoryFile << "#include \"" << std::filesystem::relative(entry.path(), scriptsSourceDirPath.parent_path()).string() << "\"\n";
 			}
 		}
 
 		factoryFile << "using namespace EklipseEngine;\n";
 		factoryFile << "using namespace EklipseEngine::Reflections;\n\n";
 
-		factoryFile << "#ifdef EK_PLATFORM_WINDOWS"							<< "\n"
-					<< "\t" << "#define EK_EXPORT __declspec(dllexport)"	<< "\n"
-					<< "#else"												<< "\n"
-					<< "\t" << "#define EK_EXPORT"							<< "\n"
-					<< "#endif"												<< "\n";	
+		factoryFile << "#ifdef EK_PLATFORM_WINDOWS" << "\n"
+			<< "\t" << "#define EK_EXPORT __declspec(dllexport)" << "\n"
+			<< "#else" << "\n"
+			<< "\t" << "#define EK_EXPORT" << "\n"
+			<< "#endif" << "\n";
 
 		factoryFile << "\n";
 
@@ -142,7 +134,7 @@ namespace Eklipse
 			EK_CORE_WARN("No script classes found!");
 			return false;
 		}
-		
+
 		factoryFile << "extern \"C\"\n";
 		factoryFile << "{\n";
 
@@ -160,7 +152,7 @@ namespace Eklipse
 			factoryFile << "\t" << "}\n";
 		}
 		factoryFile << "}";
-		
+
 		return true;
 	}
 	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath)
@@ -170,12 +162,22 @@ namespace Eklipse
 		std::string command;
 
 #ifdef EK_PLATFORM_WINDOWS
-		
-		// TODO: turn into engine settings variable
-		std::string vsLocation = "E:\\Apps\\VisualStudio\\VS2022\\MSBuild\\Current\\Bin\\MSBuild.exe";
+
+		//std::string vsLocation = "E:\\Apps\\VisualStudio\\VS2022\\MSBuild\\Current\\Bin\\MSBuild.exe";
+		std::string msBuildLocation = Project::GetActive()->GetConfig().msBuildPath.string();
+		if (msBuildLocation.empty() || std::filesystem::is_regular_file(msBuildLocation))
+		{
+			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation);
+			SetState(ScriptsState::COMPILATION_FAILED);
+			return;
+		}
 		std::string solutionLocation = Project::GetActive()->GetProjectDirectory().string() + "\\" + Project::GetActive()->GetConfig().name + "-Scripts.sln";
 
-		command = vsLocation + " /m /p:Configuration=Debug " + solutionLocation;
+#ifdef EK_DEBUG
+		command = msBuildLocation + " /m /p:Configuration=Debug " + solutionLocation;
+#else
+		command = msBuildLocation + " /m /p:Configuration=Dist " + solutionLocation;
+#endif
 
 #elif defined(EK_PLATFORM_LINUX)
 		#error Linux compilation not implemented yet

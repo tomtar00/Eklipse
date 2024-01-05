@@ -60,7 +60,7 @@ namespace Eklipse
 	{
 		EK_PROFILE();
 
-		camera.UpdateViewProjectionMatrix(cameraTransform, g_sceneFramebuffer->GetAspectRatio());
+		camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
 		s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
 
 		// Geometry

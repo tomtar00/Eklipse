@@ -4,6 +4,14 @@
 #include <dylib.hpp>
 #include <FileWatch.hpp>
 
+#ifdef EK_PLATFORM_WINDOWS
+	#define EK_SCRIPT_LIBRARY_EXTENSION ".dll"
+#elif defined(EK_PLATFORM_LINUX)
+	#define EK_SCRIPT_LIBRARY_EXTENSION ".so"
+#elif defined(EK_PLATFORM_MACOS)
+	#define EK_SCRIPT_LIBRARY_EXTENSION ".dylib"
+#endif
+
 namespace Eklipse
 {
 	class Project;
@@ -31,6 +39,7 @@ namespace Eklipse
 
 		ClassMap& GetClasses() { return m_parser.GetClasses(); }
 		const std::string& GetState() const { return m_stateString; }
+		const Ref<dylib>& GetLibrary() const { return m_library; }
 
 	private:
 		void StartWatchingSource();

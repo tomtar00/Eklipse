@@ -1,13 +1,39 @@
 #include "AppLayer.h"
+#include <Eklipse/Project/Project.h>
+#include <Eklipse/Project/ProjectSerializer.h>
+
+#define EK_RUNTIME_CONFIG "config.yaml"
 
 namespace Eklipse
 {
 	void AppLayer::OnAttach()
 	{
-		// load all assets
-		// compile shaders? or copy cache and load from there
-		// load startup scene
-		// link to scripting dll (it will be in the same dir, so really neccessery?)
+		ProjectSerializer serializer;
+		m_runtimeConfig = CreateRef<RuntimeConfig>();
+		if (!serializer.DeserializeRuntimeConfig(*m_runtimeConfig, EK_RUNTIME_CONFIG))
+		{
+			EK_CRITICAL("Failed to deserialize runtime config! Make sure that the '{}' file is in the same folder as the executable file", EK_RUNTIME_CONFIG);
+			exit(-1);
+		}
+		Project::SetRuntimeConfig(m_runtimeConfig);
+
+		try
+		{
+			if (!m_runtimeConfig->scriptsLibraryPath.empty())
+			{
+				m_library = CreateRef<dylib>(m_runtimeConfig->scriptsLibraryPath.string(), dylib::no_filename_decorations);
+				EK_INFO("Scripts library not found. No scripts will be attached");
+			}
+			auto scene = Scene::Load(m_runtimeConfig->startScenePath, m_library);
+			Application::Get().SwitchScene(scene);
+		}
+		catch (const std::exception& e)
+		{
+			EK_CRITICAL("Failed to load scene! {0}", e.what());
+			exit(-1);
+		}
+
+		Application::Get().GetActiveScene()->OnSceneStart();
 	}
 	void AppLayer::OnDetach()
 	{
@@ -15,10 +41,10 @@ namespace Eklipse
 
 	void AppLayer::OnUpdate(float deltaTime)
 	{
+		Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
+
 		Renderer::BeginRenderPass(m_framebuffer);
-
-		// Renderer::RenderScene(Application::Get().GetActiveScene());
-
+		Renderer::RenderScene(Application::Get().GetActiveScene());
 		Renderer::EndRenderPass(m_framebuffer);
 	}
 	void AppLayer::OnGUI(float deltaTime)

@@ -34,6 +34,17 @@ namespace Eklipse
 			Application::Get().SetAPI((ApiType)(api+1));
 		}
 
+#if EK_PLATFORM_WINDOWS
+		if (Project::GetActive())
+		{
+			static std::string buff;
+			if (ImGui::InputText("MSBuild Path", &buff))
+			{
+				Project::GetActive()->GetConfig().msBuildPath = buff;
+			}
+		}
+#endif
+
 		ImGui::End();
 
 		return true;

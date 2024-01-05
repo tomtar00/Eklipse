@@ -11,8 +11,8 @@ namespace Eklipse
 	public:
 		SceneSerializer(const Ref<Scene> scene);
 
-		bool Serialize(const Path& targetFilePath);
-		bool Deserialize(const Path& sourceFilePath);
+		bool Serialize(const std::filesystem::path& targetFilePath);
+		bool Deserialize(const std::filesystem::path& sourceFilePath, const Ref<dylib>& library);
 
 		void SerializeEntity(YAML::Emitter& out, Entity entity);
 		void DeserializeAllScriptProperties();

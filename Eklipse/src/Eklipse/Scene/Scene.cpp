@@ -3,7 +3,9 @@
 #include "Entity.h"
 #include "Components.h"
 #include "SceneSerializer.h"
+
 #include <Eklipse/Core/Application.h>
+#include <dylib.hpp>
 
 namespace Eklipse
 {
@@ -57,7 +59,11 @@ namespace Eklipse
 		CopyComponentIfExists<Component...>(dst, src);
 	}
 
-	Scene::Scene(const std::string& name, const Path& saveFilePath) : 
+	Scene::Scene() : m_name("Empty Scene"), m_path("NULL")
+	{
+	}
+
+	Scene::Scene(const std::string& name, const std::filesystem::path& saveFilePath) :
 		m_name(name), m_path(saveFilePath)
 	{
 		if (m_name.empty())
@@ -78,8 +84,8 @@ namespace Eklipse
 		{
 			if (!meshComponent.meshPath.empty() && !meshComponent.materialPath.empty())
 			{
-				meshComponent.mesh = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMesh(meshComponent.meshPath).get();
-				meshComponent.material = Eklipse::Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
+				meshComponent.mesh = Application::Get().GetMainAssetLibrary()->GetMesh(meshComponent.meshPath).get();
+				meshComponent.material = Application::Get().GetMainAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
 			}
 		});
 	}
@@ -191,12 +197,12 @@ namespace Eklipse
 		return newScene;
 	}
 
-	Ref<Scene> Scene::New(const std::string& name, const Path& saveFilePath)
+	Ref<Scene> Scene::New(const std::string& name, const std::filesystem::path& saveFilePath)
 	{
 		auto scene = CreateRef<Scene>(name, saveFilePath);
 		Save(scene);
 
-		EK_CORE_TRACE("Created new scene '{0}' at location '{1}'", scene->GetName(), saveFilePath.full_string());
+		EK_CORE_TRACE("Created new scene '{0}' at location '{1}'", scene->GetName(), saveFilePath.string());
 
 		return scene;
 	}
@@ -204,24 +210,24 @@ namespace Eklipse
 	{
 		EK_CORE_TRACE("Saving scene '{0}'", scene->GetName());
 
-		Eklipse::SceneSerializer serializer(scene);
+		SceneSerializer serializer(scene);
 		serializer.Serialize(scene->GetPath());
 
-		EK_CORE_TRACE("Scene '{0}' saved to path '{1}'", scene->GetName(), scene->GetPath().full_string());
+		EK_CORE_TRACE("Scene '{0}' saved to path '{1}'", scene->GetName(), scene->GetPath().string());
 	}
-	Ref<Scene> Scene::Load(const Path& saveFilePath)
+	Ref<Scene> Scene::Load(const std::filesystem::path& saveFilePath, const Ref<dylib>& library)
 	{
-		EK_CORE_TRACE("Loading scene from '{0}'", saveFilePath.full_string());
+		EK_CORE_TRACE("Loading scene from '{0}'", saveFilePath.string());
 
 		Ref<Scene> scene = CreateRef<Scene>();
-		Eklipse::SceneSerializer serializer(scene);
-		if (serializer.Deserialize(saveFilePath))
+		SceneSerializer serializer(scene);
+		if (serializer.Deserialize(saveFilePath, library))
 		{
 			EK_CORE_TRACE("Scene '{0}' loaded", scene->GetName());
 			return scene;
 		}
 
-		EK_CORE_ERROR("Failed to load scene '{0}'", saveFilePath.full_string());
+		EK_CORE_ERROR("Failed to load scene '{0}'", saveFilePath.string());
 		return nullptr;
 	}
 
@@ -245,6 +251,8 @@ namespace Eklipse
 		auto it = m_entityMap.find(uuid);
 		if (it != m_entityMap.end())
 			return { it->second, this };
+
+		EK_CORE_ERROR("Failed to find entity {0} on scene '{1}'", uuid, m_name);
 		return {};
 	}
 	void Scene::DestroyEntity(Entity entity)

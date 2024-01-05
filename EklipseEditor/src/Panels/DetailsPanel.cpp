@@ -142,7 +142,7 @@ namespace Eklipse
 				}
 			
 				// script properties
-				if (scriptComp != nullptr && scriptComp->script != nullptr)
+				if (scriptComp != nullptr && scriptComp->script != nullptr && scriptComp->classInfo.members.size() > 0)
 				{
 					ImGui::Spacing();
 					ImGui::Text("Properties");
@@ -150,6 +150,9 @@ namespace Eklipse
 
 					for (auto&& [name, member] : scriptComp->classInfo.members)
 					{
+						EK_CORE_DBG("{} {}", name, member.type);
+						std::cout << name << " " << member.type << std::endl;
+
 						if (member.type == "bool")
 							ImGui::Checkbox(name.c_str(), scriptComp->GetScriptValue<bool>(member.offset));
 						else if (member.type == "int")

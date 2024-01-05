@@ -229,7 +229,7 @@ namespace Eklipse
 	}
 	void FilesPanel::CreateShader(const Path& dstPath, const Path& templatePath)
 	{
-		CopyFileContent(dstPath, templatePath);
+		CopyFileContent(dstPath.path(), templatePath.path());
 		Project::GetActive()->GetAssetLibrary()->GetShader(dstPath);
 	}
 }

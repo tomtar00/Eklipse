@@ -68,7 +68,7 @@ namespace Eklipse
         }
         else
         {
-            SetShader(Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath));
+            SetShader(Application::Get().GetMainAssetLibrary()->GetShader(shaderPath));
             Serialize(path);
         }
     }
@@ -117,8 +117,8 @@ namespace Eklipse
     }
     void Material::SetShader(const Path& shaderPath)
     {
-        EK_ASSERT(Project::GetActive(), "No active project");
-		SetShader(Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath));
+        //EK_ASSERT(Project::GetActive(), "No active project");
+		SetShader(Application::Get().GetMainAssetLibrary()->GetShader(shaderPath));
     }
     void Material::OnShaderReloaded()
     {
@@ -270,7 +270,7 @@ namespace Eklipse
         }
 
         Path shaderPath = yaml["Shader"].as<std::string>();
-        auto& shader = Project::GetActive()->GetAssetLibrary()->GetShader(shaderPath);
+        auto& shader = Application::Get().GetMainAssetLibrary()->GetShader(shaderPath);
         SetShader(shader);
 
         auto& constantsNode = yaml["PushConstants"];
@@ -340,7 +340,7 @@ namespace Eklipse
                 continue;
             }
 
-            auto texPtr = Project::GetActive()->GetAssetLibrary()->GetTexture(path);
+            auto texPtr = Application::Get().GetMainAssetLibrary()->GetTexture(path);
             if (texPtr == nullptr)
             {
                 EK_CORE_TRACE("Sampler '{0}' in material '{1}' failed to load texture '{2}'", samplerName, m_name, path.string());

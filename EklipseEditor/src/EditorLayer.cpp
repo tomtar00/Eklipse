@@ -140,6 +140,7 @@ namespace Eklipse
 	void EditorLayer::OnGUI(float deltaTime)
 	{
 		static bool openNewProjectPopup = false;
+		static bool openExportProjectPopup = false;
 
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -164,6 +165,10 @@ namespace Eklipse
 				if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr))
 				{
 					SaveScene();
+				}
+				if (ImGui::MenuItemEx("Export", nullptr, nullptr))
+				{
+					openExportProjectPopup = true;
 				}
 				if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
 				{
@@ -203,6 +208,7 @@ namespace Eklipse
 			ImGui::EndMainMenuBar();
 		}
 
+		// === NEW PROJECT POPUP ===
 		if (openNewProjectPopup)
 		{
 			ImGui::OpenPopup("Create New Project");
@@ -222,8 +228,6 @@ namespace Eklipse
 			if (ImGui::Button("Browse"))
 			{
 				nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
-				//if (result == NFD_CANCEL) return;
-
 				EK_ASSERT(result != NFD_ERROR, "Failed to open directory! {0}", NFD_GetError());
 			}
 			if (ImGui::Button("Create"))
@@ -244,6 +248,30 @@ namespace Eklipse
 			{
 				if (outPath != nullptr)
 					free(outPath);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		// === EXPORT PROJECT POPUP ===
+		if (openExportProjectPopup)
+		{
+			ImGui::OpenPopup("Export Project");
+			openExportProjectPopup = false;
+		}
+		if (ImGui::BeginPopupModal("Export Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+		{
+			static ProjectExportSettings exportSettings{};
+			ImGui::InputText("Export path", &exportSettings.path);
+			ImGui::Checkbox("Debug build", &exportSettings.debugBuild);
+			if (ImGui::Button("Export"))
+			{
+				ExportProject(exportSettings);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
@@ -296,7 +324,7 @@ namespace Eklipse
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
 	}
-	void EditorLayer::NewProject(const Path& dirPath, const std::string& name)
+	void EditorLayer::NewProject(const std::filesystem::path& dirPath, const std::string& name)
 	{
 		OnProjectUnload();
 
@@ -307,10 +335,10 @@ namespace Eklipse
 			Project::SetupActive(name, dirPath);
 
 			// Create default scene
-			auto scene = Scene::New("Untitled", project->GetConfig().startScenePath);
+			auto scene = Scene::New("Untitled", dirPath / project->GetConfig().startScenePath);
 
 			// Save project
-			std::filesystem::path projectFilePath = dirPath.path() / (name + EK_PROJECT_FILE_EXTENSION);
+			std::filesystem::path projectFilePath = dirPath / (name + EK_PROJECT_FILE_EXTENSION);
 			Project::Save(project, projectFilePath);
 
 			Application::Get().SwitchScene(scene);
@@ -330,8 +358,10 @@ namespace Eklipse
 		EK_ASSERT(result == NFD_OKAY, "Failed to open project file! {0}", NFD_GetError());
 
 		OnProjectUnload();
-		auto project = Project::Load(outPath);
-		auto scene = Scene::Load(project->GetConfig().startScenePath);
+		auto filePath = std::filesystem::path(outPath);
+		auto projectDir = filePath.parent_path();
+		auto project = Project::Load(filePath);
+		auto scene = Scene::Load(projectDir / project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
 
 		Application::Get().SwitchScene(scene);
 		m_editorScene.reset();
@@ -353,6 +383,13 @@ namespace Eklipse
 	void EditorLayer::SaveScene()
 	{
 		Scene::Save(m_editorScene);
+	}
+	void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
+	{
+		if (!Project::GetActive()->Export(exportSettings))
+		{
+			EK_ERROR("Failed to export project!");
+		}
 	}
 	void EditorLayer::OnScenePlay()
 	{

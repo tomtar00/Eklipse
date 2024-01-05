@@ -17,7 +17,7 @@ bool ImGui::InputPath(const char* id, const char* label, Eklipse::Path& path, co
             EK_CORE_INFO("Valid path: {0} -- {1}", path.string(), path.full_string());
             callback();
         }
-        else EK_CORE_WARN("Invalid path: {0} -- {1}", path.string(), path.full_string());
+        //else EK_CORE_WARN("Invalid path: {0} -- {1}", path.string(), path.full_string());
     }
 
     ImGui::PopID();

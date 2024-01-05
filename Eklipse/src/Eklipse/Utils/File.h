@@ -49,6 +49,6 @@ namespace Eklipse
 		std::string m_fullPath;
 	};
 
-	extern std::string ReadFileFromPath(const Path& filename);
-	extern void CopyFileContent(const Path& destination, const Path& source);
+	extern std::string ReadFileFromPath(const std::filesystem::path& filename);
+	extern void CopyFileContent(const std::filesystem::path& destination, const std::filesystem::path& source);
 }

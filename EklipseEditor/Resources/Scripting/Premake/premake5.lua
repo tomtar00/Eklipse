@@ -1,6 +1,6 @@
 workspace "__PRJ_NAME__-Scripts"
     architecture "x64"
-    location "__PRJ_DIR__"
+    location "../../../"
 
     configurations
     {
@@ -16,7 +16,7 @@ workspace "__PRJ_NAME__-Scripts"
 outputdir = "%{cfg.system}/%{cfg.buildcfg}-%{cfg.architecture}"
 
 project "__PRJ_NAME__"
-    location "__PRJ_DIR__"
+    location "../../../"
     kind "SharedLib"
     language "C++"
     cppdialect "C++17"

@@ -48,6 +48,7 @@ namespace Eklipse
 		inline void SetActiveScene(Ref<Scene> scene) { m_activeScene = scene; }
 
 		void SwitchScene(Ref<Scene> scene);
+		const Ref<AssetLibrary> GetMainAssetLibrary() const;
 
 		inline const bool IsRunning() const { return m_running; }
 		inline const bool ShouldQuit() const { return m_quit; }
@@ -63,8 +64,6 @@ namespace Eklipse
 
 		virtual void OnPreGUI(float deltaTime) {}
 		virtual void OnPostGUI(float deltaTime) {}
-		//virtual void OnPreUpdate(float deltaTime) {}
-		//virtual void OnSubmitFrame(float deltaTime) {}
 
 		void PushLayer(Ref<Layer> layer);
 		void PushOverlay(Ref<Layer> overlay);

@@ -333,12 +333,16 @@ namespace Eklipse
 			scissor.offset = { 0, 0 };
 			scissor.extent = extent;
 			vkCmdSetScissor(g_currentCommandBuffer, 0, 1, &scissor);
+
+			g_currentFramebuffer = this;
 		}
 		void VKFramebuffer::Unbind()
 		{
 			vkCmdEndRenderPass(g_currentCommandBuffer);
 			VkResult res = vkEndCommandBuffer(g_currentCommandBuffer);
 			HANDLE_VK_RESULT(res, "END COMMAND BUFFER");
+
+			g_currentFramebuffer = nullptr;
 		}
 		void VKFramebuffer::Resize(uint32_t width, uint32_t height)
 		{

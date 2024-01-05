@@ -113,10 +113,13 @@ namespace Eklipse
 
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers(m_colorAttachments.size(), buffers);
+
+			g_currentFramebuffer = this;
 		}
 		void GLFramebuffer::Unbind()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			g_currentFramebuffer = nullptr;
 		}
 		void GLFramebuffer::Resize(uint32_t width, uint32_t height)
 		{

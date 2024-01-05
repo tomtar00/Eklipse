@@ -1,5 +1,6 @@
 #pragma once
 #include <Eklipse.h>
+#include <dylib.hpp>
 
 namespace Eklipse
 {
@@ -16,5 +17,7 @@ namespace Eklipse
 
 	private:
 		Ref<Framebuffer> m_framebuffer;
+		Ref<RuntimeConfig> m_runtimeConfig;
+		Ref<dylib> m_library;
 	};
 }

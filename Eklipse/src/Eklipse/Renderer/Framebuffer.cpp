@@ -9,6 +9,7 @@ namespace Eklipse
 {
     Framebuffer* g_defaultFramebuffer   = nullptr;
     Framebuffer* g_sceneFramebuffer     = nullptr;
+    Framebuffer* g_currentFramebuffer   = nullptr;
 
     Ref<Framebuffer> Eklipse::Framebuffer::Create(const FramebufferInfo& framebufferInfo)
     {

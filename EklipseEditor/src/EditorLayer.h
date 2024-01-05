@@ -44,11 +44,12 @@ namespace Eklipse
 		void OnAPIHasInitialized(ApiType api);
 		void OnShutdownAPI();
 
-		void NewProject(const Path& path, const std::string& name);
+		void NewProject(const std::filesystem::path& path, const std::string& name);
 		void OpenProject();
 		void SaveProject();
 		void SaveProjectAs();
 		void SaveScene();
+		void ExportProject(const ProjectExportSettings& exportSettings);
 
 		void OnScenePlay();
 		void OnSceneStop();
@@ -60,7 +61,7 @@ namespace Eklipse
 		void OnProjectUnload();
 
 		inline static EditorLayer& Get() { return *s_instance; }
-		inline EditorState GetEditorState() { return m_editorState; }
+		inline EditorState GetEditorState() const { return m_editorState; }
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }

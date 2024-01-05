@@ -45,6 +45,7 @@ project "Eklipse-ScriptAPI"
 		"{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
 
         "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
+		"{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
         "{COPYFILE} %{cfg.targetdir}/Eklipse-ScriptAPI.dll ../bin/" .. outputdir .. "/EklipseEditor"
     }
 

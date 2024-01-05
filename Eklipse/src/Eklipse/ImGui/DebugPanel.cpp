@@ -63,27 +63,27 @@ namespace Eklipse
 			ImGui::Indent();
 
 			ImGui::SeparatorText("Config");
-			if (ImGui::BeginTable("Config##Table", 2))
+		if (ImGui::BeginTable("Config##Table", 2))
 			{
 				auto& config = project->GetConfig();
 				
-				std::vector<std::pair<const char*, const char*>> data =
+				m_projectConfigData =
 				{
-					{ "Name",					config.name.c_str() },
-					{ "Assets path",			config.assetsDirectoryPath.full_c_str() },
-					{ "Start scene path",		config.startScenePath.full_c_str() },
-					{ "Scripts path",			config.scriptsDirectoryPath.full_c_str() },
-					{ "Scripts source path",	config.scriptsSourceDirectoryPath.full_c_str() },
-					{ "Scripts build path",		config.scriptBuildDirectoryPath.full_c_str() },
+					{ "Name",					config.name },
+					{ "Assets path",			config.assetsDirectoryPath.string() },
+					{ "Start scene path",		config.startScenePath.string() },
+					{ "Scripts path",			config.scriptsDirectoryPath.string() },
+					{ "Scripts source path",	config.scriptsSourceDirectoryPath.string() },
+					{ "Scripts build path",		config.scriptBuildDirectoryPath.string() },
 				};
 
-				for (int i = 0; i < data.size(); ++i) 
+				for (int i = 0; i < m_projectConfigData.size(); ++i)
 				{
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
-					ImGui::TextUnformatted(data[i].first);
+					ImGui::TextUnformatted(m_projectConfigData[i].first);
 					ImGui::TableSetColumnIndex(1);
-					ImGui::TextUnformatted(data[i].second);
+					ImGui::TextUnformatted(m_projectConfigData[i].second.c_str());
 				}
 
 				ImGui::EndTable();

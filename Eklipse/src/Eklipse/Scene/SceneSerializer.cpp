@@ -3,6 +3,7 @@
 #include "Components.h"
 
 #include <Eklipse/Utils/Yaml.h>
+#include <EklipseEngine.h>
 
 namespace Eklipse
 {
@@ -10,7 +11,7 @@ namespace Eklipse
 	{
 	}
 
-	bool SceneSerializer::Serialize(const Path& targetFilePath)
+	bool SceneSerializer::Serialize(const std::filesystem::path& targetFilePath)
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -24,23 +25,23 @@ namespace Eklipse
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(targetFilePath.full_path());
+		std::ofstream fout(targetFilePath);
 		fout << out.c_str();
 
-		EK_CORE_TRACE("Serialized scene '{0}' to path '{1}'", m_scene->GetName(), targetFilePath.full_string());
+		EK_CORE_DBG("Serialized scene '{0}' to path '{1}'", m_scene->GetName(), targetFilePath.string());
 		return true;
 	}
 
-	bool SceneSerializer::Deserialize(const Path& sourceFilePath)
+	bool SceneSerializer::Deserialize(const std::filesystem::path& sourceFilePath, const Ref<dylib>& library)
 	{
 		YAML::Node data;
 		try
 		{
-			data = YAML::LoadFile(sourceFilePath);
+			data = YAML::LoadFile(sourceFilePath.string());
 		}
 		catch (YAML::ParserException e)
 		{
-			EK_CORE_ERROR("Failed to load .eksc file '{0}'\n     {1}", sourceFilePath, e.what());
+			EK_CORE_ERROR("Failed to load .eksc file '{0}'\n     {1}", sourceFilePath.string(), e.what());
 			return false;
 		}
 
@@ -106,13 +107,23 @@ namespace Eklipse
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent)
 				{
-					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
-					TryDeserailize<std::string>(scriptComponent, "Name", &sc.scriptName);
+					auto scriptName = TryDeserailize<std::string>(scriptComponent, "Name", "");
+					if (library)
+					{
+						auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+						sc.scriptName = scriptName;
 
-					sc.SetScript(sc.scriptName, Project::GetScriptClasses()[sc.scriptName], deserializedEntity);
+						EklipseEngine::Reflections::ClassInfo info{};
+						library->get_function<void(EklipseEngine::Reflections::ClassInfo&)>("Get__" + sc.scriptName)(info);
+						sc.SetScript(sc.scriptName, info, deserializedEntity);
 
-					auto properties = scriptComponent["Properties"];
-					DeserializeScriptProperties(deserializedEntity, properties);
+						auto properties = scriptComponent["Properties"];
+						DeserializeScriptProperties(deserializedEntity, properties);
+					}
+					else
+					{
+						EK_CORE_WARN("Entity {0} has a script component '{1}' but no library was provided to instanitiate it!", deserializedEntity.GetUUID(), scriptName);
+					}
 				}
 			}
 		}
@@ -134,8 +145,8 @@ namespace Eklipse
 			out << YAML::Key << "IDComponent";
 			out << YAML::BeginMap;
 
-			auto& tag = entity.GetComponent<IDComponent>().ID;
-			out << YAML::Key << "ID" << YAML::Value << tag;
+			auto& id = entity.GetComponent<IDComponent>().ID;
+			out << YAML::Key << "ID" << YAML::Value << id;
 
 			out << YAML::EndMap;
 		}
@@ -229,7 +240,7 @@ namespace Eklipse
 				else if (member.type == "glm::mat4")
 					out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::mat4>(member.offset);
 				else
-					EK_CORE_WARN("Unknown type '{0}' for script property '{1}'", member.type, name);
+					EK_CORE_WARN("Unknown type '{0}' for script property '{1}' while serializing entity {2}", member.type, name, entity.GetUUID());
 
 				out << YAML::EndMap;
 			}
@@ -262,7 +273,6 @@ namespace Eklipse
 		{
 			Entity entity = m_scene->GetEntity(entityNode["Entity"].as<uint64_t>());
 
-			// get script component node
 			auto scriptComponent = entityNode["ScriptComponent"];
 			if (scriptComponent)
 			{
@@ -300,7 +310,10 @@ namespace Eklipse
 				else if (type == "glm::mat4")
 					sc.SetScriptValue<glm::mat4>(offset, TryDeserailize(property, "Value", glm::mat4{}));
 				else
-					EK_CORE_WARN("Unknown type '{0}' for script property '{1}'", type, name);
+					EK_CORE_WARN("Unknown type '{0}' for script property '{1}' while deserializing script properties on entity {2}", type, name, entity.GetUUID());
+			
+				sc.classInfo.members[name].offset = offset;
+				sc.classInfo.members[name].type = type;
 			}
 		}
 	}

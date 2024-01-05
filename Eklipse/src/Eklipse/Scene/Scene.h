@@ -6,6 +6,8 @@
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Scene/Transform.h>
 
+class dylib;
+
 namespace Eklipse
 {
 	class Entity;
@@ -13,8 +15,8 @@ namespace Eklipse
 	class Scene
 	{
 	public:
-		Scene() = default;
-		Scene(const std::string& name, const Path& saveFilePath);
+		Scene();
+		Scene(const std::string& name, const std::filesystem::path& saveFilePath);
 		~Scene();
 
 		void ApplyAllComponents();
@@ -24,8 +26,8 @@ namespace Eklipse
 		void OnSceneStop();
 		
 		static Ref<Scene> Copy(Ref<Scene> other);
-		static Ref<Scene> New(const std::string& name, const Path& saveFilePath);
-		static Ref<Scene> Load(const Path& saveFilePath);
+		static Ref<Scene> New(const std::string& name, const std::filesystem::path& saveFilePath);
+		static Ref<Scene> Load(const std::filesystem::path& saveFilePath, const Ref<dylib>& library);
 		static void Save(Ref<Scene> scene);
 		static void ReloadScripts(Ref<Scene> scene);
 

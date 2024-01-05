@@ -44,4 +44,5 @@ namespace Eklipse
 
 	extern Framebuffer* g_defaultFramebuffer;
 	extern Framebuffer* g_sceneFramebuffer;
+	extern Framebuffer* g_currentFramebuffer;
 }

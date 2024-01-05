@@ -2,15 +2,16 @@
 #include "Project.h"
 #include "ProjectSerializer.h"
 
+#include <Eklipse/Core/Application.h>
+
 namespace Eklipse
 {
     struct ScriptConfig
     {
         std::string projectName;
-        std::string projectDir;
 
-        std::string includeDir;
-        std::string libDir;
+        std::filesystem::path includeDir;
+        std::filesystem::path libDir;
     };
     static void replace_all(std::string& str, const std::string& from, const std::string& to)
     {
@@ -34,9 +35,9 @@ namespace Eklipse
         std::string template_content = buffer.str();
 
         replace_all(template_content, "__PRJ_NAME__", config.projectName);
-        replace_all(template_content, "__PRJ_DIR__", config.projectDir);
-        replace_all(template_content, "__INCLUDE_DIR__", config.includeDir);
-        replace_all(template_content, "__LIB_DIR__", config.libDir);
+        //replace_all(template_content, "__PRJ_DIR__", config.projectDir);
+        replace_all(template_content, "__INCLUDE_DIR__", config.includeDir.string());
+        replace_all(template_content, "__LIB_DIR__", config.libDir.string());
 
         std::ofstream output_file(output_path);
         if (!output_file.is_open())
@@ -50,6 +51,7 @@ namespace Eklipse
     }
 
     Ref<Project> Project::s_activeProject = nullptr;
+    Ref<RuntimeConfig> Project::s_runtimeConfig = nullptr;
 
     Project::Project()
     {
@@ -63,6 +65,85 @@ namespace Eklipse
     {
         m_assetLibrary->Unload();
     }
+    bool Project::Export(const ProjectExportSettings& exportSettings) const
+    {
+        EK_CORE_INFO("Exporting project '{0}' to '{1}'", m_config.name, exportSettings.path);
+        SaveActive();
+        Scene::Save(Application::Get().GetActiveScene());
+        // TODO: recompile all shaders?
+
+        std::filesystem::path destinationDir = exportSettings.path;
+        if (!std::filesystem::is_directory(destinationDir))
+        {
+            EK_CORE_ERROR("Invalid export path '{0}'! Destination must be a directory.", destinationDir.string());
+            return false;
+        }
+
+        RuntimeConfig runtimeConfig{};
+
+        // Copy assets
+        std::filesystem::path assetsDir = m_config.assetsDirectoryPath;
+        std::filesystem::path destinationAssetsDir = destinationDir / "Assets";
+        std::filesystem::create_directories(destinationAssetsDir);
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsDir))
+        {
+            if (entry.is_regular_file())
+            {
+				std::filesystem::path relativePath = std::filesystem::relative(entry.path(), assetsDir);
+				std::filesystem::path destinationPath = destinationAssetsDir / relativePath;
+				std::filesystem::create_directories(destinationPath.parent_path());
+				std::filesystem::copy_file(entry.path(), destinationPath, std::filesystem::copy_options::overwrite_existing);
+			}
+		}
+        runtimeConfig.assetsDirectoryPath = destinationAssetsDir;
+
+        // Copy the scripting library
+        std::filesystem::path scriptLibraryPath = m_config.scriptBuildDirectoryPath / (m_config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+        if (scriptLibraryPath.empty() || !std::filesystem::exists(scriptLibraryPath))
+        {
+			EK_CORE_WARN("Script library not found at path '{0}'!", scriptLibraryPath.string());
+		}
+        else
+        {
+            std::filesystem::path destinationScriptLibraryPath = destinationDir / (m_config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+            std::filesystem::copy_file(scriptLibraryPath, destinationScriptLibraryPath, std::filesystem::copy_options::overwrite_existing);
+            runtimeConfig.scriptsLibraryPath = destinationScriptLibraryPath;
+        }
+
+        // Copy the script api library // TODO: Name shouldnt be const
+        std::filesystem::path scriptApiLibraryPath = std::string("Resources/Scripting/Lib/Eklipse-ScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION;
+        if (scriptApiLibraryPath.empty() || !std::filesystem::exists(scriptApiLibraryPath))
+        {
+			EK_CORE_ERROR("Script API library not found at path '{0}'!", scriptApiLibraryPath.string());
+			return false;
+		}
+        std::filesystem::path destinationScriptApiLibraryPath = destinationDir / (std::string("Eklipse-ScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION);
+        std::filesystem::copy_file(scriptApiLibraryPath, destinationScriptApiLibraryPath, std::filesystem::copy_options::overwrite_existing);
+
+        // Copy the executable // TODO: Name shouldnt be const
+        std::string exportConfig = exportSettings.debugBuild ? "Debug" : "Distribution";
+        std::filesystem::path executablePath = std::filesystem::path("Resources/Export") / exportConfig / (std::string("Runtime") + EK_EXECUTABLE_EXTENSION);
+        if (executablePath.empty() || !std::filesystem::exists(executablePath))
+        {
+            EK_CORE_ERROR("Executable not found at path '{0}'!", executablePath.string());
+        }
+        std::filesystem::path destinationExecutablePath = destinationDir / (m_config.name + EK_EXECUTABLE_EXTENSION);
+        std::filesystem::copy_file(executablePath, destinationExecutablePath, std::filesystem::copy_options::overwrite_existing);
+        runtimeConfig.executablePath = destinationExecutablePath;
+
+        runtimeConfig.startScenePath = destinationAssetsDir / std::filesystem::relative(m_config.startScenePath, m_config.assetsDirectoryPath);
+
+        // Generate config.yaml file
+        ProjectSerializer serializer(s_activeProject);
+        if (!serializer.SerializeRuntimeConfig(runtimeConfig, destinationDir / "config.yaml"))
+        {
+            EK_CORE_ERROR("Failed to generate config.yaml file!");
+			return false;
+        }
+
+        EK_CORE_INFO("Project exported successfully!");
+        return true;
+    }
 
     const std::filesystem::path& Project::GetProjectDirectory()
     {
@@ -74,53 +155,55 @@ namespace Eklipse
         s_activeProject = CreateRef<Project>();
         return s_activeProject;
     }
-    void Project::SetupActive(const std::string& name, const Path& projectDirectory)
+    void Project::SetupActive(const std::string& name, const std::filesystem::path& projectDirectory)
     {
         s_activeProject->m_projectDirectory = projectDirectory;
+        auto& config = s_activeProject->GetConfig();
 
         // Create config
         std::string defaultSceneName = "Unititled";
-        s_activeProject->GetConfig().name = name;
-        s_activeProject->GetConfig().assetsDirectoryPath = projectDirectory / "Assets";
-        s_activeProject->GetConfig().startScenePath = s_activeProject->GetConfig().assetsDirectoryPath / "Scenes" / (defaultSceneName + EK_SCENE_FILE_EXTENSION);
-        s_activeProject->GetConfig().scriptsDirectoryPath = projectDirectory / "Scripts";
-        s_activeProject->GetConfig().scriptsSourceDirectoryPath = s_activeProject->GetConfig().scriptsDirectoryPath / "Source";
-        s_activeProject->GetConfig().scriptBuildDirectoryPath = projectDirectory / "Build";
-        s_activeProject->GetConfig().scriptResourcesDirectoryPath = s_activeProject->GetConfig().scriptsDirectoryPath / "Resources";
-        s_activeProject->GetConfig().scriptGeneratedDirectoryPath = s_activeProject->GetConfig().scriptResourcesDirectoryPath / "Generated";
-        s_activeProject->GetConfig().scriptPremakeDirectoryPath = s_activeProject->GetConfig().scriptResourcesDirectoryPath / "Premake";
+        config.name                         = name;
+        config.projectDir                   = projectDirectory;
+        config.assetsDirectoryPath          = config.projectDir / "Assets";
+        config.startScenePath               = config.assetsDirectoryPath / "Scenes" / (defaultSceneName + EK_SCENE_FILE_EXTENSION);
+        config.scriptsDirectoryPath         = config.projectDir / "Scripts";
+        config.scriptsSourceDirectoryPath   = config.scriptsDirectoryPath / "Source";
+        config.scriptBuildDirectoryPath     = config.scriptsDirectoryPath / "Build";
+        config.scriptResourcesDirectoryPath = config.scriptsDirectoryPath / "Resources";
+        config.scriptGeneratedDirectoryPath = config.scriptResourcesDirectoryPath / "Generated";
+        config.scriptPremakeDirectoryPath   = config.scriptResourcesDirectoryPath / "Premake";
 
-        std::filesystem::create_directories(s_activeProject->GetConfig().assetsDirectoryPath / "Scenes");
-        std::filesystem::create_directories(s_activeProject->GetConfig().assetsDirectoryPath / "Shaders");
-        std::filesystem::create_directories(s_activeProject->GetConfig().scriptsSourceDirectoryPath);
-        std::filesystem::create_directories(s_activeProject->GetConfig().scriptBuildDirectoryPath);
-        std::filesystem::create_directories(s_activeProject->GetConfig().scriptPremakeDirectoryPath);
+        std::filesystem::create_directories(config.assetsDirectoryPath / "Scenes");
+        std::filesystem::create_directories(config.assetsDirectoryPath / "Shaders");
+        std::filesystem::create_directories(config.scriptsSourceDirectoryPath);
+        std::filesystem::create_directories(config.scriptBuildDirectoryPath);
+        std::filesystem::create_directories(config.scriptPremakeDirectoryPath);
 
         // Default 2D shader
-        Eklipse::Path dstPath = "//Shaders/Default2D.eksh";
+        std::filesystem::path dstPath = projectDirectory / "Assets/Shaders/Default2D.eksh";
         Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default2D.eksh");
         s_activeProject->GetAssetLibrary()->GetShader(dstPath);
         // Default 3D shader
-        dstPath = "//Shaders/Default3D.eksh";
+        dstPath = projectDirectory / "Assets/Shaders/Default3D.eksh";
         Eklipse::CopyFileContent(dstPath, "Assets/Shaders/Default3D.eksh");
         s_activeProject->GetAssetLibrary()->GetShader(dstPath);
 
         // Lua
         auto currentPath = std::filesystem::current_path();
-        ScriptConfig config{};
-        config.projectName = name;
-        config.projectDir = projectDirectory.full_string();
-        config.includeDir = Eklipse::Path(currentPath / "Resources/Scripting/Include").full_string();
-        config.libDir = Eklipse::Path(currentPath / "Resources/Scripting/Lib").full_string();
+        ScriptConfig scriptConfig{};
+        scriptConfig.projectName = name;
+        //config.projectDir = projectDirectory;
+        scriptConfig.includeDir = Path(currentPath / "Resources/Scripting/Include").path();
+        scriptConfig.libDir = Path(currentPath / "Resources/Scripting/Lib").path();
 
         auto premakeScriptPath = s_activeProject->GetConfig().scriptPremakeDirectoryPath / "premake5.lua";
-        bool success = GenerateLuaScript("Resources/Scripting/Premake/premake5.lua", premakeScriptPath.string(), config);
+        bool success = GenerateLuaScript("Resources/Scripting/Premake/premake5.lua", premakeScriptPath.string(), scriptConfig);
         EK_ASSERT(success, "Failed to generate premake5.lua!");
         EK_CORE_INFO("Generated premake5.lua at path '{0}'", premakeScriptPath.string());
 
         // Run .lua script to generate project files
 #ifdef EK_PLATFORM_WINDOWS
-        std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5.exe vs2022 --file=" + premakeScriptPath.string();
+        std::string command = "cd " + (currentPath / "Resources\\Scripting\\Premake").string() + " && premake5.exe vs2022 --file=" + premakeScriptPath.string();
 #elif defined(EK_PLATFORM_LINUX)
         std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 gmake2 --file=" + premakeScriptPath.string();
 #elif defined(EK_PLATFORM_MACOS)

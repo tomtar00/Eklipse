@@ -12,7 +12,11 @@ namespace Eklipse
 
 		ImGui::Begin("Entities");
 		if (!m_sceneContext)
+		{
 			EK_CORE_WARN("Scene context in entity panel is null!");
+			ImGui::End();
+			return true;
+		}
 
 		if (ImGui::BeginPopupContextWindow())
 		{
@@ -22,6 +26,9 @@ namespace Eklipse
 			ImGui::EndPopup();
 		}
 
+		ImGui::Text("Scene: %s", m_sceneContext->GetName().c_str());
+		EK_CORE_DBG("Scene: {}", m_sceneContext->GetName());
+		ImGui::Separator();
 		m_sceneContext->ForEachEntity([&](auto entityID)
 		{
 			Entity entity{ entityID, m_sceneContext.get() };
@@ -35,7 +42,6 @@ namespace Eklipse
 				info.type = SelectionType::ENTITY;
 				info.entity = entity;
 				EditorLayer::Get().SetSelection(info);
-
 				EditorLayer::Get().GetDetailsPanel().Setup(nameComponent.name);
 			}
 

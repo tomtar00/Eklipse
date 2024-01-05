@@ -49,7 +49,9 @@ project "EklipseEditor"
 	postbuildcommands
 	{
 		"{COPYDIR} %{prj.location}/Assets %{cfg.targetdir}/Assets",
-		"{COPYDIR} %{prj.location}/Resources %{cfg.targetdir}/Resources"
+		"{COPYDIR} %{prj.location}/Resources %{cfg.targetdir}/Resources",
+
+		"{COPY} %{cfg.targetdir}/../Eklipse-ScriptAPI/Eklipse-ScriptAPI.dll %{cfg.targetdir}",
 	}
 
 	filter "system:windows"

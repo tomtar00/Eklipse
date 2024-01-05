@@ -7,7 +7,5 @@
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <Eklipse/Core/Input.h>
 #include <Eklipse/Renderer/Settings.h>
-
-// #include <Eklipse/Renderer/Renderer.h>
-// #include <Eklipse/Scene/Components.h>
-// #include <Eklipse/Scene/Entity.h>
+#include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Scene/Scene.h>
