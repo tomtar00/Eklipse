@@ -4,6 +4,8 @@
 #include <dylib.hpp>
 #include <FileWatch.hpp>
 
+#include <Eklipse/Core/Timer.h>
+
 #ifdef EK_PLATFORM_WINDOWS
 	#define EK_SCRIPT_LIBRARY_EXTENSION ".dll"
 #elif defined(EK_PLATFORM_LINUX)
@@ -41,6 +43,8 @@ namespace Eklipse
 		const std::string& GetState() const { return m_stateString; }
 		const Ref<dylib>& GetLibrary() const { return m_library; }
 
+		inline TimePoint GetLastStateChangeTime() const { return m_lastStateChangeTime; }
+
 	private:
 		void StartWatchingSource();
 		void StopWatchingSource();
@@ -54,10 +58,11 @@ namespace Eklipse
 		void FetchFactoryFunctions();
 
 		void SetState(ScriptsState state);
-
+		
 	private:
 		ScriptsState m_state;
 		std::string m_stateString;
+		TimePoint m_lastStateChangeTime;
 
 		Unique<filewatch::FileWatch<std::string>> m_sourceWatcher;
 

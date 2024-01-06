@@ -61,6 +61,12 @@ namespace Eklipse
 			}
 		}
 
+		// ID
+		{
+			static int id = entity.GetUUID();
+			ImGui::InputInt("ID", &id, 1, 100, ImGuiInputTextFlags_ReadOnly);
+		}
+
 		// Name
 		{
 			if (!ImGui::InputText("Entity Name", &m_entityNameBuffer))
@@ -150,9 +156,6 @@ namespace Eklipse
 
 					for (auto&& [name, member] : scriptComp->classInfo.members)
 					{
-						EK_CORE_DBG("{} {}", name, member.type);
-						std::cout << name << " " << member.type << std::endl;
-
 						if (member.type == "bool")
 							ImGui::Checkbox(name.c_str(), scriptComp->GetScriptValue<bool>(member.offset));
 						else if (member.type == "int")

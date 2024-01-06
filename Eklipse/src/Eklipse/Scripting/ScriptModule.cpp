@@ -165,7 +165,7 @@ namespace Eklipse
 
 		//std::string vsLocation = "E:\\Apps\\VisualStudio\\VS2022\\MSBuild\\Current\\Bin\\MSBuild.exe";
 		std::string msBuildLocation = Project::GetActive()->GetConfig().msBuildPath.string();
-		if (msBuildLocation.empty() || std::filesystem::is_regular_file(msBuildLocation))
+		if (msBuildLocation.empty() || !std::filesystem::is_regular_file(msBuildLocation))
 		{
 			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation);
 			SetState(ScriptsState::COMPILATION_FAILED);
@@ -219,6 +219,7 @@ namespace Eklipse
 			case ScriptsState::NEEDS_RECOMPILATION:		m_stateString = "NEEDS_RECOMPILATION";		break;
 			default:									m_stateString = "UNKNOWN";					break;
 		}
+		m_lastStateChangeTime = Timer::Now();
 	}
 	void ScriptModule::RecompileAll()
 	{

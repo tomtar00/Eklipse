@@ -9,3 +9,4 @@
 #include <Eklipse/Renderer/Settings.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Scene/Scene.h>
+#include <Eklipse/Core/Timer.h>

@@ -55,7 +55,7 @@ namespace Eklipse
 		entt::registry m_registry;
 		std::unordered_map<UUID, entt::entity> m_entityMap;
 
-		Camera* m_mainCamera;
-		Transform* m_mainCameraTransform;
+		Camera* m_mainCamera = nullptr;
+		Transform* m_mainCameraTransform = nullptr;
 	};
 }

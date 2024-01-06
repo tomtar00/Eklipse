@@ -76,11 +76,6 @@ project "Eklipse"
 			"EK_BUILD_DLL"
 		}
 
-		-- postbuildcommands
-		-- {
-		-- 	"{COPYFILE} %{cfg.targetdir}/Eklipse.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib"
-		-- }
-
 	filter "configurations:Debug"
 		defines "EK_DEBUG"
 		runtime "Debug"

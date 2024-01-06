@@ -1,5 +1,3 @@
-// 3D Shader
-
 #stage vertex
 #version 460 core
 

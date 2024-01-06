@@ -13,6 +13,8 @@ namespace Eklipse
 
 	bool SceneSerializer::Serialize(const std::filesystem::path& targetFilePath)
 	{
+		EK_CORE_DBG("Serializing scene '{0}'...", m_scene->GetName());
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
@@ -31,106 +33,6 @@ namespace Eklipse
 		EK_CORE_DBG("Serialized scene '{0}' to path '{1}'", m_scene->GetName(), targetFilePath.string());
 		return true;
 	}
-
-	bool SceneSerializer::Deserialize(const std::filesystem::path& sourceFilePath, const Ref<dylib>& library)
-	{
-		YAML::Node data;
-		try
-		{
-			data = YAML::LoadFile(sourceFilePath.string());
-		}
-		catch (YAML::ParserException e)
-		{
-			EK_CORE_ERROR("Failed to load .eksc file '{0}'\n     {1}", sourceFilePath.string(), e.what());
-			return false;
-		}
-
-		if (!data["Scene"])
-			return false;
-
-		std::string sceneName;
-		TryDeserailize<std::string>(data, "Scene", &sceneName);
-		m_scene->SetName(sceneName);
-		m_scene->SetPath(sourceFilePath);
-		EK_CORE_DBG("Deserializing scene '{0}'", sceneName);
-
-		auto entities = data["Entities"];
-		if (entities)
-		{
-			for (auto entity : entities)
-			{
-				uint64_t uuid;
-				TryDeserailize<uint64_t>(entity, "Entity", &uuid);
-
-				std::string name;
-				auto nameComponent = entity["NameComponent"];
-				if (nameComponent)
-				{
-					TryDeserailize<std::string>(nameComponent, "Name", &name);
-				}
-
-				EK_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
-
-				Entity deserializedEntity = m_scene->CreateEntity(uuid, name);
-
-				auto transformComponent = entity["TransformComponent"];
-				if (transformComponent)
-				{
-					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
-
-					TryDeserailize<glm::vec3>(transformComponent, "Position", &tc.transform.position);
-					TryDeserailize<glm::vec3>(transformComponent, "Rotation", &tc.transform.rotation);
-					TryDeserailize<glm::vec3>(transformComponent, "Scale", &tc.transform.scale);
-				}
-
-				auto cameraComponent = entity["CameraComponent"];
-				if (cameraComponent)
-				{
-					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
-					auto& cameraProps = cameraComponent["Camera"];
-
-					TryDeserailize<bool>(cameraProps, "IsMain", &cc.camera.m_isMain);
-					TryDeserailize<float>(cameraProps, "FOV", &cc.camera.m_fov);
-					TryDeserailize<float>(cameraProps, "Near", &cc.camera.m_nearPlane);
-					TryDeserailize<float>(cameraProps, "Far", &cc.camera.m_farPlane);
-				}
-
-				auto meshComponent = entity["MeshComponent"];
-				if (meshComponent)
-				{
-					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
-
-					TryDeserailize<std::string>(meshComponent, "Mesh", &mc.meshPath);
-					TryDeserailize<std::string>(meshComponent, "Material", &mc.materialPath);
-				}
-
-				auto scriptComponent = entity["ScriptComponent"];
-				if (scriptComponent)
-				{
-					auto scriptName = TryDeserailize<std::string>(scriptComponent, "Name", "");
-					if (library)
-					{
-						auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
-						sc.scriptName = scriptName;
-
-						EklipseEngine::Reflections::ClassInfo info{};
-						library->get_function<void(EklipseEngine::Reflections::ClassInfo&)>("Get__" + sc.scriptName)(info);
-						sc.SetScript(sc.scriptName, info, deserializedEntity);
-
-						auto properties = scriptComponent["Properties"];
-						DeserializeScriptProperties(deserializedEntity, properties);
-					}
-					else
-					{
-						EK_CORE_WARN("Entity {0} has a script component '{1}' but no library was provided to instanitiate it!", deserializedEntity.GetUUID(), scriptName);
-					}
-				}
-			}
-		}
-
-		return true;
-	}
-
 	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		EK_ASSERT(entity.HasComponent<IDComponent>(), "Tried to serialize invalid entity!");
@@ -139,17 +41,6 @@ namespace Eklipse
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		EK_CORE_DBG("Serializing entity with ID = {0}", entity.GetUUID());
-
-		if (entity.HasComponent<IDComponent>())
-		{
-			out << YAML::Key << "IDComponent";
-			out << YAML::BeginMap;
-
-			auto& id = entity.GetComponent<IDComponent>().ID;
-			out << YAML::Key << "ID" << YAML::Value << id;
-
-			out << YAML::EndMap;
-		}
 
 		if (entity.HasComponent<NameComponent>())
 		{
@@ -249,6 +140,108 @@ namespace Eklipse
 		}
 		out << YAML::EndMap;
 	}
+
+	bool SceneSerializer::Deserialize(const std::filesystem::path& sourceFilePath, const Ref<dylib>& library)
+	{
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(sourceFilePath.string());
+		}
+		catch (YAML::ParserException e)
+		{
+			EK_CORE_ERROR("Failed to load .eksc file '{0}'\n\t{1}", sourceFilePath.string(), e.what());
+			return false;
+		}
+
+		if (!data["Scene"])
+			return false;
+
+		std::string sceneName;
+		TryDeserailize<std::string>(data, "Scene", &sceneName);
+		m_scene->SetName(sceneName);
+		m_scene->SetPath(sourceFilePath);
+
+		EK_CORE_DBG("Deserializing scene '{0}'...", sceneName);
+
+		auto entities = data["Entities"];
+		if (entities)
+		{
+			for (auto entity : entities)
+			{
+				uint64_t uuid;
+				TryDeserailize<uint64_t>(entity, "Entity", &uuid);
+
+				std::string name;
+				auto nameComponent = entity["NameComponent"];
+				if (nameComponent)
+				{
+					TryDeserailize<std::string>(nameComponent, "Name", &name);
+				}
+
+				Entity deserializedEntity = m_scene->CreateEntity(uuid, name);
+
+				auto transformComponent = entity["TransformComponent"];
+				if (transformComponent)
+				{
+					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
+
+					TryDeserailize<glm::vec3>(transformComponent, "Position", &tc.transform.position);
+					TryDeserailize<glm::vec3>(transformComponent, "Rotation", &tc.transform.rotation);
+					TryDeserailize<glm::vec3>(transformComponent, "Scale", &tc.transform.scale);
+				}
+
+				auto cameraComponent = entity["CameraComponent"];
+				if (cameraComponent)
+				{
+					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
+					auto& cameraProps = cameraComponent["Camera"];
+
+					TryDeserailize<bool>(cameraProps, "IsMain", &cc.camera.m_isMain);
+					TryDeserailize<float>(cameraProps, "FOV", &cc.camera.m_fov);
+					TryDeserailize<float>(cameraProps, "Near", &cc.camera.m_nearPlane);
+					TryDeserailize<float>(cameraProps, "Far", &cc.camera.m_farPlane);
+				}
+
+				auto meshComponent = entity["MeshComponent"];
+				if (meshComponent)
+				{
+					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
+
+					TryDeserailize<std::string>(meshComponent, "Mesh", &mc.meshPath);
+					TryDeserailize<std::string>(meshComponent, "Material", &mc.materialPath);
+				}
+
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent)
+				{
+					auto scriptName = TryDeserailize<std::string>(scriptComponent, "Name", "");
+					if (library)
+					{
+						auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+						sc.scriptName = scriptName;
+
+						EklipseEngine::Reflections::ClassInfo info{};
+						library->get_function<void(EklipseEngine::Reflections::ClassInfo&)>("Get__" + sc.scriptName)(info);
+						sc.SetScript(sc.scriptName, info, deserializedEntity);
+
+						auto properties = scriptComponent["Properties"];
+						DeserializeScriptProperties(deserializedEntity, properties);
+					}
+					else
+					{
+						EK_CORE_WARN("Entity {0} has a script component '{1}' but no library was provided to instanitiate it!", deserializedEntity.GetUUID(), scriptName);
+					}
+				}
+
+				EK_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+			}
+		}
+
+		EK_CORE_DBG("Deserialized scene '{0}'", sceneName);
+
+		return true;
+	}
 	void SceneSerializer::DeserializeAllScriptProperties()
 	{
 		YAML::Node data;
@@ -266,7 +259,7 @@ namespace Eklipse
 			return;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		EK_CORE_DBG("Deserializing scene '{0}'", sceneName);
+		EK_CORE_DBG("Deserializing all script properties of scene '{0}'...", sceneName);
 
 		auto entitiesNodes = data["Entities"];
 		for (auto entityNode : entitiesNodes)
@@ -281,6 +274,8 @@ namespace Eklipse
 					DeserializeScriptProperties(entity, properties);
 			}
 		}
+
+		EK_CORE_DBG("Deserialized all script properties of scene '{0}'", sceneName);
 	}
 	void SceneSerializer::DeserializeScriptProperties(Entity entity, YAML::Node& propertiesNode)
 	{

@@ -87,6 +87,7 @@ namespace Eklipse
 		bool m_canControlEditorCamera = false;
 
 		EditorState m_editorState = EditorState::EDITING;
+		TimePoint m_scenePlayTime;
 		DetailsSelectionInfo m_selectionInfo{};
 
 		bool m_guiEnabled;

@@ -26,6 +26,8 @@ namespace Eklipse
 		Timer();
 		float ElapsedTimeMs();
 
+		static TimePoint Now() { return std::chrono::high_resolution_clock::now(); }
+
 	private:
 		TimePoint m_startTime;
 	};

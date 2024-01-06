@@ -149,6 +149,9 @@ namespace Eklipse
 	{
 		Ref<Scene> newScene = CreateRef<Scene>();
 
+		newScene->m_name = other->m_name;
+		newScene->m_path = other->m_path;
+
 		auto& srcSceneRegistry = other->m_registry;
 		auto& dstSceneRegistry = newScene->m_registry;
 		std::unordered_map<UUID, entt::entity> enttMap;

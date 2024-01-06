@@ -404,6 +404,8 @@ namespace Eklipse
 
 		m_entitiesPanel.SetContext(Application::Get().GetActiveScene());
 		ClearSelection();
+
+		m_scenePlayTime = Timer::Now();
 	}
 	void EditorLayer::OnSceneStop()
 	{
@@ -418,6 +420,11 @@ namespace Eklipse
 
 		m_entitiesPanel.SetContext(Application::Get().GetActiveScene());
 		ClearSelection();
+
+		// Reload scripts if they were changed while playing
+		auto lastScriptReloadTime = Project::GetActive()->GetScriptModule().GetLastStateChangeTime();
+		if (lastScriptReloadTime > m_scenePlayTime)
+			Scene::ReloadScripts(Application::Get().GetActiveScene());
 	}
 	void EditorLayer::OnScenePause()
 	{
