@@ -2,9 +2,6 @@
 	path = Eklipse/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "Eklipse/vendor/GLFW"]
-	path = Eklipse/vendor/GLFW
-	url = https://github.com/tomtar00/GLFW.git
 [submodule "Eklipse/vendor/spdlog"]
 	path = Eklipse/vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
@@ -20,3 +17,6 @@
 [submodule "Eklipse/vendor/yaml-cpp"]
 	path = Eklipse/vendor/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp
+[submodule "Eklipse/vendor/glfw"]
+	path = Eklipse/vendor/glfw
+	url = https://github.com/glfw/glfw.git
