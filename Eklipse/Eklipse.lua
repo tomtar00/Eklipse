@@ -37,34 +37,32 @@ project "Eklipse"
 		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
 		"%{Include.glm}",
-		"%{Include.ImGui}",
-		"%{Include.Glad}",
+		"%{Include.imgui}",
+		"%{Include.glad}",
 		"%{Include.stb_image}",
 		"%{Include.tiny_obj_loader}",
 		"%{Include.vk_mem_alloc}",
 		"%{Include.entt}",
-		"%{Include.ImGuizmo}",
+		"%{Include.imguizmo}",
 		"%{Include.shaderc}",
 		"%{Include.SPIRV_Cross}",
-		"%{Include.yaml_cpp}",
+		"%{Include.yamlcpp}",
         "%{Include.filewatch}",
-		"%{Include.nativefiledialog}",
+		"%{Include.nfd}",
 		"%{Include.dylib}"
 	}
 
 	links
 	{
-		"%{Lib.glfw3}",
-		"%{Lib.glfw3_mt}",
-		"%{Lib.glfw3dll}",
 		"%{Lib.Vulkan}",
 
+        "glfw",
+		"glad",
 		"spdlog",
-		"ImGui",
-		"ImGuizmo",
-		"Glad",
-		"YAML",
-		"NFD"
+		"imgui",
+		"imguizmo",
+		"yamlcpp",
+		"nfd"
 	}
 
 	filter "system:windows"

@@ -23,12 +23,12 @@ project "EklipseEditor"
 
 		"%{Include.glfw}",
 		"%{Include.glm}",
-		"%{Include.ImGui}",
+		"%{Include.imgui}",
 		"%{Include.spdlog}",
 		"%{Include.entt}",
-		"%{Include.ImGuizmo}",
-		"%{Include.nativefiledialog}",
-		"%{Include.yaml_cpp}",
+		"%{Include.imguizmo}",
+		"%{Include.nfd}",
+		"%{Include.yamlcpp}",
 		"%{Include.filewatch}",
 		"%{Include.dylib}"
 	}
@@ -36,7 +36,7 @@ project "EklipseEditor"
 	links
 	{
 		"Eklipse",
-		"Eklipse-ScriptAPI"
+		"EklipseScriptAPI"
 	}
 
 	defines
@@ -51,7 +51,7 @@ project "EklipseEditor"
 		"{COPYDIR} %{prj.location}/Assets %{cfg.targetdir}/Assets",
 		"{COPYDIR} %{prj.location}/Resources %{cfg.targetdir}/Resources",
 
-		"{COPY} %{cfg.targetdir}/../Eklipse-ScriptAPI/Eklipse-ScriptAPI.dll %{cfg.targetdir}",
+		"{COPY} %{cfg.targetdir}/../EklipseScriptAPI/EklipseScriptAPI.dll %{cfg.targetdir}",
 	}
 
 	filter "system:windows"
