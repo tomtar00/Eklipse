@@ -8,15 +8,15 @@
 [submodule "Eklipse/vendor/glm"]
 	path = Eklipse/vendor/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Eklipse/vendor/imguizmo"]
-	path = Eklipse/vendor/imguizmo
-	url = https://github.com/CedricGuillemet/ImGuizmo.git
-[submodule "Eklipse/vendor/nfd"]
-	path = Eklipse/vendor/nfd
-	url = https://github.com/mlabbe/nativefiledialog
-[submodule "Eklipse/vendor/yamlcpp"]
-	path = Eklipse/vendor/yamlcpp
-	url = https://github.com/jbeder/yaml-cpp
 [submodule "Eklipse/vendor/glfw"]
 	path = Eklipse/vendor/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Eklipse/vendor/yamlcpp"]
+	path = Eklipse/vendor/yamlcpp
+	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "Eklipse/vendor/nfd"]
+	path = Eklipse/vendor/nfd
+	url = https://github.com/mlabbe/nativefiledialog.git
+[submodule "Eklipse/vendor/imguizmo"]
+	path = Eklipse/vendor/imguizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
