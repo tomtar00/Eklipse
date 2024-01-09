@@ -22,6 +22,9 @@ namespace Eklipse
 			if (!m_runtimeConfig->scriptsLibraryPath.empty())
 			{
 				m_library = CreateRef<dylib>(m_runtimeConfig->scriptsLibraryPath.string(), dylib::no_filename_decorations);
+			}
+			else
+			{
 				EK_INFO("Scripts library not found. No scripts will be attached");
 			}
 			auto scene = Scene::Load(m_runtimeConfig->startScenePath, m_library);

@@ -237,8 +237,10 @@ namespace Eklipse
 
 		if (std::filesystem::exists(m_libraryPath))
 		{
-			LinkLibrary(m_libraryPath);
-			FetchFactoryFunctions();
+			if (LinkLibrary(m_libraryPath))
+			{
+				FetchFactoryFunctions();
+			}
 		}
 		else
 		{

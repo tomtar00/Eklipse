@@ -7,13 +7,19 @@ Lib["Vulkan"] = "%{wks.location}/Eklipse/vendor/Vulkan/lib/vulkan-1.lib"
 
 -- ShaderC
 Include["shaderc"] = "%{wks.location}/Eklipse/vendor/shaderc/include"
-Lib["shaderc_debug"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-debug/shaderc_sharedd.lib"
-Lib["shaderc_release"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-release/shaderc_shared.lib"
+
+Lib["shaderc_debug"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-debug/shadercd.lib"
+Lib["shaderc_util_debug"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-debug/shaderc_utild.lib"
+
+Lib["shaderc_release"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-release/shaderc.lib"
+Lib["shaderc_util_release"] = "%{wks.location}/Eklipse/vendor/shaderc/lib-release/shaderc_util.lib"
 
 -- SPIRV-Cross
 Include["SPIRV_Cross"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/include"
+
 Lib["SPIRV_Cross_debug"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-debug/spirv-cross-cored.lib"
 Lib["SPIRV_Cross_GLSL_debug"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-debug/spirv-cross-glsld.lib"
+
 Lib["SPIRV_Cross_release"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-release/spirv-cross-core.lib"
 Lib["SPIRV_Cross_GLSL_release"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/lib-release/spirv-cross-glsl.lib"
 
@@ -21,6 +27,8 @@ Lib["SPIRV_Cross_GLSL_release"] = "%{wks.location}/Eklipse/vendor/SPIRV_Cross/li
 Include["ScriptAPI"] = "%{wks.location}/EklipseScriptAPI/src"
 
 -- Header-only / Compiled
+Include["glslang"] = "%{wks.location}/Eklipse/vendor/glslang/include"
+Include["spirv_headers"] = "%{wks.location}/Eklipse/vendor/spirv_headers/include"
 Include["glfw"] = "%{wks.location}/Eklipse/vendor/glfw/include"
 Include["glm"] = "%{wks.location}/Eklipse/vendor/glm"
 Include["glad"] = "%{wks.location}/Eklipse/vendor/glad/include"

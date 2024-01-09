@@ -20,3 +20,12 @@
 [submodule "Eklipse/vendor/imguizmo"]
 	path = Eklipse/vendor/imguizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Eklipse/vendor/glslang"]
+	path = Eklipse/vendor/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "Eklipse/vendor/spirv_tools"]
+	path = Eklipse/vendor/spirv_tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "Eklipse/vendor/spirv_headers"]
+	path = Eklipse/vendor/spirv_headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git

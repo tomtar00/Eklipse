@@ -33,19 +33,22 @@ project "Eklipse"
 
 		"%{Include.ScriptAPI}",
 
-		"%{Include.glfw}",	
-		"%{Include.spdlog}",
 		"%{Include.Vulkan}",
-		"%{Include.glm}",
-		"%{Include.imgui}",
 		"%{Include.glad}",
-		"%{Include.stb_image}",
-		"%{Include.tiny_obj_loader}",
-		"%{Include.vk_mem_alloc}",
-		"%{Include.entt}",
-		"%{Include.imguizmo}",
+
+        "%{Include.glslang}",
 		"%{Include.shaderc}",
 		"%{Include.SPIRV_Cross}",
+        
+		"%{Include.vk_mem_alloc}",
+		"%{Include.glfw}",	
+		"%{Include.spdlog}",
+		"%{Include.glm}",
+		"%{Include.imgui}",
+		"%{Include.stb_image}",
+		"%{Include.tiny_obj_loader}",
+		"%{Include.entt}",
+		"%{Include.imguizmo}",
 		"%{Include.yamlcpp}",
         "%{Include.filewatch}",
 		"%{Include.nfd}",
@@ -56,6 +59,8 @@ project "Eklipse"
 	{
 		"%{Lib.Vulkan}",
 
+        "spirv_tools",
+        "glslang",
         "glfw",
 		"glad",
 		"spdlog",
@@ -82,8 +87,10 @@ project "Eklipse"
 		links
 		{
 			"%{Lib.shaderc_debug}",
+            "%{Lib.shaderc_util_debug}",
+
 			"%{Lib.SPIRV_Cross_debug}",
-			"%{Lib.SPIRV_Cross_GLSL_debug}",
+			"%{Lib.SPIRV_Cross_GLSL_debug}"
 		}
 
 	filter "configurations:Release"
@@ -94,8 +101,10 @@ project "Eklipse"
 		links
 		{
 			"%{Lib.shaderc_release}",
+            "%{Lib.shaderc_util_release}",
+
 			"%{Lib.SPIRV_Cross_release}",
-			"%{Lib.SPIRV_Cross_GLSL_release}",
+			"%{Lib.SPIRV_Cross_GLSL_release}"
 		}
 
 	filter "configurations:Dist"
@@ -106,6 +115,8 @@ project "Eklipse"
 		links
 		{
 			"%{Lib.shaderc_release}",
+            "%{Lib.shaderc_util_release}",
+
 			"%{Lib.SPIRV_Cross_release}",
 			"%{Lib.SPIRV_Cross_GLSL_release}",
 		}
