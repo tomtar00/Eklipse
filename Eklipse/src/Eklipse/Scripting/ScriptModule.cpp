@@ -250,7 +250,9 @@ namespace Eklipse
 		if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
 		{
 			EK_CORE_INFO("Recompilation successfull!");
-			Scene::ReloadScripts(Application::Get().GetActiveScene());
+
+			if (Application::Get().GetActiveScene())
+				Scene::ReloadScripts(Application::Get().GetActiveScene());
 		}
 		else
 		{

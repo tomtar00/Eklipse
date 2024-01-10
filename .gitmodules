@@ -29,3 +29,6 @@
 [submodule "Eklipse/vendor/spirv_headers"]
 	path = Eklipse/vendor/spirv_headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "Eklipse/vendor/shaderc"]
+	path = Eklipse/vendor/shaderc
+	url = https://github.com/google/shaderc.git

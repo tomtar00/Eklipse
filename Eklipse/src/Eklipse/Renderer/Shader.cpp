@@ -180,7 +180,7 @@ namespace Eklipse
             {
                 EK_CORE_TRACE("Compiling shader at path: '{0}' to Vulkan binaries", m_filePath);
 
-                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.full_c_str(), options);
                 if (module.GetCompilationStatus() != shaderc_compilation_status_success)
                 {
                     success = false;

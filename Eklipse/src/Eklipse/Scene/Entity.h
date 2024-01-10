@@ -12,7 +12,10 @@ namespace Eklipse
 	public:
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene) : m_entityHandle(handle), m_scene(scene) {}
-		
+
+		UUID GetUUID();
+		entt::entity GetHandle() const;
+
 		template<typename T>
 		bool HasComponent()
 		{
@@ -21,13 +24,13 @@ namespace Eklipse
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			EK_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			EK_ASSERT(!HasComponent<T>(), "Entity {} already has component {}", GetUUID(), typeid(T).name());
 			return m_scene->GetRegistry().emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 		}
 		template<typename T>
 		T& GetComponent()
 		{
-			EK_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			EK_ASSERT(HasComponent<T>(), "Entity {} does not have component {}", GetUUID(), typeid(T).name());
 			return m_scene->GetRegistry().get<T>(m_entityHandle);
 		}
 		template<typename T>
@@ -44,9 +47,6 @@ namespace Eklipse
 		
 		inline bool IsNull() const { return m_entityHandle == entt::null; }
 		inline void MarkNull() { m_entityHandle = entt::null; }
-
-		UUID GetUUID();
-		entt::entity GetHandle() const;
 	
 	private:
 		entt::entity m_entityHandle{ entt::null };

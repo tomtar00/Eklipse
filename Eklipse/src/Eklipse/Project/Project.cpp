@@ -111,18 +111,18 @@ namespace Eklipse
         }
 
         // Copy the script api library // TODO: Name shouldnt be const
-        std::filesystem::path scriptApiLibraryPath = std::string("Resources/Scripting/Lib/Eklipse-ScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION;
+        std::filesystem::path scriptApiLibraryPath = std::string("Resources/Scripting/Lib/EklipseScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION;
         if (scriptApiLibraryPath.empty() || !std::filesystem::exists(scriptApiLibraryPath))
         {
 			EK_CORE_ERROR("Script API library not found at path '{0}'!", scriptApiLibraryPath.string());
 			return false;
 		}
-        std::filesystem::path destinationScriptApiLibraryPath = destinationDir / (std::string("Eklipse-ScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION);
+        std::filesystem::path destinationScriptApiLibraryPath = destinationDir / (std::string("EklipseScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION);
         std::filesystem::copy_file(scriptApiLibraryPath, destinationScriptApiLibraryPath, std::filesystem::copy_options::overwrite_existing);
 
         // Copy the executable // TODO: Name shouldnt be const
         std::string exportConfig = exportSettings.debugBuild ? "Debug" : "Distribution";
-        std::filesystem::path executablePath = std::filesystem::path("Resources/Export") / exportConfig / (std::string("Runtime") + EK_EXECUTABLE_EXTENSION);
+        std::filesystem::path executablePath = std::filesystem::path("Resources/Export") / exportConfig / (std::string("EklipseRuntime") + EK_EXECUTABLE_EXTENSION);
         if (executablePath.empty() || !std::filesystem::exists(executablePath))
         {
             EK_CORE_ERROR("Executable not found at path '{0}'!", executablePath.string());
@@ -226,6 +226,9 @@ namespace Eklipse
             s_activeProject = project;
 
             s_activeProject->m_scriptModule.Load(s_activeProject);
+
+            auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
+            Application::Get().SwitchScene(scene);
 
             return s_activeProject;
         }

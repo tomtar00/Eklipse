@@ -44,7 +44,7 @@ project "__PRJ_NAME__"
     }
     links
     {
-        "Eklipse-ScriptAPI"
+        "EklipseScriptAPI"
     }
 
     filter "configurations:Debug"

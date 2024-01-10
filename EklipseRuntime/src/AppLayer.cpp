@@ -21,7 +21,7 @@ namespace Eklipse
 		{
 			if (!m_runtimeConfig->scriptsLibraryPath.empty())
 			{
-				m_library = CreateRef<dylib>(m_runtimeConfig->scriptsLibraryPath.string(), dylib::no_filename_decorations);
+				m_library = CreateRef<dylib>(m_runtimeConfig->scriptsLibraryPath);
 			}
 			else
 			{

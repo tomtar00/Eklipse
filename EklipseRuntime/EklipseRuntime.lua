@@ -36,7 +36,7 @@ project "EklipseRuntime"
 	links
 	{
 		"Eklipse",
-		"Eklipse-ScriptAPI"
+		"EklipseScriptAPI"
 	}
 
 	defines

@@ -93,7 +93,10 @@ namespace Eklipse
 
 					EK_CORE_TRACE("OpenGL shader '{0}' - stage={1} source code:\n{2}", m_name, ShaderStageToString(stage), source);
 
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.c_str(), options);
+					/*shaderc::PreprocessedSourceCompilationResult pre_result = compiler.PreprocessGlsl(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.full_c_str(), options);
+					EK_ASSERT(pre_result.GetCompilationStatus() == shaderc_compilation_status_success, "Failed to preprocess shader at path: '{0}'\n\t{1}", m_filePath, pre_result.GetErrorMessage());
+					std::string pre_passed_source(pre_result.begin());*/
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(/*pre_passed_*/source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.full_c_str(), options);
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
 						success = false;

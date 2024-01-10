@@ -37,7 +37,7 @@ namespace Eklipse
 #if EK_PLATFORM_WINDOWS
 		if (Project::GetActive())
 		{
-			static std::string buff;
+			static std::string buff = Project::GetActive()->GetConfig().msBuildPath.string();
 			if (ImGui::InputText("MSBuild Path", &buff))
 			{
 				Project::GetActive()->GetConfig().msBuildPath = buff;

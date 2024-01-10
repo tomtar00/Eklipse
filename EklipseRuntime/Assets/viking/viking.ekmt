@@ -1,0 +1,12 @@
+Name: viking
+Shader: //Shaders/Default3D.eksh
+PushConstants:
+  pConstants:
+    - Name: Model
+      Type: mat4
+      Data: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]
+    - Name: Tint
+      Type: float3
+      Data: [100, 0, 0]
+Samplers:
+  texSampler: //viking/viking.png

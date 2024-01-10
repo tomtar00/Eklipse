@@ -359,13 +359,10 @@ namespace Eklipse
 
 		OnProjectUnload();
 		auto filePath = std::filesystem::path(outPath);
-		auto projectDir = filePath.parent_path();
 		auto project = Project::Load(filePath);
-		auto scene = Scene::Load(projectDir / project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
 
-		Application::Get().SwitchScene(scene);
 		m_editorScene.reset();
-		m_editorScene = scene;
+		m_editorScene = Application::Get().GetActiveScene();
 		m_entitiesPanel.SetContext(m_editorScene);
 
 		OnProjectLoaded();

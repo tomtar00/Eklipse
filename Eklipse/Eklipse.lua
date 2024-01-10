@@ -59,6 +59,7 @@ project "Eklipse"
 	{
 		"%{Lib.Vulkan}",
 
+        "shaderc",
         "spirv_tools",
         "glslang",
         "glfw",
@@ -86,9 +87,6 @@ project "Eklipse"
 
 		links
 		{
-			"%{Lib.shaderc_debug}",
-            "%{Lib.shaderc_util_debug}",
-
 			"%{Lib.SPIRV_Cross_debug}",
 			"%{Lib.SPIRV_Cross_GLSL_debug}"
 		}
@@ -100,9 +98,6 @@ project "Eklipse"
 
 		links
 		{
-			"%{Lib.shaderc_release}",
-            "%{Lib.shaderc_util_release}",
-
 			"%{Lib.SPIRV_Cross_release}",
 			"%{Lib.SPIRV_Cross_GLSL_release}"
 		}
@@ -114,9 +109,6 @@ project "Eklipse"
 
 		links
 		{
-			"%{Lib.shaderc_release}",
-            "%{Lib.shaderc_util_release}",
-
 			"%{Lib.SPIRV_Cross_release}",
 			"%{Lib.SPIRV_Cross_GLSL_release}",
 		}
