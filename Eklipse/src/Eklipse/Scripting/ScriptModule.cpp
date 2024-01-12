@@ -5,16 +5,19 @@
 
 namespace Eklipse
 {
-	void ScriptModule::Load(Ref<Project> project)
+	void ScriptModule::Load()
 	{
+		EK_ASSERT(Project::GetActive(), "Project is null!");
+		auto& config = Project::GetActive()->GetConfig();
+
 		SetState(ScriptsState::NONE);
-		m_libraryPath = project->GetConfig().scriptBuildDirectoryPath / (project->GetConfig().name + EK_SCRIPT_LIBRARY_EXTENSION);
+		m_libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
 		if (std::filesystem::exists(m_libraryPath))
 		{
 			if (LinkLibrary(m_libraryPath))
 			{
 				m_parser.Clear();
-				m_parser.ParseDirectory(project->GetConfig().scriptsSourceDirectoryPath);
+				m_parser.ParseDirectory(config.scriptsSourceDirectoryPath);
 
 				FetchFactoryFunctions();
 				StartWatchingSource();
@@ -29,6 +32,17 @@ namespace Eklipse
 			RecompileAll();
 		}
 	}
+	void ScriptModule::Reload()
+	{
+		EK_ASSERT(Project::GetActive(), "Project is null!");
+		auto& config = Project::GetActive()->GetConfig();
+
+		SetState(ScriptsState::NONE);
+		m_libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+
+		// TODO: might recompile only when needed - else just link
+		RecompileAll();
+	}
 	void ScriptModule::Unload()
 	{
 		StopWatchingSource();
@@ -38,7 +52,7 @@ namespace Eklipse
 	void ScriptModule::StartWatchingSource()
 	{
 		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
-		EK_CORE_TRACE("ScriptManager::StartWatchingSource: {0}", sourcePath);
+		EK_CORE_DBG("ScriptManager::StartWatchingSource: {0}", sourcePath);
 
 		m_sourceWatcher = CreateUnique<filewatch::FileWatch<std::string>>(sourcePath, CAPTURE_FN(OnSourceWatchEvent));
 	}
@@ -155,29 +169,51 @@ namespace Eklipse
 
 		return true;
 	}
-	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath)
+	void ScriptModule::RunPremake(const std::filesystem::path& premakeLuaFilePath)
 	{
+		EK_ASSERT(std::filesystem::exists(premakeLuaFilePath), "Premake5.lua file does not exist!");
+		std::filesystem::path currentPath = std::filesystem::current_path();
+		EK_ASSERT(std::filesystem::exists(currentPath / "Resources/Scripting/Premake/premake5.exe"), "Premake5 executable does not exist!");
+
+#ifdef EK_PLATFORM_WINDOWS
+		std::string command = "cd " + (currentPath / "Resources\\Scripting\\Premake").string() + " && premake5.exe vs2022 --file=" + premakeLuaFilePath.string();
+#elif defined(EK_PLATFORM_LINUX)
+		std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 gmake2 --file=" + premakeLuaFilePath.string();
+#elif defined(EK_PLATFORM_MACOS)
+		std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 xcode4 --file=" + premakeLuaFilePath.string();
+#endif
+
+		EK_CORE_INFO("Running command: {0}", command);
+		int res = system(command.c_str());
+		EK_ASSERT(res == 0, "Failed to run premake5.lua!");
+	}
+	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration)
+	{
+		std::string configuration_ = configuration;
+		if (configuration_.empty() || (configuration_ != "Debug" && configuration_ != "Release" && configuration_ != "Dist"))
+		{
+			configuration_ = Project::GetActive()->GetConfig().configuration;
+			EK_CORE_WARN("Invalid configuration: {0}. Using default configuration: {1}", configuration, configuration_);
+		}
+
 		EK_ASSERT(std::filesystem::exists(sourceDirectoryPath), "Source directory does not exist!");
 		SetState(ScriptsState::COMPILING);
 		std::string command;
 
+		auto& config = Project::GetActive()->GetConfig();
+		auto& projectDirectoryPath = Project::GetActive()->GetProjectDirectory();
+
 #ifdef EK_PLATFORM_WINDOWS
 
-		//std::string vsLocation = "E:\\Apps\\VisualStudio\\VS2022\\MSBuild\\Current\\Bin\\MSBuild.exe";
-		std::string msBuildLocation = Project::GetActive()->GetConfig().msBuildPath.string();
+		std::string msBuildLocation = config.msBuildPath.string();
 		if (msBuildLocation.empty() || !std::filesystem::is_regular_file(msBuildLocation))
 		{
 			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation);
 			SetState(ScriptsState::COMPILATION_FAILED);
 			return;
 		}
-		std::string solutionLocation = Project::GetActive()->GetProjectDirectory().string() + "\\" + Project::GetActive()->GetConfig().name + "-Scripts.sln";
-
-#ifdef EK_DEBUG
-		command = msBuildLocation + " /m /p:Configuration=Debug " + solutionLocation;
-#else
-		command = msBuildLocation + " /m /p:Configuration=Dist " + solutionLocation;
-#endif
+		std::string solutionLocation = (projectDirectoryPath / (config.name + "-Scripts.sln")).string();
+		command = msBuildLocation + " /m /p:Configuration=" + configuration_ + " " + solutionLocation;
 
 #elif defined(EK_PLATFORM_LINUX)
 		#error Linux compilation not implemented yet
@@ -227,36 +263,39 @@ namespace Eklipse
 		
 		Unload();
 
-		bool hasCodeToCompile = GenerateFactoryFile(Project::GetActive()->GetConfig().scriptGeneratedDirectoryPath);
-		if (!hasCodeToCompile)
-		{
-			return;
-		}
+		auto& config = Project::GetActive()->GetConfig();
 
-		CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath);
-
-		if (std::filesystem::exists(m_libraryPath))
+		bool hasCodeToCompile = GenerateFactoryFile(config.scriptGeneratedDirectoryPath);
+		if (hasCodeToCompile)
 		{
-			if (LinkLibrary(m_libraryPath))
+			auto premakeScriptPath = config.scriptPremakeDirectoryPath / "premake5.lua";
+			RunPremake(premakeScriptPath);
+
+			CompileScripts(config.scriptsSourceDirectoryPath, config.configuration);
+
+			if (std::filesystem::exists(m_libraryPath))
 			{
-				FetchFactoryFunctions();
+				if (LinkLibrary(m_libraryPath))
+				{
+					FetchFactoryFunctions();
+				}
 			}
-		}
-		else
-		{
-			EK_CORE_ERROR("Library not found at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
-		}
+			else
+			{
+				EK_CORE_ERROR("Library not found at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
+			}
 
-		if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
-		{
-			EK_CORE_INFO("Recompilation successfull!");
+			if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
+			{
+				EK_CORE_INFO("Recompilation successfull!");
 
-			if (Application::Get().GetActiveScene())
-				Scene::ReloadScripts(Application::Get().GetActiveScene());
-		}
-		else
-		{
-			EK_CORE_ERROR("Recompilation failed! Script source code has syntax errors or scripts contain only declaration, without definitions");
+				if (Application::Get().GetActiveScene())
+					Scene::ReloadScripts(Application::Get().GetActiveScene());
+			}
+			else
+			{
+				EK_CORE_ERROR("Recompilation failed! Script source code has syntax errors or scripts contain only declaration, without definitions");
+			}
 		}
 
 		StartWatchingSource();

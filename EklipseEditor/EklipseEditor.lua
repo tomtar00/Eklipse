@@ -50,8 +50,6 @@ project "EklipseEditor"
 	{
 		"{COPYDIR} %{prj.location}/Assets %{cfg.targetdir}/Assets",
 		"{COPYDIR} %{prj.location}/Resources %{cfg.targetdir}/Resources",
-
-		"{COPY} %{cfg.targetdir}/../EklipseScriptAPI/EklipseScriptAPI.dll %{cfg.targetdir}",
 	}
 
 	filter "system:windows"

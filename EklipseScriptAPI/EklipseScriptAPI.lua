@@ -43,10 +43,6 @@ project "EklipseScriptAPI"
 	{
 		"{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
 		"{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
-
-        "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
-		"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Scripting/Lib",
-        "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll ../bin/" .. outputdir .. "/EklipseEditor"
     }
 
     defines
@@ -67,12 +63,30 @@ project "EklipseScriptAPI"
 		runtime "Debug"
 		symbols "On"
 
+        postbuildcommands
+        {
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Debug",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Debug",
+        }
+
 	filter "configurations:Release"
 		defines "EK_RELEASE"
 		runtime "Release"
 		optimize "On"
 
+        postbuildcommands
+        {
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Release",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Release",
+        }
+
 	filter "configurations:Dist"
 		defines "EK_DIST"
 		runtime "Release"
 		optimize "On"
+
+        postbuildcommands
+        {
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Dist",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Dist",
+        }

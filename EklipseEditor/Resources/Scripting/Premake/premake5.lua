@@ -74,8 +74,15 @@ project "__PRJ_NAME__"
             {
                 "EK_PLATFORM_" .. string.upper(system)
             }
-            postbuildcommands
-            {
-                "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Scripts/Build"
-            }
+    end
+
+    configs = { "Debug", "Release", "Dist" }
+    for _, config in ipairs(configs) do
+        for system, ext in pairs(extensions) do
+            filter { "system:" .. system, "configurations:" .. config }
+                postbuildcommands
+                {
+                    "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Scripts/Build/" .. config
+                }
+        end
     end

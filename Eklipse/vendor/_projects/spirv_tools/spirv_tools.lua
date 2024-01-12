@@ -127,26 +127,26 @@ project "spirv_tools"
         return build_version_cmd_prefix .. "" .. spirv_tools .. "CHANGES " .. spirv_tools .. "build-version.inc";
     end
 
-    prebuildcommands
-    {
-        get_gen_core_tables_cmd("unified1"),
-        get_gen_enum_string_mapping_cmd("unified1"),
-        get_gen_opencl_tables_cmd("unified1"),
-        get_gen_glsl_tables_cmd("unified1"),
+    -- prebuildcommands
+    -- {
+    --     get_gen_core_tables_cmd("unified1"),
+    --     get_gen_enum_string_mapping_cmd("unified1"),
+    --     get_gen_opencl_tables_cmd("unified1"),
+    --     get_gen_glsl_tables_cmd("unified1"),
 
-        get_gen_vendor_table_cmd("debuginfo", ""),
-        get_gen_vendor_table_cmd("opencl.debuginfo.100", "CLDEBUG100_"),
-        get_gen_vendor_table_cmd("nonsemantic.shader.debuginfo.100", "SHDEBUG100_"),
-        get_gen_vendor_table_cmd("spv-amd-gcn-shader", ""),
-        get_gen_vendor_table_cmd("spv-amd-shader-ballot", ""),
-        get_gen_vendor_table_cmd("spv-amd-shader-explicit-vertex-parameter", ""),
-        get_gen_vendor_table_cmd("spv-amd-shader-trinary-minmax", ""),
-        get_gen_vendor_table_cmd("nonsemantic.clspvreflection", ""),
+    --     get_gen_vendor_table_cmd("debuginfo", ""),
+    --     get_gen_vendor_table_cmd("opencl.debuginfo.100", "CLDEBUG100_"),
+    --     get_gen_vendor_table_cmd("nonsemantic.shader.debuginfo.100", "SHDEBUG100_"),
+    --     get_gen_vendor_table_cmd("spv-amd-gcn-shader", ""),
+    --     get_gen_vendor_table_cmd("spv-amd-shader-ballot", ""),
+    --     get_gen_vendor_table_cmd("spv-amd-shader-explicit-vertex-parameter", ""),
+    --     get_gen_vendor_table_cmd("spv-amd-shader-trinary-minmax", ""),
+    --     get_gen_vendor_table_cmd("nonsemantic.clspvreflection", ""),
 
-        get_gen_registry_file_cmd(),
-        get_gen_build_version_cmd()
+    --     get_gen_registry_file_cmd(),
+    --     get_gen_build_version_cmd()
 
-    }
+    -- }
 
 	filter "system:windows"
 		systemversion "latest"

@@ -16,7 +16,7 @@
 
 namespace Eklipse
 {
-	class Project;
+	struct ProjectConfig;
 
 	enum class ScriptsState
 	{
@@ -33,11 +33,15 @@ namespace Eklipse
 		ScriptModule() = default;
 		~ScriptModule() = default;
 
-		void Load(Ref<Project> project);
+		void Load();
+		void Reload();
 		void Unload();
 
 		bool IsLibraryLoaded() const { return m_library != nullptr; }
 		void RecompileAll();
+		bool GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
+		void RunPremake(const std::filesystem::path& premakeLuaFilePath);
+		void CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration);
 
 		ClassMap& GetClasses() { return m_parser.GetClasses(); }
 		const std::string& GetState() const { return m_stateString; }
@@ -53,8 +57,6 @@ namespace Eklipse
 		bool LinkLibrary(const std::filesystem::path& libraryFilePath);
 		void UnlinkLibrary();
 
-		bool GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
-		void CompileScripts(const std::filesystem::path& sourceDirectoryPath);
 		void FetchFactoryFunctions();
 
 		void SetState(ScriptsState state);

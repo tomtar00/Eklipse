@@ -45,6 +45,17 @@ namespace Eklipse
 		}
 #endif
 
+		if (Project::GetActive())
+		{
+			// Project configuration combo
+			static const char* configurations[]{ "Debug", "Dist" };
+			static int config = Project::GetActive()->GetConfig().configuration == "Debug" ? 0 : 1;
+			if (ImGui::Combo("Configuration", &config, configurations, IM_ARRAYSIZE(configurations)))
+			{
+				Project::GetActive()->ChangeConfiguration(configurations[config]);
+			}
+		}
+
 		ImGui::End();
 
 		return true;

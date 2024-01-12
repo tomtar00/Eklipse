@@ -71,6 +71,11 @@ project "EklipseRuntime"
 		runtime "Release"
 		optimize "On"
 
+        postbuildcommands
+		{
+			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Release"
+		}
+
 	filter "configurations:Dist"
 		defines "EK_DIST"
 		runtime "Release"
@@ -78,5 +83,5 @@ project "EklipseRuntime"
 
 		postbuildcommands
 		{
-			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Distribution"
+			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Dist"
 		}

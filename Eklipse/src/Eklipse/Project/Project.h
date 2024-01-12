@@ -18,6 +18,7 @@ namespace Eklipse
 	struct ProjectConfig
 	{
 		std::string name;
+		std::string configuration;
 		std::filesystem::path projectDir;
 
 		// platform
@@ -57,24 +58,21 @@ namespace Eklipse
 		inline ProjectConfig& GetConfig() { return m_config; }
 		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
 		inline ScriptModule& GetScriptModule() { return m_scriptModule; }
-		static Ref<Project> GetActive() { return s_activeProject; }
-		static const std::filesystem::path& GetProjectDirectory();
-
 		void LoadAssets();
 		void UnloadAssets();
-		bool Export(const ProjectExportSettings& exportSettings) const;
+		bool Export(const ProjectExportSettings& exportSettings);
+		void ChangeConfiguration(const std::string& configuration);
 
 		static Ref<Project> New();
 		static Ref<Project> Load(const std::filesystem::path& projectFilePath);
-
+		static Ref<Project> GetActive() { return s_activeProject; }
+		static const std::filesystem::path& GetProjectDirectory();
 		static void SetupActive(const std::string& name, const std::filesystem::path& projectDirectory);
 		static bool Save(Ref<Project> project, const std::filesystem::path& projectFilePath);
 		static bool SaveActive();
 		static bool Exists(const std::filesystem::path& projectDirPath);
-
 		static ClassMap& GetScriptClasses() { return s_activeProject->m_scriptModule.GetClasses(); }
 		static Ref<dylib> GetActiveScriptLibrary() { return s_activeProject->m_scriptModule.GetLibrary(); }
-		
 		static void SetRuntimeConfig(Ref<RuntimeConfig> runtimeConfig) { s_runtimeConfig = runtimeConfig; }
 		static Ref<RuntimeConfig> GetRuntimeConfig() { return s_runtimeConfig; }
 

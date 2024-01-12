@@ -342,6 +342,10 @@ namespace Eklipse
 			Project::Save(project, projectFilePath);
 
 			Application::Get().SwitchScene(scene);
+			m_editorScene.reset();
+			m_editorScene = scene;
+			m_entitiesPanel.SetContext(m_editorScene);
+
 			OnProjectLoaded();
 		}
 		else
@@ -361,8 +365,11 @@ namespace Eklipse
 		auto filePath = std::filesystem::path(outPath);
 		auto project = Project::Load(filePath);
 
+		auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
+		Application::Get().SwitchScene(scene);
+
 		m_editorScene.reset();
-		m_editorScene = Application::Get().GetActiveScene();
+		m_editorScene = scene;
 		m_entitiesPanel.SetContext(m_editorScene);
 
 		OnProjectLoaded();

@@ -6,8 +6,11 @@
 #include <Eklipse/Utils/Yaml.h>
 #include <filesystem>
 
-#define abs_to_rel(path) std::filesystem::relative(path, m_project->GetConfig().projectDir).string()
-#define rel_to_abs(path) (m_project->GetConfig().projectDir / path)
+#define abs_to_rel(path) std::filesystem::relative(path, config.projectDir).string()
+#define rel_to_abs(path) (config.projectDir / path)
+
+#define runtime_abs_to_rel(path) std::filesystem::relative(path, runtimeDir).string()
+#define runtime_rel_to_abs(path) (runtimeDir / path)
 
 namespace Eklipse
 {
@@ -25,6 +28,7 @@ namespace Eklipse
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "Name" << YAML::Value << config.name;
+				out << YAML::Key << "Configuration" << YAML::Value << config.configuration;
 
 				out << YAML::Key << "MsBuildPath" << YAML::Value << config.msBuildPath.string();
 
@@ -68,6 +72,7 @@ namespace Eklipse
 			return false;
 
 		TryDeserailize<std::string>(projectNode, "Name", &config.name);
+		TryDeserailize<std::string>(projectNode, "Configuration", &config.configuration);
 
 		config.projectDir						= filepath.parent_path();
 
@@ -87,12 +92,14 @@ namespace Eklipse
 
 	bool ProjectSerializer::SerializeRuntimeConfig(const RuntimeConfig& runtimeConfig, const std::filesystem::path& filepath)
 	{
+		auto& runtimeDir = filepath.parent_path();
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Executable" << YAML::Value << runtimeConfig.executablePath.string();
-		out << YAML::Key << "AssetsDirectory" << YAML::Value << runtimeConfig.assetsDirectoryPath.string();
-		out << YAML::Key << "ScriptsLibrary" << YAML::Value << runtimeConfig.scriptsLibraryPath.string();
-		out << YAML::Key << "StartScene" << YAML::Value << runtimeConfig.startScenePath.string();
+		out << YAML::Key << "Executable" << YAML::Value << runtime_abs_to_rel(runtimeConfig.executablePath);
+		out << YAML::Key << "AssetsDirectory" << YAML::Value << runtime_abs_to_rel(runtimeConfig.assetsDirectoryPath);
+		out << YAML::Key << "ScriptsLibrary" << YAML::Value << runtime_abs_to_rel(runtimeConfig.scriptsLibraryPath);
+		out << YAML::Key << "StartScene" << YAML::Value << runtime_abs_to_rel(runtimeConfig.startScenePath);
 
 		std::ofstream fout(filepath);
 		fout << out.c_str();
@@ -112,10 +119,12 @@ namespace Eklipse
 			return false;
 		}
 
-		runtimeConfig.executablePath = TryDeserailize<std::string>(data, "Executable", "");
-		runtimeConfig.assetsDirectoryPath = TryDeserailize<std::string>(data, "AssetsDirectory", "Assets");
-		runtimeConfig.scriptsLibraryPath = TryDeserailize<std::string>(data, "ScriptsLibrary", "");
-		runtimeConfig.startScenePath = TryDeserailize<std::string>(data, "StartScene", "");
+		auto& runtimeDir = filepath.parent_path();
+
+		runtimeConfig.executablePath		= runtime_rel_to_abs(TryDeserailize<std::string>(data, "Executable", ""));
+		runtimeConfig.assetsDirectoryPath	= runtime_rel_to_abs(TryDeserailize<std::string>(data, "AssetsDirectory", "Assets"));
+		runtimeConfig.scriptsLibraryPath	= runtime_rel_to_abs(TryDeserailize<std::string>(data, "ScriptsLibrary", ""));
+		runtimeConfig.startScenePath		= runtime_rel_to_abs(TryDeserailize<std::string>(data, "StartScene", ""));
 
 		return true;
 	}

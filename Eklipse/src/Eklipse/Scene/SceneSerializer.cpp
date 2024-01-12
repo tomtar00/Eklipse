@@ -143,6 +143,8 @@ namespace Eklipse
 
 	bool SceneSerializer::Deserialize(const std::filesystem::path& sourceFilePath, const Ref<dylib>& library)
 	{
+		EK_CORE_DBG("Deserializing scene '{0}'...", sourceFilePath.string());
+
 		YAML::Node data;
 		try
 		{
@@ -161,8 +163,6 @@ namespace Eklipse
 		TryDeserailize<std::string>(data, "Scene", &sceneName);
 		m_scene->SetName(sceneName);
 		m_scene->SetPath(sourceFilePath);
-
-		EK_CORE_DBG("Deserializing scene '{0}'...", sceneName);
 
 		auto entities = data["Entities"];
 		if (entities)
@@ -244,6 +244,8 @@ namespace Eklipse
 	}
 	void SceneSerializer::DeserializeAllScriptProperties()
 	{
+		EK_CORE_DBG("Deserializing all script properties of scene '{0}'...", m_scene->GetName());
+
 		YAML::Node data;
 		try
 		{
@@ -259,7 +261,6 @@ namespace Eklipse
 			return;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		EK_CORE_DBG("Deserializing all script properties of scene '{0}'...", sceneName);
 
 		auto entitiesNodes = data["Entities"];
 		for (auto entityNode : entitiesNodes)

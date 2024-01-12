@@ -49,30 +49,30 @@ namespace Eklipse
 
             if (extension == ".obj")
             {
-                EK_CORE_TRACE("Loading model from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
+                EK_CORE_DBG("Loading model from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetMesh(relativePath);
             }
             else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp")
             {
-                EK_CORE_TRACE("Loading texture from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
+                EK_CORE_DBG("Loading texture from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetTexture(relativePath);
             }
             else if (extension == ".eksh")
             {
-                EK_CORE_TRACE("Loading shader from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
+                EK_CORE_DBG("Loading shader from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetShader(relativePath);
             }
             else if (extension == ".ekmt")
             {
-                EK_CORE_TRACE("Loading material from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
+                EK_CORE_DBG("Loading material from path full='{0}' relative='{1}'", relativePath.full_string(), relativePath.string());
                 GetMaterial(relativePath);
             }
         }
-        EK_CORE_TRACE("Loaded {0} models, {1} textures, {2} shaders and {3} materials", m_meshCache.size(), m_textureCache.size(), m_shaderCache.size(), m_materialCache.size());
+        EK_CORE_DBG("Loaded {0} models, {1} textures, {2} shaders and {3} materials", m_meshCache.size(), m_textureCache.size(), m_shaderCache.size(), m_materialCache.size());
 
         // Monitor assets changes with FileWatch
         m_fileWatcher = CreateUnique<filewatch::FileWatch<std::string>>(assetsDirectoryPath.full_string(), CAPTURE_FN(OnFileWatchEvent));
-        EK_CORE_TRACE("Monitoring assets directory '{0}'", assetsDirectoryPath.string());
+        EK_CORE_DBG("Monitoring assets directory '{0}'", assetsDirectoryPath.string());
     }
     void AssetLibrary::Unload()
     {
@@ -173,7 +173,7 @@ namespace Eklipse
         Ref<Mesh> meshRef = CreateRef<Mesh>(mesh);
         m_meshCache[meshPath] = meshRef;
 
-        EK_CORE_INFO("Loaded model from path {0}. Vertices: {1} Indices: {2}", meshPath, vertices.size() / 8, indices.size());
+        EK_CORE_DBG("Loaded model from path {0}. Vertices: {1} Indices: {2}", meshPath, vertices.size() / 8, indices.size());
         return meshRef;
     }
     Ref<Texture2D> AssetLibrary::GetTexture(const Path& texturePath)
@@ -212,7 +212,7 @@ namespace Eklipse
         texture->SetData(data, width * height * 4/*channels*/);
         m_textureCache[texturePath] = texture;
 
-        EK_CORE_INFO("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", texturePath, width, height, channels);
+        EK_CORE_DBG("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", texturePath, width, height, channels);
         return texture;
     }
     Ref<Shader> AssetLibrary::GetShader(const Path& shaderPath)
@@ -226,7 +226,7 @@ namespace Eklipse
         Ref<Shader> shader = Shader::Create(shaderPath);
         m_shaderCache[shaderPath] = shader;
 
-        EK_CORE_INFO("Loaded shader from path '{0}'", shaderPath);
+        EK_CORE_DBG("Loaded shader from path '{0}'", shaderPath);
         return shader;
     }
     Ref<Material> AssetLibrary::GetMaterial(const Path& materialPath, const Path& shaderPath)
@@ -240,7 +240,7 @@ namespace Eklipse
         auto& material = Material::Create(materialPath, shaderPath);
         m_materialCache[materialPath] = material;
 
-        EK_CORE_INFO("Loaded material from path '{0}'", materialPath);
+        EK_CORE_DBG("Loaded material from path '{0}'", materialPath);
         return material;
     }
     void AssetLibrary::OnFileWatchEvent(const std::string& path, filewatch::Event change_type)

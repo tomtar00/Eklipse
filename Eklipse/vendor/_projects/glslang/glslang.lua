@@ -156,11 +156,11 @@ project "glslang"
             "GLSLANG_OSINCLUDE_WIN32"
         }
 
-        prebuildcommands
-        {
-            "cd " .. glslang .. "&& python3 build_info.py ./ -i build_info.h.tmpl -o glslang/build_info.h",
-            "cd " .. glslang .. "&& python3 gen_extension_headers.py -i ./glslang/ExtensionHeaders -o ./glslang/glsl_intrinsic_header.h"
-        }
+        -- prebuildcommands
+        -- {
+        --     "cd " .. glslang .. "&& python3 build_info.py ./ -i build_info.h.tmpl -o glslang/build_info.h",
+        --     "cd " .. glslang .. "&& python3 gen_extension_headers.py -i ./glslang/ExtensionHeaders -o ./glslang/glsl_intrinsic_header.h"
+        -- }
 
     filter "system:linux"
 
@@ -174,11 +174,11 @@ project "glslang"
             "GLSLANG_OSINCLUDE_UNIX"
         }
 
-        prebuildcommands
-        {
-            "cd " .. glslang .. "&& python3 build_info.py ./ -i build_info.h.tmpl -o glslang/build_info.h",
-            "cd " .. glslang .. "&& python3 gen_extension_headers.py -i ./glslang/ExtensionHeaders -o ./glslang/glsl_intrinsic_header.h"
-        }
+        -- prebuildcommands
+        -- {
+        --     "cd " .. glslang .. "&& python3 build_info.py ./ -i build_info.h.tmpl -o glslang/build_info.h",
+        --     "cd " .. glslang .. "&& python3 gen_extension_headers.py -i ./glslang/ExtensionHeaders -o ./glslang/glsl_intrinsic_header.h"
+        -- }
 
 	filter "configurations:Debug"
 		runtime "Debug"
