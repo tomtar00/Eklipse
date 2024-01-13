@@ -63,6 +63,7 @@ namespace Eklipse
 	}
 	void Project::UnloadAssets()
 	{
+		Renderer::WaitDeviceIdle();
 		m_assetLibrary->Unload();
 	}
 	bool Project::Export(const ProjectExportSettings& exportSettings)

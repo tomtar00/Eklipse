@@ -14,7 +14,7 @@ bool ImGui::InputPath(const char* id, const char* label, Eklipse::Path& path, co
 		path.parseSelf();
         if (path.isValid(requiredExtensions))
         {
-            EK_CORE_INFO("Valid path: {0} -- {1}", path.string(), path.full_string());
+            EK_CORE_DBG("Valid path: {0} -- {1}", path.string(), path.full_string());
             callback();
         }
         //else EK_CORE_WARN("Invalid path: {0} -- {1}", path.string(), path.full_string());

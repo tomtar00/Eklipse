@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <Eklipse/Renderer/Texture.h>
 
-#define HANDLE_VK_RESULT(res, name) EK_ASSERT(res == VK_SUCCESS, "Vulkan result not successfull at {0}. Result code = {1}", name, (int)res);
+#define HANDLE_VK_RESULT(res, name) THROW(res == VK_SUCCESS, "Vulkan result not successfull at {0}. Result code = {1}", name, (int)res);
 
 namespace Eklipse
 {

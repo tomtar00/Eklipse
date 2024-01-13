@@ -11,7 +11,7 @@ namespace Eklipse
 			OpenGLAPI();
 			static OpenGLAPI& Get();
 
-			void Init() override;
+			bool Init() override;
 			void Shutdown() override;
 			void WaitDeviceIdle() override;
 

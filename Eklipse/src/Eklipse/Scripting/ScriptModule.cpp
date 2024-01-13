@@ -81,12 +81,12 @@ namespace Eklipse
 			UnlinkLibrary();
 			m_library = CreateRef<dylib>(libraryFilePath);
 
-			EK_CORE_INFO("Linked successfully to library: '{0}'", libraryFilePath.string());
+			EK_CORE_DBG("Linked successfully to library: '{0}'", libraryFilePath.string());
 			return true;
 		}
 		catch (const std::exception e)
 		{
-			EK_CORE_ERROR("Library link failure at path '{0}'.\n{1}", libraryFilePath.string(), e.what());
+			EK_CORE_DBG("Library link failure at path '{0}'.\n{1}", libraryFilePath.string(), e.what());
 			return false;
 		}
 	}
@@ -183,7 +183,7 @@ namespace Eklipse
 		std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 xcode4 --file=" + premakeLuaFilePath.string();
 #endif
 
-		EK_CORE_INFO("Running command: {0}", command);
+		EK_CORE_DBG("Running command: {0}", command);
 		int res = system(command.c_str());
 		EK_ASSERT(res == 0, "Failed to run premake5.lua!");
 	}

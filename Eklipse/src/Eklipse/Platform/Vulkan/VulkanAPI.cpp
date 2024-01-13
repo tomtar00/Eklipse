@@ -57,95 +57,82 @@ namespace Eklipse
 		{
 			return *s_instance;
 		}
-		void VulkanAPI::Init()
+		bool VulkanAPI::Init()
 		{
 			if (m_initialized)
 			{
 				EK_CORE_WARN("VulkanAPI already initialized!");
-				return;
+				return false;
 			}
 
-			// COMMON //////////////////////////////////////////
+			try
+			{
+				CreateInstance();
+				CreateSurface();
+				SetupValidationLayers();
+				PickPhysicalDevice();
+				g_queueFamilyIndices = FindQueueFamilies(g_physicalDevice);
+				vkGetPhysicalDeviceMemoryProperties(g_physicalDevice, &g_physicalDeviceMemoryProps);
+				CreateLogicalDevice();
 
-			CreateInstance();
-			CreateSurface();
-			SetupValidationLayers();
-			PickPhysicalDevice();
-			g_queueFamilyIndices = FindQueueFamilies(g_physicalDevice);
-			vkGetPhysicalDeviceMemoryProperties(g_physicalDevice, &g_physicalDeviceMemoryProps);
-			CreateLogicalDevice();
+				VmaAllocatorCreateInfo allocatorCreateInfo = {};
+				VmaVulkanFunctions func = {};
+				func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+				func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+				allocatorCreateInfo.pVulkanFunctions = &func;
+				allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+				allocatorCreateInfo.physicalDevice = g_physicalDevice;
+				allocatorCreateInfo.device = g_logicalDevice;
+				allocatorCreateInfo.instance = g_instance;
+				VkResult res = vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
+				HANDLE_VK_RESULT(res, "CREATE VMA ALLOCATOR");
 
-			VmaAllocatorCreateInfo allocatorCreateInfo = {};
-			VmaVulkanFunctions func = {};
-			func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-			func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
-			allocatorCreateInfo.pVulkanFunctions = &func;
-			allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
-			allocatorCreateInfo.physicalDevice = g_physicalDevice;
-			allocatorCreateInfo.device = g_logicalDevice;
-			allocatorCreateInfo.instance = g_instance;
-			vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
 
-			g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-			//CreateCommandBuffers(g_drawCommandBuffers, g_maxFramesInFlight, g_commandPool);
+				g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-			// GEOMETRY //////////////////////////////////////////
+				g_descriptorPool = CreateDescriptorPool({
+					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
+					{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
+					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
+					}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
-			/*int width = Application::Get().GetInfo().windowWidth;
-			int height = Application::Get().GetInfo().windowHeight;
-			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
-			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);*/
-			//g_renderPass = CreateRenderPass();
-			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-			//CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
+				// PARTICLES ////////////////////////////////////////
 
-			/*g_graphicsDescriptorSetLayout = CreateDescriptorSetLayout({
-				{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
-				{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-				});*/
+				//CreateCommandBuffers(g_computeCommandBuffers, g_maxFramesInFlight, g_commandPool);
+				//
+				//g_computeDescriptorSetLayout = CreateDescriptorSetLayout({
+				//	{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+				//	{ 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+				//	{ 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
+				//});
+				//
+				//g_particlePipeline = CreateGraphicsPipeline(
+				//	"shaders/particle-vert.spv", "shaders/particle-frag.spv",
+				//	g_particlePipelineLayout, g_renderPass,
+				//	GetParticleBindingDescription(), GetParticleAttributeDescriptions(),
+				//	&g_graphicsDescriptorSetLayout
+				//);
+				//
+				//g_computePipeline = CreateComputePipeline(
+				//	"shaders/particle-comp.spv", g_computePipelineLayout,
+				//    &g_computeDescriptorSetLayout
+				//);
 
-				/*g_graphicsPipeline = CreateGraphicsPipeline(
-					"shaders/vert.spv", "shaders/frag.spv",
-					g_graphicsPipelineLayout, g_renderPass,
-					GetVertexBindingDescription(), GetVertexAttributeDescriptions(),
-					&g_graphicsDescriptorSetLayout
-				);*/
+				///////////////////////////////////////////////////
 
-			g_descriptorPool = CreateDescriptorPool({
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
-			}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+				CreateSyncObjects();
 
-			// PARTICLES ////////////////////////////////////////
-
-			//CreateCommandBuffers(g_computeCommandBuffers, g_maxFramesInFlight, g_commandPool);
-			//
-			//g_computeDescriptorSetLayout = CreateDescriptorSetLayout({
-			//	{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-			//	{ 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-			//	{ 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
-			//});
-			//
-			//g_particlePipeline = CreateGraphicsPipeline(
-			//	"shaders/particle-vert.spv", "shaders/particle-frag.spv",
-			//	g_particlePipelineLayout, g_renderPass,
-			//	GetParticleBindingDescription(), GetParticleAttributeDescriptions(),
-			//	&g_graphicsDescriptorSetLayout
-			//);
-			//
-			//g_computePipeline = CreateComputePipeline(
-			//	"shaders/particle-comp.spv", g_computePipelineLayout,
-			//    &g_computeDescriptorSetLayout
-			//);
-
-			///////////////////////////////////////////////////
-
-			CreateSyncObjects();
-
-			EK_CORE_INFO("Vulkan initialized");
-			m_initialized = true;
+				EK_CORE_INFO("Vulkan initialized");
+				m_initialized = true;
+				return true;
+			}
+			catch (const std::exception& e)
+			{
+				m_initialized = true;
+				Shutdown();
+				EK_CORE_ERROR("Vulkan initialization failed. {}", e.what());
+				return false;
+			}
 		}
 		void VulkanAPI::Shutdown()
 		{
@@ -155,7 +142,10 @@ namespace Eklipse
 				return;
 			}
 
-			vkDeviceWaitIdle(g_logicalDevice);
+			if (g_logicalDevice)
+			{
+				vkDeviceWaitIdle(g_logicalDevice);
+			}
 
 			// GEOMETRY //////////////////////////////////////////
 
@@ -164,7 +154,10 @@ namespace Eklipse
 
 			// DestroyImageViews(g_swapChainImageViews);
 			// vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
-			vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
+			if (g_descriptorPool)
+			{
+				vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
+			}
 
 			//DestroyFrameBuffers(g_swapChainFramebuffers);
 			//
@@ -176,12 +169,11 @@ namespace Eklipse
 
 			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
-				vkDestroySemaphore(g_logicalDevice, m_imageAvailableSemaphores[i], nullptr);
-				vkDestroySemaphore(g_logicalDevice, m_renderFinishedSemaphores[i], nullptr);
-				vkDestroyFence(g_logicalDevice, m_renderInFlightFences[i], nullptr);
-
-				vkDestroySemaphore(g_logicalDevice, m_computeFinishedSemaphores[i], nullptr);
-				vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
+				if (m_imageAvailableSemaphores.size() && m_imageAvailableSemaphores[i])		vkDestroySemaphore(g_logicalDevice, m_imageAvailableSemaphores[i], nullptr);
+				if (m_renderFinishedSemaphores.size() && m_renderFinishedSemaphores[i])		vkDestroySemaphore(g_logicalDevice, m_renderFinishedSemaphores[i], nullptr);
+				if (m_renderInFlightFences.size() && m_renderInFlightFences[i])				vkDestroyFence(g_logicalDevice, m_renderInFlightFences[i], nullptr);
+				if (m_computeFinishedSemaphores.size() && m_computeFinishedSemaphores[i])	vkDestroySemaphore(g_logicalDevice, m_computeFinishedSemaphores[i], nullptr);
+				if (m_computeInFlightFences.size() && m_computeInFlightFences[i])			vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
 			}
 
 			//FreeCommandBuffers(g_drawCommandBuffers, g_commandPool);
@@ -201,13 +193,28 @@ namespace Eklipse
 			// COMMON /////////////////////////////////////////////
 
 			DestroyValidationLayers();
-			vkDestroyCommandPool(g_logicalDevice, g_commandPool, nullptr);
+			if (g_commandPool)
+			{
+				vkDestroyCommandPool(g_logicalDevice, g_commandPool, nullptr);
+			}
 
-			vmaDestroyAllocator(g_allocator);
+			if (g_allocator)
+			{
+				vmaDestroyAllocator(g_allocator);
+			}
 
-			vkDestroyDevice(g_logicalDevice, nullptr);
-			vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
-			vkDestroyInstance(g_instance, nullptr);
+			if (g_logicalDevice)
+			{
+				vkDestroyDevice(g_logicalDevice, nullptr);
+			}
+			if (g_surface)
+			{
+				vkDestroySurfaceKHR(g_instance, g_surface, nullptr);
+			}
+			if (g_instance)
+			{
+				vkDestroyInstance(g_instance, nullptr);
+			}
 
 			g_VKDefaultFramebuffer = nullptr;
 			g_VKSceneFramebuffer = nullptr;
@@ -299,12 +306,12 @@ namespace Eklipse
 		}
 		void VulkanAPI::CreateInstance()
 		{
-			VkResult res;
+			/*VkResult res;
 			if (g_validationLayersEnabled)
 			{
 				res = CheckValidationLayersSupport();
 				HANDLE_VK_RESULT(res, "VALIDATION LAYERS SUPPORT");
-			}
+			}*/
 
 			VkApplicationInfo appInfo{};
 			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -333,7 +340,7 @@ namespace Eklipse
 				createInfo.pNext = nullptr;
 			}
 
-			res = vkCreateInstance(&createInfo, nullptr, &g_instance);
+			VkResult res = vkCreateInstance(&createInfo, nullptr, &g_instance);
 			HANDLE_VK_RESULT(res, "CREATE INSTANCE");
 		}
 		void VulkanAPI::RecreateSwapChain()

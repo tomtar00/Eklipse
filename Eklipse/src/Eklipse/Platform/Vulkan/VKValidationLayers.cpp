@@ -7,10 +7,10 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-#ifndef EK_DIST
-		const bool g_validationLayersEnabled = true;
+#ifdef EK_DEBUG
+		bool g_validationLayersEnabled = true;
 #else
-		const bool g_validationLayersEnabled = false;
+		bool g_validationLayersEnabled = false;
 #endif
 
 		VkDebugUtilsMessengerEXT g_debugMessanger			= VK_NULL_HANDLE;
@@ -20,7 +20,11 @@ namespace Eklipse
 		{
 			if (!g_validationLayersEnabled) return;
 
-			VkDebugUtilsMessengerCreateInfoEXT createInfo;
+			CheckValidationLayersSupport();
+
+			if (!g_validationLayersEnabled) return;
+
+			VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 			createInfo.flags = 0;
 			createInfo.pNext = NULL;
 			createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -38,8 +42,10 @@ namespace Eklipse
 				HANDLE_VK_RESULT(VK_ERROR_EXTENSION_NOT_PRESENT, "SETUP VALIDATION LAYERS");
 			}
 		}
-		VkResult CheckValidationLayersSupport()
+		void CheckValidationLayersSupport()
 		{
+			if (!g_validationLayersEnabled) return;
+
 			uint32_t layerCount;
 			vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -61,11 +67,11 @@ namespace Eklipse
 
 				if (!layerFound)
 				{
-					return VK_ERROR_LAYER_NOT_PRESENT;
+					EK_CORE_ERROR("Validation layer not found: {0}. For the Vulkan validation layers to work, please install Vulkan SDK.", layerName);
+					g_validationLayersEnabled = false;
+					break;
 				}
 			}
-
-			return VK_SUCCESS;
 		}
 		void PopulateInstanceCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo, VkInstanceCreateInfo* createInfo)
 		{

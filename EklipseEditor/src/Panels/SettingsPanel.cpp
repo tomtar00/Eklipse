@@ -28,10 +28,10 @@ namespace Eklipse
 		}
 
 		static const char* APIs[]{ "Vulkan", "OpenGL" };
-		static int api = (int)Renderer::GetAPI() - 1;
+		static int api = (int)Renderer::GetAPI();
 		if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
 		{
-			Application::Get().SetAPI((ApiType)(api+1));
+			Application::Get().SetAPI((ApiType)(api));
 		}
 
 #if EK_PLATFORM_WINDOWS

@@ -88,8 +88,6 @@ namespace Eklipse
 			EndSingleCommands(cmd);
 
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-			EK_CORE_INFO("Vulkan ImGui layer initialized");
 		}
 		void VkImGuiLayer::Shutdown()
 		{
@@ -114,8 +112,6 @@ namespace Eklipse
 			ImGui_ImplVulkan_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 			ImGuiLayer::Shutdown();
-
-			EK_CORE_INFO("Vulkan ImGui layer shut down");
 		}
 		void VkImGuiLayer::NewFrame()
 		{

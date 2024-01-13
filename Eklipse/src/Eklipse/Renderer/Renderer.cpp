@@ -13,15 +13,24 @@
 namespace Eklipse
 {
 	ApiType	Renderer::s_apiType = ApiType::Vulkan;
+	static const std::string APITypeToString(ApiType apiType)
+	{
+		switch (apiType)
+		{
+			case ApiType::Vulkan: return "Vulkan";
+			case ApiType::OpenGL: return "OpenGL";
+		}
+		return "Unknown";
+	}
 
 	static Ref<UniformBuffer> s_cameraUniformBuffer;
 	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;
 
-	void Renderer::Init()
+	bool Renderer::Init()
 	{
 		RenderCommand::API.reset();
 		RenderCommand::API = GraphicsAPI::Create();
-		RenderCommand::API->Init();
+		return RenderCommand::API->Init();
 	}
 	void Renderer::InitParameters()
 	{
@@ -138,8 +147,12 @@ namespace Eklipse
 	}
 	void Renderer::SetAPI(ApiType apiType)
 	{
-		EK_ASSERT(apiType != ApiType::None, "Cannot set graphics API to None");
-
+		if (s_apiType == apiType)
+		{
+			EK_CORE_WARN("API already set to {0}", APITypeToString(apiType));
+			return;
+		}
+		EK_CORE_INFO("Setting API to {0}", APITypeToString(apiType));
 		s_apiType = apiType;
 	}
 	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
@@ -151,7 +164,7 @@ namespace Eklipse
 
 		Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
 		s_uniformBufferCache[uniformBufferName] = uniformBuffer;
-		EK_CORE_INFO("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
+		EK_CORE_DBG("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
 		return uniformBuffer;
 	}
 	Ref<UniformBuffer> Renderer::GetUniformBuffer(const std::string& uniformBufferName)

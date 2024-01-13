@@ -23,6 +23,8 @@ namespace Eklipse
 	};
 }
 
+#define THROW(cond, ...) if (!cond) throw std::runtime_error(fmt::format(__VA_ARGS__))
+
 #ifdef EK_DEBUG
 	#define EK_CORE_TRACE(...)		SPDLOG_LOGGER_TRACE(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	#define EK_CORE_DBG(...)		SPDLOG_LOGGER_DEBUG(Eklipse::Log::coreLogger(), __VA_ARGS__)

@@ -35,14 +35,36 @@ namespace Eklipse
 		m_running = true;
 		m_quit = false;
 
-		// Init window
-		WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
-		m_window = Window::Create(data);
-		m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
+		//// Init window
+		//WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
+		//m_window = Window::Create(data);
+		//m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
-		// Init API
-		OnInitAPI(Renderer::GetAPI());
-		Renderer::Init();
+		//// Init API
+		//OnInitAPI(Renderer::GetAPI());
+		//Renderer::Init();
+		//OnAPIHasInitialized(Renderer::GetAPI());
+
+		int tries = 0;
+		ApiType api = Renderer::GetAPI();
+		do
+		{
+			Renderer::SetAPI((ApiType)(((int)api + tries) % API_TYPE_COUNT));
+
+			if (++tries > API_TYPE_COUNT)
+			{
+				EK_CORE_CRITICAL("Could not find any supported Graphics API!");
+				exit(-1);
+			}
+
+			WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
+			//if (m_window) m_window->Shutdown();
+			m_window.reset();
+			m_window = Window::Create(data);
+			m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
+
+			OnInitAPI(Renderer::GetAPI());
+		} while (!Renderer::Init());
 		OnAPIHasInitialized(Renderer::GetAPI());
 		
 		// Init assets
@@ -72,7 +94,7 @@ namespace Eklipse
 		Renderer::Shutdown();
 		OnAPIHasShutdown();
 
-		m_window->Shutdown();
+		//m_window->Shutdown();
 	}
 
 	// === Frame Management ===
@@ -91,12 +113,6 @@ namespace Eklipse
 	}
 	void Application::SetAPI(ApiType api)
 	{
-		if (Renderer::GetAPI() == api)
-		{
-			EK_CORE_WARN("API already set to {0}", (int)api);
-			return;
-		}
-		EK_CORE_INFO("Setting API to {0}", (int)api);
 		Renderer::SetAPI(api);
 
 		m_running = false;

@@ -16,7 +16,7 @@ namespace Eklipse
 		extern VkSurfaceKHR g_surface;
 		extern VmaAllocator g_allocator;
 
-		extern const bool g_validationLayersEnabled;
+		extern bool g_validationLayersEnabled;
 		extern VkDebugUtilsMessengerEXT g_debugMessanger;
 		extern const std::vector<const char*> g_validationLayers;
 

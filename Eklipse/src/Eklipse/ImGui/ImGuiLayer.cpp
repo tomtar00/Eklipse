@@ -32,11 +32,11 @@ namespace Eklipse
 
 		IMGUI_CHECKVERSION();
 
-		EK_CORE_INFO("{0} imgui layer attached", typeid(*this).name());
+		EK_CORE_TRACE("{0} imgui layer attached", typeid(*this).name());
 	}
 	void ImGuiLayer::OnDetach()
 	{
-		EK_CORE_INFO("{0} imgui layer detached", typeid(*this).name());
+		EK_CORE_TRACE("{0} imgui layer detached", typeid(*this).name());
 	}
 	void ImGuiLayer::OnGUI(float deltaTime)
 	{
@@ -53,7 +53,7 @@ namespace Eklipse
 
 		ImGui::DestroyContext();
 
-		EK_CORE_INFO("{0} imgui layer shutdown", typeid(*this).name());
+		EK_CORE_TRACE("{0} imgui layer shutdown", typeid(*this).name());
 	}
 	void ImGuiLayer::Begin()
 	{

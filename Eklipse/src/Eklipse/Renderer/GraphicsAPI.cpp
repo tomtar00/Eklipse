@@ -7,13 +7,8 @@
 
 namespace Eklipse
 {
-	GraphicsAPI::GraphicsAPI() :
-		m_initialized(false) {}
+	GraphicsAPI::GraphicsAPI() : m_initialized(false) {}
 
-	bool GraphicsAPI::IsInitialized()
-	{
-		return m_initialized;
-	}
 	Unique<GraphicsAPI> GraphicsAPI::Create()
 	{
 		auto apiType = Renderer::GetAPI();

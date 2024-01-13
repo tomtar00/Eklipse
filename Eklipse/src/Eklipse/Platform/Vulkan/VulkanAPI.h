@@ -13,7 +13,7 @@ namespace Eklipse
 			VulkanAPI();
 			static VulkanAPI& Get();
 
-			void Init() override;
+			bool Init() override;
 			void Shutdown() override;
 			void WaitDeviceIdle() override;
 

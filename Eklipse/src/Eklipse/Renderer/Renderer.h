@@ -7,17 +7,17 @@
 
 namespace Eklipse
 {
+	const constexpr uint32_t API_TYPE_COUNT = 2;
 	enum class ApiType
 	{
-		None	= 0,
-		Vulkan	= 1,
-		OpenGL	= 2
+		Vulkan	= 0,
+		OpenGL	= 1
 	};
 
 	class Renderer
 	{
 	public:
-		static void Init();
+		static bool Init();
 		static void InitParameters();
 		static void WaitDeviceIdle();
 		static void Shutdown();

@@ -274,7 +274,7 @@ namespace Eklipse
 
                                 auto& shaderRef = GetShader(pathString);
 
-                                EK_CORE_INFO("Recompiling shader from path '{0}'", pathString);
+                                EK_CORE_DBG("Recompiling shader from path '{0}'", pathString);
                                 bool recompiledSuccessfully = shaderRef->Recompile();
                                 if (recompiledSuccessfully)
                                 {

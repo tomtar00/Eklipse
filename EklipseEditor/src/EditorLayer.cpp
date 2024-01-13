@@ -52,11 +52,11 @@ namespace Eklipse
 		m_entitiesPanel.SetContext(m_editorScene);
 		Application::Get().SwitchScene(m_editorScene);
 
-		EK_INFO("Editor layer attached");
+		EK_TRACE("Editor layer attached");
 	}
 	void EditorLayer::OnDetach()
 	{
-		EK_INFO("Editor layer detached");
+		EK_TRACE("Editor layer detached");
 	}
 	void EditorLayer::OnUpdate(float deltaTime)
 	{
@@ -146,27 +146,27 @@ namespace Eklipse
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N"))
+				if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N", false, m_editorState & EDITING))
 				{
 					openNewProjectPopup = true;
 				}
-				if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O"))
+				if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O", false, m_editorState & EDITING))
 				{
 					OpenProject(); // TODO: save and load created projects list and show it in modal/window
 				}
-				if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S"))
+				if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S", false, m_editorState & EDITING))
 				{
 					SaveProject();
 				}
-				if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S"))
+				if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S", false, m_editorState & EDITING))
 				{
 					SaveProjectAs();
 				}
-				if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr))
+				if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr, false, m_editorState & EDITING))
 				{
 					SaveScene();
 				}
-				if (ImGui::MenuItemEx("Export", nullptr, nullptr))
+				if (ImGui::MenuItemEx("Export", nullptr, nullptr, false, m_editorState & EDITING))
 				{
 					openExportProjectPopup = true;
 				}
@@ -331,17 +331,14 @@ namespace Eklipse
 		auto project = Project::New();
 		if (!Project::Exists(dirPath))
 		{
-			// Create project directories and copy neccessary files
 			Project::SetupActive(name, dirPath);
 
-			// Create default scene
 			auto scene = Scene::New("Untitled", dirPath / project->GetConfig().startScenePath);
+			Application::Get().SwitchScene(scene);
 
-			// Save project
 			std::filesystem::path projectFilePath = dirPath / (name + EK_PROJECT_FILE_EXTENSION);
 			Project::Save(project, projectFilePath);
 
-			Application::Get().SwitchScene(scene);
 			m_editorScene.reset();
 			m_editorScene = scene;
 			m_entitiesPanel.SetContext(m_editorScene);
@@ -357,9 +354,11 @@ namespace Eklipse
 	{
 		nfdchar_t* outPath = nullptr;
 		nfdresult_t result = NFD_OpenDialog("ekproj", nullptr, &outPath);
-		if (result == NFD_CANCEL) return;
-
-		EK_ASSERT(result == NFD_OKAY, "Failed to open project file! {0}", NFD_GetError());
+		EK_ASSERT(result != NFD_ERROR, "Failed to open project file! {0}", NFD_GetError());
+		if (result == NFD_CANCEL)
+		{
+			return;
+		}
 
 		OnProjectUnload();
 		auto filePath = std::filesystem::path(outPath);
@@ -426,9 +425,12 @@ namespace Eklipse
 		ClearSelection();
 
 		// Reload scripts if they were changed while playing
-		auto lastScriptReloadTime = Project::GetActive()->GetScriptModule().GetLastStateChangeTime();
-		if (lastScriptReloadTime > m_scenePlayTime)
-			Scene::ReloadScripts(Application::Get().GetActiveScene());
+		if (Project::GetActive())
+		{
+			auto lastScriptReloadTime = Project::GetActive()->GetScriptModule().GetLastStateChangeTime();
+			if (lastScriptReloadTime > m_scenePlayTime)
+				Scene::ReloadScripts(Application::Get().GetActiveScene());
+		}
 	}
 	void EditorLayer::OnScenePause()
 	{
@@ -448,9 +450,10 @@ namespace Eklipse
 	}
 	void EditorLayer::OnProjectUnload()
 	{
-		Renderer::WaitDeviceIdle();
 		if (Project::GetActive())
+		{
 			Project::GetActive()->UnloadAssets();
+		}
 	}
 	void EditorLayer::OnLoadResources()
 	{
@@ -458,6 +461,8 @@ namespace Eklipse
 	}
 	void EditorLayer::OnProjectLoaded()
 	{
+		EK_ASSERT(Project::GetActive(), "Project is null!");
+
 		ClearSelection();
 		Project::GetActive()->LoadAssets();
 		m_filesPanel.OnContextChanged();

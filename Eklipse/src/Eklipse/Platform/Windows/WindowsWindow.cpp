@@ -113,7 +113,9 @@ namespace Eklipse
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 		}
 		else
+		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		}
 
 		m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title, nullptr, nullptr);
 		glfwSetWindowTitle(m_window, m_data.title);
@@ -136,10 +138,13 @@ namespace Eklipse
 		glfwSetCursorPosCallback(m_window, GlfwCursorPosCallback);
 		glfwSetWindowFocusCallback(m_window, GlfwWindowFocusCallback);
 
-		EK_CORE_INFO("Initialized window");
+		EK_CORE_INFO("Window initialized");
 	}
 
-	WindowsWindow::~WindowsWindow() {}
+	WindowsWindow::~WindowsWindow() 
+	{
+		Shutdown();
+	}
 	void WindowsWindow::Shutdown()
 	{
 		EK_CORE_INFO("Window shutdown");
