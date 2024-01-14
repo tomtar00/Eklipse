@@ -14,7 +14,7 @@ Makefile
 *.xcodeworkspace
 *.xcodeproj
 
-EklipseEditor/Assets/Cache
-EklipseEditor/Resources/Export
-EklipseEditor/Resources/Scripting/Include
-EklipseEditor/Resources/Scripting/Lib
+EklipseEditor/Assets/Cache/
+EklipseEditor/Resources/Export/
+EklipseEditor/Resources/Scripting/Include/
+EklipseEditor/Resources/Scripting/Lib/

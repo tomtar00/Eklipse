@@ -10,10 +10,22 @@
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
 #include <Eklipse/Platform/OpenGL/OpenGLAPI.h>
 
+// Force the use of the dedicated GPU on laptops
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+	__declspec(dllexport) uint32_t NvOptimusEnablement = 1;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+
+#ifdef __cplusplus
+}
+#endif
+
 namespace Eklipse
 {
 	ApiType	Renderer::s_apiType = ApiType::Vulkan;
-	static const std::string APITypeToString(ApiType apiType)
+	const std::string APITypeToString(ApiType apiType)
 	{
 		switch (apiType)
 		{
@@ -147,12 +159,6 @@ namespace Eklipse
 	}
 	void Renderer::SetAPI(ApiType apiType)
 	{
-		if (s_apiType == apiType)
-		{
-			EK_CORE_WARN("API already set to {0}", APITypeToString(apiType));
-			return;
-		}
-		EK_CORE_INFO("Setting API to {0}", APITypeToString(apiType));
 		s_apiType = apiType;
 	}
 	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)

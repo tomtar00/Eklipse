@@ -1,5 +1,6 @@
 #include "SettingsPanel.h"
 #include <Eklipse/Renderer/Settings.h>
+#include <EditorLayer.h>
 
 namespace Eklipse
 {
@@ -27,13 +28,16 @@ namespace Eklipse
 			RendererSettings::SetMsaaSamples(samples);
 		}
 
-		static const char* APIs[]{ "Vulkan", "OpenGL" };
-		static int api = (int)Renderer::GetAPI();
-		if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
+		if (EditorLayer::Get().GetEditorState() & EDITING) // TODO: Should fix (Play > Change API > Stop > CRASH)
 		{
-			Application::Get().SetAPI((ApiType)(api));
+			static const char* APIs[]{ "Vulkan", "OpenGL" };
+			static int api = (int)Renderer::GetAPI();
+			if (ImGui::Combo("Render API", &api, APIs, IM_ARRAYSIZE(APIs)))
+			{
+				Application::Get().SetAPI((ApiType)(api));
+			}
 		}
-
+		
 #if EK_PLATFORM_WINDOWS
 		if (Project::GetActive())
 		{

@@ -35,16 +35,6 @@ namespace Eklipse
 		m_running = true;
 		m_quit = false;
 
-		//// Init window
-		//WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
-		//m_window = Window::Create(data);
-		//m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
-
-		//// Init API
-		//OnInitAPI(Renderer::GetAPI());
-		//Renderer::Init();
-		//OnAPIHasInitialized(Renderer::GetAPI());
-
 		int tries = 0;
 		ApiType api = Renderer::GetAPI();
 		do
@@ -58,7 +48,6 @@ namespace Eklipse
 			}
 
 			WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
-			//if (m_window) m_window->Shutdown();
 			m_window.reset();
 			m_window = Window::Create(data);
 			m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
@@ -67,7 +56,6 @@ namespace Eklipse
 		} while (!Renderer::Init());
 		OnAPIHasInitialized(Renderer::GetAPI());
 		
-		// Init assets
 		if (Project::GetActive())
 			Project::GetActive()->LoadAssets();
 		m_assetLibrary->Load("Assets");
@@ -113,6 +101,13 @@ namespace Eklipse
 	}
 	void Application::SetAPI(ApiType api)
 	{
+		if (Renderer::GetAPI() == api)
+		{
+			EK_CORE_WARN("API already set to {0}", APITypeToString(api));
+			return;
+		}
+		EK_CORE_INFO("Setting API to {0}", APITypeToString(api));
+
 		Renderer::SetAPI(api);
 
 		m_running = false;

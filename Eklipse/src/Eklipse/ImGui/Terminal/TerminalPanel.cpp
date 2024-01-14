@@ -64,40 +64,42 @@ namespace Eklipse
 			ImGui::EndCombo();
 		}
 
-        ImVec2 windowSize = ImGui::GetWindowSize();
-        ImGui::BeginChild("ScrollingRegion", ImVec2(windowSize.x, windowSize.y - 90), false, ImGuiWindowFlags_HorizontalScrollbar);
-
-		for (auto& message : m_terminal->GetBuffer())
+        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + 25;
+        if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
         {
-            switch (message.msg.level)
+		    for (auto& message : m_terminal->GetBuffer())
             {
-                case spdlog::level::trace:
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-					break;
-                case spdlog::level::debug:
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-                    break;
-                case spdlog::level::info:
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-                    break;
-                case spdlog::level::warn:
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
-                    break;
-                case spdlog::level::err:
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-                    break;
-                case spdlog::level::critical:
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-                    break;
-            }
+                switch (message.msg.level)
+                {
+                    case spdlog::level::trace:
+					    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+					    break;
+                    case spdlog::level::debug:
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+                        break;
+                    case spdlog::level::info:
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+                        break;
+                    case spdlog::level::warn:
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+                        break;
+                    case spdlog::level::err:
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                        break;
+                    case spdlog::level::critical:
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                        break;
+                }
             
-        	ImGui::TextUnformatted(message.str.c_str());
+        	    ImGui::TextUnformatted(message.str.c_str());
 
-            ImGui::PopStyleColor();
+                ImGui::PopStyleColor();
+            }
+
+            if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+                ImGui::SetScrollHereY(1.0f);
         }
 
-        if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-            ImGui::SetScrollHereY(1.0f);
 
         ImGui::EndChild();
 
@@ -107,7 +109,8 @@ namespace Eklipse
 			ImGui::SetKeyboardFocusHere();
 			setFocusOnTerminal = false;
 		}
-        ImGui::PushItemWidth(windowSize.x);
+
+        ImGui::SetNextItemWidth(-1);
         if (ImGui::InputText("##CommandInput", &m_terminal->GetHistoryBuffer(), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, TerminalCommandInputCallback))
         {
             if (!m_terminal->GetHistoryBuffer().empty())
@@ -117,7 +120,6 @@ namespace Eklipse
                 setFocusOnTerminal = true;
             }
         }
-        ImGui::PopItemWidth();
 
 		ImGui::End();
 		return true;

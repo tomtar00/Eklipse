@@ -27,7 +27,8 @@ namespace Eklipse
 		auto* viewMatrix = glm::value_ptr(camera.GetViewMatrix());
 		auto* projMatrix = glm::value_ptr(camera.GetProjectionMatrix());
 
-		EditorLayer::Get().SetCanControlEditorCamera(ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_DockHierarchy));
+		bool viewportHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_DockHierarchy);
+		EditorLayer::Get().SetCanControlEditorCamera(viewportHovered);
 
 		// Scene
 		m_viewportPosition = ImGui::GetWindowPos();
@@ -44,29 +45,29 @@ namespace Eklipse
 			ImGui::SetCursorPos({ 0, 30.0f });
 			ImGui::Indent(2.0f);
 			static int operation = 0;
-			if (ImGui::RadioButton("Translate [Q]", &operation, 0) || Input::IsKeyDown(KeyCode::Q))
+			if (ImGui::RadioButton("Translate [Q]", &operation, 0) || (Input::IsKeyDown(KeyCode::Q) && viewportHovered))
 			{
 				m_gizmoOperation = ImGuizmo::TRANSLATE;
 				operation = 0;
 			}
-			if (ImGui::RadioButton("Rotate [W]", &operation, 1) || Input::IsKeyDown(KeyCode::W))
+			if (ImGui::RadioButton("Rotate [W]", &operation, 1) || (Input::IsKeyDown(KeyCode::W) && viewportHovered))
 			{
 				m_gizmoOperation = ImGuizmo::ROTATE;
 				operation = 1;
 			}
-			if (ImGui::RadioButton("Scale [E]", &operation, 2) || Input::IsKeyDown(KeyCode::E))
+			if (ImGui::RadioButton("Scale [E]", &operation, 2) || (Input::IsKeyDown(KeyCode::E) && viewportHovered))
 			{
 				m_gizmoOperation = ImGuizmo::SCALE;
 				operation = 2;
 			}
 			ImGui::Spacing();
 			static int mode = 0;
-			if (ImGui::RadioButton("World [A]", &mode, 0) || Input::IsKeyDown(KeyCode::A))
+			if (ImGui::RadioButton("World [A]", &mode, 0) || (Input::IsKeyDown(KeyCode::A) && viewportHovered))
 			{
 				m_gizmoMode = ImGuizmo::WORLD;
 				mode = 0;
 			}
-			if (ImGui::RadioButton("Local [S]", &mode, 1) || Input::IsKeyDown(KeyCode::S))
+			if (ImGui::RadioButton("Local [S]", &mode, 1) || (Input::IsKeyDown(KeyCode::S) && viewportHovered))
 			{
 				m_gizmoMode = ImGuizmo::LOCAL;
 				mode = 1;
@@ -87,7 +88,8 @@ namespace Eklipse
 			
 				ImGuizmo::RecomposeMatrixFromComponents(pos, rot, scale, matrix);
 				ImGuizmo::Manipulate(viewMatrix, projMatrix, m_gizmoOperation, m_gizmoMode, matrix, nullptr, nullptr);
-				ImGuizmo::DecomposeMatrixToComponents(matrix, pos, rot, scale);
+				if (ImGuizmo::IsUsing())
+					ImGuizmo::DecomposeMatrixToComponents(matrix, pos, rot, scale);
 			}
 		}
 

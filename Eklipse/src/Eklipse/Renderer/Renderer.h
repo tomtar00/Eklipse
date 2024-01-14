@@ -14,6 +14,8 @@ namespace Eklipse
 		OpenGL	= 1
 	};
 
+	extern const std::string APITypeToString(ApiType apiType);
+
 	class Renderer
 	{
 	public:
