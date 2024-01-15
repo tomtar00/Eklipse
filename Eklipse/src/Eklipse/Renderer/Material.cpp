@@ -62,7 +62,7 @@ namespace Eklipse
     {
         m_name = path.path().stem().string();
 
-        if (path.isValid({ ".ekmt" }))
+        if (path.IsValid({ ".ekmt" }))
         {
             Deserialize(path);
         }

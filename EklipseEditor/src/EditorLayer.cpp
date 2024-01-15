@@ -5,7 +5,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <misc/cpp/imgui_stdlib.h>
 #include <filesystem>
-#include <nfd.h>
 
 namespace Eklipse
 {
@@ -217,37 +216,26 @@ namespace Eklipse
 		if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{
 			static std::string nameBuffer;
-			static char* outPath = nullptr;
-			ImGui::Text("Project Name: ");
+			static Path outPath;
+			ImGui::Text("Project Name");
 			ImGui::SameLine();
 			ImGui::InputText("##Project Name", &nameBuffer);
-			ImGui::Text("Project Location: ");
-			ImGui::SameLine();
-			ImGui::Text(outPath == nullptr ? "" : outPath);
-			ImGui::SameLine();
-			if (ImGui::Button("Browse"))
-			{
-				nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
-				EK_ASSERT(result != NFD_ERROR, "Failed to open directory! {0}", NFD_GetError());
-			}
+			ImGui::InputDir("prjlocation", "Project Location", outPath);
+
 			if (ImGui::Button("Create"))
 			{
 				if (nameBuffer.empty()) { EK_WARN("Project name is empty!"); }
-				else if (outPath == nullptr) { EK_WARN("Project path is empty!"); }
+				else if (outPath.empty()) { EK_WARN("Project path is empty!"); }
 				else
 				{
 					NewProject(outPath, nameBuffer);
 				}
 
-				if (outPath != nullptr)
-					free(outPath);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel"))
 			{
-				if (outPath != nullptr)
-					free(outPath);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
@@ -258,11 +246,12 @@ namespace Eklipse
 		{
 			ImGui::OpenPopup("Export Project");
 			openExportProjectPopup = false;
+			ImGui::SetNextWindowSize({ 500, 150 });
 		}
-		if (ImGui::BeginPopupModal("Export Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+		if (ImGui::BeginPopupModal("Export Project", nullptr, ImGuiWindowFlags_NoResize))
 		{
 			static ProjectExportSettings exportSettings{};
-			ImGui::InputText("Export path", &exportSettings.path);
+			ImGui::InputDir("exportpath", "Export path", exportSettings.path);
 			ImGui::Checkbox("Debug build", &exportSettings.debugBuild);
 			if (ImGui::Button("Export"))
 			{
@@ -352,27 +341,21 @@ namespace Eklipse
 	}
 	void EditorLayer::OpenProject()
 	{
-		nfdchar_t* outPath = nullptr;
-		nfdresult_t result = NFD_OpenDialog("ekproj", nullptr, &outPath);
-		EK_ASSERT(result != NFD_ERROR, "Failed to open project file! {0}", NFD_GetError());
-		if (result == NFD_CANCEL)
+		auto& result = OpenFileDialog({ EK_PROJECT_FILE_EXTENSION });
+		if (result.type == FileDialogResultType::SUCCESS)
 		{
-			return;
+			OnProjectUnload();
+			auto project = Project::Load(result.path);
+
+			auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
+			Application::Get().SwitchScene(scene);
+
+			m_editorScene.reset();
+			m_editorScene = scene;
+			m_entitiesPanel.SetContext(m_editorScene);
+
+			OnProjectLoaded();
 		}
-
-		OnProjectUnload();
-		auto filePath = std::filesystem::path(outPath);
-		auto project = Project::Load(filePath);
-
-		auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
-		Application::Get().SwitchScene(scene);
-
-		m_editorScene.reset();
-		m_editorScene = scene;
-		m_entitiesPanel.SetContext(m_editorScene);
-
-		OnProjectLoaded();
-		free(outPath);
 	}
 	void EditorLayer::SaveProject()
 	{

@@ -42,8 +42,8 @@ namespace Eklipse
 		Mesh* mesh;
 		Material* material;
 
-		std::string meshPath;
-		std::string materialPath;
+		Path meshPath;
+		Path materialPath;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& mesh) = default;

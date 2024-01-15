@@ -64,7 +64,7 @@ namespace Eklipse
 			ImGui::EndCombo();
 		}
 
-        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + 25;
+        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + 20;
         if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
         {
 		    for (auto& message : m_terminal->GetBuffer())

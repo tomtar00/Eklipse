@@ -104,19 +104,26 @@ namespace Eklipse
 
 		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
 		{
-			if (scriptComponent.script != nullptr)
-				scriptComponent.script->OnCreate();
+			EK_ASSERT(scriptComponent.script, "Script is null");
+			scriptComponent.script->OnCreate();
 		});
 	}
 	void Scene::OnSceneUpdate(float deltaTime)
 	{
 		EK_PROFILE();
 
-		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
+		try
 		{
-			if (scriptComponent.script != nullptr)
+			m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
+			{
+				EK_ASSERT(scriptComponent.script, "Script is null");
 				scriptComponent.script->OnUpdate(deltaTime);
-		});
+			});
+		}
+		catch (const std::exception& e)
+		{
+			EK_CORE_ERROR("Exception thrown in script: {0}", e.what());
+		}
 	}
 	void Scene::OnSceneStop()
 	{

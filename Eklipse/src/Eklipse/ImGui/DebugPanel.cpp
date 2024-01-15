@@ -63,7 +63,7 @@ namespace Eklipse
 			ImGui::Indent();
 
 			ImGui::SeparatorText("Config");
-		if (ImGui::BeginTable("Config##Table", 2))
+			if (ImGui::BeginTable("Config##Table", 2))
 			{
 				auto& config = project->GetConfig();
 				

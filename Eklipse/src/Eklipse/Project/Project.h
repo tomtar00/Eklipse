@@ -46,7 +46,7 @@ namespace Eklipse
 	};
 	struct ProjectExportSettings
 	{
-		std::string path;
+		Path path;
 		bool debugBuild;
 	};
 

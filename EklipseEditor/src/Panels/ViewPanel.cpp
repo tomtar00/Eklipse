@@ -20,7 +20,7 @@ namespace Eklipse
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1, 1 });
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1);
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 1.0f, 0, 0, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.0f, 1.0f, 0, 1.0f });
 		}
 		ImGui::Begin("View");
 		auto& camera = EditorLayer::Get().GetEditorCamera();

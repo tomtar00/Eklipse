@@ -122,7 +122,7 @@ namespace Eklipse
 
 				CreateSyncObjects();
 
-				EK_CORE_INFO("Vulkan initialized");
+				EK_CORE_DBG("Vulkan initialized");
 				m_initialized = true;
 				return true;
 			}

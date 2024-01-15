@@ -11,15 +11,15 @@ namespace Eklipse
 		Path(const std::string& path);
 		Path(const std::filesystem::path& path);
 
-		static bool CheckPathValid(const Path& path, const std::vector<std::string> requiredExtensions);
-		bool IsRelative(const Path& path, Path& base);
+		bool IsValid() const;
+		bool IsValid(const std::vector<std::string> requiredExtensions) const;
+		void Parse(const std::string& path);
+		void ParseSelf();
 
-		bool isValid() const;
-		bool isValid(const std::vector<std::string> requiredExtensions) const;
-		void parse(const std::string& path);
-		void parseSelf();
+		const bool IsCurrentlyValid() const { return m_isCurrentlyValid; }
+		void SetCurrentlyValid(bool value) { m_isCurrentlyValid = value; }
+
 		std::string* rdbuf() { return &m_path; }
-
 		uint32_t size() const { return m_path.size(); }
 		const bool empty() const { return m_path.empty(); }
 		const char* c_str() const { return m_path.c_str(); }
@@ -47,8 +47,24 @@ namespace Eklipse
 	private:
 		std::string m_path;
 		std::string m_fullPath;
+		bool m_isCurrentlyValid = false;
 	};
 
 	extern std::string ReadFileFromPath(const std::filesystem::path& filename);
 	extern void CopyFileContent(const std::filesystem::path& destination, const std::filesystem::path& source);
+
+	enum class FileDialogResultType
+	{
+		SUCCESS = 0,
+		FAIL	= 1,
+		CANCEL	= 2
+	};
+	struct FileDialogResult
+	{
+		FileDialogResultType type;
+		Path path;
+	};
+	extern FileDialogResult OpenFileDialog(const std::vector<std::string>& extensions);
+	extern FileDialogResult OpenFileDialog();
+	extern FileDialogResult OpenDirDialog();
 }

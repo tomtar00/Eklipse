@@ -188,7 +188,7 @@ namespace Eklipse
 
 	void Application::Run()
 	{
-		EK_INFO("========== Starting Eklipse Engine ==========");
+		EK_CORE_TRACE("========== Starting Eklipse Engine ==========");
 
 		Application::Init();
 
@@ -225,7 +225,7 @@ namespace Eklipse
 			Application::EndFrame(deltaTime);
 		}
 
-		EK_INFO("========== Closing Eklipse Engine ==========");
+		EK_CORE_TRACE("========== Closing Eklipse Engine ==========");
 
 		Application::Shutdown();
 	}

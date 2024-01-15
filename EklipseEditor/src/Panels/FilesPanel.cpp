@@ -211,7 +211,7 @@ namespace Eklipse
 
 				if (ImGui::Button("Create") && !materialName.empty())
 				{
-					if (shaderPath.isValid({ EK_SHADER_EXTENSION }))
+					if (shaderPath.IsValid({ EK_SHADER_EXTENSION }))
 					{
 						CreateMaterial(m_currentPath / (materialName + EK_MATERIAL_EXTENSION), shaderPath);
 						ImGui::CloseCurrentPopup();

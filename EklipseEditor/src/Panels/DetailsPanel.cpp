@@ -105,18 +105,32 @@ namespace Eklipse
 			if (meshComp != nullptr && ImGui::CollapsingHeader("Mesh"))
 			{
 				ImGui::Indent();
-				ImGui::InputText("Mesh##Input", &meshComp->meshPath);
-				ImGui::InputText("Material##Input", &meshComp->materialPath);
-				if (ImGui::Button("Apply"))
+				if (ImGui::BeginTable("##MeshComponent", 2))
 				{
-					bool valid = Path::CheckPathValid(meshComp->meshPath, { ".obj" });	 // TODO: Check other formats
-					valid = valid && Path::CheckPathValid(meshComp->materialPath, { EK_MATERIAL_EXTENSION });
+					ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+					ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-					if (valid)
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::TextUnformatted("Mesh");
+					ImGui::TableSetColumnIndex(1);
+					ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->meshPath, { ".obj" }, // TODO: Check other formats
+					[&]()
 					{
 						meshComp->mesh = Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
+					});
+
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::TextUnformatted("Material");
+					ImGui::TableSetColumnIndex(1);
+					ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->materialPath, { EK_MATERIAL_EXTENSION },
+					[&]()
+					{
 						meshComp->material = Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
-					}
+					});
+
+					ImGui::EndTable();
 				}
 				ImGui::Unindent();
 			}
@@ -232,7 +246,7 @@ namespace Eklipse
 			bool allValid = true;
 			for (auto&& [textureSampler, sampler] : material->GetSamplers())
 			{
-				allValid = Path::CheckPathValid(sampler.texturePath, { ".png", ".jpg"}); // TODO: Check other formats
+				allValid = sampler.texturePath.IsValid({".png", ".jpg"}); // TODO: Check other formats
 				if (!allValid) 
 				{
 					break;

@@ -2,22 +2,26 @@
 #include "File.h"
 
 #include <Eklipse/Project/Project.h>
+#include <nfd.h>
 
 namespace Eklipse
 {
     Path::Path(const char* path)
     {
-        parse(path);
+        Parse(path);
+        m_isCurrentlyValid = IsValid();
     }
     Path::Path(const std::string& path)
     {
-        parse(path);
+        Parse(path);
+        m_isCurrentlyValid = IsValid();
     }
     Path::Path(const std::filesystem::path& path)
     {
-        parse(path.string());
+        Parse(path.string());
+        m_isCurrentlyValid = IsValid();
     }
-    void Path::parse(const std::string& path)
+    void Path::Parse(const std::string& path)
     {
         if (path.empty())
         {
@@ -58,15 +62,15 @@ namespace Eklipse
 		}
         std::replace(m_fullPath.begin(), m_fullPath.end(), '\\', '/');
     }
-    void Path::parseSelf()
+    void Path::ParseSelf()
     {
-        parse(m_path);
+        Parse(m_path);
     }
-    bool Path::isValid() const
+    bool Path::IsValid() const
     {
-		return !m_fullPath.empty() && std::filesystem::exists(m_fullPath);
+        return !m_fullPath.empty() && std::filesystem::exists(m_fullPath);
 	}
-    bool Path::isValid(const std::vector<std::string> requiredExtensions) const
+    bool Path::IsValid(const std::vector<std::string> requiredExtensions) const
     {
         bool hasExtension = requiredExtensions.size() == 0;
         for (const auto& requiredExtension : requiredExtensions)
@@ -77,28 +81,7 @@ namespace Eklipse
 				break;
 			}
 		}
-        return isValid() && hasExtension;
-    }
-    bool Path::CheckPathValid(const Path& path, const std::vector<std::string> requiredExtensions)
-    {
-        if (!path.isValid(requiredExtensions))
-        {
-			EK_CORE_ERROR("Invalid path extension: '{0}'. Required extensions:", path.string());
-            for (const auto& requiredExtension : requiredExtensions)
-            {
-                EK_CORE_ERROR(" - '{0}'", requiredExtension);
-            }
-			return false;
-		}
-		return true;
-    }
-
-    bool Path::IsRelative(const Path& path, Path& base)
-    {
-        auto norm_path = std::filesystem::absolute(path);
-        auto norm_base = std::filesystem::absolute(base);
-
-        return std::mismatch(norm_path.begin(), norm_path.end(), norm_base.begin()).second == norm_base.end();
+        return IsValid() && hasExtension;
     }
 
     std::string ReadFileFromPath(const std::filesystem::path& filename)
@@ -129,5 +112,66 @@ namespace Eklipse
         destFile << sourceFile.rdbuf();
 
         EK_CORE_DBG("Copied file content from '{0}' to '{1}'", source.string(), destination.string());
+    }
+    FileDialogResult OpenFileDialog(const std::vector<std::string>& extensions)
+    {
+        std::string exts = "";
+        for (const auto& extension : extensions)
+        {
+			exts += extension[0] == '.' ? extension.substr(1) : extension;
+			exts += ";";
+		}
+
+        nfdchar_t* outPath = nullptr;
+        nfdresult_t result = NFD_OpenDialog(exts.empty() ? nullptr : exts.c_str(), nullptr, &outPath);
+
+        FileDialogResult res{};
+        if (result == NFD_CANCEL)
+        {
+			res.path = "";
+            res.type = FileDialogResultType::CANCEL;
+		}
+        else if (result == NFD_OKAY)
+        {
+			res.path = std::string(outPath);
+			res.type = FileDialogResultType::SUCCESS;
+		}
+        else
+        {
+			res.path = "";
+            res.type = FileDialogResultType::FAIL;
+            EK_CORE_ERROR("Failed to open file! {0}", NFD_GetError());
+		}
+        free(outPath);
+        return res;
+    }
+    FileDialogResult OpenFileDialog()
+    {
+        return OpenFileDialog({});
+    }
+    FileDialogResult OpenDirDialog()
+    {
+        nfdchar_t* outPath = nullptr;
+        nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
+
+        FileDialogResult res{};
+        if (result == NFD_CANCEL)
+        {
+            res.path = "";
+            res.type = FileDialogResultType::CANCEL;
+        }
+        else if (result == NFD_OKAY)
+        {
+			res.path = std::string(outPath);
+			res.type = FileDialogResultType::SUCCESS;
+		}
+        else
+        {
+			res.path = "";
+			res.type = FileDialogResultType::FAIL;
+            EK_CORE_ERROR("Failed to open directory! {0}", NFD_GetError());
+		}
+        free(outPath);
+        return res;
     }
 }

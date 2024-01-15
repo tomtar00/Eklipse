@@ -91,8 +91,8 @@ namespace Eklipse
 			out << YAML::BeginMap;
 
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			out << YAML::Key << "Mesh" << YAML::Value << meshComponent.meshPath;
-			out << YAML::Key << "Material" << YAML::Value << meshComponent.materialPath;
+			out << YAML::Key << "Mesh" << YAML::Value << meshComponent.meshPath.string();
+			out << YAML::Key << "Material" << YAML::Value << meshComponent.materialPath.string();
 
 			out << YAML::EndMap;
 		}
@@ -208,8 +208,8 @@ namespace Eklipse
 				{
 					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
 
-					TryDeserailize<std::string>(meshComponent, "Mesh", &mc.meshPath);
-					TryDeserailize<std::string>(meshComponent, "Material", &mc.materialPath);
+					mc.meshPath		= TryDeserailize<std::string>(meshComponent, "Mesh", "");
+					mc.materialPath = TryDeserailize<std::string>(meshComponent, "Material", "");
 				}
 
 				auto scriptComponent = entity["ScriptComponent"];

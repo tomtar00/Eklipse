@@ -138,7 +138,7 @@ namespace Eklipse
 		glfwSetCursorPosCallback(m_window, GlfwCursorPosCallback);
 		glfwSetWindowFocusCallback(m_window, GlfwWindowFocusCallback);
 
-		EK_CORE_INFO("Window initialized");
+		EK_CORE_DBG("Window initialized");
 	}
 
 	WindowsWindow::~WindowsWindow() 
