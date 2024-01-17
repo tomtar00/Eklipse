@@ -8,7 +8,6 @@
 #include "VKPipeline.h"
 #include "VKDescriptor.h"
 
-#include <Eklipse/Renderer/Settings.h>
 #include <Eklipse/Renderer/RenderCommand.h>
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
 #include <Eklipse/Core/Application.h>
@@ -75,7 +74,7 @@ namespace Eklipse
 			init_info.DescriptorPool = m_imguiPool;
 			init_info.MinImageCount = g_swapChainImageCount;
 			init_info.ImageCount = g_swapChainImageCount;
-			init_info.MSAASamples = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples();
+			init_info.MSAASamples = (VkSampleCountFlagBits)Renderer::GetSettings().GetMsaaSamples();
 			init_info.CheckVkResultFn = [](VkResult res) { HANDLE_VK_RESULT(res, "IMGUI") };
 
 			EK_ASSERT(g_VKDefaultFramebuffer != nullptr, "Default framebuffer is null!");

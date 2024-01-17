@@ -5,6 +5,7 @@
 #include <FileWatch.hpp>
 
 #include <Eklipse/Core/Timer.h>
+#include <Eklipse/Utils/Yaml.h>
 
 #ifdef EK_PLATFORM_WINDOWS
 	#define EK_SCRIPT_LIBRARY_EXTENSION ".dll"
@@ -18,6 +19,11 @@ namespace Eklipse
 {
 	struct ProjectConfig;
 
+	struct ScriptModuleSettings
+	{
+		Path MsBuildPath;
+	};
+
 	enum class ScriptsState
 	{
 		NONE = 0,
@@ -30,7 +36,7 @@ namespace Eklipse
 	class ScriptModule
 	{
 	public:
-		ScriptModule() = default;
+		ScriptModule(ScriptModuleSettings* settings);
 		~ScriptModule() = default;
 
 		void Load();
@@ -62,6 +68,7 @@ namespace Eklipse
 		void SetState(ScriptsState state);
 		
 	private:
+		ScriptModuleSettings* m_settings;
 		ScriptsState m_state;
 		std::string m_stateString;
 		TimePoint m_lastStateChangeTime;

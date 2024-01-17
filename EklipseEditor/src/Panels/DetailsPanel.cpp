@@ -146,7 +146,7 @@ namespace Eklipse
 				// script switch combo
 				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
 				{
-					for (auto&& [className, classInfo] : Project::GetScriptClasses())
+					for (auto&& [className, classInfo] : Project::GetActive()->GetScriptModule()->GetClasses())
 					{
 						bool isSelected = (scriptComp->scriptName.c_str() == className);
 						if (ImGui::Selectable(className.c_str(), isSelected))

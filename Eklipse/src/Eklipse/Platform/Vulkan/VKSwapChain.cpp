@@ -6,7 +6,6 @@
 #include "VKImage.h"
 
 #include <Eklipse/Core/Application.h>
-#include <Eklipse/Renderer/Settings.h>
 
 namespace Eklipse
 {
@@ -132,7 +131,7 @@ namespace Eklipse
                 }
                 else
                 {
-                    if (RendererSettings::GetMsaaSamples() > 1)
+                    if (Renderer::GetSettings().GetMsaaSamples() > 1)
                     {
                         attachments =
                         {

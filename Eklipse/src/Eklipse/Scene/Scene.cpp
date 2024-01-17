@@ -137,7 +137,7 @@ namespace Eklipse
 	{
 		EK_CORE_INFO("Reloading scripts...");
 
-		auto& scriptClasses = Eklipse::Project::GetScriptClasses();
+		auto& scriptClasses = Eklipse::Project::GetActive()->GetScriptModule()->GetClasses();
 		scene->GetRegistry().view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
 		{
 			scriptComponent.DestroyScript();

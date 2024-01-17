@@ -38,7 +38,11 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
             path.SetCurrentlyValid(true);
             callback();
         }
-        else path.SetCurrentlyValid(false);
+        else
+        {
+            path.SetCurrentlyValid(false);
+            active = false;
+        }
     }
 
     ImGui::SameLine();

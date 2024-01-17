@@ -3,11 +3,6 @@
 #include "Core.h"
 #include "Script.h"
 
-namespace Eklipse
-{
-	class TransformComponent;
-}
-
 namespace EklipseEngine
 {
 	struct EK_API Transform
@@ -17,7 +12,6 @@ namespace EklipseEngine
 
 	public:
 		using Impl = typename TransformImpl;
-		using Comp = typename Eklipse::TransformComponent;
 		Transform(Ref<TransformImpl> impl);
 
 		glm::vec3& GetPosition();

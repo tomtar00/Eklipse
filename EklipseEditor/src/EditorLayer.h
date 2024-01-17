@@ -11,6 +11,12 @@
 
 namespace Eklipse
 {
+	struct EditorSettings
+	{
+		std::string theme = "dark";
+
+		ScriptModuleSettings ScriptModuleSettings;
+	};
 	enum EditorState
 	{
 		EDITING = BIT(1),
@@ -50,6 +56,8 @@ namespace Eklipse
 		void SaveProjectAs();
 		void SaveScene();
 		void ExportProject(const ProjectExportSettings& exportSettings);
+		bool SerializeSettings() const;
+		bool DeserializeSettings();
 
 		void OnScenePlay();
 		void OnSceneStop();
@@ -68,6 +76,7 @@ namespace Eklipse
 		inline Camera& GetEditorCamera() { return m_editorCamera; }
 		inline GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
+		inline EditorSettings& GetSettings() { return m_settings; }
 
 		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl && (m_editorState & EditorState::EDITING); }
 		void SetSelection(DetailsSelectionInfo info);
@@ -77,6 +86,7 @@ namespace Eklipse
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
+		EditorSettings m_settings;
 
 		GuiLayerConfigInfo m_guiLayerCreateInfo{};
 		Ref<Scene> m_editorScene;

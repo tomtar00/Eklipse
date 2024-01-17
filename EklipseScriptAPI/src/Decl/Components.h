@@ -7,6 +7,7 @@ namespace EklipseEngine
     class Transform::TransformImpl
     {
     public:
+        using Comp = typename Eklipse::TransformComponent;
         TransformImpl(Eklipse::TransformComponent& comp);
 
         glm::vec3& Transform::TransformImpl::GetPosition();

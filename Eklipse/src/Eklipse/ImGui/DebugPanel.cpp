@@ -90,7 +90,7 @@ namespace Eklipse
 			}
 
 			ImGui::SeparatorText("Scripts");
-			for (auto&& [name, config] : project->GetScriptClasses())
+			for (auto&& [name, config] : project->GetScriptModule()->GetClasses())
 			{
 				if (ImGui::CollapsingHeader(name.c_str()))
 				{
@@ -107,8 +107,8 @@ namespace Eklipse
 			{
 				std::vector<std::pair<const char*, const char*>> data =
 				{
-					{ "Library loaded",			(project->GetScriptModule().IsLibraryLoaded() ? "true" : "false")	},
-					{ "Library state",			project->GetScriptModule().GetState().c_str()						},
+					{ "Library loaded",			(project->GetScriptModule()->IsLibraryLoaded() ? "true" : "false")	},
+					{ "Library state",			project->GetScriptModule()->GetState().c_str()						},
 				};
 
 				for (int i = 0; i < data.size(); ++i)
@@ -125,7 +125,7 @@ namespace Eklipse
 
 			if (ImGui::Button("Recompile all"))
 			{
-				project->GetScriptModule().RecompileAll();
+				project->GetScriptModule()->RecompileAll();
 			}
 
 			ImGui::Unindent();

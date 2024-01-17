@@ -53,9 +53,10 @@ namespace Eklipse
 	Ref<Project> Project::s_activeProject = nullptr;
 	Ref<RuntimeConfig> Project::s_runtimeConfig = nullptr;
 
-	Project::Project()
+	Project::Project(const ProjectSettings& settings)
 	{
 		m_assetLibrary = CreateRef<AssetLibrary>();
+		m_scriptModule = CreateRef<ScriptModule>(settings.scriptModuleSettings);
 	}
 	void Project::LoadAssets()
 	{
@@ -104,7 +105,7 @@ namespace Eklipse
 		// Recompile all scripts if the export configuration is different from the current one
 		if (m_config.configuration != exportConfig)
 		{
-			m_scriptModule.CompileScripts(m_config.scriptsSourceDirectoryPath, exportConfig);
+			m_scriptModule->CompileScripts(m_config.scriptsSourceDirectoryPath, exportConfig);
 		}
 		if (scriptLibraryPath.empty() || !std::filesystem::exists(scriptLibraryPath))
 		{
@@ -151,21 +152,20 @@ namespace Eklipse
 		return true;
 	}
 
-	void Project::ChangeConfiguration(const std::string& configuration)
+	/*void Project::ChangeConfiguration(const std::string& configuration)
 	{
 		m_config.configuration = configuration;
 		m_scriptModule.Reload();
-	}
+	}*/
 
 	const std::filesystem::path& Project::GetProjectDirectory()
 	{
 		EK_ASSERT(s_activeProject != nullptr, "Project is null!");
 		return s_activeProject->m_projectDirectory;
 	}
-	Ref<Project> Project::New()
+	Ref<Project> Project::New(const ProjectSettings& settings)
 	{
-		s_activeProject = CreateRef<Project>();
-		return s_activeProject;
+		return CreateRef<Project>(settings);
 	}
 	void Project::SetupActive(const std::string& name, const std::filesystem::path& projectDirectory)
 	{
@@ -216,12 +216,12 @@ namespace Eklipse
 		EK_ASSERT(success, "Failed to generate premake5.lua!");
 		EK_CORE_INFO("Generated premake5.lua at path '{0}'", premakeScriptPath.string());
 
-		s_activeProject->m_scriptModule.RunPremake(premakeScriptPath);
-		s_activeProject->m_scriptModule.Load();
+		s_activeProject->m_scriptModule->RunPremake(premakeScriptPath);
+		s_activeProject->m_scriptModule->Load();
 	}
-	Ref<Project> Project::Load(const std::filesystem::path& projectFilePath)
+	Ref<Project> Project::Load(const std::filesystem::path& projectFilePath, const ProjectSettings& settings)
 	{
-		Ref<Project> project = CreateRef<Project>();
+		Ref<Project> project = CreateRef<Project>(settings);
 
 		ProjectSerializer serializer(project);
 		if (serializer.Deserialize(projectFilePath))
@@ -229,7 +229,7 @@ namespace Eklipse
 			project->m_projectDirectory = projectFilePath.parent_path();
 			s_activeProject = project;
 
-			s_activeProject->m_scriptModule.Load();
+			s_activeProject->m_scriptModule->Load();
 
 			return s_activeProject;
 		}

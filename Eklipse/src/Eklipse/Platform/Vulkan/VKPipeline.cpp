@@ -6,7 +6,7 @@
 #include "VKDescriptor.h"
 
 #include <Eklipse/Utils/File.h>
-#include <Eklipse/Renderer/Settings.h>
+#include <Eklipse/Renderer/Renderer.h>
 
 namespace Eklipse
 {
@@ -58,7 +58,7 @@ namespace Eklipse
             VkPipelineMultisampleStateCreateInfo multisampling{};
             multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
             multisampling.sampleShadingEnable = VK_TRUE;
-            multisampling.rasterizationSamples = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples();
+            multisampling.rasterizationSamples = (VkSampleCountFlagBits)Renderer::GetSettings().GetMsaaSamples();
             multisampling.minSampleShading = 0.2f;
             multisampling.pSampleMask = nullptr;
             multisampling.alphaToCoverageEnable = VK_FALSE;
@@ -179,11 +179,12 @@ namespace Eklipse
         }
         VkRenderPass CreateRenderPass()
         {
-            bool msaaEnabled = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples() != VK_SAMPLE_COUNT_1_BIT;
+            VkSampleCountFlagBits msaaSamples = (VkSampleCountFlagBits)Renderer::GetSettings().GetMsaaSamples();
+            bool msaaEnabled = msaaSamples != VK_SAMPLE_COUNT_1_BIT;
 
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = g_swapChainImageFormat;
-            colorAttachment.samples = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples();
+            colorAttachment.samples = msaaSamples;
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -197,7 +198,7 @@ namespace Eklipse
 
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = FindDepthFormat();
-            depthAttachment.samples = (VkSampleCountFlagBits)RendererSettings::GetMsaaSamples();
+            depthAttachment.samples = msaaSamples;
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

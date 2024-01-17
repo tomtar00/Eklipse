@@ -3,7 +3,6 @@
 #include "VulkanAPI.h"
 
 #include <Eklipse/Core/Application.h>
-#include <Eklipse/Renderer/Settings.h>
 
 #ifdef EK_PLATFORM_WINDOWS
 #include <GLFW/glfw3.h>
@@ -343,38 +342,38 @@ namespace Eklipse
 			VkResult res = vkCreateInstance(&createInfo, nullptr, &g_instance);
 			HANDLE_VK_RESULT(res, "CREATE INSTANCE");
 		}
-		void VulkanAPI::RecreateSwapChain()
+		/*void VulkanAPI::RecreateSwapChain()
 		{
-			// while (Application::Get().GetWindow()->GetData().minimized)
-			// {
-			// 	glfwWaitEvents();
-			// }
+			 while (Application::Get().GetWindow()->GetData().minimized)
+			 {
+			 	glfwWaitEvents();
+			 }
 
-			//vkDeviceWaitIdle(g_logicalDevice);
+			vkDeviceWaitIdle(g_logicalDevice);
 
-			//DestroyFrameBuffers(g_imguiFrameBuffers);
-			//DestroyFrameBuffers(g_swapChainFramebuffers);
-			//DestroyImageViews(g_swapChainImageViews);
-			//vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
+			DestroyFrameBuffers(g_imguiFrameBuffers);
+			DestroyFrameBuffers(g_swapChainFramebuffers);
+			DestroyImageViews(g_swapChainImageViews);
+			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 
-			//g_depthImage.Dispose();
-			//g_colorImage.Dispose();
+			g_depthImage.Dispose();
+			g_colorImage.Dispose();
 
-			//int width, height;
-			//Application::Get().GetWindow()->GetFramebufferSize(width, height);
-			//g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
-			//CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
+			int width, height;
+			Application::Get().GetWindow()->GetFramebufferSize(width, height);
+			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
+			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 
-			//g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-			//g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
+			g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
 
-			//CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
-			//CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
+			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
+			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
 
-			// uint32_t width = Application::Get().GetInfo().windowWidth;
-			// uint32_t height = Application::Get().GetInfo().windowHeight;
-			// g_VKDefaultFramebuffer->Resize(width, height);
-		}
+			 uint32_t width = Application::Get().GetInfo().windowWidth;
+			 uint32_t height = Application::Get().GetInfo().windowHeight;
+			 g_VKDefaultFramebuffer->Resize(width, height);
+		}*/
 		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
 		{
 #ifdef EK_PLATFORM_WINDOWS

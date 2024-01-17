@@ -6,6 +6,8 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <filesystem>
 
+#define EK_EDITOR_CONFIG_FILE "config.yaml"
+
 namespace Eklipse
 {
 	EditorLayer::EditorLayer() : m_guiEnabled(true)
@@ -51,10 +53,12 @@ namespace Eklipse
 		m_entitiesPanel.SetContext(m_editorScene);
 		Application::Get().SwitchScene(m_editorScene);
 
+		DeserializeSettings();
 		EK_TRACE("Editor layer attached");
 	}
 	void EditorLayer::OnDetach()
 	{
+		SerializeSettings();
 		EK_TRACE("Editor layer detached");
 	}
 	void EditorLayer::OnUpdate(float deltaTime)
@@ -287,7 +291,7 @@ namespace Eklipse
 			fbInfo.framebufferType			= FramebufferType::SCENE_VIEW;
 			fbInfo.width					= GetViewPanel().GetViewportSize().x > 0 ? GetViewPanel().GetViewportSize().x : 512;
 			fbInfo.height					= GetViewPanel().GetViewportSize().y > 0 ? GetViewPanel().GetViewportSize().y : 512;
-			fbInfo.numSamples				= RendererSettings::GetMsaaSamples();
+			fbInfo.numSamples				= Renderer::GetSettings().GetMsaaSamples();
 			fbInfo.colorAttachmentInfos		= { { ImageFormat::RGBA8 } };
 			fbInfo.depthAttachmentInfo		= { ImageFormat::D24S8 };
 
@@ -317,7 +321,9 @@ namespace Eklipse
 	{
 		OnProjectUnload();
 
-		auto project = Project::New();
+		ProjectSettings settings{};
+		settings.scriptModuleSettings = &m_settings.ScriptModuleSettings;
+		auto project = Project::New(settings);
 		if (!Project::Exists(dirPath))
 		{
 			Project::SetupActive(name, dirPath);
@@ -345,9 +351,12 @@ namespace Eklipse
 		if (result.type == FileDialogResultType::SUCCESS)
 		{
 			OnProjectUnload();
-			auto project = Project::Load(result.path);
 
-			auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActiveScriptLibrary());
+			ProjectSettings settings{};
+			settings.scriptModuleSettings = &m_settings.ScriptModuleSettings;
+			auto project = Project::Load(result.path, settings);
+
+			auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActive()->GetScriptModule()->GetLibrary());
 			Application::Get().SwitchScene(scene);
 
 			m_editorScene.reset();
@@ -359,6 +368,8 @@ namespace Eklipse
 	}
 	void EditorLayer::SaveProject()
 	{
+		if (!Project::GetActive()) return;
+
 		SaveScene();
 		Project::SaveActive();
 	}
@@ -368,6 +379,8 @@ namespace Eklipse
 	}
 	void EditorLayer::SaveScene()
 	{
+		if (!Project::GetActive()) return;
+
 		Scene::Save(m_editorScene);
 	}
 	void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
@@ -375,6 +388,57 @@ namespace Eklipse
 		if (!Project::GetActive()->Export(exportSettings))
 		{
 			EK_ERROR("Failed to export project!");
+		}
+	}
+	bool EditorLayer::SerializeSettings() const
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Preferences" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Theme" << YAML::Value << m_settings.theme;
+			out << YAML::EndMap;
+		}
+
+		out << YAML::Key << "ScriptModule" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "MsBuildPath" << YAML::Value << m_settings.ScriptModuleSettings.MsBuildPath.full_string();
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(EK_EDITOR_CONFIG_FILE);
+		fout << out.c_str();
+
+		return true;
+	}
+	bool EditorLayer::DeserializeSettings()
+	{
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(EK_EDITOR_CONFIG_FILE);
+		}
+		catch (const std::exception& e)
+		{
+			return false;
+		}
+
+		auto preferencesNode = data["Preferences"];
+		if (!preferencesNode)
+			return false;
+
+		TryDeserailize<std::string>(preferencesNode, "Theme", &m_settings.theme);
+
+		auto& scriptModuleNode = data["ScriptModule"];
+		if (scriptModuleNode)
+		{
+			m_settings.ScriptModuleSettings.MsBuildPath = TryDeserailize<std::string>(scriptModuleNode, "MsBuildPath", "");
+			EK_INFO("MsBuildPath: {0}", m_settings.ScriptModuleSettings.MsBuildPath.full_string());
 		}
 	}
 	void EditorLayer::OnScenePlay()
@@ -410,7 +474,7 @@ namespace Eklipse
 		// Reload scripts if they were changed while playing
 		if (Project::GetActive())
 		{
-			auto lastScriptReloadTime = Project::GetActive()->GetScriptModule().GetLastStateChangeTime();
+			auto lastScriptReloadTime = Project::GetActive()->GetScriptModule()->GetLastStateChangeTime();
 			if (lastScriptReloadTime > m_scenePlayTime)
 				Scene::ReloadScripts(Application::Get().GetActiveScene());
 		}

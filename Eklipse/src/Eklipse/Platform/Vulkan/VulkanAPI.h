@@ -31,7 +31,7 @@ namespace Eklipse
 			void CreateSurface();
 			void CreateSyncObjects();
 
-			void RecreateSwapChain();
+			//void RecreateSwapChain();
 			std::vector<const char*> GetRequiredExtensions() const;
 
 		private:

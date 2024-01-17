@@ -1,7 +1,6 @@
 #include "precompiled.h"
 #include "Renderer.h"
 #include "RenderCommand.h"
-#include "Settings.h"
 #include "Material.h"
 
 #include <Eklipse/Utils/Stats.h>
@@ -24,19 +23,20 @@ extern "C" {
 
 namespace Eklipse
 {
-	ApiType	Renderer::s_apiType = ApiType::Vulkan;
 	const std::string APITypeToString(ApiType apiType)
 	{
 		switch (apiType)
 		{
-			case ApiType::Vulkan: return "Vulkan";
-			case ApiType::OpenGL: return "OpenGL";
+		case ApiType::Vulkan: return "Vulkan";
+		case ApiType::OpenGL: return "OpenGL";
 		}
 		return "Unknown";
 	}
 
-	static Ref<UniformBuffer> s_cameraUniformBuffer;
+	RendererSettings Renderer::s_settings;
+	ApiType	Renderer::s_apiType = ApiType::Vulkan;
 	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;
+	static Ref<UniformBuffer> s_cameraUniformBuffer;
 
 	bool Renderer::Init()
 	{
@@ -64,6 +64,7 @@ namespace Eklipse
 		RenderCommand::API->Shutdown();
 	}
 
+	// Render stages
 	void Renderer::BeginFrame()
 	{
 		EK_PROFILE();
@@ -133,12 +134,16 @@ namespace Eklipse
 		RenderCommand::API->EndFrame();
 	}
 
+	// Events
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		g_defaultFramebuffer->Resize(width, height);
 	}
 	void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
 	{
+		if (s_settings.GetMsaaSamples() == numSamples) return;
+		s_settings.MsaaSamplesIndex = numSamples >> 1;
+
 		// TODO: Works with Vulkan, but not with OpenGL
 		// ImGui doesn't work with multisampled GLTexture2Ds as ImGui::Image() input
 
@@ -148,7 +153,17 @@ namespace Eklipse
 		g_sceneFramebuffer->Resize(fbInfo.width, fbInfo.height);
 		*/
 	}
+	void Renderer::OnVsyncChanged(bool enabled)
+	{
+		if (s_settings.Vsync) return;
+		s_settings.Vsync = enabled;
 
+#ifdef EK_PLATFORM_WINDOWS
+		glfwSwapInterval(enabled);
+#endif
+	}
+
+	// Getters / Setters
 	ApiType Renderer::GetAPI()
 	{
 		return s_apiType;
@@ -161,6 +176,12 @@ namespace Eklipse
 	{
 		s_apiType = apiType;
 	}
+	RendererSettings& Renderer::GetSettings()
+	{
+		return s_settings;
+	}
+
+	// Uniform buffers
 	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
 	{
 		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
@@ -182,5 +203,25 @@ namespace Eklipse
 
 		EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
 		return nullptr;
+	}
+
+	// Settings
+	void Renderer::SerializeRendererSettings(YAML::Emitter& out)
+	{
+		out << YAML::Key << "RendererSettings" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Vsync" << YAML::Value << s_settings.Vsync;
+			out << YAML::Key << "MsaaSamplesIndex" << YAML::Value << s_settings.MsaaSamplesIndex;
+			out << YAML::EndMap;
+		}
+	}
+	void Renderer::DeserializeRendererSettings(const YAML::Node& data)
+	{
+		s_settings.Vsync = TryDeserailize<bool>(data, "Vsync", false);
+		OnVsyncChanged(s_settings.Vsync);
+
+		s_settings.MsaaSamplesIndex = TryDeserailize<int>(data, "MsaaSamplesIndex", 0);
+		OnMultiSamplingChanged(s_settings.MsaaSamplesIndex);
 	}
 }

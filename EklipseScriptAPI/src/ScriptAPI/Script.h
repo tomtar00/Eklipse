@@ -1,12 +1,6 @@
 #pragma once
 #include "Core.h"
 
-#define EK_CREATE_EXPLICIT_ENTITY_TEMPLATES(T) \
-		template EK_API bool Entity::HasComponent<T>(); \
-		template EK_API T Entity::AddComponent<T>(); \
-		template EK_API T Entity::GetComponent<T>(); \
-		template EK_API void Entity::RemoveComponent<T>(); \
-
 namespace Eklipse
 {
 	class Entity;

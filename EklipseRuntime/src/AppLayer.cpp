@@ -40,6 +40,11 @@ namespace Eklipse
 	}
 	void AppLayer::OnDetach()
 	{
+		ProjectSerializer serializer;
+		if (!serializer.SerializeRuntimeConfig(*m_runtimeConfig, EK_RUNTIME_CONFIG))
+		{
+			EK_ERROR("Failed to serialize runtime config!");
+		}
 	}
 
 	void AppLayer::OnUpdate(float deltaTime)
@@ -61,7 +66,7 @@ namespace Eklipse
 		fbInfo.framebufferType		= FramebufferType::DEFAULT;
 		fbInfo.width				= Application::Get().GetInfo().windowWidth;
 		fbInfo.height				= Application::Get().GetInfo().windowHeight;
-		fbInfo.numSamples			= RendererSettings::GetMsaaSamples();
+		fbInfo.numSamples			= Renderer::GetSettings().GetMsaaSamples();
 		fbInfo.colorAttachmentInfos = { { ImageFormat::RGBA8 } };
 		fbInfo.depthAttachmentInfo	= { ImageFormat::D24S8 };
 

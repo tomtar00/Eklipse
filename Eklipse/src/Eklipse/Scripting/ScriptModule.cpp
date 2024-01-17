@@ -5,6 +5,8 @@
 
 namespace Eklipse
 {
+	ScriptModule::ScriptModule(ScriptModuleSettings* settings) : m_settings(settings) {}
+
 	void ScriptModule::Load()
 	{
 		EK_ASSERT(Project::GetActive(), "Project is null!");
@@ -205,7 +207,7 @@ namespace Eklipse
 
 #ifdef EK_PLATFORM_WINDOWS
 
-		std::string msBuildLocation = config.msBuildPath.string();
+		std::string msBuildLocation = m_settings->MsBuildPath;
 		if (msBuildLocation.empty() || !std::filesystem::is_regular_file(msBuildLocation))
 		{
 			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation);
