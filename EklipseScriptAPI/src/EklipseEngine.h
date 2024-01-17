@@ -1,8 +1,10 @@
 #pragma once
 
-#include "ScriptAPI/Reflections.h"
+#include <string>
+
 #include "ScriptAPI/Script.h"
 #include "ScriptAPI/Components.h"
+#include "ScriptAPI/Input.h"
 
 namespace EklipseEngine
 {

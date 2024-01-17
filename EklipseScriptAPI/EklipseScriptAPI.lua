@@ -47,7 +47,9 @@ project "EklipseScriptAPI"
 
     defines
     {
-        "EK_BUILD_DLL"
+        "EK_BUILD_DLL",
+
+		"SPDLOG_COMPILED_LIB"
     }
 
     filter "system:windows"

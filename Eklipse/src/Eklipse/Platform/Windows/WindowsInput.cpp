@@ -36,11 +36,15 @@ namespace Eklipse
 	{
 		return m_mousePosition.y - GetMousePosition().y;
 	}
-	float Input::IsScrollingUp()
+	float Input::GetScrollValue()
+	{
+		return m_mouseScrollDelta.y;
+	}
+	bool Input::IsScrollingUp()
 	{
 		return m_mouseScrollDelta.y > 0;
 	}
-	float Input::IsScrollingDown()
+	bool Input::IsScrollingDown()
 	{
 		return m_mouseScrollDelta.y < 0;
 	}

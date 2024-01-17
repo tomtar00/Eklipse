@@ -116,6 +116,7 @@ namespace Eklipse
 			std::filesystem::create_directories(targetDirectoryPath);
 
 		std::ofstream factoryFile(targetDirectoryPath / "ScriptFactory.cpp");
+		factoryFile << "#include <ScriptAPI/Reflections.h>\n";
 
 		// include all script headers
 		auto& scriptsSourceDirPath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath;

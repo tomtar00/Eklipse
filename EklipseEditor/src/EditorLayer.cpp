@@ -84,8 +84,6 @@ namespace Eklipse
 			static glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 			static glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			// TODO: check if input was started in view window
-
 			if (Input::IsKeyDown(KeyCode::F))
 			{
 				if (GetSelection().type == SelectionType::ENTITY)

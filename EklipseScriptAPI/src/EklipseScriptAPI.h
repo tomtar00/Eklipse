@@ -2,8 +2,6 @@
 #include "ScriptAPI/Reflections.h"
 
 #include <Eklipse.h>
-#include <Eklipse/Scene/Entity.h>
-
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace EklipseScriptAPI

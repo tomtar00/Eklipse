@@ -95,6 +95,7 @@ namespace Eklipse
 	}
 	void Application::EndFrame(float deltaTime)
 	{
+		Input::Reset();
 		m_window->Update(deltaTime);
 		Stats::Get().Update(deltaTime);
 		EK_PROFILE_END_FRAME(deltaTime);

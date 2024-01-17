@@ -4,6 +4,11 @@
 
 #include "Script.h"
 
+namespace Eklipse
+{
+	class Entity;
+}
+
 namespace EklipseEngine
 {
 	namespace Reflections

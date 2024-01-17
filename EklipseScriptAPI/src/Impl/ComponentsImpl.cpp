@@ -1,9 +1,10 @@
 #include "precompiled.h"
-#include <Decl/Components.h>
+#include "ComponentsImpl.h"
 #include <ScriptAPI/Components.h>
 
 namespace EklipseEngine
 {
+    // Transform
     Transform::TransformImpl::TransformImpl(Eklipse::TransformComponent& comp) : _comp(&comp) {}
     glm::vec3& Transform::TransformImpl::GetPosition()                { return _comp->transform.position; }
     glm::vec3& Transform::TransformImpl::GetRotation()                { return _comp->transform.rotation; }
@@ -25,4 +26,6 @@ namespace EklipseEngine
     void Transform::Translate(glm::vec3& translation)   { m_impl->Translate(translation); }
     void Transform::Rotate(glm::vec3& rotation)         { m_impl->Rotate(rotation); }
     void Transform::Scale(glm::vec3& scale)             { m_impl->Scale(scale); }
+
+    // ...
 }

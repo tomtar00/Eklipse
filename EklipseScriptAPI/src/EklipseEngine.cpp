@@ -1,7 +1,6 @@
 #include "precompiled.h"
 #include "EklipseEngine.h"
 #include <EklipseScriptAPI.h>
-#include <cstdarg>
 
 namespace EklipseEngine
 {

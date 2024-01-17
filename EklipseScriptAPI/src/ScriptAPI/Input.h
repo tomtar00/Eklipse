@@ -1,11 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
 
-namespace Eklipse
+namespace EklipseEngine
 {
 	enum KeyCode
 	{
-		// glfw3.h
 		Space = 32,
 		Apostrophe = 39,	/* ' */
 		Comma = 44,			/* , */
@@ -62,7 +61,6 @@ namespace Eklipse
 		World1 = 161, /* non-US #1 */
 		World2 = 162, /* non-US #2 */
 
-		/* Function keys */
 		Escape = 256,
 		Enter = 257,
 		Tab = 258,
@@ -108,7 +106,6 @@ namespace Eklipse
 		F24 = 313,
 		F25 = 314,
 
-		/* Keypad */
 		KP0 = 320,
 		KP1 = 321,
 		KP2 = 322,
@@ -140,7 +137,6 @@ namespace Eklipse
 
 	enum MouseCode
 	{
-		// From glfw3.h
 		Button0 = 0,
 		Button1 = 1,
 		Button2 = 2,
@@ -156,12 +152,9 @@ namespace Eklipse
 		ButtonMiddle = Button2
 	};
 
-	class Input
+	class EK_API Input
 	{
 	public:
-		friend class Application;
-		friend class Window;
-
 		static bool IsKeyDown(KeyCode key);
 		static bool IsMouseButtonDown(MouseCode button);
 		static glm::vec2 GetMousePosition();
@@ -170,12 +163,5 @@ namespace Eklipse
 		static float GetScrollValue();
 		static bool IsScrollingUp();
 		static bool IsScrollingDown();
-
-	private:
-		static void Reset();
-
-	private:
-		static glm::vec2 m_mousePosition;
-		static glm::vec2 m_mouseScrollDelta;
 	};
 }
