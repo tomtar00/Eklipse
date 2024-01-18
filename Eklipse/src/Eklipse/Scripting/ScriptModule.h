@@ -33,7 +33,7 @@ namespace Eklipse
 		NEEDS_RECOMPILATION
 	};
 
-	class ScriptModule
+	class EK_API ScriptModule
 	{
 	public:
 		ScriptModule(ScriptModuleSettings* settings);

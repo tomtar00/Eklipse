@@ -49,7 +49,7 @@ namespace Eklipse
 		uint32_t GetComponentCount() const;
 	};
 
-	class BufferLayout
+	class EK_API BufferLayout
 	{
 	public:
 		BufferLayout() : m_stride(0) {}
@@ -71,7 +71,7 @@ namespace Eklipse
 		uint32_t m_stride;
 	};
 
-	class VertexBuffer
+	class EK_API VertexBuffer
 	{
 	public:
 		static Ref<VertexBuffer> Create(const std::vector<float>& vertices);
@@ -91,7 +91,7 @@ namespace Eklipse
 		uint32_t m_count;
 	};
 
-	class IndexBuffer
+	class EK_API IndexBuffer
 	{
 	public:
 		static Ref<IndexBuffer> Create(const std::vector<uint32_t>& indices);
@@ -107,7 +107,7 @@ namespace Eklipse
 		size_t m_count;
 	};
 
-	class UniformBuffer
+	class EK_API UniformBuffer
 	{
 	public:
 		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);

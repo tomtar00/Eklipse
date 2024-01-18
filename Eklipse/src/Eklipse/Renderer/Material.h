@@ -12,6 +12,12 @@ namespace Eklipse
 	};
 	struct PushConstant
 	{
+		PushConstant() = default;
+
+		PushConstant(const PushConstant& other);
+		PushConstant& operator=(const PushConstant& other);
+		void Copy(const PushConstant& other);
+
 		std::unordered_map<std::string, PushConstantData> dataPointers;
 		Unique<char[]> pushConstantData;
 		size_t pushConstantSize;
@@ -23,7 +29,7 @@ namespace Eklipse
 		Ref<Texture2D> texture;
 	};
 
-	class Material
+	class EK_API Material
 	{
 	public:
 		Material() = delete;

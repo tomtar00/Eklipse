@@ -2,10 +2,10 @@
 #include <memory>
 
 #ifdef EK_PLATFORM_WINDOWS
-	#ifdef EK_BUILD_DLL
-		#define EK_API __declspec(dllexport)
+	#ifdef EK_SCRIPT_API_BUILD_DLL
+		#define EK_SCRIPT_API __declspec(dllexport)
 	#else
-		#define EK_API __declspec(dllimport)
+		#define EK_SCRIPT_API __declspec(dllimport)
 	#endif
 #else
 	#error Eklipse only supports Windows!

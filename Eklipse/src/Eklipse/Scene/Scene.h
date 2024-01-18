@@ -12,7 +12,7 @@ namespace Eklipse
 {
 	class Entity;
 
-	class Scene
+	class EK_API Scene
 	{
 	public:
 		Scene();

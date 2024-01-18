@@ -8,16 +8,16 @@ namespace EklipseScriptAPI
 {
 	extern std::shared_ptr<spdlog::logger> Logger;
 
-	EK_API struct LoggerConfig
+	struct LoggerConfig
 	{
 		std::string name;
 		std::string pattern;
 		spdlog::sink_ptr sink;
 	};
-	EK_API struct ScriptingConfig
+	struct ScriptingConfig
 	{
 		LoggerConfig loggerConfig;
 	};
 
-	EK_API void Init(const ScriptingConfig& config);
+	EK_SCRIPT_API void Init(const ScriptingConfig& config);
 }

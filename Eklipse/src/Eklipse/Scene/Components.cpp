@@ -13,9 +13,11 @@ namespace Eklipse
 
 		auto& translation = glm::translate(glm::mat4(1.0f), transform.position);
 
-		/*auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		/*
+		auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		rotation = glm::rotate(rotation, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));*/
+		rotation = glm::rotate(rotation, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		*/
 		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
 
 		auto& scale = glm::scale(glm::mat4(1.0f), transform.scale);
@@ -38,7 +40,8 @@ namespace Eklipse
 	}
 	void ScriptComponent::DestroyScript()
 	{
-		delete script;
+		if (script)
+			delete script;
 		script = nullptr;
 	}
 }

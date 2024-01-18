@@ -13,7 +13,7 @@ namespace Eklipse
 		std::function<void(Event&)> EventCallback;
 	};
 
-	class Window
+	class EK_API Window
 	{
 	public:
 		static Ref<Window> Create(WindowData& data);

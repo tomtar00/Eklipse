@@ -5,7 +5,7 @@
 
 namespace Eklipse
 {
-	struct Vertex
+	struct EK_API Vertex
 	{
 		glm::vec3 pos;
 		glm::vec3 color;

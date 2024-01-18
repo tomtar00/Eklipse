@@ -128,7 +128,7 @@ namespace Eklipse
             for (auto& pushConstantRef : reflection.pushConstants)
             {
                 // create new memory block
-                PushConstant pushConstant;
+                PushConstant pushConstant{};
                 pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size);
                 pushConstant.pushConstantSize = pushConstantRef.size;
 
@@ -351,6 +351,31 @@ namespace Eklipse
             sampler.texture = texPtr;
 
             EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, m_name, path.string());
+        }
+    }
+
+
+    PushConstant::PushConstant(const PushConstant& other)
+    {
+        Copy(other);
+    }
+    PushConstant& PushConstant::operator=(const PushConstant& other)
+    {
+        if (this != &other)
+        {
+            this->Copy(other);
+        }
+        return *this;
+    }
+    void PushConstant::Copy(const PushConstant& other)
+    {
+        dataPointers = other.dataPointers;
+        pushConstantSize = other.pushConstantSize;
+
+        if (other.pushConstantData)
+        {
+            pushConstantData = std::make_unique<char[]>(pushConstantSize);
+            std::copy(other.pushConstantData.get(), other.pushConstantData.get() + pushConstantSize, pushConstantData.get());
         }
     }
 }

@@ -4,18 +4,18 @@
 
 namespace Eklipse
 {
-	class Log
+	class EK_API Log
 	{
 	public:
 		Log() = default;
 		
 		static void Init();
 
-		inline static std::shared_ptr<spdlog::logger>& coreLogger() { return s_coreLogger; }
-		inline static std::shared_ptr<spdlog::logger>& clientLogger() { return s_clientLogger; }
+		static std::shared_ptr<spdlog::logger>& coreLogger();
+		static std::shared_ptr<spdlog::logger>& clientLogger();
 
-		inline static void AddCoreSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { s_coreLogger->sinks().push_back(sink); }
-		inline static void AddClientSink(const std::shared_ptr<spdlog::sinks::sink>& sink) { s_clientLogger->sinks().push_back(sink); }
+		static void AddCoreSink(const std::shared_ptr<spdlog::sinks::sink>& sink);
+		static void AddClientSink(const std::shared_ptr<spdlog::sinks::sink>& sink);
 		
 	private:
 		static std::shared_ptr<spdlog::logger> s_coreLogger;
@@ -34,7 +34,7 @@ namespace Eklipse
 	#define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	
 	#define EK_TRACE(...)			SPDLOG_LOGGER_TRACE(Eklipse::Log::clientLogger(), __VA_ARGS__)
-	#define EK_DBG(...)			SPDLOG_LOGGER_DEBUG(Eklipse::Log::clientLogger(), __VA_ARGS__)
+	#define EK_DBG(...)				SPDLOG_LOGGER_DEBUG(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_INFO(...)			SPDLOG_LOGGER_INFO(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_WARN(...)			SPDLOG_LOGGER_WARN(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), __VA_ARGS__)
@@ -51,7 +51,7 @@ namespace Eklipse
 	#define EK_CORE_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	
 	#define EK_TRACE(...)
-	#define EK_DBG(...)			SPDLOG_LOGGER_DEBUG(Eklipse::Log::clientLogger(), __VA_ARGS__)
+	#define EK_DBG(...)				SPDLOG_LOGGER_DEBUG(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_INFO(...)			SPDLOG_LOGGER_INFO(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_WARN(...)			SPDLOG_LOGGER_WARN(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), __VA_ARGS__)

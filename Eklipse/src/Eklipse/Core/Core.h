@@ -1,12 +1,6 @@
 #pragma once
 #include <memory>
 
-#ifdef EK_ENABLE_ASSERTS
-	#include <Eklipse/Utils/Log.h>
-#else
-	#define EK_ASSERT(x, ...)
-#endif
-
 #ifdef EK_PLATFORM_WINDOWS
 
 	#ifdef EK_BUILD_DLL
@@ -16,11 +10,14 @@
 	#endif
 
 	#ifdef EK_ENABLE_ASSERTS
+		#include <Eklipse/Utils/Log.h>
 		#ifndef EK_DIST
 			#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); __debugbreak(); }
 		#else
 			#define EK_ASSERT(x, ...) if (!(x)) { EK_CORE_CRITICAL("ASSERTION FAILED! {0}", fmt::format(__VA_ARGS__)); }
 		#endif
+	#else
+		#define EK_ASSERT(x, ...)
 	#endif
 
 #else
@@ -31,7 +28,6 @@
 #endif
 
 
-//#define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 #define CAPTURE_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(args...); }
 #define BIT(x) (1 << x)
 #define NAME_T(x) x

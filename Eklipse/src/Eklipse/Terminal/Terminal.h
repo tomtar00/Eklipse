@@ -10,7 +10,7 @@ namespace Eklipse
 	};
 
 	template<typename Mutex>
-	class TerminalSink : public spdlog::sinks::base_sink<Mutex>
+	class EK_API TerminalSink : public spdlog::sinks::base_sink<Mutex>
 	{
 		friend class Terminal;
 	public:
@@ -47,7 +47,7 @@ namespace Eklipse
 		std::function<void(const ParsedCommand&)> Callback;
 	};
 
-	class Terminal
+	class EK_API Terminal
 	{
 	public:
 		Terminal();

@@ -5,7 +5,7 @@ namespace Eklipse
 {
 	using ClassMap = std::unordered_map<std::string, EklipseEngine::Reflections::ClassInfo>;
 
-	class ScriptParser
+	class EK_API ScriptParser
 	{
 	public:
 		void ParseDirectory(const std::filesystem::path& directoryPath);

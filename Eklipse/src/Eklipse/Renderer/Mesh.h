@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	class Mesh
+	class EK_API Mesh
 	{
 	public:
 		Mesh() = delete;

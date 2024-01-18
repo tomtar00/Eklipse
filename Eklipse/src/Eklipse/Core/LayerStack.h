@@ -4,7 +4,7 @@
 
 namespace Eklipse 
 {
-	class LayerStack
+	class EK_API LayerStack
 	{
 	public:
 		LayerStack() = default;

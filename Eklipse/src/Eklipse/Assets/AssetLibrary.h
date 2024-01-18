@@ -12,7 +12,7 @@
 
 namespace Eklipse
 {
-	class AssetLibrary
+	class EK_API AssetLibrary
 	{
 	public:
 		AssetLibrary() = default;

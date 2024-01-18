@@ -5,7 +5,7 @@
 
 namespace Eklipse
 {
-	class GraphicsAPI
+	class EK_API GraphicsAPI
 	{
 	public:
 		static Unique<GraphicsAPI> Create();

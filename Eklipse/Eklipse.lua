@@ -1,6 +1,6 @@
 project "Eklipse"
 	location "./"
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "off"
@@ -69,6 +69,11 @@ project "Eklipse"
 		"imguizmo",
 		"yamlcpp",
 		"nfd"
+	}
+
+	postbuildcommands
+	{
+		"{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/"
 	}
 
 	filter "system:windows"

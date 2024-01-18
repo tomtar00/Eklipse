@@ -25,7 +25,7 @@ namespace Eklipse
 		int GetMsaaSamples() const { return 1 << MsaaSamplesIndex; }
 	};
 
-	static class Renderer
+	static class EK_API Renderer
 	{
 	public:
 		static bool Init();

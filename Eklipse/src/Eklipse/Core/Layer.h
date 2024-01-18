@@ -4,7 +4,7 @@
 
 namespace Eklipse
 {
-	class Layer
+	class EK_API Layer
 	{
 	public:
 		Layer() = default;

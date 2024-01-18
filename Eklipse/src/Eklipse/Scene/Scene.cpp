@@ -154,7 +154,7 @@ namespace Eklipse
 
 	Ref<Scene> Scene::Copy(Ref<Scene> other)
 	{
-		Ref<Scene> newScene = CreateRef<Scene>(other->m_name, other->m_path.path());
+		Ref<Scene> newScene = CreateRef<Scene>(other->m_name + " Copy", other->m_path.path());
 
 		auto& srcSceneRegistry = other->m_registry;
 		auto& dstSceneRegistry = newScene->m_registry;

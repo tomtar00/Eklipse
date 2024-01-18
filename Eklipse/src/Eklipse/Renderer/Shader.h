@@ -81,7 +81,7 @@ namespace Eklipse
 	extern std::string ShaderStageToString(ShaderStage stage);
 	extern uint32_t ShaderStageToShaderC(const ShaderStage stage);
 	
-	class Shader
+	class EK_API Shader
 	{
 	public:
 		static Ref<Shader> Create(const Path& filePath);

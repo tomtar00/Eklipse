@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	class DebugPanel : public GuiPanel
+	class EK_API DebugPanel : public GuiPanel
 	{
 	public:
 		DebugPanel() = default;

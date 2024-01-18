@@ -5,7 +5,7 @@
 
 namespace EklipseEngine
 {
-	struct EK_API Transform
+	struct EK_SCRIPT_API Transform
 	{
 	private:
 		class TransformImpl;

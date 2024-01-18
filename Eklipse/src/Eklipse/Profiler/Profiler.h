@@ -21,7 +21,7 @@ namespace Eklipse
 		std::vector<ProfilerNode> ProfileNodes;
 	};
 
-	class ProfilerTimer
+	class EK_API ProfilerTimer
 	{
 	public:
 		ProfilerTimer() = default;
@@ -33,7 +33,7 @@ namespace Eklipse
 		void AddChildNode(const ProfilerNode& node);
 		ProfilerNode* GetChildNodeBySiganture(uint32_t signature);
 
-		inline float GetTimeMs() { return m_deltaMs; }
+		inline float GetTimeMs() const { return m_deltaMs; }
 		inline char* GetName() { return m_name; }
 
 	private:
@@ -47,7 +47,7 @@ namespace Eklipse
 		bool m_saveData;
 	};
 
-	class Profiler
+	class EK_API Profiler
 	{
 	public:
 		static void Init();

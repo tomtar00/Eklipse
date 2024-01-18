@@ -2,7 +2,7 @@
 
 namespace Eklipse
 {
-	class Stats
+	class EK_API Stats
 	{
 	public:
 		Stats();

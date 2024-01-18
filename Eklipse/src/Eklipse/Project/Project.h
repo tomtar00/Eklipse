@@ -51,7 +51,7 @@ namespace Eklipse
 		bool debugBuild;
 	};
 
-	class Project
+	class EK_API Project
 	{
 	public:
 		Project() = delete;

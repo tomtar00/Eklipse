@@ -35,7 +35,7 @@ namespace Eklipse
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& transform) = default;
-		TransformComponent(const Transform& transform) : transform(transform) {}
+		TransformComponent(const Transform& transform) : transform(transform), transformMatrix(glm::mat4(1.0f)) {}
 	};
 	struct MeshComponent
 	{
@@ -57,9 +57,9 @@ namespace Eklipse
 		CameraComponent(const CameraComponent& camera) = default;
 	};
 
-	struct ScriptComponent
+	struct EK_API ScriptComponent
 	{
-		EklipseEngine::Script* script;
+		EklipseEngine::Script* script = nullptr;
 		std::string scriptName;
 		EklipseEngine::Reflections::ClassInfo classInfo;
 

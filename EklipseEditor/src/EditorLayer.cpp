@@ -436,7 +436,6 @@ namespace Eklipse
 		if (scriptModuleNode)
 		{
 			m_settings.ScriptModuleSettings.MsBuildPath = TryDeserailize<std::string>(scriptModuleNode, "MsBuildPath", "");
-			EK_INFO("MsBuildPath: {0}", m_settings.ScriptModuleSettings.MsBuildPath.full_string());
 		}
 	}
 	void EditorLayer::OnScenePlay()

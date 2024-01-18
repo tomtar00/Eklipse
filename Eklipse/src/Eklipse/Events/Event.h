@@ -23,7 +23,7 @@ namespace Eklipse
 		EventCategoryMouseButton	= BIT(4)
 	};
 
-	class Event
+	class EK_API Event
 	{
 	public:
 		virtual ~Event() = default;
@@ -34,13 +34,13 @@ namespace Eklipse
 		virtual int GetCategoryFlags() const = 0;
 		virtual std::string ToString() const { return typeid(this).name(); }
 
-		bool IsInCategory(EventCategory category)
+		bool IsInCategory(EventCategory category) const
 		{
 			return GetCategoryFlags() & category;
 		}
 	};
 
-	class EventDispatcher
+	class EK_API EventDispatcher
 	{
 	public:
 		EventDispatcher(Event& event)

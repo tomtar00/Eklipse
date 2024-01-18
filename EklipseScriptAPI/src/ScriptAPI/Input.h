@@ -1,4 +1,5 @@
 #pragma once
+#include "Core.h"
 #include <glm/glm.hpp>
 
 namespace EklipseEngine
@@ -152,7 +153,7 @@ namespace EklipseEngine
 		ButtonMiddle = Button2
 	};
 
-	class EK_API Input
+	class EK_SCRIPT_API Input
 	{
 	public:
 		static bool IsKeyDown(KeyCode key);

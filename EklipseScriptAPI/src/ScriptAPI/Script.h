@@ -4,9 +4,12 @@
 
 namespace EklipseEngine
 {
-	class EK_API Script
+	class EK_SCRIPT_API Script
 	{
 	public:
+		Script() = default;
+		virtual ~Script() = default;
+
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float deltaTime) = 0;
 

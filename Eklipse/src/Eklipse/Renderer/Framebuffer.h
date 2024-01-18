@@ -22,7 +22,7 @@ namespace Eklipse
 		FramebufferAttachmentInfo depthAttachmentInfo;
 	};
 
-	class Framebuffer
+	class EK_API Framebuffer
 	{
 	public:
 		static Ref<Framebuffer> Create(const FramebufferInfo& framebufferInfo);

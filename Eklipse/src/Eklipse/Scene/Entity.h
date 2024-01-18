@@ -7,7 +7,7 @@
 
 namespace Eklipse
 {
-	class Entity
+	class EK_API Entity
 	{
 	public:
 		Entity() = default;

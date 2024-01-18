@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	class VertexArray
+	class EK_API VertexArray
 	{
 	public:
 		static Ref<VertexArray> Create();

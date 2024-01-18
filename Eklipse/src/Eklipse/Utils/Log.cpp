@@ -5,8 +5,8 @@
 
 namespace Eklipse
 {
-	std::shared_ptr<spdlog::logger> Log::s_coreLogger;
-	std::shared_ptr<spdlog::logger> Log::s_clientLogger;
+	EK_API std::shared_ptr<spdlog::logger> Log::s_coreLogger;
+	EK_API std::shared_ptr<spdlog::logger> Log::s_clientLogger;
 
 	void Log::Init()
 	{
@@ -17,5 +17,21 @@ namespace Eklipse
 
 		s_clientLogger = spdlog::stderr_color_mt("APP");
 		s_clientLogger->set_level(spdlog::level::trace);
+	}
+	std::shared_ptr<spdlog::logger>& Log::coreLogger()
+	{
+		return s_coreLogger;
+	}
+	std::shared_ptr<spdlog::logger>& Log::clientLogger()
+	{
+		return s_clientLogger;
+	}
+	void Log::AddCoreSink(const std::shared_ptr<spdlog::sinks::sink>& sink)
+	{
+		s_coreLogger->sinks().push_back(sink);
+	}
+	void Log::AddClientSink(const std::shared_ptr<spdlog::sinks::sink>& sink)
+	{
+		s_clientLogger->sinks().push_back(sink);
 	}
 }

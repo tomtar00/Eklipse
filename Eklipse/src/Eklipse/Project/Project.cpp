@@ -50,8 +50,8 @@ namespace Eklipse
 		return true;
 	}
 
-	Ref<Project> Project::s_activeProject = nullptr;
-	Ref<RuntimeConfig> Project::s_runtimeConfig = nullptr;
+	EK_API Ref<Project> Project::s_activeProject = nullptr;
+	EK_API Ref<RuntimeConfig> Project::s_runtimeConfig = nullptr;
 
 	Project::Project(const ProjectSettings& settings)
 	{

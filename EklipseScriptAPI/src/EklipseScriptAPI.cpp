@@ -12,7 +12,7 @@ namespace EklipseScriptAPI
 		Logger->sinks().push_back(config.sink);
 	}
 
-	EK_API void Init(const ScriptingConfig& config)
+	void Init(const ScriptingConfig& config)
 	{
 		InitLogger(config.loggerConfig);
 	}

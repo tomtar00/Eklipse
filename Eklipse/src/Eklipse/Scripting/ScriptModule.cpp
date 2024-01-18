@@ -263,6 +263,8 @@ namespace Eklipse
 	void ScriptModule::RecompileAll()
 	{
 		EK_CORE_INFO("Recompiling scripts...");
+
+		Scene::Save(Application::Get().GetActiveScene());
 		
 		Unload();
 

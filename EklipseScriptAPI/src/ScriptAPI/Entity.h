@@ -8,7 +8,7 @@ namespace Eklipse
 
 namespace EklipseEngine
 {
-	class EK_API Entity
+	class EK_SCRIPT_API Entity
 	{
 	public:
 		class EntityImpl;

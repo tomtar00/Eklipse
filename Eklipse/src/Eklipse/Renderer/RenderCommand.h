@@ -6,7 +6,7 @@
 
 namespace Eklipse
 {
-	class RenderCommand
+	class EK_API RenderCommand
 	{
 		friend class Renderer;
 

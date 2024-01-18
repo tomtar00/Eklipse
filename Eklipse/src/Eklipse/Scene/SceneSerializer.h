@@ -6,7 +6,7 @@
 
 namespace Eklipse 
 {
-	class SceneSerializer
+	class EK_API SceneSerializer
 	{
 	public:
 		SceneSerializer(const Ref<Scene> scene);

@@ -2,6 +2,8 @@
 
 namespace Eklipse
 {
+	/*
+	
 	enum class PipelineType
 	{
 		None,
@@ -10,7 +12,7 @@ namespace Eklipse
 		PathTracing
 	};
 
-	class Pipeline
+	class EK_API Pipeline
 	{
 	public:
 		virtual ~Pipeline() {};
@@ -25,4 +27,6 @@ namespace Eklipse
 		PipelineType m_pipelineType;
 		bool m_initialized = false;
 	};
+	
+	*/
 }

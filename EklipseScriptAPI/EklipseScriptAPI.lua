@@ -36,7 +36,18 @@ project "EklipseScriptAPI"
 
 	links
 	{
-		"Eklipse"
+		"Eklipse",
+
+		"shaderc",
+        "spirv_tools",
+        "glslang",
+        "glfw",
+		"glad",
+		"spdlog",
+		"imgui",
+		"imguizmo",
+		"yamlcpp",
+		"nfd"
 	}
 
     postbuildcommands
@@ -47,8 +58,9 @@ project "EklipseScriptAPI"
 
     defines
     {
-        "EK_BUILD_DLL",
+        "EK_SCRIPT_API_BUILD_DLL",
 
+        "_CRT_SECURE_NO_WARNINGS",
 		"SPDLOG_COMPILED_LIB"
     }
 

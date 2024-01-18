@@ -51,7 +51,7 @@ namespace Eklipse
 		uint32_t imageUsage;
 	};
 
-	class Texture
+	class EK_API Texture
 	{
 	public:
 		virtual ~Texture() = default;
@@ -68,7 +68,7 @@ namespace Eklipse
 		Path m_path;
 	};
 
-	class Texture2D : public Texture
+	class EK_API Texture2D : public Texture
 	{
 	public:
 		Texture2D(const TextureInfo& textureInfo, const Path& path) { m_textureInfo = textureInfo; m_path = path; }

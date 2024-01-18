@@ -8,13 +8,13 @@
 
 namespace Eklipse
 {
-	class GuiIcon
+	class EK_API GuiIcon
 	{
 	public:
 		virtual void* GetID() = 0;
 		static Ref<GuiIcon> Create(const Ref<AssetLibrary> assetLibrary, const Path& path);
 	};
-	class GuiPanel
+	class EK_API GuiPanel
 	{
 	public:
 		GuiPanel();
@@ -34,7 +34,7 @@ namespace Eklipse
 		Dir_Rest		= BIT(3)
 	};
 
-	struct DockLayoutInfo
+	struct EK_API DockLayoutInfo
 	{
 		char* name;
 		ImGuiDir_ dir;
@@ -43,7 +43,7 @@ namespace Eklipse
 
 		ImGuiID id;
 	};
-	struct GuiLayerConfigInfo
+	struct EK_API GuiLayerConfigInfo
 	{
 		bool* enabled;
 		bool menuBarEnabled;
@@ -52,7 +52,7 @@ namespace Eklipse
 		std::vector<GuiPanel*> panels;
 	};
 
-	class ImGuiLayer : public Eklipse::Layer
+	class EK_API ImGuiLayer : public Eklipse::Layer
 	{
 	public:
 		ImGuiLayer() = delete;

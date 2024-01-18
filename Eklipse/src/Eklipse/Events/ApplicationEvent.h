@@ -4,7 +4,7 @@
 
 namespace Eklipse 
 {
-	class WindowResizeEvent : public Event
+	class EK_API WindowResizeEvent : public Event
 	{
 	public:
 		WindowResizeEvent(unsigned int width, unsigned int height)
@@ -52,7 +52,7 @@ namespace Eklipse
 		unsigned int m_width, m_height;
 	};*/
 
-	class WindowCloseEvent : public Event
+	class EK_API WindowCloseEvent : public Event
 	{
 	public:
 		WindowCloseEvent() {}
@@ -68,7 +68,7 @@ namespace Eklipse
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
 	};
 
-	class WindowFocusEvent : public Event
+	class EK_API WindowFocusEvent : public Event
 	{
 	public:
 		WindowFocusEvent() {}
@@ -84,7 +84,7 @@ namespace Eklipse
 		virtual int GetCategoryFlags() const override { return EventCategoryApplication; }
 	};
 
-	class WindowLostFocusEvent : public Event
+	class EK_API WindowLostFocusEvent : public Event
 	{
 	public:
 		WindowLostFocusEvent() {}

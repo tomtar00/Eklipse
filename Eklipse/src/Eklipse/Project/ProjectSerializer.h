@@ -5,7 +5,7 @@
 
 namespace Eklipse
 {
-	class ProjectSerializer
+	class EK_API ProjectSerializer
 	{
 	public:
 		ProjectSerializer() = default;

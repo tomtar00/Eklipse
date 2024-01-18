@@ -36,13 +36,26 @@ project "EklipseEditor"
 	links
 	{
 		"Eklipse",
-		"EklipseScriptAPI"
+		"EklipseScriptAPI",
+
+        "shaderc",
+        "spirv_tools",
+        "glslang",
+        "glfw",
+		"glad",
+		"spdlog",
+		"imgui",
+		"imguizmo",
+		"yamlcpp",
+		"nfd"
 	}
 
 	defines
 	{
 		"EK_ENABLE_ASSERTS",
 
+        "_CRT_SECURE_NO_WARNINGS",
+        "YAML_CPP_STATIC_DEFINE",
 		"SPDLOG_COMPILED_LIB"
 	}
 

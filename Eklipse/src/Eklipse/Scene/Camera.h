@@ -4,7 +4,7 @@
 
 namespace Eklipse
 {
-	class Camera
+	class EK_API Camera
 	{
 	public:
 		Camera() = default;

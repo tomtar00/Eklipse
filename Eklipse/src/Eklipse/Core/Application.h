@@ -15,7 +15,7 @@
 
 namespace Eklipse
 {
-	struct ApplicationInfo
+	struct EK_API ApplicationInfo
 	{
 		unsigned int windowWidth = 800, windowHeight = 600;
 		char* appName = "Eklipse App";
@@ -24,7 +24,7 @@ namespace Eklipse
 		ApplicationInfo(const ApplicationInfo& info);
 	};
 
-	class Application
+	class EK_API Application
 	{
 	public:
 		Application() = delete;
