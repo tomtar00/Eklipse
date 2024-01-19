@@ -38,22 +38,15 @@ project "EklipseScriptAPI"
 	{
 		"Eklipse",
 
-		"shaderc",
-        "spirv_tools",
-        "glslang",
-        "glfw",
-		"glad",
 		"spdlog",
-		"imgui",
-		"imguizmo",
-		"yamlcpp",
-		"nfd"
 	}
 
     postbuildcommands
 	{
 		"{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
 		"{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
+
+		"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
     }
 
     defines
@@ -81,8 +74,6 @@ project "EklipseScriptAPI"
         {
             "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Debug",
 		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Debug",
-
-			"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
         }
 
 	filter "configurations:Release"
@@ -94,8 +85,6 @@ project "EklipseScriptAPI"
         {
             "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Release",
 		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Release",
-
-			"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
         }
 
 	filter "configurations:Dist"
@@ -107,6 +96,4 @@ project "EklipseScriptAPI"
         {
             "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Dist",
 		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Dist",
-
-			"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
         }

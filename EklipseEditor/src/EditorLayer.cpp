@@ -254,7 +254,11 @@ namespace Eklipse
 		{
 			static ProjectExportSettings exportSettings{};
 			ImGui::InputDir("exportpath", "Export path", exportSettings.path);
-			ImGui::Checkbox("Debug build", &exportSettings.debugBuild);
+			static int configurationIndex = 0;
+			if (ImGui::Combo("Configuration", &configurationIndex, "Debug\0Release\0Dist\0"))
+			{
+				exportSettings.configuration = configurationIndex == 0 ? "Debug" : configurationIndex == 1 ? "Release" : "Dist";
+			}
 			if (ImGui::Button("Export"))
 			{
 				ExportProject(exportSettings);

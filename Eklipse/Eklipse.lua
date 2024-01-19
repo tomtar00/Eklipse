@@ -96,6 +96,11 @@ project "Eklipse"
 			"%{Lib.SPIRV_Cross_GLSL_debug}"
 		}
 
+		postbuildcommands
+        {
+		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Debug",
+        }
+
 	filter "configurations:Release"
 		defines "EK_RELEASE"
 		runtime "Release"
@@ -107,6 +112,11 @@ project "Eklipse"
 			"%{Lib.SPIRV_Cross_GLSL_release}"
 		}
 
+		postbuildcommands
+        {
+		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Release",
+        }
+
 	filter "configurations:Dist"
 		defines "EK_DIST"
 		runtime "Release"
@@ -117,3 +127,8 @@ project "Eklipse"
 			"%{Lib.SPIRV_Cross_release}",
 			"%{Lib.SPIRV_Cross_GLSL_release}",
 		}
+
+		postbuildcommands
+        {
+		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Dist",
+        }

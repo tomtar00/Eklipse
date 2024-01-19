@@ -17,6 +17,7 @@ namespace Eklipse
 		}
 		Project::SetRuntimeConfig(m_runtimeConfig);
 
+		// Load script library & scene
 		try
 		{
 			if (!m_runtimeConfig->scriptsLibraryPath.empty())
@@ -36,6 +37,7 @@ namespace Eklipse
 			exit(-1);
 		}
 
+		// Start scene
 		Application::Get().GetActiveScene()->OnSceneStart();
 	}
 	void AppLayer::OnDetach()
@@ -62,6 +64,10 @@ namespace Eklipse
 
 	void AppLayer::OnAPIHasInitialized(ApiType api)
 	{
+		// Set window title
+		Application::Get().GetWindow()->SetTitle(m_runtimeConfig->name.c_str());
+
+		// Create framebuffer
 		FramebufferInfo fbInfo{};
 		fbInfo.framebufferType		= FramebufferType::DEFAULT;
 		fbInfo.width				= Application::Get().GetInfo().windowWidth;

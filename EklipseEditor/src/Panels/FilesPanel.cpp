@@ -204,10 +204,7 @@ namespace Eklipse
 				ImGui::TextUnformatted("Material Name");
 				ImGui::SameLine();
 				ImGui::InputText("##materialName", &materialName);
-				ImGui::InputPath("##shaderid", "Shader", shaderPath, { EK_SHADER_EXTENSION }, [&]()
-					{
-						EK_CORE_TRACE("Shader path changed to: {0}", shaderPath.string());
-					});
+				ImGui::InputPath("##shaderid", "Shader", shaderPath, { EK_SHADER_EXTENSION });
 
 				if (ImGui::Button("Create") && !materialName.empty())
 				{

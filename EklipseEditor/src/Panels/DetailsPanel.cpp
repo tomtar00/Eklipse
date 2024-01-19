@@ -114,21 +114,19 @@ namespace Eklipse
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted("Mesh");
 					ImGui::TableSetColumnIndex(1);
-					ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->meshPath, { ".obj" }, // TODO: Check other formats
-					[&]()
+					if (ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->meshPath, { ".obj" })) // TODO: Check other formats
 					{
 						meshComp->mesh = Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
-					});
+					}
 
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted("Material");
 					ImGui::TableSetColumnIndex(1);
-					ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->materialPath, { EK_MATERIAL_EXTENSION },
-					[&]()
+					if (ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->materialPath, { EK_MATERIAL_EXTENSION }))
 					{
 						meshComp->material = Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
-					});
+					}
 
 					ImGui::EndTable();
 				}
@@ -196,23 +194,20 @@ namespace Eklipse
 		ImGui::Text(("Material: " + material->GetName()).c_str());
 		const char* id = material->GetName().c_str();
 
-		ImGui::InputPath(id, "Shader", material->GetShader()->GetPath(), { EK_SHADER_EXTENSION },
-		[&]()
+		if (ImGui::InputPath(id, "Shader", material->GetShader()->GetPath(), { EK_SHADER_EXTENSION }))
 		{
-			EK_CORE_TRACE("Shader path changed to: {0}", material->GetShader()->GetPath().string());
 			material->SetShader(material->GetShader()->GetPath());
-		});
+		}
 
 		ImGui::Spacing();
 
 		uint16_t i = 0;
 		for (auto&& [textureSampler, sampler] : material->GetSamplers())
 		{
-			ImGui::InputPath(id+(i++), textureSampler.c_str(), sampler.texturePath, {".png", ".jpg"},
-			[&]()
+			if (ImGui::InputPath(id+(i++), textureSampler.c_str(), sampler.texturePath, {".png", ".jpg"}))
 			{
 				EK_CORE_TRACE("Texture path changed to: {0}", sampler.texturePath.string());
-			});
+			}
 		}
 		for (auto&& [name, pushConstant] : material->GetPushConstants())
 		{

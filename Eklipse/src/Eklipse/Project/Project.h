@@ -40,6 +40,7 @@ namespace Eklipse
 
 	struct RuntimeConfig
 	{
+		std::string name;
 		std::filesystem::path executablePath;
 		std::filesystem::path assetsDirectoryPath;
 		std::filesystem::path scriptsLibraryPath;
@@ -48,7 +49,7 @@ namespace Eklipse
 	struct ProjectExportSettings
 	{
 		Path path;
-		bool debugBuild;
+		std::string configuration = "Debug";
 	};
 
 	class EK_API Project

@@ -105,6 +105,7 @@ namespace Eklipse
 		out << YAML::Key << "Config" << YAML::Value;
 		{
 			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << YAML::Value << runtimeConfig.name;
 			out << YAML::Key << "Executable" << YAML::Value << runtime_abs_to_rel(runtimeConfig.executablePath);
 			out << YAML::Key << "AssetsDirectory" << YAML::Value << runtime_abs_to_rel(runtimeConfig.assetsDirectoryPath);
 			out << YAML::Key << "ScriptsLibrary" << YAML::Value << runtime_abs_to_rel(runtimeConfig.scriptsLibraryPath);
@@ -140,6 +141,7 @@ namespace Eklipse
 		if (!configNode)
 			return false;
 
+		TryDeserailize<std::string>(configNode, "Name", &runtimeConfig.name);
 		runtimeConfig.executablePath		= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "Executable", ""));
 		runtimeConfig.assetsDirectoryPath	= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "AssetsDirectory", "Assets"));
 		runtimeConfig.scriptsLibraryPath	= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "ScriptsLibrary", ""));

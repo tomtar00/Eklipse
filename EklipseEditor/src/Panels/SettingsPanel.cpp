@@ -38,7 +38,7 @@ namespace Eklipse
 
 		ImGui::SeparatorText("Scripting");
 #if EK_PLATFORM_WINDOWS
-		ImGui::InputPath("msbuild", "MSBuild Path", EditorLayer::Get().GetSettings().ScriptModuleSettings.MsBuildPath, { ".exe" }, [&]() {});
+		ImGui::InputPath("msbuild", "MSBuild Path", EditorLayer::Get().GetSettings().ScriptModuleSettings.MsBuildPath, { ".exe" });
 #endif
 
 		ImGui::End();

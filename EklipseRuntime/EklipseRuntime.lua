@@ -36,7 +36,9 @@ project "EklipseRuntime"
 	links
 	{
 		"Eklipse",
-		"EklipseScriptAPI"
+		"EklipseScriptAPI",
+
+		"spdlog"
 	}
 
 	defines

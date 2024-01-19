@@ -38,16 +38,10 @@ project "EklipseEditor"
 		"Eklipse",
 		"EklipseScriptAPI",
 
-        "shaderc",
-        "spirv_tools",
-        "glslang",
-        "glfw",
-		"glad",
 		"spdlog",
 		"imgui",
 		"imguizmo",
 		"yamlcpp",
-		"nfd"
 	}
 
 	defines

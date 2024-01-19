@@ -218,7 +218,7 @@ namespace Eklipse
 			g_VKDefaultFramebuffer = nullptr;
 			g_VKSceneFramebuffer = nullptr;
 
-			EK_CORE_INFO("Vulkan shutdown");
+			EK_CORE_DBG("Vulkan shutdown");
 			m_initialized = false;
 		}
 		void VulkanAPI::WaitDeviceIdle()

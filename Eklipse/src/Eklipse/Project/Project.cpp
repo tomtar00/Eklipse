@@ -82,7 +82,8 @@ namespace Eklipse
 		}
 
 		RuntimeConfig runtimeConfig{};
-		std::string exportConfig = exportSettings.debugBuild ? "Debug" : "Dist";
+		runtimeConfig.name = m_config.name;
+		std::string exportConfig = exportSettings.configuration;
 
 		// Copy assets
 		std::filesystem::path assetsDir = m_config.assetsDirectoryPath;
@@ -117,6 +118,16 @@ namespace Eklipse
 			std::filesystem::copy_file(scriptLibraryPath, destinationScriptLibraryPath, std::filesystem::copy_options::overwrite_existing);
 			runtimeConfig.scriptsLibraryPath = destinationScriptLibraryPath;
 		}
+
+		// Copy the engine library // TODO: Name shouldnt be const
+		std::filesystem::path engineLibraryPath = "Resources/Export/" + exportConfig + "/Eklipse" + EK_SCRIPT_LIBRARY_EXTENSION;
+		if (engineLibraryPath.empty() || !std::filesystem::exists(engineLibraryPath))
+		{
+			EK_CORE_ERROR("Engine library not found at path '{0}'!", engineLibraryPath.string());
+			return false;
+		}
+		std::filesystem::path destinationEngineLibraryPath = destinationDir / (std::string("Eklipse") + EK_SCRIPT_LIBRARY_EXTENSION);
+		std::filesystem::copy_file(engineLibraryPath, destinationEngineLibraryPath, std::filesystem::copy_options::overwrite_existing);
 
 		// Copy the script api library // TODO: Name shouldnt be const
 		std::filesystem::path scriptApiLibraryPath = "Resources/Export/" + exportConfig + "/EklipseScriptAPI" + EK_SCRIPT_LIBRARY_EXTENSION;

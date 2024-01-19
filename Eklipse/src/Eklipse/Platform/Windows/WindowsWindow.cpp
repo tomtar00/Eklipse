@@ -147,7 +147,7 @@ namespace Eklipse
 	}
 	void WindowsWindow::Shutdown()
 	{
-		EK_CORE_INFO("Window shutdown");
+		EK_CORE_DBG("Window shutdown");
 		glfwDestroyWindow(m_window);
 		glfwTerminate();
 		s_glfwInitialized = false;
@@ -172,6 +172,10 @@ namespace Eklipse
 	void WindowsWindow::WaitEvents()
 	{
 		glfwWaitEvents();
+	}
+	void WindowsWindow::SetTitle(const char* title)
+	{
+		glfwSetWindowTitle(m_window, title);
 	}
 	GLFWwindow* WindowsWindow::GetGlfwWindow()
 	{

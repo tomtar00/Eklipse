@@ -30,6 +30,7 @@ namespace Eklipse
 		virtual void SetWindowHint(int hint, int value) = 0;
 		virtual void SwapBuffers() = 0;
 		virtual void WaitEvents() = 0;
+		virtual void SetTitle(const char* title) = 0;
 
 		// platform dependent
 		inline virtual GLFWwindow* GetGlfwWindow() { return nullptr; };

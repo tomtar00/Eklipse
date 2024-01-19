@@ -18,6 +18,7 @@ namespace Eklipse
 		virtual void SetWindowHint(int attrib, int value) override;
 		virtual void SwapBuffers() override;
 		virtual void WaitEvents() override;
+		virtual void SetTitle(const char* title) override;
 
 	private:
 		inline static bool s_glfwInitialized = false;
