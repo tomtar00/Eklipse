@@ -22,16 +22,22 @@ namespace Eklipse
 
 		auto& scale = glm::scale(glm::mat4(1.0f), transform.scale);
 
-		// TODO: Should set transformMatrix here, but it's not working for some reason
+		// TODO: Should set transformMatrix here
 		return translation * rotation * scale;
 	}
+
+
 	void ScriptComponent::SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity)
 	{
+		EK_CORE_TRACE("Creating script '{0}'", name);
+
 		if (info.create != nullptr)
 		{
 			script = info.create(CreateRef<Entity>(entity));
 			scriptName = name; 
 			classInfo = info; 
+
+			EK_CORE_TRACE("Script '{0}' created! Address: {1}", name, (int)script);
 		}
 		else
 		{
@@ -40,6 +46,8 @@ namespace Eklipse
 	}
 	void ScriptComponent::DestroyScript()
 	{
+		EK_CORE_TRACE("Destroying script '{0}' from address: {1}", scriptName, (int)script);
+
 		if (script)
 			delete script;
 		script = nullptr;

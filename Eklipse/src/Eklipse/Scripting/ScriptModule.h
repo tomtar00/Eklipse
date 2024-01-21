@@ -40,20 +40,21 @@ namespace Eklipse
 		~ScriptModule() = default;
 
 		void Load();
-		void Reload();
+		//void Reload();
 		void Unload();
 
 		bool IsLibraryLoaded() const { return m_library != nullptr; }
 		void RecompileAll();
 		bool GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
-		void RunPremake(const std::filesystem::path& premakeLuaFilePath);
+		void RunPremake(const std::filesystem::path& premakeDirPath);
 		void CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration);
 
 		ClassMap& GetClasses() { return m_parser.GetClasses(); }
 		const std::string& GetState() const { return m_stateString; }
+		const ScriptsState GetScriptsState() const { return m_state; }
 		const Ref<dylib>& GetLibrary() const { return m_library; }
 
-		inline TimePoint GetLastStateChangeTime() const { return m_lastStateChangeTime; }
+		//inline TimePoint GetLastStateChangeTime() const { return m_lastStateChangeTime; }
 
 	private:
 		void StartWatchingSource();
@@ -71,7 +72,7 @@ namespace Eklipse
 		ScriptModuleSettings* m_settings;
 		ScriptsState m_state;
 		std::string m_stateString;
-		TimePoint m_lastStateChangeTime;
+		//TimePoint m_lastStateChangeTime;
 
 		Unique<filewatch::FileWatch<std::string>> m_sourceWatcher;
 

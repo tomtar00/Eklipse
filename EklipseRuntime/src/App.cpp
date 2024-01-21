@@ -11,7 +11,6 @@ namespace Eklipse
 		App(ApplicationInfo& info) : Application(info)
 		{
 			m_appLayer = CreateRef<AppLayer>();
-			PushLayer(m_appLayer);
 
 			EklipseScriptAPI::ScriptingConfig config{};
 			// Logging
@@ -21,6 +20,8 @@ namespace Eklipse
 				config.loggerConfig.sink = GetTerminal()->GetSink();
 			}
 			EklipseScriptAPI::Init(config);
+
+			PushLayer(m_appLayer);
 		}
 
 		void OnAPIHasInitialized(ApiType api) override

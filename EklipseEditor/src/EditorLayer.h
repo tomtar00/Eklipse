@@ -17,12 +17,6 @@ namespace Eklipse
 
 		ScriptModuleSettings ScriptModuleSettings;
 	};
-	enum EditorState
-	{
-		EDITING = BIT(1),
-		PLAYING = BIT(2),
-		PAUSED	= BIT(3),
-	};
 	enum class SelectionType
 	{
 		NONE = 0,
@@ -69,7 +63,6 @@ namespace Eklipse
 		void OnProjectUnload();
 
 		inline static EditorLayer& Get() { return *s_instance; }
-		inline EditorState GetEditorState() const { return m_editorState; }
 		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
 		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
 		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
@@ -77,8 +70,9 @@ namespace Eklipse
 		inline GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
 		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
 		inline EditorSettings& GetSettings() { return m_settings; }
+		inline bool IsPlaying() const { return Application::Get().GetActiveScene()->GetState() == SceneState::RUNNING; }
 
-		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl && (m_editorState & EditorState::EDITING); }
+		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl; }
 		void SetSelection(DetailsSelectionInfo info);
 		void ClearSelection();
 
@@ -96,8 +90,7 @@ namespace Eklipse
 		Transform m_editorCameraTransform;
 		bool m_canControlEditorCamera = false;
 
-		EditorState m_editorState = EditorState::EDITING;
-		TimePoint m_scenePlayTime;
+		//TimePoint m_scenePlayTime;
 		DetailsSelectionInfo m_selectionInfo{};
 
 		bool m_guiEnabled;

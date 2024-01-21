@@ -94,11 +94,13 @@ namespace Eklipse
 			{
 				if (ImGui::CollapsingHeader(name.c_str()))
 				{
+					ImGui::Indent();
 					ImGui::Text("Create function exists: %s", (config.create != nullptr ? "true" : "false"));
 					for (auto&& [name, member] : config.members)
 					{
-						ImGui::Text("Type: %s Offset: %d", member.type.c_str(), member.offset);
+						ImGui::Text("Name: %s Type: %s Offset: %d", name.c_str(), member.type.c_str(), member.offset);
 					}
+					ImGui::Unindent();
 				}
 			}
 

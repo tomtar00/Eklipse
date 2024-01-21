@@ -11,7 +11,6 @@ namespace Eklipse
 		void ParseDirectory(const std::filesystem::path& directoryPath);
 
 		ClassMap& GetClasses() { return m_classes; }
-		void Clear() { m_classes.clear(); }
 
 	private:
 		void ParseFile(const std::filesystem::path& filePath);

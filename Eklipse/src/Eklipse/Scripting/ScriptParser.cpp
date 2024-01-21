@@ -5,6 +5,8 @@ namespace Eklipse
 {
     void ScriptParser::ParseDirectory(const std::filesystem::path& directoryPath)
     {
+        m_classes.clear();
+
         for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryPath))
         {
             if (entry.is_directory())

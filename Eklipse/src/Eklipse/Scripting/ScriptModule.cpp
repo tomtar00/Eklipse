@@ -5,10 +5,12 @@
 
 namespace Eklipse
 {
-	ScriptModule::ScriptModule(ScriptModuleSettings* settings) : m_settings(settings) {}
+	ScriptModule::ScriptModule(ScriptModuleSettings* settings) : m_settings(settings), m_state(ScriptsState::NONE) {}
 
 	void ScriptModule::Load()
 	{
+		EK_CORE_TRACE("Loading ScriptModule...");
+
 		EK_ASSERT(Project::GetActive(), "Project is null!");
 		auto& config = Project::GetActive()->GetConfig();
 
@@ -18,7 +20,6 @@ namespace Eklipse
 		{
 			if (LinkLibrary(m_libraryPath))
 			{
-				m_parser.Clear();
 				m_parser.ParseDirectory(config.scriptsSourceDirectoryPath);
 
 				FetchFactoryFunctions();
@@ -34,17 +35,17 @@ namespace Eklipse
 			RecompileAll();
 		}
 	}
-	void ScriptModule::Reload()
-	{
-		EK_ASSERT(Project::GetActive(), "Project is null!");
-		auto& config = Project::GetActive()->GetConfig();
+	//void ScriptModule::Reload()
+	//{
+	//	EK_ASSERT(Project::GetActive(), "Project is null!");
+	//	auto& config = Project::GetActive()->GetConfig();
 
-		SetState(ScriptsState::NONE);
-		m_libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+	//	SetState(ScriptsState::NONE);
+	//	m_libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
 
-		// TODO: might recompile only when needed - else just link
-		RecompileAll();
-	}
+	//	// TODO: might recompile only when needed - else just link
+	//	RecompileAll();
+	//}
 	void ScriptModule::Unload()
 	{
 		StopWatchingSource();
@@ -73,7 +74,9 @@ namespace Eklipse
 
 		EK_CORE_TRACE("ScriptManager::OnSourceWatchEvent: {0}", path);
 		SetState(ScriptsState::NEEDS_RECOMPILATION);
-		Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
+
+		if (Application::Get().GetActiveScene()->GetState() != SceneState::RUNNING)
+			Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
 	}
 
 	bool ScriptModule::LinkLibrary(const std::filesystem::path& libraryFilePath)
@@ -99,7 +102,6 @@ namespace Eklipse
 			if (m_library)
 			{
 				m_library.reset();
-				m_parser.Clear();
 
 				EK_CORE_TRACE("Unlinked successfully from library. {0}", m_libraryPath.string());
 			}
@@ -112,6 +114,8 @@ namespace Eklipse
 
 	bool ScriptModule::GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath)
 	{
+		EK_CORE_TRACE("Generating script factory file at path: {0}", targetDirectoryPath.string());
+
 		if (!std::filesystem::exists(targetDirectoryPath))
 			std::filesystem::create_directories(targetDirectoryPath);
 
@@ -143,9 +147,6 @@ namespace Eklipse
 
 		factoryFile << "\n";
 
-		m_parser.Clear();
-		m_parser.ParseDirectory(scriptsSourceDirPath);
-
 		if (m_parser.GetClasses().empty())
 		{
 			EK_CORE_WARN("No script classes found!");
@@ -158,13 +159,12 @@ namespace Eklipse
 		// generate script export functions
 		for (const auto& [className, classInfo] : m_parser.GetClasses())
 		{
-			// config fill fucntion
 			factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
 			factoryFile << "\t" << "{\n";
 			factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
 			for (const auto& [memberName, memberInfo] : classInfo.members)
 			{
-				factoryFile << "\t" << "	info.members[\"" << memberName << "\"].offset = offsetof(" << className << ", " << memberName << ");\n";
+				factoryFile << "\t" << "	info.members[\"" << memberName << "\"] = { " << "\"" << memberInfo.type << "\", " << "offsetof(" << className << ", " << memberName << ") };\n";
 			}
 			factoryFile << "\t" << "}\n";
 		}
@@ -172,8 +172,11 @@ namespace Eklipse
 
 		return true;
 	}
-	void ScriptModule::RunPremake(const std::filesystem::path& premakeLuaFilePath)
+	void ScriptModule::RunPremake(const std::filesystem::path& premakeDirPath)
 	{
+		EK_CORE_TRACE("Running premake5.lua at path '{}'", premakeDirPath.string());
+
+		auto premakeLuaFilePath = premakeDirPath / "premake5.lua";
 		EK_ASSERT(std::filesystem::exists(premakeLuaFilePath), "Premake5.lua file does not exist!");
 		std::filesystem::path currentPath = std::filesystem::current_path();
 		EK_ASSERT(std::filesystem::exists(currentPath / "Resources/Scripting/Premake/premake5.exe"), "Premake5 executable does not exist!");
@@ -192,6 +195,8 @@ namespace Eklipse
 	}
 	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration)
 	{
+		EK_CORE_TRACE("Compiling scripts...");
+
 		std::string configuration_ = configuration;
 		if (configuration_.empty() || (configuration_ != "Debug" && configuration_ != "Release" && configuration_ != "Dist"))
 		{
@@ -232,6 +237,8 @@ namespace Eklipse
 	void ScriptModule::FetchFactoryFunctions()
 	{
 		EK_ASSERT(m_library, "Script library is not loaded!");
+		
+		EK_CORE_TRACE("Fetching factory functions...");
 
 		for (auto&& [className, classInfo] : m_parser.GetClasses())
 		{
@@ -248,7 +255,6 @@ namespace Eklipse
 	void ScriptModule::SetState(ScriptsState state)
 	{
 		m_state = state;
-		EK_CORE_TRACE("ScriptModule state changed to {0}", (int)m_state);
 		switch (m_state)
 		{
 			case ScriptsState::NONE:					m_stateString = "NONE";						break;
@@ -258,24 +264,28 @@ namespace Eklipse
 			case ScriptsState::NEEDS_RECOMPILATION:		m_stateString = "NEEDS_RECOMPILATION";		break;
 			default:									m_stateString = "UNKNOWN";					break;
 		}
-		m_lastStateChangeTime = Timer::Now();
+		EK_CORE_TRACE("ScriptModule state changed to {0}", m_stateString);
+		//m_lastStateChangeTime = Timer::Now();
 	}
 	void ScriptModule::RecompileAll()
 	{
 		EK_CORE_INFO("Recompiling scripts...");
 
-		Scene::Save(Application::Get().GetActiveScene());
-		
-		Unload();
 
 		auto& config = Project::GetActive()->GetConfig();
+		auto& activeScene = Application::Get().GetActiveScene();
+
+		m_parser.ParseDirectory(config.scriptsSourceDirectoryPath);
+
+		Scene::Save(activeScene);
+		activeScene->DestroyAllScripts();
+
+		Unload();
 
 		bool hasCodeToCompile = GenerateFactoryFile(config.scriptGeneratedDirectoryPath);
 		if (hasCodeToCompile)
 		{
-			auto premakeScriptPath = config.scriptPremakeDirectoryPath / "premake5.lua";
-			RunPremake(premakeScriptPath);
-
+			RunPremake(config.scriptPremakeDirectoryPath);
 			CompileScripts(config.scriptsSourceDirectoryPath, config.configuration);
 
 			if (std::filesystem::exists(m_libraryPath))
@@ -283,6 +293,10 @@ namespace Eklipse
 				if (LinkLibrary(m_libraryPath))
 				{
 					FetchFactoryFunctions();
+				}
+				else
+				{
+					EK_CORE_ERROR("Failed to link library at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
 				}
 			}
 			else
@@ -292,14 +306,12 @@ namespace Eklipse
 
 			if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
 			{
+				activeScene->InitializeAllScripts();
 				EK_CORE_INFO("Recompilation successfull!");
-
-				if (Application::Get().GetActiveScene())
-					Scene::ReloadScripts(Application::Get().GetActiveScene());
 			}
 			else
 			{
-				EK_CORE_ERROR("Recompilation failed! Script source code has syntax errors or scripts contain only declaration, without definitions");
+				EK_CORE_ERROR("Recompilation failed!");
 			}
 		}
 

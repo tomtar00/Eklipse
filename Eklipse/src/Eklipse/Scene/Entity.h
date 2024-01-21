@@ -14,6 +14,7 @@ namespace Eklipse
 		Entity(entt::entity handle, Scene* scene) : m_entityHandle(handle), m_scene(scene) {}
 
 		UUID GetUUID();
+		std::string GetName();
 		entt::entity GetHandle() const;
 
 		template<typename T>

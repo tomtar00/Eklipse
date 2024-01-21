@@ -13,8 +13,27 @@ namespace EklipseEngine
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float deltaTime) = 0;
 
-		Ref<Entity> GetEntity();
 		void SetEntity(Ref<Eklipse::Entity> entity);
+
+		template<typename T>
+		bool HasComponent() {
+			return m_entity->HasComponent<T>();
+		}
+
+		template<typename T, typename... Args>
+		T AddComponent(Args&&... args) {
+			return m_entity->AddComponent<T>(std::forward<Args>(args)...);
+		}
+
+		template<typename T>
+		T GetComponent() {
+			return m_entity->GetComponent<T>();
+		}
+
+		template<typename T>
+		void RemoveComponent() {
+			m_entity->RemoveComponent<T>();
+		}
 
 	private:
 		Ref<Entity> m_entity;

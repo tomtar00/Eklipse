@@ -25,7 +25,7 @@ namespace Eklipse
 				Renderer::OnMultiSamplingChanged(Renderer::GetSettings().GetMsaaSamples());
 			}
 
-			if (EditorLayer::Get().GetEditorState() & EDITING) // TODO: Should fix (Play > Change API > Stop > CRASH)
+			if (!EditorLayer::Get().IsPlaying()) // TODO: Should fix (Play > Change API > Stop > CRASH)
 			{
 				static const char* APIs[]{ "Vulkan", "OpenGL" };
 				static int api = (int)Renderer::GetAPI();

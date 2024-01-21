@@ -120,7 +120,7 @@ namespace Eklipse
 	{
 		EK_PROFILE();
 
-		EK_CORE_TRACE(event.ToString());
+		//EK_CORE_TRACE(event.ToString());
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));

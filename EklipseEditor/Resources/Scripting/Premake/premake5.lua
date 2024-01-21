@@ -46,6 +46,10 @@ project "__PRJ_NAME__"
     {
         "EklipseScriptAPI"
     }
+    defines
+    {
+        "_CRT_SECURE_NO_WARNINGS"
+    }
 
     filter "configurations:Debug"
 		defines "EK_DEBUG"

@@ -227,7 +227,7 @@ namespace Eklipse
 		EK_ASSERT(success, "Failed to generate premake5.lua!");
 		EK_CORE_INFO("Generated premake5.lua at path '{0}'", premakeScriptPath.string());
 
-		s_activeProject->m_scriptModule->RunPremake(premakeScriptPath);
+		s_activeProject->m_scriptModule->RunPremake(s_activeProject->GetConfig().scriptPremakeDirectoryPath);
 		s_activeProject->m_scriptModule->Load();
 	}
 	Ref<Project> Project::Load(const std::filesystem::path& projectFilePath, const ProjectSettings& settings)

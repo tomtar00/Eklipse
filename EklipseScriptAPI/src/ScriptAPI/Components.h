@@ -12,6 +12,7 @@ namespace EklipseEngine
 
 	public:
 		using Impl = typename TransformImpl;
+		Transform() = default;
 		Transform(Ref<TransformImpl> impl);
 
 		glm::vec3& GetPosition();
