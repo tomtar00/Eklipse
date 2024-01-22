@@ -99,6 +99,8 @@ namespace Eklipse
 	bool ProjectSerializer::SerializeRuntimeConfig(const RuntimeConfig& runtimeConfig, const std::filesystem::path& filepath)
 	{
 		auto& runtimeDir = filepath.parent_path();
+		if (runtimeDir.empty())
+			runtimeDir = std::filesystem::current_path();
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
