@@ -2,7 +2,6 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
-//#include "VKImage.h"
 #include "VKUtils.h"
 #include "VKFramebuffer.h"
 

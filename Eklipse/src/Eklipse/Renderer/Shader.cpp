@@ -2,6 +2,7 @@
 #include "Shader.h"
 
 #include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Assets/AssetManager.h>
 #include <Eklipse/Platform/OpenGL/GLShader.h>
 #include <Eklipse/Platform/Vulkan/VKShader.h>
 #include <Eklipse/Utils/File.h>
@@ -11,6 +12,7 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
+#include "Material.h"
 
 namespace Eklipse
 {
@@ -160,8 +162,7 @@ namespace Eklipse
         shaderData.clear();
         for (auto&& [stage, source] : shaderSources)
         {
-            std::filesystem::path shaderFilePath = m_filePath;
-            std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + VKShaderStageCachedVulkanFileExtension(stage));
+            std::filesystem::path cachedPath = cacheDirectory / (m_name + VKShaderStageCachedVulkanFileExtension(stage));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (!forceCompile && in.is_open())
@@ -178,13 +179,13 @@ namespace Eklipse
             }
             else
             {
-                EK_CORE_TRACE("Compiling shader at path: '{0}' to Vulkan binaries", m_filePath);
+                EK_CORE_TRACE("Compiling shader {0} to Vulkan binaries", Handle);
 
-                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.full_c_str(), options);
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), shaderFilePath.string().c_str(), options);
                 if (module.GetCompilationStatus() != shaderc_compilation_status_success)
                 {
                     success = false;
-                    EK_CORE_ERROR("Failed to compile shader at path: '{0}'\n\t{1}", m_filePath, module.GetErrorMessage());
+                    EK_CORE_ERROR("Failed to compile shader {0}. {1}", Handle, module.GetErrorMessage());
                 }
                 else
                 {
@@ -209,7 +210,8 @@ namespace Eklipse
         }
 
         if (success)
-            Reflect(m_vulkanSPIRV, m_filePath);
+            Reflect(m_vulkanSPIRV, m_name);
+
         return success;
     }
     void Shader::Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderStagesData, const std::string& shaderName)
@@ -331,7 +333,7 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Shader creation", int(apiType));
         return nullptr;
     }
-    Shader::Shader(const Path& filePath) : m_filePath(filePath), m_isValid(false)
+    Shader::Shader(const Path& filePath) : m_isValid(false)
     {
         m_name = filePath.path().stem().string();
     }
@@ -352,5 +354,27 @@ namespace Eklipse
     const std::unordered_map<ShaderStage, ShaderReflection>& Shader::GetReflections() const
     {
         return m_reflections;
+    }
+    inline bool Shader::Recompile()
+    {
+        Dispose(); 
+        m_isValid = Compile(true);
+
+        // reload all materials that use this shader
+        for (auto&& [handle, asset] : loadedAssets)
+        {
+            if (asset->GetType() != AssetType::Material)
+				continue;
+
+            Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+            if (material->GetShader().get() == this)
+            {
+                EK_CORE_TRACE("Reloading material {0}, because shader {1} has been recompiled", material->Handle, Handle);
+                material->OnShaderReloaded();
+                material->ApplyChanges();
+            }
+        }
+
+        return m_isValid;
     }
 }

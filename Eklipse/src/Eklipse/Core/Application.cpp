@@ -4,11 +4,11 @@
 
 namespace Eklipse
 {
-	Application* Application::s_instance = nullptr;
-
 	ApplicationInfo::ApplicationInfo(const ApplicationInfo& info)
 		: appName(info.appName), windowWidth(info.windowWidth), windowHeight(info.windowHeight) {}
 
+	// === Static Initialization ===
+	Application* Application::s_instance = nullptr;
 	Application::Application(ApplicationInfo& info) :
 		m_running(true), m_quit(false), m_minimized(false), m_appInfo(info) 
 	{
@@ -115,6 +115,23 @@ namespace Eklipse
 		m_quit = false;
 	}
 
+	// === Getters ===
+	Application& Application::Get()									{ return *s_instance; }
+	const ApplicationInfo& Application::GetInfo() const				{ return m_appInfo; }
+	const Ref<Window> Application::GetWindow() const				{ return m_window; }
+	const Ref<AssetLibrary> Application::GetAssetLibrary() const	{ return m_assetLibrary; }
+	const Ref<Scene> Application::GetActiveScene() const			{ return m_activeScene; }
+	const bool Application::IsRunning() const						{ return m_running; }
+	const bool Application::ShouldQuit() const						{ return m_quit; }
+	const bool Application::IsMinimized() const						{ return m_minimized; }
+	DebugPanel& Application::GetDebugPanel()						{ return m_debugPanel; }
+	TerminalPanel& Application::GetTerminalPanel()					{ return m_terminalPanel; }
+	ScriptLinker& Application::GetScriptLinker()					{ return m_scriptLinker; }
+	Unique<Terminal>& Application::GetTerminal()					{ return m_terminalPanel.GetTerminal(); }
+
+	// === Setters ===
+	void Application::SetActiveScene(Ref<Scene> scene)				{ m_activeScene = scene; }
+
 	// === Event Handling ===
 	void Application::OnEventReceived(Event& event)
 	{
@@ -179,7 +196,6 @@ namespace Eklipse
 		m_activeScene.reset();
 		m_activeScene = scene;
 	}
-
 	const Ref<AssetLibrary> Application::GetMainAssetLibrary() const
 	{
 		if (Project::GetActive())
@@ -187,6 +203,7 @@ namespace Eklipse
 		return m_assetLibrary;
 	}
 
+	// === Main Loop ===
 	void Application::Run()
 	{
 		EK_CORE_TRACE("========== Starting Eklipse Engine ==========");

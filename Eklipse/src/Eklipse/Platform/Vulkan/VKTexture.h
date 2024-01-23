@@ -17,13 +17,12 @@ namespace Eklipse
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void GenerateMipMaps(VkImage image, uint32_t mipLevels, uint32_t width, uint32_t height);
 
-		class VKTexture2D : public Eklipse::Texture2D
+		class VKTexture2D : public Texture2D
 		{
 		public:
-			VKTexture2D() = default;
-			VKTexture2D(const TextureInfo& textureInfo, const Path& texturePath);
-			virtual ~VKTexture2D() = default;
+			VKTexture2D() = delete;
 
+			virtual void Init(const TextureInfo& info) override;
 			virtual void SetData(void* data, uint32_t size) override;
 			virtual void Bind() const override;
 			virtual void Unbind() const override;

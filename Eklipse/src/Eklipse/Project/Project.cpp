@@ -56,7 +56,7 @@ namespace Eklipse
 	Project::Project(const ProjectSettings& settings)
 	{
 		m_assetLibrary = CreateRef<AssetLibrary>();
-		m_scriptModule = CreateRef<ScriptModule>(settings.scriptModuleSettings);
+		m_scriptModule = CreateRef<ScriptManager>(settings.scriptModuleSettings);
 	}
 	void Project::LoadAssets()
 	{

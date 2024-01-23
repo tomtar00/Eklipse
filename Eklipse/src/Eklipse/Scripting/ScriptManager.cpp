@@ -1,13 +1,13 @@
 #include "precompiled.h"
-#include "ScriptModule.h"
+#include "ScriptManager.h"
 #include <Eklipse/Project/Project.h>
-#include <Eklipse/Core/Application.h>
+#include <Eklipse/Assets/AssetManager.h>
 
 namespace Eklipse
 {
-	ScriptModule::ScriptModule(ScriptModuleSettings* settings) : m_settings(settings), m_state(ScriptsState::NONE) {}
+	ScriptManager::ScriptManager(ScriptManagerSettings* settings) : m_settings(settings), m_state(ScriptsState::NONE) {}
 
-	void ScriptModule::Load()
+	void ScriptManager::Load()
 	{
 		EK_CORE_TRACE("Loading ScriptModule...");
 
@@ -15,55 +15,39 @@ namespace Eklipse
 		auto& config = Project::GetActive()->GetConfig();
 
 		SetState(ScriptsState::NONE);
-		m_libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
-		if (std::filesystem::exists(m_libraryPath))
-		{
-			if (LinkLibrary(m_libraryPath))
-			{
-				m_parser.ParseDirectory(config.scriptsSourceDirectoryPath);
 
-				FetchFactoryFunctions();
-				StartWatchingSource();
-			}
-			else
-			{
-				RecompileAll();
-			}
+		auto& libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+		if (std::filesystem::exists(libraryPath) && Application::Get().GetScriptLinker().LinkScriptLibrary(libraryPath))
+		{
+			auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
+			Application::Get().GetScriptLinker().FetchScriptClasses(classReflections);
+			StartWatchingSource();
 		}
 		else
 		{
 			RecompileAll();
 		}
+
+		EK_CORE_DBG("ScriptModule loaded");
 	}
-	//void ScriptModule::Reload()
-	//{
-	//	EK_ASSERT(Project::GetActive(), "Project is null!");
-	//	auto& config = Project::GetActive()->GetConfig();
-
-	//	SetState(ScriptsState::NONE);
-	//	m_libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
-
-	//	// TODO: might recompile only when needed - else just link
-	//	RecompileAll();
-	//}
-	void ScriptModule::Unload()
+	void ScriptManager::Unload()
 	{
 		StopWatchingSource();
-		UnlinkLibrary();
+		Application::Get().GetScriptLinker().UnlinkScriptLibrary();
 	}
 
-	void ScriptModule::StartWatchingSource()
+	void ScriptManager::StartWatchingSource()
 	{
 		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
 		EK_CORE_DBG("ScriptManager::StartWatchingSource: {0}", sourcePath);
 
 		m_sourceWatcher = CreateUnique<filewatch::FileWatch<std::string>>(sourcePath, CAPTURE_FN(OnSourceWatchEvent));
 	}
-	void ScriptModule::StopWatchingSource()
+	void ScriptManager::StopWatchingSource()
 	{
 		m_sourceWatcher.reset();
 	}
-	void ScriptModule::OnSourceWatchEvent(const std::string& path, filewatch::Event change_type)
+	void ScriptManager::OnSourceWatchEvent(const std::string& path, filewatch::Event change_type)
 	{
 		std::string extension = std::filesystem::path(path).extension().string();
 		if (extension != ".h" && extension != ".hpp" && extension != ".cpp")
@@ -79,40 +63,7 @@ namespace Eklipse
 			Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
 	}
 
-	bool ScriptModule::LinkLibrary(const std::filesystem::path& libraryFilePath)
-	{
-		try
-		{
-			UnlinkLibrary();
-			m_library = CreateRef<dylib>(libraryFilePath);
-
-			EK_CORE_DBG("Linked successfully to library: '{0}'", libraryFilePath.string());
-			return true;
-		}
-		catch (const std::exception e)
-		{
-			EK_CORE_DBG("Library link failure at path '{0}'.\n{1}", libraryFilePath.string(), e.what());
-			return false;
-		}
-	}
-	void ScriptModule::UnlinkLibrary()
-	{
-		try
-		{
-			if (m_library)
-			{
-				m_library.reset();
-
-				EK_CORE_TRACE("Unlinked successfully from library. {0}", m_libraryPath.string());
-			}
-		}
-		catch (const std::exception e)
-		{
-			EK_CORE_ERROR("Library unlink failure.\n{0}", e.what());
-		}
-	}
-
-	bool ScriptModule::GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath)
+	bool ScriptManager::GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath)
 	{
 		EK_CORE_TRACE("Generating script factory file at path: {0}", targetDirectoryPath.string());
 
@@ -147,7 +98,7 @@ namespace Eklipse
 
 		factoryFile << "\n";
 
-		if (m_parser.GetClasses().empty())
+		if (Application::Get().GetScriptLinker().HasAnyScriptClasses())
 		{
 			EK_CORE_WARN("No script classes found!");
 			return false;
@@ -156,8 +107,7 @@ namespace Eklipse
 		factoryFile << "extern \"C\"\n";
 		factoryFile << "{\n";
 
-		// generate script export functions
-		for (const auto& [className, classInfo] : m_parser.GetClasses())
+		for (const auto& [className, classInfo] : Application::Get().GetScriptLinker().GetScriptClasses())
 		{
 			factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
 			factoryFile << "\t" << "{\n";
@@ -172,7 +122,7 @@ namespace Eklipse
 
 		return true;
 	}
-	void ScriptModule::RunPremake(const std::filesystem::path& premakeDirPath)
+	void ScriptManager::RunPremake(const std::filesystem::path& premakeDirPath)
 	{
 		EK_CORE_TRACE("Running premake5.lua at path '{}'", premakeDirPath.string());
 
@@ -193,7 +143,7 @@ namespace Eklipse
 		int res = system(command.c_str());
 		EK_ASSERT(res == 0, "Failed to run premake5.lua!");
 	}
-	void ScriptModule::CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration)
+	void ScriptManager::CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration)
 	{
 		EK_CORE_TRACE("Compiling scripts...");
 
@@ -234,25 +184,7 @@ namespace Eklipse
 		EK_CORE_TRACE("Compilation result: {0}", res);
 		SetState((res == 1) ? ScriptsState::COMPILATION_FAILED : ScriptsState::COMPILATION_SUCCEEDED);
 	}
-	void ScriptModule::FetchFactoryFunctions()
-	{
-		EK_ASSERT(m_library, "Script library is not loaded!");
-		
-		EK_CORE_TRACE("Fetching factory functions...");
-
-		for (auto&& [className, classInfo] : m_parser.GetClasses())
-		{
-			try 
-			{
-				m_library->get_function<void(EklipseEngine::Reflections::ClassInfo&)>("Get__" + className)(classInfo);
-			}
-			catch (const std::exception& e) 
-			{
-				EK_CORE_ERROR("Failed to fetch factory function for class {0}: {1}", className, e.what());
-			}
-		}
-	}
-	void ScriptModule::SetState(ScriptsState state)
+	void ScriptManager::SetState(ScriptsState state)
 	{
 		m_state = state;
 		switch (m_state)
@@ -267,17 +199,17 @@ namespace Eklipse
 		EK_CORE_TRACE("ScriptModule state changed to {0}", m_stateString);
 		//m_lastStateChangeTime = Timer::Now();
 	}
-	void ScriptModule::RecompileAll()
+	void ScriptManager::RecompileAll()
 	{
 		EK_CORE_INFO("Recompiling scripts...");
-
 
 		auto& config = Project::GetActive()->GetConfig();
 		auto& activeScene = Application::Get().GetActiveScene();
 
-		m_parser.ParseDirectory(config.scriptsSourceDirectoryPath);
+		auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
 
-		Scene::Save(activeScene);
+		auto& scenePath = AssetManager::GetMetadata(activeScene->Handle).FilePath;
+		Scene::Save(activeScene, scenePath);
 		activeScene->DestroyAllScripts();
 
 		Unload();
@@ -288,20 +220,14 @@ namespace Eklipse
 			RunPremake(config.scriptPremakeDirectoryPath);
 			CompileScripts(config.scriptsSourceDirectoryPath, config.configuration);
 
-			if (std::filesystem::exists(m_libraryPath))
+			auto& libraryPath = Application::Get().GetScriptLinker().GetLibraryPath();
+			if (std::filesystem::exists(libraryPath) && Application::Get().GetScriptLinker().LinkScriptLibrary(libraryPath))
 			{
-				if (LinkLibrary(m_libraryPath))
-				{
-					FetchFactoryFunctions();
-				}
-				else
-				{
-					EK_CORE_ERROR("Failed to link library at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
-				}
+				Application::Get().GetScriptLinker().FetchScriptClasses(classReflections);
 			}
 			else
 			{
-				EK_CORE_ERROR("Library not found at path: {0}. Cannot fetch scripts!", m_libraryPath.string());
+				EK_CORE_ERROR("Library link failed at path: '{0}'. Cannot fetch scripts!", libraryPath.string());
 			}
 
 			if (m_state == ScriptsState::COMPILATION_SUCCEEDED)

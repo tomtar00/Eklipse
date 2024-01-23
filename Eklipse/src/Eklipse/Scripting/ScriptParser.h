@@ -1,21 +1,14 @@
 #pragma once
+#include "ClassReflection.h"
 #include <ScriptAPI/Reflections.h>
 
 namespace Eklipse
 {
-	using ClassMap = std::unordered_map<std::string, EklipseEngine::Reflections::ClassInfo>;
-
-	class EK_API ScriptParser
+	class ScriptParser
 	{
 	public:
-		void ParseDirectory(const std::filesystem::path& directoryPath);
-
-		ClassMap& GetClasses() { return m_classes; }
-
+		static std::vector<ClassReflection> ParseDirectory(const std::filesystem::path& directoryPath);
 	private:
-		void ParseFile(const std::filesystem::path& filePath);
-
-	private:
-		ClassMap m_classes;
+		static bool ParseFile(const std::filesystem::path& filePath, std::vector<ClassReflection>& outClassReflections);
 	};
 }

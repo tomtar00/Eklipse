@@ -3,7 +3,6 @@
 
 #include "VKSwapChain.h"
 #include "VKUtils.h"
-#include "VKImage.h"
 
 #include <Eklipse/Core/Application.h>
 

@@ -1,12 +1,8 @@
 #pragma once
+#include <Eklipse/Assets/Asset.h>
 
 namespace Eklipse
 {
-	struct TextureData // TODO: remove
-	{
-		int width, height;
-		void* pixels;
-	};
 	enum ImageFormat
 	{
 		FORMAT_UNDEFINED	= 0,
@@ -50,14 +46,24 @@ namespace Eklipse
 		ImageLayout imageLayout;
 		uint32_t imageUsage;
 	};
+	struct TextureData
+	{
+		TextureInfo info;
+		uint8_t* data;
+		uint32_t size;
+	};
 
-	class EK_API Texture
+	int FormatToChannels(ImageFormat format);
+	ImageFormat ChannelsToFormat(int channels);
+
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
 
 		inline const TextureInfo& GetInfo() const { return m_textureInfo; }
 
+		virtual void Init(const TextureInfo& textureInfo) = 0;
 		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -65,13 +71,20 @@ namespace Eklipse
 
 	protected:
 		TextureInfo m_textureInfo;
-		Path m_path;
 	};
 
-	class EK_API Texture2D : public Texture
+	class Texture2D : public Texture
 	{
 	public:
-		Texture2D(const TextureInfo& textureInfo, const Path& path) { m_textureInfo = textureInfo; m_path = path; }
-		static Ref<Texture2D> Create(const TextureInfo& textureInfo, const Path& path = "");
+		Texture2D() = delete;
+		Texture2D(const std::filesystem::path& path);
+		Texture2D(const TextureInfo& textureInfo);
+		Texture2D(const TextureData& textureData);
+		static Ref<Texture2D> Create(const std::filesystem::path& path);
+		static Ref<Texture2D> Create(const TextureInfo& textureInfo);
+		static Ref<Texture2D> Create(const TextureData& textureData);
+
+		static AssetType GetStaticType() { return AssetType::Texture2D; }
+		virtual AssetType GetType() const override { return GetStaticType(); }
 	};
 }

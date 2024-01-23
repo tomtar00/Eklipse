@@ -1,9 +1,8 @@
 #pragma once
 #include <Eklipse/Assets/AssetLibrary.h>
-#include <Eklipse/Scripting/ScriptModule.h>
+#include <Eklipse/Scripting/ScriptManager.h>
 
 #define EK_PROJECT_FILE_EXTENSION ".ekproj"
-#define EK_SCENE_FILE_EXTENSION ".eksc"
 
 #ifdef EK_PLATFORM_WINDOWS
 	#define EK_EXECUTABLE_EXTENSION ".exe"
@@ -35,7 +34,7 @@ namespace Eklipse
 	};
 	struct ProjectSettings
 	{
-		ScriptModuleSettings* scriptModuleSettings;
+		ScriptManagerSettings* scriptModuleSettings;
 	};
 
 	struct RuntimeConfig
@@ -60,7 +59,7 @@ namespace Eklipse
 		~Project() = default;
 		inline ProjectConfig& GetConfig() { return m_config; }
 		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
-		inline Ref<ScriptModule> GetScriptModule() { return m_scriptModule; }
+		inline Ref<ScriptManager> GetScriptManager() { return m_scriptModule; }
 		void LoadAssets();
 		void UnloadAssets();
 		bool Export(const ProjectExportSettings& exportSettings);
@@ -81,7 +80,7 @@ namespace Eklipse
 		std::filesystem::path m_projectDirectory;
 		ProjectConfig m_config;
 		Ref<AssetLibrary> m_assetLibrary;
-		Ref<ScriptModule> m_scriptModule;
+		Ref<ScriptManager> m_scriptModule;
 
 		static Ref<Project> s_activeProject;
 		static Ref<RuntimeConfig> s_runtimeConfig;

@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <Eklipse/Utils/File.h>
+#include <Eklipse/Assets/Asset.h>
 
 namespace Eklipse
 {
@@ -81,7 +82,7 @@ namespace Eklipse
 	extern std::string ShaderStageToString(ShaderStage stage);
 	extern uint32_t ShaderStageToShaderC(const ShaderStage stage);
 	
-	class EK_API Shader
+	class EK_API Shader : public Asset
 	{
 	public:
 		static Ref<Shader> Create(const Path& filePath);
@@ -99,10 +100,11 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
-		inline bool Recompile() { Dispose(); return m_isValid = Compile(true); }
+		inline bool Recompile();
 		inline bool IsValid() const { return m_isValid; }
 
-		inline Path& GetPath() { return m_filePath; }
+		static AssetType GetStaticType() { return AssetType::Shader; }
+		virtual AssetType GetType() const override { return GetStaticType(); }
 
 	protected:
 		virtual bool Compile(bool forceCompile = false) = 0;
@@ -113,7 +115,6 @@ namespace Eklipse
 
 	protected:
 		std::string m_name;
-		Path m_filePath;
 		bool m_isValid;
 
 		std::unordered_map<ShaderStage, ShaderReflection> m_reflections;

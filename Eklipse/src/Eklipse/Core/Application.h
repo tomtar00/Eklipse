@@ -12,6 +12,7 @@
 #include <Eklipse/Events/ApplicationEvent.h>
 #include <Eklipse/ImGui/DebugPanel.h>
 #include <Eklipse/ImGui/Terminal/TerminalPanel.h>
+#include <Eklipse/Scripting/ScriptLinker.h>
 
 namespace Eklipse
 {
@@ -31,40 +32,48 @@ namespace Eklipse
 		Application(ApplicationInfo& info);
 		virtual ~Application();
 
+		// === Initialization and Shutdown ===
 		void Init();
 		void Shutdown();
+
+		// === Frame Management ===
 		void BeginFrame(float* deltaTime);
 		void EndFrame(float deltaTime);
 		void SetAPI(ApiType api);
 
-		static Application& Get() { return *s_instance; }
-		inline const ApplicationInfo& GetInfo() const { return m_appInfo; }
-		inline const Ref<Window> GetWindow() const { return m_window; }
-		inline const Ref<AssetLibrary> GetAssetLibrary() const { return m_assetLibrary; }
-		inline DebugPanel& GetDebugPanel() { return m_debugPanel; }
-		inline TerminalPanel& GetTerminalPanel() { return m_terminalPanel; }
-		inline Unique<Terminal>& GetTerminal() { return m_terminalPanel.GetTerminal(); }
-		inline const Ref<Scene> GetActiveScene() const { return m_activeScene; }
-		inline void SetActiveScene(Ref<Scene> scene) { m_activeScene = scene; }
+		// === Getters ===
+		static Application& Get();
+		const ApplicationInfo& GetInfo() const;
+		const Ref<Scene> GetActiveScene() const;
+		const Ref<Window> GetWindow() const;
+		const Ref<AssetLibrary> GetAssetLibrary() const;
+		const bool IsRunning() const;
+		const bool ShouldQuit() const;
+		const bool IsMinimized() const;
+		DebugPanel& GetDebugPanel();
+		TerminalPanel& GetTerminalPanel();
+		ScriptLinker& GetScriptLinker();
+		Unique<Terminal>& GetTerminal();
+
+		// === Setters ===
+		void SetActiveScene(Ref<Scene> scene);
 
 		void SwitchScene(Ref<Scene> scene);
 		const Ref<AssetLibrary> GetMainAssetLibrary() const;
 
-		inline const bool IsRunning() const { return m_running; }
-		inline const bool ShouldQuit() const { return m_quit; }
-		inline const bool IsMinimized() const { return m_minimized; }
-
+		// === Virtual Event Handling ===
 		virtual void OnInitAPI(ApiType api) {}
 		virtual void OnAPIHasInitialized(ApiType api) {}
 		virtual void OnShutdownAPI() {}
 		virtual void OnAPIHasShutdown() {}
-
-		void Run();
-		void Close();
-
 		virtual void OnPreGUI(float deltaTime) {}
 		virtual void OnPostGUI(float deltaTime) {}
 
+		// === Main Loop ===
+		void Run();
+		void Close();
+
+		// === Layer Management ===
 		void PushLayer(Ref<Layer> layer);
 		void PushOverlay(Ref<Layer> overlay);
 		void PopLayer(Ref<Layer> layer);
@@ -74,6 +83,8 @@ namespace Eklipse
 		void SubmitToWindowFocus(const std::function<void()>& function);
 
 	private:
+
+		// === Event Handling ===
 		void OnEventReceived(Event& event);
 		void OnWindowClose(WindowCloseEvent& event);
 		void OnWindowResized(WindowResizeEvent& event);
@@ -84,21 +95,25 @@ namespace Eklipse
 		void ExecuteMainThreadQueue();
 
 	protected:
-		LayerStack m_layerStack;
+		Ref<Window> m_window;
 		Ref<AssetLibrary> m_assetLibrary;
 		Ref<Scene> m_activeScene;
+
+		LayerStack m_layerStack;
+		ScriptLinker m_scriptLinker;
+
 		DebugPanel m_debugPanel;
 		TerminalPanel m_terminalPanel;
 
 	private:
 		static Application* s_instance;
+		ApplicationInfo m_appInfo{};
 
 		bool m_running;
 		bool m_quit;
 		bool m_minimized;
-		ApplicationInfo m_appInfo{};
-		Ref<Window> m_window;
-		Eklipse::MainLoopTimer m_timer;
+
+		MainLoopTimer m_timer;
 
 		std::vector<std::function<void()>> m_mainThreadQueue;
 		std::mutex m_mainThreadQueueMutex;

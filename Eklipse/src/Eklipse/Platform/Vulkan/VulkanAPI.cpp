@@ -18,7 +18,6 @@
 #include "VKPipeline.h"
 #include "VKDescriptor.h"
 #include "VKBuffers.h"
-#include "VKImage.h"
 
 namespace Eklipse
 {

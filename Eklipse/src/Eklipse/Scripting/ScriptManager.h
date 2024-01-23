@@ -19,7 +19,7 @@ namespace Eklipse
 {
 	struct ProjectConfig;
 
-	struct ScriptModuleSettings
+	struct ScriptManagerSettings
 	{
 		Path MsBuildPath;
 	};
@@ -33,52 +33,35 @@ namespace Eklipse
 		NEEDS_RECOMPILATION
 	};
 
-	class EK_API ScriptModule
+	class ScriptManager
 	{
 	public:
-		ScriptModule(ScriptModuleSettings* settings);
-		~ScriptModule() = default;
+		ScriptManager(ScriptManagerSettings* settings);
+		~ScriptManager() = default;
 
 		void Load();
-		//void Reload();
 		void Unload();
 
-		bool IsLibraryLoaded() const { return m_library != nullptr; }
 		void RecompileAll();
 		bool GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
 		void RunPremake(const std::filesystem::path& premakeDirPath);
 		void CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration);
 
-		ClassMap& GetClasses() { return m_parser.GetClasses(); }
 		const std::string& GetState() const { return m_stateString; }
 		const ScriptsState GetScriptsState() const { return m_state; }
-		const Ref<dylib>& GetLibrary() const { return m_library; }
-
-		//inline TimePoint GetLastStateChangeTime() const { return m_lastStateChangeTime; }
 
 	private:
 		void StartWatchingSource();
 		void StopWatchingSource();
 		void OnSourceWatchEvent(const std::string& path, filewatch::Event change_type);
 
-		bool LinkLibrary(const std::filesystem::path& libraryFilePath);
-		void UnlinkLibrary();
-
-		void FetchFactoryFunctions();
-
 		void SetState(ScriptsState state);
 		
 	private:
-		ScriptModuleSettings* m_settings;
+		ScriptManagerSettings* m_settings;
 		ScriptsState m_state;
 		std::string m_stateString;
-		//TimePoint m_lastStateChangeTime;
 
 		Unique<filewatch::FileWatch<std::string>> m_sourceWatcher;
-
-		Ref<dylib> m_library;
-		std::filesystem::path m_libraryPath;
-
-		ScriptParser m_parser;
 	};
 }

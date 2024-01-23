@@ -7,12 +7,12 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		class GLTexture2D : public Eklipse::Texture2D
+		class GLTexture2D : public Texture2D
 		{
 		public:
-			GLTexture2D(const TextureInfo& textureInfo, const std::string& path);
-			virtual ~GLTexture2D() = default;
+			GLTexture2D() = delete;
 
+			virtual void Init(const TextureInfo& info) override;
 			virtual void SetData(void* data, uint32_t size) override;
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
