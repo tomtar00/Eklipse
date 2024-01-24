@@ -19,7 +19,7 @@ namespace Eklipse
 		EditorAssetLibrary(const std::filesystem::path& assetDirectory);
 
 		virtual Ref<Asset> GetAsset(AssetHandle handle) override;
-		virtual const AssetType& GetType(AssetHandle handle) const override;
+		virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 
@@ -35,7 +35,6 @@ namespace Eklipse
 
 	private:
 		AssetRegistry m_assetRegistry;
-		AssetMap m_loadedAssets;
 		std::filesystem::path m_assetDirectory;
 
 		Unique<filewatch::FileWatch<std::string>> m_fileWatcher;

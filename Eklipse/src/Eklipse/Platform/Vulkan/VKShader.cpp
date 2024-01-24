@@ -43,13 +43,23 @@ namespace Eklipse
 			m_isValid = Compile();
 		}
 
+		VkDescriptorSetLayout VKShader::GetDescriptorSetLayout() const
+		{
+			return m_descriptorSetLayout;
+		}
+		VkPipelineLayout VKShader::GetPipelineLayout() const
+		{
+			return m_pipelineLayout;
+		}
+
 		void VKShader::Bind() const 
 		{
+#if EK_DEBUG
 			if (m_isValid)
-				vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+#endif
+			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 		}
 		void VKShader::Unbind() const {}
-
 		void VKShader::Dispose() const
 		{
 			if (m_isValid)
@@ -58,6 +68,11 @@ namespace Eklipse
 				vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
 				vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
 			}
+		}
+
+		const std::string VKShader::GetCacheDirectoryPath()
+		{
+			return "Assets/Cache/Shader/Vulkan";
 		}
 		bool VKShader::Compile(bool forceCompile)
 		{
@@ -168,7 +183,7 @@ namespace Eklipse
 
 					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
 				}
-				else EK_CORE_ERROR("Shader compilation failed ({0})", m_filePath.full_string());
+				else EK_CORE_ERROR("Shader {0} compilation failed", Handle);
 			}
 			return success;
 		}

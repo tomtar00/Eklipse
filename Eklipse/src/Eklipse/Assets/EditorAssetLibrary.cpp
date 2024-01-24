@@ -48,7 +48,7 @@ namespace Eklipse
         }
         else
         {
-            const AssetMetadata& metadata = m_assetRegistry.at(handle);
+            const AssetMetadata& metadata = GetMetadata(handle);
             asset = AssetImporter::ImportAsset(handle, metadata);
             if (!asset)
             {
@@ -58,11 +58,9 @@ namespace Eklipse
         }
         return asset;
     }
-    const AssetType& EditorAssetLibrary::GetType(AssetHandle handle) const
+    const AssetMetadata& EditorAssetLibrary::GetMetadata(AssetHandle handle) const
     {
-        if (IsAssetHandleValid(handle))
-            return m_assetRegistry.at(handle).Type;
-        return AssetType::None;
+        return m_assetRegistry.at(handle);
     }
     bool EditorAssetLibrary::IsAssetHandleValid(AssetHandle handle) const
     {

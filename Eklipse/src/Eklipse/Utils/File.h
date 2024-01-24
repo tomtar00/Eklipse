@@ -3,7 +3,10 @@
 
 namespace Eklipse
 {
-	class EK_API Path
+	using Path = std::filesystem::path;
+	namespace fs = std::filesystem;
+
+	/*class EK_API Path
 	{
 	public:
 		Path() = default;
@@ -48,10 +51,15 @@ namespace Eklipse
 		std::string m_path;
 		std::string m_fullPath;
 		bool m_isCurrentlyValid = false;
-	};
+	};*/
 
-	EK_API std::string ReadFileFromPath(const std::filesystem::path& filename);
-	EK_API void CopyFileContent(const std::filesystem::path& destination, const std::filesystem::path& source);
+	bool IsPathFile(const Path& path);
+	bool IPathsDirectory(const Path& path);
+	bool IsPathValid(const Path& path);
+	bool IsPathValid(const Path& path, std::vector<std::string> extensions);
+
+	std::string ReadFileFromPath(const Path& filePath);
+	void CopyFileContent(const Path& destination, const Path& source);
 
 	enum class FileDialogResultType
 	{
@@ -64,7 +72,7 @@ namespace Eklipse
 		FileDialogResultType type;
 		Path path;
 	};
-	EK_API FileDialogResult OpenFileDialog(const std::vector<std::string>& extensions);
-	EK_API FileDialogResult OpenFileDialog();
-	EK_API FileDialogResult OpenDirDialog();
+	FileDialogResult OpenFileDialog(const std::vector<std::string>& extensions);
+	FileDialogResult OpenFileDialog();
+	FileDialogResult OpenDirDialog();
 }

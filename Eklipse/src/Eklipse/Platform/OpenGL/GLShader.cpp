@@ -1,15 +1,13 @@
 #include "precompiled.h"
 #include "GLShader.h"
+#include <Eklipse/Core/Timer.h>
+#include <Eklipse/Assets/AssetManager.h>
 
 #include <glm/gtc/type_ptr.hpp>
-#include "glm/ext.hpp"
-#include <Eklipse/Utils/File.h>
-
-#include <filesystem>
+#include <glm/ext.hpp>
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
-#include <Eklipse/Core/Timer.h>
 
 namespace Eklipse
 {
@@ -40,6 +38,55 @@ namespace Eklipse
 		{
 			m_isValid = Compile();
 		}
+
+		uint32_t GLShader::GetID() const
+		{
+			return m_id;
+		}
+
+		void GLShader::Bind() const
+		{
+			EK_PROFILE();
+
+			if (m_isValid)
+				glUseProgram(m_id);
+		}
+		void GLShader::Unbind() const
+		{
+			EK_PROFILE();
+
+			glUseProgram(0);
+		}
+		void GLShader::Dispose() const
+		{
+			if (m_isValid)
+				glDeleteProgram(m_id);
+		}
+
+		const std::string GLShader::GetCacheDirectoryPath()
+		{
+			return "Assets/Cache/Shader/OpenGL";
+		}
+		bool GLShader::Compile(bool forceCompile)
+		{
+			auto shaderSources = Setup();
+			bool success = true;
+
+			{
+				Timer timer;
+				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
+				success = success && CompileOrGetOpenGLBinaries(forceCompile);
+				if (success)
+				{
+					CreateProgram();
+					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+				}
+				else EK_CORE_ERROR("Failed to compile shader {0}", Handle);
+			}
+
+			return success;
+		}
+
 		bool GLShader::CompileOrGetOpenGLBinaries(bool forceCompile)
 		{
 			auto& shaderData = m_openGLSPIRV;
@@ -52,12 +99,13 @@ namespace Eklipse
 
 			std::filesystem::path cacheDirectory = GetCacheDirectoryPath();
 
+			auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
+
 			shaderData.clear();
 			m_openGLSourceCode.clear();
 			for (auto&& [stage, spirv] : m_vulkanSPIRV)
 			{
-				std::filesystem::path shaderFilePath = m_filePath;
-				std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
+				std::filesystem::path cachedPath = cacheDirectory / (m_name + GLShaderStageCachedOpenGLFileExtension(stage));
 
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (!forceCompile && in.is_open())
@@ -74,7 +122,7 @@ namespace Eklipse
 				}
 				else
 				{
-					EK_CORE_TRACE("Compiling shader at path: '{0}' to OpenGL binaries", m_filePath);
+					EK_CORE_TRACE("Compiling shader {0} to OpenGL binaries", Handle);
 
 					spirv_cross::CompilerGLSL glslCompiler(spirv);
 					spirv_cross::CompilerGLSL::Options glslOptions;
@@ -93,14 +141,11 @@ namespace Eklipse
 
 					EK_CORE_TRACE("OpenGL shader '{0}' - stage={1} source code:\n{2}", m_name, ShaderStageToString(stage), source);
 
-					/*shaderc::PreprocessedSourceCompilationResult pre_result = compiler.PreprocessGlsl(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.full_c_str(), options);
-					EK_ASSERT(pre_result.GetCompilationStatus() == shaderc_compilation_status_success, "Failed to preprocess shader at path: '{0}'\n\t{1}", m_filePath, pre_result.GetErrorMessage());
-					std::string pre_passed_source(pre_result.begin());*/
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(/*pre_passed_*/source, (shaderc_shader_kind)ShaderStageToShaderC(stage), m_filePath.full_c_str(), options);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), shaderPath.string().c_str(), options);
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
 						success = false;
-						EK_CORE_ERROR("Failed to compile shader at path: '{0}'\n\t{1}", m_filePath, module.GetErrorMessage());
+						EK_CORE_ERROR("Failed to compile shader {0}. {1}", Handle, module.GetErrorMessage());
 					}
 					else
 					{
@@ -149,9 +194,9 @@ namespace Eklipse
 				std::vector<GLchar> infoLog(maxLength);
 				glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
 				if (infoLog.data())
-					EK_CORE_ERROR("Shader linking failed ({0}): {1}", m_filePath, infoLog.data());
+					EK_CORE_ERROR("Shader linking failed ({0}): {1}", Handle, infoLog.data());
 				else
-					EK_CORE_ERROR("Shader linking failed ({0}): {1}", m_filePath, "No info log available");
+					EK_CORE_ERROR("Shader linking failed ({0}): {1}", Handle, "No info log available");
 
 				glDeleteProgram(program);
 
@@ -170,46 +215,9 @@ namespace Eklipse
 			glValidateProgram(program);
 			GLint isValid;
 			glGetProgramiv(program, GL_VALIDATE_STATUS, &isValid);
-			EK_ASSERT(isValid, "Shader validation failed ({0})", m_filePath);
+			EK_ASSERT(isValid, "Shader validation failed ({0})", Handle);
 
 			m_id = program;
-		}
-		void GLShader::Bind() const
-		{
-			EK_PROFILE();
-
-			if (m_isValid)
-				glUseProgram(m_id);
-		}
-		void GLShader::Unbind() const
-		{
-			EK_PROFILE();
-
-			glUseProgram(0);
-		}
-		void GLShader::Dispose() const
-		{
-			if (m_isValid)
-				glDeleteProgram(m_id);
-		}
-		bool GLShader::Compile(bool forceCompile)
-		{
-			auto shaderSources = Setup();
-			bool success = true;
-
-			{
-				Timer timer;
-				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
-				success = success && CompileOrGetOpenGLBinaries(forceCompile);
-				if (success)
-				{
-					CreateProgram();
-					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
-				}
-				else EK_CORE_ERROR("Failed to compile shader '{0}'", m_filePath.full_string());
-			}
-
-			return success;
 		}
 	}
 }

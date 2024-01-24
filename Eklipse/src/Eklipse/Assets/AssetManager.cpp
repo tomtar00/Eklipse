@@ -15,4 +15,8 @@ namespace Eklipse
     {
 		return Application::Get().GetAssetLibrary()->GetMetadata(handle);
     }
+    const AssetMap& AssetManager::GetLoadedAssets()
+    {
+        return Application::Get().GetAssetLibrary()->GetLoadedAssets();
+    }
 }

@@ -4,7 +4,7 @@
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Platform/Vulkan/VKMaterial.h>
 #include <Eklipse/Platform/OpenGL/GLMaterial.h>
-#include <Eklipse/Core/Application.h>
+#include <Eklipse/Assets/AssetManager.h>
 #include <Eklipse/Utils/Yaml.h>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -12,30 +12,93 @@
 
 namespace Eklipse
 {
-    static std::string DataTypeToString(DataType type)
+    static std::string DataTypeToString(ShaderDataType type)
     {
         switch (type)
         {
-			case DataType::FLOAT:   return "float";
-			case DataType::FLOAT2:  return "float2";
-			case DataType::FLOAT3:  return "float3";
-			case DataType::FLOAT4:  return "float4";
-			case DataType::MAT3:    return "mat3";
-			case DataType::MAT4:    return "mat4";
-			case DataType::INT:     return "int";
-			case DataType::INT2:    return "int2";
-			case DataType::INT3:    return "int3";
-			case DataType::INT4:    return "int4";
-			case DataType::BOOL:    return "bool";
+			case ShaderDataType::FLOAT:   return "float";
+			case ShaderDataType::FLOAT2:  return "float2";
+			case ShaderDataType::FLOAT3:  return "float3";
+			case ShaderDataType::FLOAT4:  return "float4";
+			case ShaderDataType::MAT3:    return "mat3";
+			case ShaderDataType::MAT4:    return "mat4";
+			case ShaderDataType::INT:     return "int";
+			case ShaderDataType::INT2:    return "int2";
+			case ShaderDataType::INT3:    return "int3";
+			case ShaderDataType::INT4:    return "int4";
+			case ShaderDataType::BOOL:    return "bool";
 		}
 		EK_ASSERT(false, "Unknown data type");
 		return "UNKNOWN";
 	}
     
+    PushConstant::PushConstant(const PushConstant& other)
+    {
+        Copy(other);
+    }
+    PushConstant& PushConstant::operator=(const PushConstant& other)
+    {
+        if (this != &other)
+        {
+            this->Copy(other);
+        }
+        return *this;
+    }
+    void PushConstant::Copy(const PushConstant& other)
+    {
+        dataPointers = other.dataPointers;
+        pushConstantSize = other.pushConstantSize;
+
+        if (other.pushConstantData)
+        {
+            pushConstantData = std::make_unique<char[]>(pushConstantSize);
+            std::copy(other.pushConstantData.get(), other.pushConstantData.get() + pushConstantSize, pushConstantData.get());
+        }
+    }
+
+    Material::Material(const Path& path)
+    {
+        m_name = path.stem().string();
+        if (!Deserialize(path))
+        {
+            EK_CORE_ERROR("Failed to deserialize material '{0}'", m_name);
+        }
+    }
+    Material::Material(const Path& path, AssetHandle shaderHandle)
+    {
+        m_name = path.stem().string();
+
+        SetShader(AssetManager::GetAsset<Shader>(shaderHandle));
+        if (!Serialize(path))
+        {
+            EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
+        }
+    }
+    Ref<Material> Material::Create(const Path& path)
+    {
+        switch (Renderer::GetAPI())
+        {
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path);
+        }
+        EK_ASSERT(false, "Material creation not implemented for current graphics API");
+        return nullptr;
+    }
+    Ref<Material> Material::Create(const Path& path, AssetHandle shaderHandle)
+    {
+        switch (Renderer::GetAPI())
+        {
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderHandle);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path, shaderHandle);
+        }
+        EK_ASSERT(false, "Material creation not implemented for current graphics API");
+        return nullptr;
+    }
+    
     template<typename T>
     static void SetData(void* dst, YAML::Node& node)
     {
-        if (node.IsNull()) 
+        if (!node) 
         {
             EK_CORE_WARN("Failed to deserialize data, node '{0}' is null", node.Tag());
             dst = nullptr;
@@ -46,43 +109,32 @@ namespace Eklipse
         std::memcpy(dst, &data, sizeof(T));
     }
 
-    Ref<Material> Eklipse::Material::Create(const Path& path, const Path& shaderPath)
-    {
-        auto apiType = Renderer::GetAPI();
-        switch (apiType)
-        {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderPath);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path, shaderPath);
-        }
-        EK_ASSERT(false, "API {0} not implemented for Material creation", int(apiType));
-        return nullptr;
-    }
-
-    Material::Material(const Path& path, const Path& shaderPath) : m_path(path)
-    {
-        m_name = path.path().stem().string();
-
-        if (path.IsValid({ ".ekmt" }))
-        {
-            Deserialize(path);
-        }
-        else
-        {
-            SetShader(Application::Get().GetMainAssetLibrary()->GetShader(shaderPath));
-            Serialize(path);
-        }
-    }
     void Material::Bind()
     {
         m_shader->Bind();
     }
     void Material::ApplyChanges()
     {
-        Serialize(m_path);
-        Deserialize(m_path);
+        EK_CORE_TRACE("Applying changes to material '{0}'", m_name);
+
+        auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
+        if (!Serialize(materialPath))
+        {
+            EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
+			return;
+        }
+        if (!Deserialize(materialPath))
+        {
+            EK_CORE_ERROR("Failed to deserialize material '{0}'", m_name);
+        }
+
+        EK_CORE_DBG("Applied changes to material '{0}'", m_name);
     }
+
     void Material::SetShader(Ref<Shader> shader)
     {
+        EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", m_name, shader->GetName());
+
         EK_ASSERT(shader != nullptr, "Shader is null");
         if (m_shader == shader)
         {
@@ -111,17 +163,16 @@ namespace Eklipse
             }
             for (auto& samplerRef : reflection.samplers)
             {
-                m_samplers[samplerRef.name] = { samplerRef.binding, "", nullptr };
+                m_samplers[samplerRef.name] = { samplerRef.binding, 0, nullptr };
             }
         }
-    }
-    void Material::SetShader(const Path& shaderPath)
-    {
-        //EK_ASSERT(Project::GetActive(), "No active project");
-		SetShader(Application::Get().GetMainAssetLibrary()->GetShader(shaderPath));
+
+        EK_CORE_DBG("Set shader for material '{0}' to '{1}'", m_name, shader->GetName());
     }
     void Material::OnShaderReloaded()
     {
+        EK_CORE_TRACE("Material::OnShaderReloaded for material '{0}'", m_name);
+
         // Applying new shader constants
         for (auto&& [stage, reflection] : m_shader->GetReflections())
         {
@@ -183,17 +234,21 @@ namespace Eklipse
                 auto it = m_samplers.find(samplerRef.name);
                 if (it == m_samplers.end())
                 {
-                    it->second = { samplerRef.binding, "", nullptr };
+                    it->second = { samplerRef.binding, 0, nullptr };
 				}
             }
         }
+
+        EK_CORE_DBG("Material::OnShaderReloaded for material '{0}'", m_name);
     }
-    void Material::Serialize(const Path& path)
+    bool Material::Serialize(const Path& path)
     {
+        EK_CORE_TRACE("Serializing material '{0}' to '{1}'", m_name, path.string());
+
         YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "Name" << YAML::Value << m_name;
-        out << YAML::Key << "Shader" << YAML::Value << m_shader->GetPath().string();
+        out << YAML::Key << "Shader" << YAML::Value << m_shader->Handle;
 
         {
             out << YAML::Key << "PushConstants" << YAML::Value << YAML::BeginMap;
@@ -208,17 +263,17 @@ namespace Eklipse
                     out << YAML::Key << "Data" << YAML::Value;
                     switch (data.type)
                     {
-                        case DataType::FLOAT:   out << *(float*)data.data;      break;
-                        case DataType::FLOAT2:  out << *(glm::vec2*)data.data;  break;
-                        case DataType::FLOAT3:  out << *(glm::vec3*)data.data;  break;
-                        case DataType::FLOAT4:  out << *(glm::vec4*)data.data;  break;
-                        case DataType::MAT3:    out << *(glm::mat3*)data.data;  break;
-                        case DataType::MAT4:    out << *(glm::mat4*)data.data;  break;
-                        case DataType::INT:     out << *(int*)data.data;        break;
-                        case DataType::INT2:    out << *(glm::ivec2*)data.data; break;
-                        case DataType::INT3:    out << *(glm::ivec3*)data.data; break;
-                        case DataType::INT4:    out << *(glm::ivec4*)data.data; break;
-                        case DataType::BOOL:    out << *(bool*)data.data;       break;
+                        case ShaderDataType::FLOAT:   out << *(float*)data.data;      break;
+                        case ShaderDataType::FLOAT2:  out << *(glm::vec2*)data.data;  break;
+                        case ShaderDataType::FLOAT3:  out << *(glm::vec3*)data.data;  break;
+                        case ShaderDataType::FLOAT4:  out << *(glm::vec4*)data.data;  break;
+                        case ShaderDataType::MAT3:    out << *(glm::mat3*)data.data;  break;
+                        case ShaderDataType::MAT4:    out << *(glm::mat4*)data.data;  break;
+                        case ShaderDataType::INT:     out << *(int*)data.data;        break;
+                        case ShaderDataType::INT2:    out << *(glm::ivec2*)data.data; break;
+                        case ShaderDataType::INT3:    out << *(glm::ivec3*)data.data; break;
+                        case ShaderDataType::INT4:    out << *(glm::ivec4*)data.data; break;
+                        case ShaderDataType::BOOL:    out << *(bool*)data.data;       break;
                     }
                     out << YAML::EndMap;
                 }
@@ -231,27 +286,34 @@ namespace Eklipse
             out << YAML::Key << "Samplers" << YAML::Value << YAML::BeginMap;
             for (auto&& [samplerName, sampler] : m_samplers)
             {
-				out << YAML::Key << samplerName << YAML::Value << sampler.texturePath.string();
+                out << YAML::Key << samplerName << YAML::Value << sampler.textureHandle;
 			}
 			out << YAML::EndMap;
         }
 
         out << YAML::EndMap;
 
-        std::ofstream fout(path.full_string());
+        auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
+        std::ofstream fout(materialPath);
         fout << out.c_str();
+
+        EK_CORE_DBG("Serialized material '{0}' to '{1}'", m_name, path.string());
+        return true;
     }
-    void Material::Deserialize(const Path& path)
+    bool Material::Deserialize(const Path& path)
     {
+        EK_CORE_TRACE("Deserializing material '{0}' from '{1}'", m_name, path.string());
+
         YAML::Node yaml;
         try
         {
-            yaml = YAML::LoadFile(path.full_string());
+            auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
+            yaml = YAML::LoadFile(materialPath.string());
         }
         catch (std::runtime_error e)
         {
             EK_CORE_ERROR("Failed to load .ekmt file '{0}'\n     {1}", path.string(), e.what());
-            return;
+            return false;
         }
 
         if (!yaml["Name"])
@@ -261,16 +323,15 @@ namespace Eklipse
 		}
 
         m_name = yaml["Name"].as<std::string>();
-		m_path = path;
 
         if (!yaml["Shader"])
         {
             EK_CORE_ERROR("Material file '{0}' is missing a shader path", path.string());
-            return;
+            return false;
         }
 
-        Path shaderPath = yaml["Shader"].as<std::string>();
-        auto& shader = Application::Get().GetMainAssetLibrary()->GetShader(shaderPath);
+        AssetHandle shaderHandle = yaml["Shader"].as<AssetHandle>();
+        auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
         SetShader(shader);
 
         auto& constantsNode = yaml["PushConstants"];
@@ -324,58 +385,42 @@ namespace Eklipse
         for (auto&& [samplerName, sampler] : m_samplers)
         {
             sampler.texture = nullptr;
-            sampler.texturePath = "";
 
-            auto pathNode = yaml["Samplers"][samplerName];
-            if (pathNode.IsNull())
+            AssetHandle textureHandle = TryDeserailize<AssetHandle>(yaml["Samplers"], samplerName, -1);
+            auto texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+            if (texture == nullptr)
             {
-                EK_CORE_TRACE("Sampler '{0}' not found in material '{1}'", samplerName, m_name);
+                EK_CORE_TRACE("Sampler '{0}' in material '{1}' failed to load texture {2}", samplerName, m_name, textureHandle);
                 continue;
             }
 
-            auto path = Path(pathNode.as<std::string>());
-            if (path.empty())
-            {
-                EK_CORE_TRACE("Sampler '{0}' in material '{1}' has an empty path", samplerName, m_name);
-                continue;
-            }
-
-            auto texPtr = Application::Get().GetMainAssetLibrary()->GetTexture(path);
-            if (texPtr == nullptr)
-            {
-                EK_CORE_TRACE("Sampler '{0}' in material '{1}' failed to load texture '{2}'", samplerName, m_name, path.string());
-                continue;
-            }
-
-            sampler.texturePath = path;
-            sampler.texture = texPtr;
+            sampler.textureHandle = textureHandle;
+            sampler.texture = texture;
 
             EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, m_name, path.string());
         }
+
+        return true;
     }
 
-
-    PushConstant::PushConstant(const PushConstant& other)
+    const std::string& Material::GetName() const
     {
-        Copy(other);
+        return m_name;
     }
-    PushConstant& PushConstant::operator=(const PushConstant& other)
+    const Ref<Shader> Material::GetShader() const
     {
-        if (this != &other)
-        {
-            this->Copy(other);
-        }
-        return *this;
+        return m_shader;
     }
-    void PushConstant::Copy(const PushConstant& other)
+    const PushConstantMap& Material::GetPushConstants() const
     {
-        dataPointers = other.dataPointers;
-        pushConstantSize = other.pushConstantSize;
-
-        if (other.pushConstantData)
-        {
-            pushConstantData = std::make_unique<char[]>(pushConstantSize);
-            std::copy(other.pushConstantData.get(), other.pushConstantData.get() + pushConstantSize, pushConstantData.get());
-        }
+        return m_pushConstants;
+    }
+    const Sampler2DMap& Material::GetSamplers() const
+    {
+        return m_samplers;
+    }
+    bool Material::IsValid() const
+    {
+        return m_shader != nullptr && m_shader->IsValid();
     }
 }

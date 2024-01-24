@@ -8,8 +8,11 @@ namespace Eklipse
 	{
 		void* data;
 		size_t size;
-		DataType type;
+		ShaderDataType type;
 	};
+
+	using PushConstantDataMap = std::unordered_map<std::string, PushConstantData>;
+
 	struct PushConstant
 	{
 		PushConstant() = default;
@@ -18,53 +21,57 @@ namespace Eklipse
 		PushConstant& operator=(const PushConstant& other);
 		void Copy(const PushConstant& other);
 
-		std::unordered_map<std::string, PushConstantData> dataPointers;
+		PushConstantDataMap dataPointers;
 		Unique<char[]> pushConstantData;
 		size_t pushConstantSize;
 	};
 	struct Sampler2D
 	{
 		uint32_t binding;
-		Path texturePath;
+		AssetHandle textureHandle;
 		Ref<Texture2D> texture;
 	};
 
-	class EK_API Material
+	using PushConstantMap = std::map<std::string, PushConstant>;
+	using Sampler2DMap = std::map<std::string, Sampler2D>;
+
+	class Material : public Asset
 	{
 	public:
 		Material() = delete;
-		Material(const Path& path, const Path& shaderPath);
+		Material(const Path& path);
+		Material(const Path& path, AssetHandle shaderHandle);
+		static Ref<Material> Create(const Path& path);
+		static Ref<Material> Create(const Path& path, AssetHandle shaderHandle);
 
 		template <typename T>
 		void SetConstant(const std::string& constantName, const std::string& memberName, const T* data, size_t size);
 
 		virtual void Bind();
-		virtual void Dispose() = 0;
-
 		virtual void ApplyChanges();
 
 		void SetShader(Ref<Shader> shader);
-		void SetShader(const Path& shaderPath);
 		void OnShaderReloaded();
-		void Serialize(const Path& path);
-		void Deserialize(const Path& path);
+		bool Serialize(const Path& path);
+		bool Deserialize(const Path& path);
 
-		inline const std::string& GetName() const { return m_name; }
-		inline const Path& GetPath() const { return m_path; }
-		inline const Ref<Shader> GetShader() const { return m_shader; }
-		inline const std::unordered_map<std::string, PushConstant>& GetPushConstants() const { return m_pushConstants; }
-		inline std::unordered_map<std::string, Sampler2D>& GetSamplers() { return m_samplers; }
-		inline bool IsValid() const { return m_shader != nullptr && m_shader->IsValid(); }
+		const std::string& GetName() const;
+		const Ref<Shader> GetShader() const;
+		const PushConstantMap& GetPushConstants() const;
+		const Sampler2DMap& GetSamplers() const;
+		bool IsValid() const;
 
-		static Ref<Material> Create(const Path& path, const Path& shaderPath);
+		static AssetType GetStaticType() { return AssetType::Material; }
+		virtual AssetType GetType() const override { return GetStaticType(); }
+
+		virtual void Dispose() = 0;
 
 	protected:
-		Ref<Shader> m_shader;
-		std::unordered_map<std::string, PushConstant> m_pushConstants{};
-		std::unordered_map<std::string, Sampler2D> m_samplers{};
-
 		std::string m_name;
-		Path m_path;
+		PushConstantMap m_pushConstants{};
+		Sampler2DMap m_samplers{};
+
+		Ref<Shader> m_shader;
 	};
 
 	template <typename T>
@@ -73,10 +80,10 @@ namespace Eklipse
 		EK_PROFILE();
 
 		EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "({0}) Push constant '{1}' not found", m_name, constantName);
-		auto& pushConstant = m_pushConstants[constantName];
+		auto& pushConstant = m_pushConstants.at(constantName);
 		EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "({0}) Push constant '{1}' member '{2}' not found", m_name, constantName, memberName);
 
-		auto& dataPointer = pushConstant.dataPointers[memberName];
+		auto& dataPointer = pushConstant.dataPointers.at(memberName);
 		EK_ASSERT(dataPointer.size == size, "({0}) Push constant '{1}' member '{2}' size mismatch. Required = {3} Given = {4}", m_name, constantName, memberName, dataPointer.size, size);
 
 		std::memcpy(dataPointer.data, data, size);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eklipse/Core/Application.h>
+#include "AssetMetadata.h"
 
 namespace Eklipse 
 {
@@ -17,5 +18,7 @@ namespace Eklipse
 		static bool IsAssetHandleValid(AssetHandle handle);
 		static bool IsAssetLoaded(AssetHandle handle);
 		static const AssetMetadata& GetMetadata(AssetHandle handle);
+
+		static const AssetMap& GetLoadedAssets();
 	};
 }

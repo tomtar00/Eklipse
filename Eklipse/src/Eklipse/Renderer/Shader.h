@@ -13,7 +13,7 @@ namespace Eklipse
 		FRAGMENT,
 		COMPUTE
 	};
-	enum class DataType
+	enum class ShaderDataType
 	{
 		NONE,
 		BOOL, 
@@ -29,7 +29,7 @@ namespace Eklipse
 		std::string name;
 		size_t size;
 		size_t offset;
-		DataType type;
+		ShaderDataType type;
 	};
 	struct ShaderUniformBuffer
 	{
@@ -78,46 +78,50 @@ namespace Eklipse
 		uint32_t maxLocation = 0;
 	};
 
-	extern ShaderStage StringToShaderStage(const std::string& stage);
-	extern std::string ShaderStageToString(ShaderStage stage);
-	extern uint32_t ShaderStageToShaderC(const ShaderStage stage);
+	ShaderStage StringToShaderStage(const std::string& stage);
+	std::string ShaderStageToString(ShaderStage stage);
+	uint32_t ShaderStageToShaderC(const ShaderStage stage);
+
+	using StageReflectionMap = std::map<ShaderStage, ShaderReflection>;
+	using StageSourceMap = std::unordered_map<ShaderStage, std::string>;
+	using StageSpirvMap = std::unordered_map<ShaderStage, std::vector<uint32_t>>;
 	
-	class EK_API Shader : public Asset
+	class Shader : public Asset
 	{
 	public:
-		static Ref<Shader> Create(const Path& filePath);
 		Shader() = delete;
 		Shader(const Path& filePath);
-		virtual ~Shader() = default;
+		static Ref<Shader> Create(const Path& filePath);
 
-		std::unordered_map<ShaderStage, std::string> Shader::Setup();
+		StageSourceMap Shader::Setup();
+		bool Recompile();
+
 		const std::string& GetName() const;
-		const std::unordered_map<ShaderStage, ShaderReflection>& GetReflections() const;
-		const ShaderReflection& GetVertexReflection() { return m_reflections[ShaderStage::VERTEX]; }
-		const ShaderReflection& GetFragmentReflection() { return m_reflections[ShaderStage::FRAGMENT]; }
+		const StageReflectionMap& GetReflections() const;
+		const ShaderReflection& GetVertexReflection();
+		const ShaderReflection& GetFragmentReflection();
+		bool IsValid() const;
+
+		static AssetType GetStaticType() { return AssetType::Shader; }
+		virtual AssetType GetType() const override { return GetStaticType(); }
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Dispose() const = 0;
 
-		inline bool Recompile();
-		inline bool IsValid() const { return m_isValid; }
-
-		static AssetType GetStaticType() { return AssetType::Shader; }
-		virtual AssetType GetType() const override { return GetStaticType(); }
-
 	protected:
+		void Reflect(const StageSpirvMap& shaderData, const std::string& shaderName);
+		bool CompileOrGetVulkanBinaries(const StageSourceMap& shaderSources, bool forceCompile);
+		StageSourceMap PreProcess(const std::string& source) const;
+
 		virtual bool Compile(bool forceCompile = false) = 0;
 		virtual const std::string GetCacheDirectoryPath() = 0;
-		bool CompileOrGetVulkanBinaries(const std::unordered_map<ShaderStage, std::string>& shaderSources, bool forceCompile);
-		std::unordered_map<ShaderStage, std::string> PreProcess(const std::string& source);
-		void Reflect(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData, const std::string& shaderName);
 
 	protected:
 		std::string m_name;
 		bool m_isValid;
 
-		std::unordered_map<ShaderStage, ShaderReflection> m_reflections;
-		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_vulkanSPIRV;
+		StageReflectionMap m_reflections;
+		StageSpirvMap m_vulkanSPIRV;
 	};
 }

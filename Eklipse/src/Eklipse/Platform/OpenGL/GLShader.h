@@ -6,19 +6,19 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		class GLShader : public Eklipse::Shader
+		class GLShader : public Shader
 		{
 		public:
 			GLShader(const Path& filePath);
+
+			uint32_t GetID() const;
 
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
 			virtual void Dispose() const override;
 
-			inline uint32_t GetID() const { return m_id; }
-
 		protected:
-			virtual const std::string GetCacheDirectoryPath() override { return "Assets/Cache/Shader/OpenGL"; }
+			virtual const std::string GetCacheDirectoryPath() override;
 			virtual bool Compile(bool forceCompile = false) override;
 
 		private:
@@ -28,8 +28,8 @@ namespace Eklipse
 		private:
 			uint32_t m_id;
 	
-			std::unordered_map<ShaderStage, std::vector<uint32_t>> m_openGLSPIRV;
-			std::unordered_map<ShaderStage, std::string> m_openGLSourceCode;
+			StageSpirvMap m_openGLSPIRV;
+			StageSourceMap m_openGLSourceCode;
 		};
 	}
 }

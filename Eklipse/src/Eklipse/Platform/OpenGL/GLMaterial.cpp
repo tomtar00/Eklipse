@@ -29,16 +29,16 @@ namespace Eklipse
 						switch (member.type)
 						{
 							//case DataType::BOOL:	glUniform1iv(location, 1, (int*)data);						break;
-							case DataType::INT:		glUniform1iv(location, 1, (int*)data);						break;
-							case DataType::INT2:	glUniform2iv(location, 1, (int*)data);						break;
-							case DataType::INT3:	glUniform3iv(location, 1, (int*)data);						break;
-							case DataType::INT4:	glUniform4iv(location, 1, (int*)data);						break;
-							case DataType::FLOAT :	glUniform1fv(location, 1, (float*)data);					break;
-							case DataType::FLOAT2:	glUniform2fv(location, 1, (float*)data);					break;
-							case DataType::FLOAT3:	glUniform3fv(location, 1, (float*)data);					break;
-							case DataType::FLOAT4:	glUniform4fv(location, 1, (float*)data);					break;
-							case DataType::MAT3:	glUniformMatrix3fv(location, 1, GL_FALSE, (float*)data);	break;
-							case DataType::MAT4:	glUniformMatrix4fv(location, 1, GL_FALSE, (float*)data);	break;
+							case ShaderDataType::INT:		glUniform1iv(location, 1, (int*)data);						break;
+							case ShaderDataType::INT2:	glUniform2iv(location, 1, (int*)data);						break;
+							case ShaderDataType::INT3:	glUniform3iv(location, 1, (int*)data);						break;
+							case ShaderDataType::INT4:	glUniform4iv(location, 1, (int*)data);						break;
+							case ShaderDataType::FLOAT :	glUniform1fv(location, 1, (float*)data);					break;
+							case ShaderDataType::FLOAT2:	glUniform2fv(location, 1, (float*)data);					break;
+							case ShaderDataType::FLOAT3:	glUniform3fv(location, 1, (float*)data);					break;
+							case ShaderDataType::FLOAT4:	glUniform4fv(location, 1, (float*)data);					break;
+							case ShaderDataType::MAT3:	glUniformMatrix3fv(location, 1, GL_FALSE, (float*)data);	break;
+							case ShaderDataType::MAT4:	glUniformMatrix4fv(location, 1, GL_FALSE, (float*)data);	break;
 							default: EK_CORE_ERROR("Unsupported uniform type: {0}", (int)member.type);
 						}
 					};
