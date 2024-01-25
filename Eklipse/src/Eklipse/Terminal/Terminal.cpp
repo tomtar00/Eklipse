@@ -3,14 +3,14 @@
 
 namespace Eklipse
 {
-	static ParsedCommand ParseCommand(const std::string& command)
+	static ParsedCommand ParseCommand(const String& command)
 	{
 		std::istringstream iss(command);
-		std::string token;
+		String token;
 
-		std::string mainCommand;
-		std::unordered_map<std::string, std::string> args;
-		std::vector<std::string> flags;
+		String mainCommand;
+		std::unordered_map<String, String> args;
+		std::vector<String> flags;
 
 		iss >> mainCommand;
 
@@ -19,10 +19,10 @@ namespace Eklipse
 			if (token[0] == '-') 
 			{
 				size_t pos = token.find('=');
-				if (pos != std::string::npos) 
+				if (pos != String::npos) 
 				{
-					std::string argName = token.substr(1, pos - 1);
-					std::string argValue = token.substr(pos + 1);
+					String argName = token.substr(1, pos - 1);
+					String argValue = token.substr(pos + 1);
 					args[argName] = argValue;
 				}
 				else 
@@ -63,7 +63,7 @@ namespace Eklipse
 	{
 		m_commands.push_back(command);
 	}
-	void Terminal::ExcecuteCommand(const std::string& command)
+	void Terminal::ExcecuteCommand(const String& command)
 	{
 		ParsedCommand parsedCommand = ParseCommand(command);
 

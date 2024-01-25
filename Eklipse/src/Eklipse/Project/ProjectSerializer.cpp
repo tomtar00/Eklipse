@@ -7,17 +7,17 @@
 #include <filesystem>
 #include <Eklipse/Renderer/Renderer.h>
 
-#define abs_to_rel(path) std::filesystem::relative(path, config.projectDir).string()
+#define abs_to_rel(path) fs::relative(path, config.projectDir).string()
 #define rel_to_abs(path) (config.projectDir / path)
 
-#define runtime_abs_to_rel(path) std::filesystem::relative(path, runtimeDir).string()
+#define runtime_abs_to_rel(path) fs::relative(path, runtimeDir).string()
 #define runtime_rel_to_abs(path) (runtimeDir / path)
 
 namespace Eklipse
 {
 	ProjectSerializer::ProjectSerializer(Ref<Project> project) : m_project(project) {}
 
-	bool ProjectSerializer::Serialize(const std::filesystem::path& filepath)
+	bool ProjectSerializer::Serialize(const Path& filepath)
 	{
 		EK_ASSERT(m_project, "Project is null!");
 		const auto& config = m_project->GetConfig();
@@ -53,7 +53,7 @@ namespace Eklipse
 
 		return true;
 	}
-	bool ProjectSerializer::Deserialize(const std::filesystem::path& filepath)
+	bool ProjectSerializer::Deserialize(const Path& filepath)
 	{
 		EK_ASSERT(m_project, "Project is null!");
 		auto& config = m_project->GetConfig();
@@ -73,19 +73,19 @@ namespace Eklipse
 		if (!projectNode)
 			return false;
 
-		TryDeserailize<std::string>(projectNode, "Name", &config.name);
-		TryDeserailize<std::string>(projectNode, "Configuration", &config.configuration);
+		TryDeserailize<String>(projectNode, "Name", &config.name);
+		TryDeserailize<String>(projectNode, "Configuration", &config.configuration);
 
 		config.projectDir						= filepath.parent_path();
 
-		config.startScenePath					= rel_to_abs(TryDeserailize<std::string>(projectNode, "StartScene", ""));
-		config.assetsDirectoryPath				= rel_to_abs(TryDeserailize<std::string>(projectNode, "AssetsDirectory", "Assets"));
-		config.scriptsDirectoryPath				= rel_to_abs(TryDeserailize<std::string>(projectNode, "ScriptsDirectory", "Scripts"));
-		config.scriptResourcesDirectoryPath		= rel_to_abs(TryDeserailize<std::string>(projectNode, "ScriptsResourcesDirectory", "Scripts/Resources"));
-		config.scriptGeneratedDirectoryPath		= rel_to_abs(TryDeserailize<std::string>(projectNode, "ScriptsGeneratedDirectory", "Scripts/Resources/Generated"));
-		config.scriptPremakeDirectoryPath		= rel_to_abs(TryDeserailize<std::string>(projectNode, "ScriptsPremakeDirectory", "Scripts/Resources/Premake"));
-		config.scriptBuildDirectoryPath			= rel_to_abs(TryDeserailize<std::string>(projectNode, "ScriptsBuildDirectory", "Scripts/Build"));
-		config.scriptsSourceDirectoryPath		= rel_to_abs(TryDeserailize<std::string>(projectNode, "ScriptsSourceDirectory", "Scripts/Source"));
+		config.startScenePath					= rel_to_abs(TryDeserailize<String>(projectNode, "StartScene", ""));
+		config.assetsDirectoryPath				= rel_to_abs(TryDeserailize<String>(projectNode, "AssetsDirectory", "Assets"));
+		config.scriptsDirectoryPath				= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsDirectory", "Scripts"));
+		config.scriptResourcesDirectoryPath		= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsResourcesDirectory", "Scripts/Resources"));
+		config.scriptGeneratedDirectoryPath		= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsGeneratedDirectory", "Scripts/Resources/Generated"));
+		config.scriptPremakeDirectoryPath		= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsPremakeDirectory", "Scripts/Resources/Premake"));
+		config.scriptBuildDirectoryPath			= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsBuildDirectory", "Scripts/Build"));
+		config.scriptsSourceDirectoryPath		= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsSourceDirectory", "Scripts/Source"));
 
 		auto rendererSettingsNode = data["RendererSettings"];
 		if (rendererSettingsNode)
@@ -96,11 +96,11 @@ namespace Eklipse
 		return true;
 	}
 
-	bool ProjectSerializer::SerializeRuntimeConfig(const RuntimeConfig& runtimeConfig, const std::filesystem::path& filepath)
+	bool ProjectSerializer::SerializeRuntimeConfig(const RuntimeConfig& runtimeConfig, const Path& filepath)
 	{
 		auto& runtimeDir = filepath.parent_path();
 		if (runtimeDir.empty())
-			runtimeDir = std::filesystem::current_path();
+			runtimeDir = fs::current_path();
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -124,7 +124,7 @@ namespace Eklipse
 
 		return true;
 	}
-	bool ProjectSerializer::DeserializeRuntimeConfig(RuntimeConfig& runtimeConfig, const std::filesystem::path& filepath)
+	bool ProjectSerializer::DeserializeRuntimeConfig(RuntimeConfig& runtimeConfig, const Path& filepath)
 	{
 		YAML::Node data;
 		try
@@ -143,11 +143,11 @@ namespace Eklipse
 		if (!configNode)
 			return false;
 
-		TryDeserailize<std::string>(configNode, "Name", &runtimeConfig.name);
-		runtimeConfig.executablePath		= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "Executable", ""));
-		runtimeConfig.assetsDirectoryPath	= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "AssetsDirectory", "Assets"));
-		runtimeConfig.scriptsLibraryPath	= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "ScriptsLibrary", ""));
-		runtimeConfig.startScenePath		= runtime_rel_to_abs(TryDeserailize<std::string>(configNode, "StartScene", ""));
+		TryDeserailize<String>(configNode, "Name", &runtimeConfig.name);
+		runtimeConfig.executablePath		= runtime_rel_to_abs(TryDeserailize<String>(configNode, "Executable", ""));
+		runtimeConfig.assetsDirectoryPath	= runtime_rel_to_abs(TryDeserailize<String>(configNode, "AssetsDirectory", "Assets"));
+		runtimeConfig.scriptsLibraryPath	= runtime_rel_to_abs(TryDeserailize<String>(configNode, "ScriptsLibrary", ""));
+		runtimeConfig.startScenePath		= runtime_rel_to_abs(TryDeserailize<String>(configNode, "StartScene", ""));
 
 		auto rendererSettingsNode = data["RendererSettings"];
 		if (rendererSettingsNode)

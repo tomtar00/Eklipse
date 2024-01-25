@@ -24,7 +24,7 @@ namespace Eklipse
 		else if (channels == 4) return ImageFormat::RGBA8;
         else 				    return ImageFormat::FORMAT_UNDEFINED;
     }
-    static bool LoadTextureFromFile(const std::filesystem::path& path, TextureData& outData)
+    static bool LoadTextureFromFile(const Path& path, TextureData& outData)
     {
         const char* pathStr = path.string().c_str();
         EK_CORE_TRACE("Loading texture from path: {0}", pathStr);
@@ -60,7 +60,7 @@ namespace Eklipse
         return true;
 	}
 
-    Texture2D::Texture2D(const std::filesystem::path& path)
+    Texture2D::Texture2D(const Path& path)
     {
         TextureData textureData{};
         if (LoadTextureFromFile(path, textureData))
@@ -82,7 +82,7 @@ namespace Eklipse
 		SetData(textureData.data, textureData.size);
     }
 
-    Ref<Texture2D> Texture2D::Create(const std::filesystem::path& path)
+    Ref<Texture2D> Texture2D::Create(const Path& path)
     {
         switch (Renderer::GetAPI())
         {

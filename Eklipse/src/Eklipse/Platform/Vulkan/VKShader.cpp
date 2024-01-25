@@ -54,6 +54,8 @@ namespace Eklipse
 
 		void VKShader::Bind() const 
 		{
+			EK_PROFILE();
+
 #if EK_DEBUG
 			if (m_isValid)
 #endif
@@ -70,121 +72,124 @@ namespace Eklipse
 			}
 		}
 
-		const std::string VKShader::GetCacheDirectoryPath()
+		const String VKShader::GetCacheDirectoryPath()
 		{
 			return "Assets/Cache/Shader/Vulkan";
 		}
 		bool VKShader::Compile(bool forceCompile)
 		{
+			EK_PROFILE();
+
+			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", m_name);
+
 			auto shaderSources = Setup();
 			bool success = true;
 
+			Timer timer;
+			success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
+			if (success)
 			{
-				Timer timer;
-				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
-				if (success)
+				// Create modules
+				auto& vertShaderCode = m_vulkanSPIRV[ShaderStage::VERTEX];
+				VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
+				VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+				vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+				vertShaderStageInfo.module = vertShaderModule;
+				vertShaderStageInfo.pName = "main";
+
+				auto& fragShaderCode = m_vulkanSPIRV[ShaderStage::FRAGMENT];
+				VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+				VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+				fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+				fragShaderStageInfo.module = fragShaderModule;
+				fragShaderStageInfo.pName = "main";
+
+				std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+
+				// Create descriptor set layout
+				std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
+				for (auto&& [stage, reflection] : m_reflections)
 				{
-					// Create modules
-					auto& vertShaderCode = m_vulkanSPIRV[ShaderStage::VERTEX];
-					VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-					VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-					vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-					vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-					vertShaderStageInfo.module = vertShaderModule;
-					vertShaderStageInfo.pName = "main";
-
-					auto& fragShaderCode = m_vulkanSPIRV[ShaderStage::FRAGMENT];
-					VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
-					VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-					fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-					fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-					fragShaderStageInfo.module = fragShaderModule;
-					fragShaderStageInfo.pName = "main";
-
-					std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
-
-					// Create descriptor set layout
-					std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
-					for (auto&& [stage, reflection] : m_reflections)
+					for (auto& uniformBuffer : reflection.uniformBuffers)
 					{
-						for (auto& uniformBuffer : reflection.uniformBuffers)
-						{
-							VkDescriptorSetLayoutBinding uboLayoutBinding{};
-							uboLayoutBinding.binding = uniformBuffer.binding;
-							uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-							uboLayoutBinding.descriptorCount = 1;
-							uboLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
-							uboLayoutBinding.pImmutableSamplers = nullptr;
-							descriptorSetLayoutBindings.push_back(uboLayoutBinding);
-						}
-						for (auto& sampler : reflection.samplers)
-						{
-							VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-							samplerLayoutBinding.binding = sampler.binding;
-							samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-							samplerLayoutBinding.descriptorCount = 1;
-							samplerLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
-							samplerLayoutBinding.pImmutableSamplers = nullptr;
-							descriptorSetLayoutBindings.push_back(samplerLayoutBinding);
-						}
+						VkDescriptorSetLayoutBinding uboLayoutBinding{};
+						uboLayoutBinding.binding = uniformBuffer.binding;
+						uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+						uboLayoutBinding.descriptorCount = 1;
+						uboLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
+						uboLayoutBinding.pImmutableSamplers = nullptr;
+						descriptorSetLayoutBindings.push_back(uboLayoutBinding);
 					}
-
-					m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
-
-					std::vector<VkPushConstantRange> pushConstantRanges;
-					for (auto&& [stage, reflection] : m_reflections)
+					for (auto& sampler : reflection.samplers)
 					{
-						for (auto& pushConstant : reflection.pushConstants)
-						{
-							VkPushConstantRange range{};
-							range.offset = 0;
-							range.size = pushConstant.size;
-							range.stageFlags = VKShaderStageFromInternalStage(stage);
-
-							pushConstantRanges.push_back(range);
-						}
+						VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+						samplerLayoutBinding.binding = sampler.binding;
+						samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						samplerLayoutBinding.descriptorCount = 1;
+						samplerLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
+						samplerLayoutBinding.pImmutableSamplers = nullptr;
+						descriptorSetLayoutBindings.push_back(samplerLayoutBinding);
 					}
-
-					// Create pipeline layout
-					m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout }, pushConstantRanges);
-
-					// Create pipeline
-					size_t inputSize = 0;
-					for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
-						inputSize += vertexReflection.size;
-
-					std::vector<VkVertexInputBindingDescription> bindingDescription;
-					VkVertexInputBindingDescription vertexInputDescription{};
-					vertexInputDescription.binding = 0;
-					vertexInputDescription.stride = inputSize;
-					vertexInputDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-					bindingDescription.push_back(vertexInputDescription);
-
-					std::vector<VkVertexInputAttributeDescription> attributeDescription;
-					for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
-					{
-						VkVertexInputAttributeDescription attribute{};
-						attribute.binding = 0;
-						attribute.location = vertexReflection.location;
-						attribute.format = VertexInputSizeToVKFormat(vertexReflection.size);
-						attribute.offset = vertexReflection.offset;
-						attributeDescription.push_back(attribute);
-					}
-
-					if (g_VKSceneFramebuffer == nullptr)
-					{
-						m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKDefaultFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
-					}
-					else
-						m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKSceneFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
-
-					vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
-					vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
-
-					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
 				}
-				else EK_CORE_ERROR("Shader {0} compilation failed", Handle);
+
+				m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
+
+				std::vector<VkPushConstantRange> pushConstantRanges;
+				for (auto&& [stage, reflection] : m_reflections)
+				{
+					for (auto& pushConstant : reflection.pushConstants)
+					{
+						VkPushConstantRange range{};
+						range.offset = 0;
+						range.size = pushConstant.size;
+						range.stageFlags = VKShaderStageFromInternalStage(stage);
+
+						pushConstantRanges.push_back(range);
+					}
+				}
+
+				// Create pipeline layout
+				m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout }, pushConstantRanges);
+
+				// Create pipeline
+				size_t inputSize = 0;
+				for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
+					inputSize += vertexReflection.size;
+
+				std::vector<VkVertexInputBindingDescription> bindingDescription;
+				VkVertexInputBindingDescription vertexInputDescription{};
+				vertexInputDescription.binding = 0;
+				vertexInputDescription.stride = inputSize;
+				vertexInputDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+				bindingDescription.push_back(vertexInputDescription);
+
+				std::vector<VkVertexInputAttributeDescription> attributeDescription;
+				for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
+				{
+					VkVertexInputAttributeDescription attribute{};
+					attribute.binding = 0;
+					attribute.location = vertexReflection.location;
+					attribute.format = VertexInputSizeToVKFormat(vertexReflection.size);
+					attribute.offset = vertexReflection.offset;
+					attributeDescription.push_back(attribute);
+				}
+
+				if (g_VKSceneFramebuffer == nullptr)
+				{
+					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKDefaultFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
+				}
+				else
+					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKSceneFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
+
+				vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
+				vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
+
+				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
 			}
+			else EK_CORE_ERROR("Shader {0} compilation failed", Handle);
+			
 			return success;
 		}
 	}

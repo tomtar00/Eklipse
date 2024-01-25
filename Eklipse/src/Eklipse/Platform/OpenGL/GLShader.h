@@ -18,7 +18,7 @@ namespace Eklipse
 			virtual void Dispose() const override;
 
 		protected:
-			virtual const std::string GetCacheDirectoryPath() override;
+			virtual const String GetCacheDirectoryPath() override;
 			virtual bool Compile(bool forceCompile = false) override;
 
 		private:

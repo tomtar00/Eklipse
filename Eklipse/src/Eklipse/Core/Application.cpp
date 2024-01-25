@@ -14,12 +14,6 @@ namespace Eklipse
 	{
 		EK_ASSERT(s_instance == nullptr, "Application already exists!");
 		s_instance = this;
-
-		m_assetLibrary = CreateRef<AssetLibrary>();
-
-		// TODO: if terminal is enabled, add the terminal sink to the log
-		Log::AddCoreSink(m_terminalPanel.GetTerminal()->GetSink());
-		Log::AddClientSink(m_terminalPanel.GetTerminal()->GetSink());
 	}
 	Application::~Application()
 	{
@@ -53,18 +47,11 @@ namespace Eklipse
 			m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
 			OnInitAPI(Renderer::GetAPI());
-		} while (!Renderer::Init());
+		} 
+		while (!Renderer::Init());
+
 		OnAPIHasInitialized(Renderer::GetAPI());
-		
-		if (Project::GetActive())
-			Project::GetActive()->LoadAssets();
-		m_assetLibrary->Load("Assets");
-
 		Renderer::InitParameters();
-
-		// Apply all components in the active scene - TODO: refactor
-		if (m_activeScene)
-			m_activeScene->ApplyAllComponents();
 
 		EK_PROFILE_END();
 	}
@@ -74,15 +61,9 @@ namespace Eklipse
 
 		Renderer::WaitDeviceIdle();
 
-		if (Project::GetActive())
-			Project::GetActive()->UnloadAssets();
-		m_assetLibrary->Unload();
-
 		OnShutdownAPI();
 		Renderer::Shutdown();
 		OnAPIHasShutdown();
-
-		//m_window->Shutdown();
 	}
 
 	// === Frame Management ===
@@ -100,6 +81,16 @@ namespace Eklipse
 		Stats::Get().Update(deltaTime);
 		EK_PROFILE_END_FRAME(deltaTime);
 	}
+
+	// === Getters ===
+	Application& Application::Get()									{ return *s_instance; }
+	const ApplicationInfo& Application::GetInfo() const				{ return m_appInfo; }
+	const Ref<Window> Application::GetWindow() const				{ return m_window; }
+	const bool Application::IsRunning() const						{ return m_running; }
+	const bool Application::ShouldQuit() const						{ return m_quit; }
+	const bool Application::IsMinimized() const						{ return m_minimized; }
+
+	// === Setters ===
 	void Application::SetAPI(ApiType api)
 	{
 		if (Renderer::GetAPI() == api)
@@ -114,23 +105,6 @@ namespace Eklipse
 		m_running = false;
 		m_quit = false;
 	}
-
-	// === Getters ===
-	Application& Application::Get()									{ return *s_instance; }
-	const ApplicationInfo& Application::GetInfo() const				{ return m_appInfo; }
-	const Ref<Window> Application::GetWindow() const				{ return m_window; }
-	const Ref<AssetLibrary> Application::GetAssetLibrary() const	{ return m_assetLibrary; }
-	const Ref<Scene> Application::GetActiveScene() const			{ return m_activeScene; }
-	const bool Application::IsRunning() const						{ return m_running; }
-	const bool Application::ShouldQuit() const						{ return m_quit; }
-	const bool Application::IsMinimized() const						{ return m_minimized; }
-	DebugPanel& Application::GetDebugPanel()						{ return m_debugPanel; }
-	TerminalPanel& Application::GetTerminalPanel()					{ return m_terminalPanel; }
-	ScriptLinker& Application::GetScriptLinker()					{ return m_scriptLinker; }
-	Unique<Terminal>& Application::GetTerminal()					{ return m_terminalPanel.GetTerminal(); }
-
-	// === Setters ===
-	void Application::SetActiveScene(Ref<Scene> scene)				{ m_activeScene = scene; }
 
 	// === Event Handling ===
 	void Application::OnEventReceived(Event& event)
@@ -189,18 +163,6 @@ namespace Eklipse
 	void Application::OnMouseScroll(MouseScrolledEvent& event)
 	{
 		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
-	}
-
-	void Application::SwitchScene(Ref<Scene> scene)
-	{
-		m_activeScene.reset();
-		m_activeScene = scene;
-	}
-	const Ref<AssetLibrary> Application::GetMainAssetLibrary() const
-	{
-		if (Project::GetActive())
-			return Project::GetActive()->GetAssetLibrary();
-		return m_assetLibrary;
 	}
 
 	// === Main Loop ===
@@ -271,7 +233,7 @@ namespace Eklipse
 		m_layerStack.PopOverlay(overlay);
 	}
 
-	// === Queues ===
+	// === Fucntion Queues ===
 	void Application::SubmitToMainThread(const std::function<void()>& function)
 	{
 		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);

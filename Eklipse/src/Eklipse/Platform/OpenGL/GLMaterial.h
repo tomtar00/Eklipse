@@ -6,11 +6,11 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		class GLMaterial : public Eklipse::Material
+		class GLMaterial : public Material
 		{
 		public:
-			GLMaterial(const Path& path, const Path& shaderPath);
-			virtual ~GLMaterial() = default;
+			GLMaterial(const Path& path);
+			GLMaterial(const Path& path, AssetHandle shaderHandle);
 
 			virtual void Bind() override;
 			virtual void Dispose() override;

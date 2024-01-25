@@ -27,7 +27,7 @@ namespace Eklipse
 	}
 
 
-	void ScriptComponent::SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity)
+	void ScriptComponent::SetScript(const String& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity)
 	{
 		EK_CORE_TRACE("Creating script '{0}'", name);
 

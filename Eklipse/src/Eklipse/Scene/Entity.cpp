@@ -8,7 +8,7 @@ namespace Eklipse
 	{
 		return GetComponent<IDComponent>().ID;
 	}
-	std::string Entity::GetName()
+	String Entity::GetName()
 	{
 		return GetComponent<NameComponent>().name;
 	}

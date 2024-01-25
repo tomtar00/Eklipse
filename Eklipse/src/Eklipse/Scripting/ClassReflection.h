@@ -4,12 +4,12 @@ namespace Eklipse
 {
 	struct ClassMemberReflection
 	{
-		std::string memberName;
-		std::string memberType;
+		String memberName;
+		String memberType;
 	};
 	struct ClassReflection
 	{
-		std::string className;
+		String className;
 		std::vector<ClassMemberReflection> members;
 	};
 }

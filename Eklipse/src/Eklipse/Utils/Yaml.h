@@ -202,14 +202,14 @@ namespace Eklipse
     YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec4& v);
 
     template<typename T>
-    void TryDeserailize(const YAML::Node& node, const std::string& key, T* value)
+    void TryDeserailize(const YAML::Node& node, const String& key, T* value)
 	{
 		if (node[key])
 			*value = node[key].as<T>();
         else EK_CORE_WARN("Could not find key {0} in node {1}", key, node.Tag());
     }
     template<typename T>
-    T TryDeserailize(const YAML::Node& node, const std::string& key, T defaultValue)
+    T TryDeserailize(const YAML::Node& node, const String& key, T defaultValue)
     {
         if (node[key])
 			return node[key].as<T>();

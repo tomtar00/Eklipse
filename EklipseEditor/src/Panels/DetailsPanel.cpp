@@ -9,7 +9,7 @@
 
 namespace Eklipse
 {
-	void DetailsPanel::Setup(std::string& name)
+	void DetailsPanel::Setup(String& name)
 	{
 		m_entityNameBuffer = name;
 	}
@@ -175,8 +175,8 @@ namespace Eklipse
 							ImGui::DragInt(name.c_str(), scriptComp->GetScriptValue<int>(member.offset));
 						else if (member.type == "float")
 							ImGui::DragFloat(name.c_str(), scriptComp->GetScriptValue<float>(member.offset));
-						else if (member.type == "std::string")
-							ImGui::InputText(name.c_str(), scriptComp->GetScriptValue<std::string>(member.offset));
+						else if (member.type == "String")
+							ImGui::InputText(name.c_str(), scriptComp->GetScriptValue<String>(member.offset));
 						else if (member.type == "glm::vec2")
 							ImGui::DragFloat2(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(member.offset)));
 						else if (member.type == "glm::vec3")

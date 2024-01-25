@@ -1,11 +1,15 @@
 #include "precompiled.h"
 #include "ScriptManager.h"
+#include "ScriptParser.h"
+
 #include <Eklipse/Project/Project.h>
 #include <Eklipse/Assets/AssetManager.h>
+#include <Eklipse/Scene/SceneManager.h>
 
 namespace Eklipse
 {
-	ScriptManager::ScriptManager(ScriptManagerSettings* settings) : m_settings(settings), m_state(ScriptsState::NONE) {}
+	ScriptManager::ScriptManager(Ref<ScriptLinker> scriptLinker, ScriptManagerSettings* settings) 
+		: m_scriptLinker(scriptLinker), m_settings(settings), m_state(ScriptsState::NONE) {}
 
 	void ScriptManager::Load()
 	{
@@ -17,10 +21,10 @@ namespace Eklipse
 		SetState(ScriptsState::NONE);
 
 		auto& libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
-		if (std::filesystem::exists(libraryPath) && Application::Get().GetScriptLinker().LinkScriptLibrary(libraryPath))
+		if (fs::exists(libraryPath) && m_scriptLinker->LinkScriptLibrary(libraryPath))
 		{
 			auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
-			Application::Get().GetScriptLinker().FetchScriptClasses(classReflections);
+			m_scriptLinker->FetchScriptClasses(classReflections);
 			StartWatchingSource();
 		}
 		else
@@ -33,23 +37,23 @@ namespace Eklipse
 	void ScriptManager::Unload()
 	{
 		StopWatchingSource();
-		Application::Get().GetScriptLinker().UnlinkScriptLibrary();
+		m_scriptLinker->UnlinkScriptLibrary();
 	}
 
 	void ScriptManager::StartWatchingSource()
 	{
-		std::string sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
+		String sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
 		EK_CORE_DBG("ScriptManager::StartWatchingSource: {0}", sourcePath);
 
-		m_sourceWatcher = CreateUnique<filewatch::FileWatch<std::string>>(sourcePath, CAPTURE_FN(OnSourceWatchEvent));
+		m_sourceWatcher = CreateUnique<filewatch::FileWatch<String>>(sourcePath, CAPTURE_FN(OnSourceWatchEvent));
 	}
 	void ScriptManager::StopWatchingSource()
 	{
 		m_sourceWatcher.reset();
 	}
-	void ScriptManager::OnSourceWatchEvent(const std::string& path, filewatch::Event change_type)
+	void ScriptManager::OnSourceWatchEvent(const String& path, filewatch::Event change_type)
 	{
-		std::string extension = std::filesystem::path(path).extension().string();
+		String extension = Path(path).extension().string();
 		if (extension != ".h" && extension != ".hpp" && extension != ".cpp")
 			return;
 
@@ -59,31 +63,31 @@ namespace Eklipse
 		EK_CORE_TRACE("ScriptManager::OnSourceWatchEvent: {0}", path);
 		SetState(ScriptsState::NEEDS_RECOMPILATION);
 
-		if (Application::Get().GetActiveScene()->GetState() != SceneState::RUNNING)
+		if (SceneManager::GetActiveScene()->GetState() != SceneState::RUNNING)
 			Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
 	}
 
-	bool ScriptManager::GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath)
+	bool ScriptManager::GenerateFactoryFile(const Path& targetDirectoryPath)
 	{
 		EK_CORE_TRACE("Generating script factory file at path: {0}", targetDirectoryPath.string());
 
-		if (!std::filesystem::exists(targetDirectoryPath))
-			std::filesystem::create_directories(targetDirectoryPath);
+		if (!fs::exists(targetDirectoryPath))
+			fs::create_directories(targetDirectoryPath);
 
 		std::ofstream factoryFile(targetDirectoryPath / "ScriptFactory.cpp");
 		factoryFile << "#include <ScriptAPI/Reflections.h>\n";
 
 		// include all script headers
 		auto& scriptsSourceDirPath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath;
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(scriptsSourceDirPath))
+		for (const auto& entry : fs::recursive_directory_iterator(scriptsSourceDirPath))
 		{
 			if (entry.is_directory())
 				continue;
 
-			std::string fileExtension = entry.path().extension().string();
+			String fileExtension = entry.path().extension().string();
 			if (fileExtension == ".h" || fileExtension == ".hpp")
 			{
-				factoryFile << "#include \"" << std::filesystem::relative(entry.path(), scriptsSourceDirPath.parent_path()).string() << "\"\n";
+				factoryFile << "#include \"" << fs::relative(entry.path(), scriptsSourceDirPath.parent_path()).string() << "\"\n";
 			}
 		}
 
@@ -98,7 +102,7 @@ namespace Eklipse
 
 		factoryFile << "\n";
 
-		if (Application::Get().GetScriptLinker().HasAnyScriptClasses())
+		if (m_scriptLinker->HasAnyScriptClasses())
 		{
 			EK_CORE_WARN("No script classes found!");
 			return false;
@@ -107,7 +111,7 @@ namespace Eklipse
 		factoryFile << "extern \"C\"\n";
 		factoryFile << "{\n";
 
-		for (const auto& [className, classInfo] : Application::Get().GetScriptLinker().GetScriptClasses())
+		for (const auto& [className, classInfo] : m_scriptLinker->GetScriptClasses())
 		{
 			factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
 			factoryFile << "\t" << "{\n";
@@ -122,56 +126,56 @@ namespace Eklipse
 
 		return true;
 	}
-	void ScriptManager::RunPremake(const std::filesystem::path& premakeDirPath)
+	void ScriptManager::RunPremake(const Path& premakeDirPath)
 	{
 		EK_CORE_TRACE("Running premake5.lua at path '{}'", premakeDirPath.string());
 
 		auto premakeLuaFilePath = premakeDirPath / "premake5.lua";
-		EK_ASSERT(std::filesystem::exists(premakeLuaFilePath), "Premake5.lua file does not exist!");
-		std::filesystem::path currentPath = std::filesystem::current_path();
-		EK_ASSERT(std::filesystem::exists(currentPath / "Resources/Scripting/Premake/premake5.exe"), "Premake5 executable does not exist!");
+		EK_ASSERT(fs::exists(premakeLuaFilePath), "Premake5.lua file does not exist!");
+		Path currentPath = fs::current_path();
+		EK_ASSERT(fs::exists(currentPath / "Resources/Scripting/Premake/premake5.exe"), "Premake5 executable does not exist!");
 
 #ifdef EK_PLATFORM_WINDOWS
-		std::string command = "cd " + (currentPath / "Resources\\Scripting\\Premake").string() + " && premake5.exe vs2022 --file=" + premakeLuaFilePath.string();
+		String command = "cd " + (currentPath / "Resources\\Scripting\\Premake").string() + " && premake5.exe vs2022 --file=" + premakeLuaFilePath.string();
 #elif defined(EK_PLATFORM_LINUX)
-		std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 gmake2 --file=" + premakeLuaFilePath.string();
+		String command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 gmake2 --file=" + premakeLuaFilePath.string();
 #elif defined(EK_PLATFORM_MACOS)
-		std::string command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 xcode4 --file=" + premakeLuaFilePath.string();
+		String command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 xcode4 --file=" + premakeLuaFilePath.string();
 #endif
 
 		EK_CORE_DBG("Running command: {0}", command);
 		int res = system(command.c_str());
 		EK_ASSERT(res == 0, "Failed to run premake5.lua!");
 	}
-	void ScriptManager::CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration)
+	void ScriptManager::CompileScripts(const Path& sourceDirectoryPath, const String& configuration)
 	{
 		EK_CORE_TRACE("Compiling scripts...");
 
-		std::string configuration_ = configuration;
+		String configuration_ = configuration;
 		if (configuration_.empty() || (configuration_ != "Debug" && configuration_ != "Release" && configuration_ != "Dist"))
 		{
 			configuration_ = Project::GetActive()->GetConfig().configuration;
 			EK_CORE_WARN("Invalid configuration: {0}. Using default configuration: {1}", configuration, configuration_);
 		}
 
-		EK_ASSERT(std::filesystem::exists(sourceDirectoryPath), "Source directory does not exist!");
+		EK_ASSERT(fs::exists(sourceDirectoryPath), "Source directory does not exist!");
 		SetState(ScriptsState::COMPILING);
-		std::string command;
+		String command;
 
 		auto& config = Project::GetActive()->GetConfig();
 		auto& projectDirectoryPath = Project::GetActive()->GetProjectDirectory();
 
 #ifdef EK_PLATFORM_WINDOWS
 
-		std::string msBuildLocation = m_settings->MsBuildPath;
-		if (msBuildLocation.empty() || !std::filesystem::is_regular_file(msBuildLocation))
+		Path msBuildLocation = m_settings->MsBuildPath;
+		if (msBuildLocation.empty() || !fs::is_regular_file(msBuildLocation))
 		{
 			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation);
 			SetState(ScriptsState::COMPILATION_FAILED);
 			return;
 		}
-		std::string solutionLocation = (projectDirectoryPath / (config.name + "-Scripts.sln")).string();
-		command = msBuildLocation + " /m /p:Configuration=" + configuration_ + " " + solutionLocation;
+		String solutionLocation = (projectDirectoryPath / (config.name + "-Scripts.sln")).string();
+		command = msBuildLocation.string() + " /m /p:Configuration=" + configuration_ + " " + solutionLocation;
 
 #elif defined(EK_PLATFORM_LINUX)
 		#error Linux compilation not implemented yet
@@ -197,18 +201,17 @@ namespace Eklipse
 			default:									m_stateString = "UNKNOWN";					break;
 		}
 		EK_CORE_TRACE("ScriptModule state changed to {0}", m_stateString);
-		//m_lastStateChangeTime = Timer::Now();
 	}
 	void ScriptManager::RecompileAll()
 	{
 		EK_CORE_INFO("Recompiling scripts...");
 
 		auto& config = Project::GetActive()->GetConfig();
-		auto& activeScene = Application::Get().GetActiveScene();
+		auto& activeScene = SceneManager::GetActiveScene();
 
 		auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
 
-		auto& scenePath = AssetManager::GetMetadata(activeScene->Handle).FilePath;
+		Path scenePath = AssetManager::GetMetadata(activeScene->Handle).FilePath;
 		Scene::Save(activeScene, scenePath);
 		activeScene->DestroyAllScripts();
 
@@ -220,10 +223,10 @@ namespace Eklipse
 			RunPremake(config.scriptPremakeDirectoryPath);
 			CompileScripts(config.scriptsSourceDirectoryPath, config.configuration);
 
-			auto& libraryPath = Application::Get().GetScriptLinker().GetLibraryPath();
-			if (std::filesystem::exists(libraryPath) && Application::Get().GetScriptLinker().LinkScriptLibrary(libraryPath))
+			auto& libraryPath = m_scriptLinker->GetLibraryPath();
+			if (fs::exists(libraryPath) && m_scriptLinker->LinkScriptLibrary(libraryPath))
 			{
-				Application::Get().GetScriptLinker().FetchScriptClasses(classReflections);
+				m_scriptLinker->FetchScriptClasses(classReflections);
 			}
 			else
 			{

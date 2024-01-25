@@ -3,62 +3,59 @@
 
 namespace Eklipse
 {
-	using Path = std::filesystem::path;
-	namespace fs = std::filesystem;
-
 	/*class EK_API Path
 	{
 	public:
 		Path() = default;
 		Path(const char* path);
-		Path(const std::string& path);
-		Path(const std::filesystem::path& path);
+		Path(const String& path);
+		Path(const Path& path);
 
 		bool IsValid() const;
-		bool IsValid(const std::vector<std::string> requiredExtensions) const;
-		void Parse(const std::string& path);
+		bool IsValid(const std::vector<String> requiredExtensions) const;
+		void Parse(const String& path);
 		void ParseSelf();
 
 		const bool IsCurrentlyValid() const { return m_isCurrentlyValid; }
 		void SetCurrentlyValid(bool value) { m_isCurrentlyValid = value; }
 
-		std::string* rdbuf() { return &m_path; }
+		String* rdbuf() { return &m_path; }
 		uint32_t size() const { return m_path.size(); }
 		const bool empty() const { return m_path.empty(); }
 		const char* c_str() const { return m_path.c_str(); }
 		const char* full_c_str() const { return m_fullPath.c_str(); }
-		const std::string& string() const { return m_path; }
-		const std::string& full_string() const { return m_fullPath; }
-		std::filesystem::path path() const { return std::filesystem::path(m_path); }
-		std::filesystem::path full_path() const { return std::filesystem::path(m_fullPath); }
+		const String& string() const { return m_path; }
+		const String& full_string() const { return m_fullPath; }
+		Path path() const { return Path(m_path); }
+		Path full_path() const { return Path(m_fullPath); }
 
 		operator const char*() const { return c_str(); }
-		operator std::string() const { return string(); }
-		operator std::filesystem::path() const { return full_path(); }
+		operator String() const { return string(); }
+		operator Path() const { return full_path(); }
 
 		bool operator==(const Path& other) const		{ return m_fullPath == other.m_fullPath || m_path == other.m_path; }	
 		bool operator==(const char* other) const		{ return m_fullPath == other || m_path == other; }
-		bool operator==(const std::string other) const	{ return m_fullPath == other || m_path == other; }
+		bool operator==(const String other) const	{ return m_fullPath == other || m_path == other; }
 
 		bool operator!=(const Path& other) const		{ return !(*this == other); }
 		bool operator!=(const char* other) const		{ return !(*this == other); }
-		bool operator!=(const std::string other) const	{ return !(*this == other); }
+		bool operator!=(const String other) const	{ return !(*this == other); }
 
 		Path operator+(const Path& other) const			{ return m_path + other.m_path; }
 		Path operator/(const Path& other) const			{ return m_path + "/" + other.m_path; }
 
 	private:
-		std::string m_path;
-		std::string m_fullPath;
+		String m_path;
+		String m_fullPath;
 		bool m_isCurrentlyValid = false;
 	};*/
 
 	bool IsPathFile(const Path& path);
-	bool IPathsDirectory(const Path& path);
+	bool IsPathDirectory(const Path& path);
 	bool IsPathValid(const Path& path);
-	bool IsPathValid(const Path& path, std::vector<std::string> extensions);
+	bool IsPathValid(const Path& path, std::vector<String> extensions);
 
-	std::string ReadFileFromPath(const Path& filePath);
+	String ReadFileFromPath(const Path& filePath);
 	void CopyFileContent(const Path& destination, const Path& source);
 
 	enum class FileDialogResultType
@@ -72,7 +69,7 @@ namespace Eklipse
 		FileDialogResultType type;
 		Path path;
 	};
-	FileDialogResult OpenFileDialog(const std::vector<std::string>& extensions);
+	FileDialogResult OpenFileDialog(const std::vector<String>& extensions);
 	FileDialogResult OpenFileDialog();
 	FileDialogResult OpenDirDialog();
 }

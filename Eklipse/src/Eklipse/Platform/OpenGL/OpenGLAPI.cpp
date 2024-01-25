@@ -81,8 +81,8 @@ namespace Eklipse
 
 				Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
 				BufferLayout layout = {
-					{ "inPos",			ShaderDataType::Float2,		false },
-					{ "inTexCoords",	ShaderDataType::Float2,		false },
+					{ "inPos",			ShaderDataType::FLOAT2,		false },
+					{ "inTexCoords",	ShaderDataType::FLOAT2,		false },
 				};
 				vertexBuffer->SetLayout(layout);
 
@@ -134,12 +134,12 @@ namespace Eklipse
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-			auto& spriteShader = Eklipse::Application::Get().GetAssetLibrary()->GetShader("Assets/Shaders/Default2D.eksh");
+			auto& spriteShader = Application::Get().GetAssetLibrary()->GetShader("Assets/Shaders/Default2D.eksh");
 			spriteShader->Bind();
 			glDisable(GL_DEPTH_TEST);
 			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);
 			glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
-			Eklipse::RenderCommand::DrawIndexed(m_vertexArray);
+			RenderCommand::DrawIndexed(m_vertexArray);
 			glBindTexture(GL_TEXTURE_2D, 0);
 
 			Application::Get().GetWindow()->SwapBuffers();

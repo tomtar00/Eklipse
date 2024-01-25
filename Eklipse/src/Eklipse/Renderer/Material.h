@@ -11,7 +11,7 @@ namespace Eklipse
 		ShaderDataType type;
 	};
 
-	using PushConstantDataMap = std::unordered_map<std::string, PushConstantData>;
+	using PushConstantDataMap = std::unordered_map<String, PushConstantData>;
 
 	struct PushConstant
 	{
@@ -32,8 +32,8 @@ namespace Eklipse
 		Ref<Texture2D> texture;
 	};
 
-	using PushConstantMap = std::map<std::string, PushConstant>;
-	using Sampler2DMap = std::map<std::string, Sampler2D>;
+	using PushConstantMap = std::map<String, PushConstant>;
+	using Sampler2DMap = std::map<String, Sampler2D>;
 
 	class Material : public Asset
 	{
@@ -45,7 +45,7 @@ namespace Eklipse
 		static Ref<Material> Create(const Path& path, AssetHandle shaderHandle);
 
 		template <typename T>
-		void SetConstant(const std::string& constantName, const std::string& memberName, const T* data, size_t size);
+		void SetConstant(const String& constantName, const String& memberName, const T* data, size_t size);
 
 		virtual void Bind();
 		virtual void ApplyChanges();
@@ -55,7 +55,7 @@ namespace Eklipse
 		bool Serialize(const Path& path);
 		bool Deserialize(const Path& path);
 
-		const std::string& GetName() const;
+		const String& GetName() const;
 		const Ref<Shader> GetShader() const;
 		const PushConstantMap& GetPushConstants() const;
 		const Sampler2DMap& GetSamplers() const;
@@ -67,7 +67,7 @@ namespace Eklipse
 		virtual void Dispose() = 0;
 
 	protected:
-		std::string m_name;
+		String m_name;
 		PushConstantMap m_pushConstants{};
 		Sampler2DMap m_samplers{};
 
@@ -75,7 +75,7 @@ namespace Eklipse
 	};
 
 	template <typename T>
-	inline void Material::SetConstant(const std::string& constantName, const std::string& memberName, const T* data, size_t size)
+	inline void Material::SetConstant(const String& constantName, const String& memberName, const T* data, size_t size)
 	{
 		EK_PROFILE();
 

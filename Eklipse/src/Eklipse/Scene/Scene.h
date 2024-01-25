@@ -36,8 +36,8 @@ namespace Eklipse
 		// Scene
 		static Ref<Scene> New();
 		static Ref<Scene> Copy(Ref<Scene> other);
-		static Ref<Scene> Load(const std::filesystem::path& filePath);
-		static void Save(Ref<Scene> scene, const std::filesystem::path& filePath);
+		static Ref<Scene> Load(const Path& filePath);
+		static void Save(Ref<Scene> scene, const Path& filePath);
 
 		// Scripts
 		void DestroyAllScripts();
@@ -47,24 +47,24 @@ namespace Eklipse
 		void ApplyAllComponents();
 
 		// Entity
-		Entity CreateEntity(const std::string& name = "");
-		Entity CreateEntity(UUID uuid, const std::string& name = "");
+		Entity CreateEntity(const String& name = "");
+		Entity CreateEntity(UUID uuid, const String& name = "");
 		Entity GetEntity(UUID uuid);
 		void DestroyEntity(Entity entity);	
 
 		// Serialization
-		bool Serialize(const std::filesystem::path& filePath);
+		bool Serialize(const Path& filePath);
 		bool SerializeEntity(Entity entity, YAML::Emitter& out);
-		bool Deserialize(const std::filesystem::path& filePath);
+		bool Deserialize(const Path& filePath);
 		bool DeserializeEntity(YAML::Node& entityNode);
-		bool DeserializeEveryScriptProperties(const std::filesystem::path& filePath);
+		bool DeserializeEveryScriptProperties(const Path& filePath);
 		bool DeserializeScriptProperties(Entity entity, YAML::Node& propertiesNode);
 
 		// Getters
 		Camera* GetMainCamera() { return m_mainCamera; }
 		Transform* GetMainCameraTransform() { return m_mainCameraTransform; }
 		entt::registry& GetRegistry() { return m_registry; }
-		const std::string& GetName() const { return m_name; }
+		const String& GetName() const { return m_name; }
 		SceneState GetState() const { return m_state; }
 
 		// Helpers
@@ -76,7 +76,7 @@ namespace Eklipse
 		virtual AssetType GetType() const override { return GetStaticType(); }
 
 	private:
-		std::string m_name;
+		String m_name;
 		SceneState m_state;
 
 		entt::registry m_registry;

@@ -32,7 +32,7 @@ namespace Eklipse
 
 		virtual EventType GetEventType() const = 0;
 		virtual int GetCategoryFlags() const = 0;
-		virtual std::string ToString() const { return typeid(this).name(); }
+		virtual String ToString() const { return typeid(this).name(); }
 
 		bool IsInCategory(EventCategory category) const
 		{

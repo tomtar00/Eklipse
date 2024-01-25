@@ -14,13 +14,15 @@ namespace Eklipse
 	{
 		EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
 		s_instance = this;
+	}
 
+	// === Layer ===
+	void EditorLayer::OnAttach()
+	{
 		m_editorCamera.m_farPlane = 1000.0f;
 		m_editorCamera.m_nearPlane = 0.1f;
 		m_editorCamera.m_fov = 45.0f;
-	}
-	void EditorLayer::OnAttach()
-	{
+
 		m_guiLayerCreateInfo.enabled = &m_guiEnabled;
 		m_guiLayerCreateInfo.menuBarEnabled = true;
 		m_guiLayerCreateInfo.dockingEnabled = true;
@@ -45,13 +47,19 @@ namespace Eklipse
 			&m_profilerPanel,
 			&m_viewPanel,
 			&m_filesPanel,
-			&Application::Get().GetDebugPanel(),
-			&Application::Get().GetTerminalPanel()
+			&m_debugPanel,
+			&m_terminalPanel
 		};
 
 		m_editorScene = CreateRef<Scene>();
 		m_entitiesPanel.SetContext(m_editorScene);
-		Application::Get().SwitchScene(m_editorScene);
+		SceneManager::SetActiveScene(m_editorScene);
+
+		Ref<ScriptLinker> scriptLinker = CreateRef<ScriptLinker>();
+		m_scriptManager = CreateRef<ScriptManager>(scriptLinker, &m_settings.ScriptManagerSettings);
+
+		Log::AddCoreSink(m_terminalPanel.GetTerminal()->GetSink());
+		Log::AddClientSink(m_terminalPanel.GetTerminal()->GetSink());
 
 		DeserializeSettings();
 		EK_TRACE("Editor layer attached");
@@ -84,12 +92,12 @@ namespace Eklipse
 			static glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 			static glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			if (Input::IsKeyDown(KeyCode::F))
+			if (Input::IsKeyDown(F))
 			{
-				if (GetSelection().type == SelectionType::ENTITY)
-					targetPosition = GetSelection().entity.GetComponent<TransformComponent>().transform.position;
+				if (SelectionInfo.type == SelectionType::ENTITY)
+					targetPosition = SelectionInfo.entity.GetComponent<TransformComponent>().transform.position;
 			}
-			else if (Input::IsMouseButtonDown(MouseCode::Button1))
+			else if (Input::IsMouseButtonDown(Button1))
 			{
 				float mouseXDelta = -Input::GetMouseDeltaX();
 				float mouseYDelta = Input::GetMouseDeltaY();
@@ -98,7 +106,7 @@ namespace Eklipse
 				pitch = glm::clamp(pitch, -89.0f, 89.0f);
 				yaw -= mouseXDelta * deltaTime * 100.f;
 			}
-			else if (Input::IsMouseButtonDown(MouseCode::Button2))
+			else if (Input::IsMouseButtonDown(Button2))
 			{
 				float mouseXDelta = Input::GetMouseDeltaX();
 				float mouseYDelta = -Input::GetMouseDeltaY();
@@ -123,15 +131,15 @@ namespace Eklipse
 		// == DRAW ===========================
 		Renderer::BeginRenderPass(m_viewportFramebuffer);
 
-		bool isPlaying = Application::Get().GetActiveScene()->GetState() == SceneState::RUNNING;
+		bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
 
 		if (isPlaying)
-			Application::Get().GetActiveScene()->OnSceneUpdate(deltaTime);
+			SceneManager::GetActiveScene()->OnSceneUpdate(deltaTime);
 
 		if (isPlaying)
-			Renderer::RenderScene(Application::Get().GetActiveScene());
+			Renderer::RenderScene(SceneManager::GetActiveScene());
 		else
-			Renderer::RenderScene(Application::Get().GetActiveScene(), m_editorCamera, m_editorCameraTransform);
+			Renderer::RenderScene(SceneManager::GetActiveScene(), m_editorCamera, m_editorCameraTransform);
 
 		Renderer::EndRenderPass(m_viewportFramebuffer);
 
@@ -147,8 +155,8 @@ namespace Eklipse
 
 		if (ImGui::BeginMainMenuBar())
 		{
-			bool isPlaying = Application::Get().GetActiveScene()->GetState() == SceneState::RUNNING;
-			bool isPaused = Application::Get().GetActiveScene()->GetState() == SceneState::PAUSED;
+			bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
+			bool isPaused = SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED;
 
 			if (ImGui::BeginMenu("File"))
 			{
@@ -179,14 +187,6 @@ namespace Eklipse
 				if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
 				{
 					Application::Get().Close();
-				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Window"))
-			{
-				if (ImGui::MenuItemEx("Debug", nullptr, nullptr))
-				{
-					Application::Get().GetDebugPanel().SetVisible(true);
 				}
 				ImGui::EndMenu();
 			}
@@ -222,7 +222,7 @@ namespace Eklipse
 		}
 		if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{
-			static std::string nameBuffer;
+			static String nameBuffer;
 			static Path outPath;
 			ImGui::Text("Project Name");
 			ImGui::SameLine();
@@ -277,6 +277,8 @@ namespace Eklipse
 			ImGui::EndPopup();
 		}
 	}
+	
+	// === API Events ===
 	void EditorLayer::OnAPIHasInitialized(ApiType api)
 	{
 		// Create default framebuffer (for ImGui)
@@ -306,7 +308,7 @@ namespace Eklipse
 		}
 
 		GUI.reset();
-		GUI = ImGuiLayer::Create(GetGuiInfo());
+		GUI = ImGuiLayer::Create(m_guiLayerCreateInfo);
 		Application::Get().PushOverlay(GUI);
 		GUI->Init();
 
@@ -324,47 +326,51 @@ namespace Eklipse
 		m_defaultFramebuffer.reset();
 		m_viewportFramebuffer.reset();
 	}
-	void EditorLayer::NewProject(const std::filesystem::path& dirPath, const std::string& name)
+	
+	// === Project ===
+	void EditorLayer::NewProject(const Path& dirPath, const String& name)
 	{
 		OnProjectUnload();
 
-		ProjectSettings settings{};
-		settings.scriptModuleSettings = &m_settings.ScriptModuleSettings;
-		auto project = Project::New(settings);
-		if (!Project::Exists(dirPath))
-		{
-			Project::SetupActive(name, dirPath);
-
-			auto scene = Scene::New("Untitled", dirPath / project->GetConfig().startScenePath);
-			Application::Get().SwitchScene(scene);
-
-			std::filesystem::path projectFilePath = dirPath / (name + EK_PROJECT_FILE_EXTENSION);
-			Project::Save(project, projectFilePath);
-
-			m_editorScene.reset();
-			m_editorScene = scene;
-			m_entitiesPanel.SetContext(m_editorScene);
-
-			OnProjectLoaded();
-		}
-		else
+		auto project = Project::New();
+		if (Project::Exists(dirPath))
 		{
 			EK_ERROR("Project already exists!");
+			return;
 		}
+		if (!Project::SetupActive(name, dirPath))
+		{
+			EK_ERROR("Failed to setup project!");
+			return;
+		}
+
+		m_scriptManager->RunPremake(Project::GetConfig().scriptPremakeDirectoryPath);
+		m_scriptManager->Load();
+
+		auto scene = Scene::New();
+		SceneManager::SetActiveScene(scene);
+
+		Path projectFilePath = dirPath / (name + EK_PROJECT_EXTENSION);
+		Project::Save(project, projectFilePath);
+
+		m_editorScene.reset();
+		m_editorScene = scene;
+		m_entitiesPanel.SetContext(m_editorScene);
+
+		OnProjectLoaded();
 	}
 	void EditorLayer::OpenProject()
 	{
-		auto& result = OpenFileDialog({ EK_PROJECT_FILE_EXTENSION });
+		auto& result = OpenFileDialog({ EK_PROJECT_EXTENSION });
 		if (result.type == FileDialogResultType::SUCCESS)
 		{
 			OnProjectUnload();
 
-			ProjectSettings settings{};
-			settings.scriptModuleSettings = &m_settings.ScriptModuleSettings;
-			auto project = Project::Load(result.path, settings);
+			auto project = Project::Load(result.path);
+			m_scriptManager->Load();
 
-			auto scene = Scene::Load(project->GetConfig().startScenePath, Project::GetActive()->GetScriptModule()->GetLibrary());
-			Application::Get().SwitchScene(scene);
+			auto scene = Scene::Load(project->GetConfig().startScenePath);
+			SceneManager::SetActiveScene(scene);
 
 			m_editorScene.reset();
 			m_editorScene = scene;
@@ -388,15 +394,18 @@ namespace Eklipse
 	{
 		if (!Project::GetActive()) return;
 
-		Scene::Save(m_editorScene);
+		Path scenePath = AssetManager::GetMetadata(m_editorScene->Handle).FilePath;
+		Scene::Save(m_editorScene, scenePath);
 	}
 	void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
 	{
-		if (!Project::GetActive()->Export(exportSettings))
+		if (!ProjectExporter::Export(Project::GetActive(), exportSettings))
 		{
 			EK_ERROR("Failed to export project!");
 		}
 	}
+	
+	// === Settings ===
 	bool EditorLayer::SerializeSettings() const
 	{
 		YAML::Emitter out;
@@ -409,10 +418,10 @@ namespace Eklipse
 			out << YAML::EndMap;
 		}
 
-		out << YAML::Key << "ScriptModule" << YAML::Value;
+		out << YAML::Key << "ScriptManager" << YAML::Value;
 		{
 			out << YAML::BeginMap;
-			out << YAML::Key << "MsBuildPath" << YAML::Value << m_settings.ScriptModuleSettings.MsBuildPath.full_string();
+			out << YAML::Key << "MsBuildPath" << YAML::Value << m_settings.ScriptManagerSettings.MsBuildPath.string();
 			out << YAML::EndMap;
 		}
 
@@ -439,95 +448,128 @@ namespace Eklipse
 		if (!preferencesNode)
 			return false;
 
-		TryDeserailize<std::string>(preferencesNode, "Theme", &m_settings.theme);
+		TryDeserailize<String>(preferencesNode, "Theme", &m_settings.theme);
 
-		auto& scriptModuleNode = data["ScriptModule"];
+		auto& scriptModuleNode = data["ScriptManager"];
 		if (scriptModuleNode)
 		{
-			m_settings.ScriptModuleSettings.MsBuildPath = TryDeserailize<std::string>(scriptModuleNode, "MsBuildPath", "");
+			m_settings.ScriptManagerSettings.MsBuildPath = TryDeserailize<String>(scriptModuleNode, "MsBuildPath", "");
 		}
 	}
+	
+	// === Scene Events ===
 	void EditorLayer::OnScenePlay()
 	{
-		if (Application::Get().GetActiveScene()->GetState() == SceneState::RUNNING)
+		if (SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING)
 			return;
 
 		m_canControlEditorCamera = false;
 
-		Application::Get().SetActiveScene(Scene::Copy(m_editorScene));
-		Application::Get().GetActiveScene()->OnSceneStart();
+		auto sceneCopy = Scene::Copy(m_editorScene);
+		SceneManager::SetActiveScene(sceneCopy);
+		SceneManager::GetActiveScene()->OnSceneStart();
 
-		m_entitiesPanel.SetContext(Application::Get().GetActiveScene());
+		m_entitiesPanel.SetContext(sceneCopy);
 		ClearSelection();
-
-		//m_scenePlayTime = Timer::Now();
 	}
 	void EditorLayer::OnSceneStop()
 	{
-		if (Application::Get().GetActiveScene()->GetState() == SceneState::NONE)
+		if (SceneManager::GetActiveScene()->GetState() == SceneState::NONE)
 			return;
 
 		m_canControlEditorCamera = true;
 
-		Application::Get().GetActiveScene()->OnSceneStop();
-		Application::Get().SetActiveScene(m_editorScene);
+		SceneManager::GetActiveScene()->OnSceneStop();
+		SceneManager::SetActiveScene(m_editorScene);
 
-		m_entitiesPanel.SetContext(Application::Get().GetActiveScene());
+		m_entitiesPanel.SetContext(m_editorScene);
 		ClearSelection();
 
 		// Recompile scripts if they were changed while playing
 		if (Project::GetActive())
 		{
-			if (Project::GetActive()->GetScriptModule()->GetScriptsState() == ScriptsState::NEEDS_RECOMPILATION)
+			if (m_scriptManager->GetScriptsState() == ScriptsState::NEEDS_RECOMPILATION)
 			{
-				Project::GetActive()->GetScriptModule()->RecompileAll();
+				m_scriptManager->RecompileAll();
 			}
 		}
 	}
 	void EditorLayer::OnScenePause()
 	{
-		if (Application::Get().GetActiveScene()->GetState() == SceneState::PAUSED)
+		if (SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED)
 			return;
 
-		Application::Get().GetActiveScene()->OnScenePause();
+		SceneManager::GetActiveScene()->OnScenePause();
 		m_canControlEditorCamera = false;
 	}
 	void EditorLayer::OnSceneResume()
 	{
-		if (Application::Get().GetActiveScene()->GetState() == SceneState::RUNNING)
+		if (SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING)
 			return;
 
-		Application::Get().GetActiveScene()->OnSceneResume();
+		SceneManager::GetActiveScene()->OnSceneResume();
 		m_canControlEditorCamera = false;
 	}
+	
+	// === Project Events ===
 	void EditorLayer::OnProjectUnload()
 	{
-		if (Project::GetActive())
-		{
-			Project::GetActive()->UnloadAssets();
-		}
-	}
-	void EditorLayer::OnLoadResources()
-	{
-		m_filesPanel.LoadResources();
+		// unload assets
 	}
 	void EditorLayer::OnProjectLoaded()
 	{
 		EK_ASSERT(Project::GetActive(), "Project is null!");
 
 		ClearSelection();
-		Project::GetActive()->LoadAssets();
+		// load aasets
 		m_filesPanel.OnContextChanged();
 
 		m_editorScene->ApplyAllComponents();
 	}
-	void EditorLayer::SetSelection(DetailsSelectionInfo info)
+	
+	// === Getters ===
+	EditorLayer& EditorLayer::Get()
 	{
-		m_selectionInfo = info;
+		return *s_instance;
 	}
+	const EntitiesPanel& EditorLayer::GetEntitiesPanel()
+	{
+		return m_entitiesPanel;
+	}
+	const DetailsPanel& EditorLayer::GetDetailsPanel()
+	{
+		return m_detailsPanel;
+	}
+	const ViewPanel& EditorLayer::GetViewPanel()
+	{
+		return m_viewPanel;
+	}
+	const Camera& EditorLayer::GetEditorCamera()
+	{
+		return m_editorCamera;
+	}
+	const EditorSettings& EditorLayer::GetSettings()
+	{
+		return m_settings;
+	}
+	bool EditorLayer::IsPlaying() const
+	{
+		return SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
+	}
+
+	// === Setters ===	
+	void EditorLayer::SetCanControlEditorCamera(bool canControl)
+	{
+		m_canControlEditorCamera = canControl;
+	}
+
 	void EditorLayer::ClearSelection()
 	{
-		GetSelection().type = SelectionType::NONE;
-		GetSelection().entity.MarkNull();
+		SelectionInfo.type = SelectionType::NONE;
+		SelectionInfo.entity.MarkNull();
+	}
+	void EditorLayer::OnLoadResources()
+	{
+		m_filesPanel.LoadResources();
 	}
 }

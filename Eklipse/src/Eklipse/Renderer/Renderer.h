@@ -15,7 +15,7 @@ namespace Eklipse
 		OpenGL	= 1
 	};
 	
-	const std::string APITypeToString(ApiType apiType);
+	const String APITypeToString(ApiType apiType);
 
 	struct RendererSettings
 	{
@@ -54,8 +54,8 @@ namespace Eklipse
 		static RendererSettings& GetSettings();
 
 		// Uniform buffers
-		static Ref<UniformBuffer> CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding);
-		static Ref<UniformBuffer> GetUniformBuffer(const std::string& uniformBufferName);
+		static Ref<UniformBuffer> CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding);
+		static Ref<UniformBuffer> GetUniformBuffer(const String& uniformBufferName);
 
 		// Settings
 		static void SerializeRendererSettings(YAML::Emitter& out);
@@ -64,6 +64,6 @@ namespace Eklipse
 	private:
 		static ApiType s_apiType;
 		static RendererSettings s_settings;
-		static std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	s_uniformBufferCache;
+		static std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	s_uniformBufferCache;
 	};
 }

@@ -29,20 +29,20 @@
 //    {
 //        // Load all recognized assets
 //        m_assetsDirectoryPath = assetsDirectoryPath;
-//        if (!std::filesystem::exists(assetsDirectoryPath.path()))
+//        if (!fs::exists(assetsDirectoryPath.path()))
 //		{
-//			std::filesystem::create_directories(assetsDirectoryPath.path());
+//			fs::create_directories(assetsDirectoryPath.path());
 //		}
-//        for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator(assetsDirectoryPath))
+//        for (const auto& directoryEntry : fs::recursive_directory_iterator(assetsDirectoryPath))
 //        {
-//            if (std::filesystem::is_directory(directoryEntry.path()))
+//            if (fs::is_directory(directoryEntry.path()))
 //                continue;
 //
-//            Path relativePath = std::filesystem::relative(directoryEntry.path());
+//            Path relativePath = fs::relative(directoryEntry.path());
 //            if (relativePath.empty())
 //				relativePath = directoryEntry.path();
-//            const std::string extension = relativePath.path().extension().string();
-//            const std::string pathString = relativePath.full_string();
+//            const String extension = relativePath.path().extension().string();
+//            const String pathString = relativePath.full_string();
 //
 //            if (extension == ".obj")
 //            {
@@ -68,7 +68,7 @@
 //        EK_CORE_DBG("Loaded {0} models, {1} textures, {2} shaders and {3} materials", m_meshCache.size(), m_textureCache.size(), m_shaderCache.size(), m_materialCache.size());
 //
 //        // Monitor assets changes with FileWatch
-//        m_fileWatcher = CreateUnique<filewatch::FileWatch<std::string>>(assetsDirectoryPath.full_string(), CAPTURE_FN(OnFileWatchEvent));
+//        m_fileWatcher = CreateUnique<filewatch::FileWatch<String>>(assetsDirectoryPath.full_string(), CAPTURE_FN(OnFileWatchEvent));
 //        EK_CORE_DBG("Monitoring assets directory '{0}'", assetsDirectoryPath.string());
 //    }
 //    void AssetLibrary::Unload()
@@ -113,7 +113,7 @@
 //        tinyobj::attrib_t attrib;
 //        std::vector<tinyobj::shape_t> shapes;
 //        std::vector<tinyobj::material_t> materials;
-//        std::string warn, err;
+//        String warn, err;
 //
 //        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.full_c_str()))
 //        {
@@ -240,9 +240,9 @@
 //        EK_CORE_DBG("Loaded material from path '{0}'", materialPath);
 //        return material;
 //    }
-//    void AssetLibrary::OnFileWatchEvent(const std::string& path, filewatch::Event change_type)
+//    void AssetLibrary::OnFileWatchEvent(const String& path, filewatch::Event change_type)
 //    {
-//        if (std::filesystem::is_directory(m_assetsDirectoryPath.path() / path))
+//        if (fs::is_directory(m_assetsDirectoryPath.path() / path))
 //			return;
 //
 //        switch (change_type)
@@ -256,8 +256,8 @@
 //            case filewatch::Event::modified:
 //                EK_CORE_TRACE("File modified: {0}", path);
 //                {
-//                    const std::string extension = std::filesystem::path(path).extension().string();
-//					const std::string pathString = Path(m_assetsDirectoryPath.path() / path).string();
+//                    const String extension = Path(path).extension().string();
+//					const String pathString = Path(m_assetsDirectoryPath.path() / path).string();
 //
 //                    if (!m_shaderReloadPending && extension == EK_SHADER_EXTENSION)
 //                    {

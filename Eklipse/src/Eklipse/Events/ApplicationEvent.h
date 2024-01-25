@@ -13,7 +13,7 @@ namespace Eklipse
 		inline unsigned int GetWidth() const { return m_width; }
 		inline unsigned int GetHeight() const { return m_height; }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "WindowResizeEvent: " << m_width << ", " << m_height;
@@ -37,7 +37,7 @@ namespace Eklipse
 		inline unsigned int GetWidth() const { return m_width; }
 		inline unsigned int GetHeight() const { return m_height; }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "FramebufferResizeEvent: " << m_width << ", " << m_height;
@@ -60,7 +60,7 @@ namespace Eklipse
 		static EventType GetStaticType() { return EventType::WindowClose; }
 		virtual EventType GetEventType() const override { return GetStaticType(); }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			return "WindowCloseEvent";
 		}
@@ -76,7 +76,7 @@ namespace Eklipse
 		static EventType GetStaticType() { return EventType::WindowFocus; }
 		virtual EventType GetEventType() const override { return GetStaticType(); }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			return "WindowFocusEvent";
 		}
@@ -92,7 +92,7 @@ namespace Eklipse
 		static EventType GetStaticType() { return EventType::WindowLostFocus; }
 		virtual EventType GetEventType() const override { return GetStaticType(); }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			return "WindowLostFocusEvent";
 		}
@@ -108,7 +108,7 @@ namespace Eklipse
 		static EventType GetStaticType() { return EventType::WindowMiminized; }
 		virtual EventType GetEventType() const override { return GetStaticType(); }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "WindowMinimizedEvent";
@@ -126,7 +126,7 @@ namespace Eklipse
 		static EventType GetStaticType() { return EventType::WindowMaximized; }
 		virtual EventType GetEventType() const override { return GetStaticType(); }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "WindowMaximizedEvent";

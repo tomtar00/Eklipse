@@ -8,4 +8,6 @@
 #include <Eklipse/Core/Input.h>
 #include <Eklipse/Renderer/Renderer.h>
 #include <Eklipse/Scene/Scene.h>
+#include <Eklipse/Scene/SceneManager.h>
 #include <Eklipse/Core/Timer.h>
+#include <Eklipse/Assets/AssetManager.h>

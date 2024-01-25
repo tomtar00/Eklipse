@@ -174,9 +174,9 @@ namespace Eklipse
 					dstComponent.SetScriptValue(member.offset, value);
 					EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberName, uuid, value);
 				}
-				else if (member.type == "std::string")
+				else if (member.type == "String")
 				{
-					std::string& value = *srcComponent.GetScriptValue<std::string>(member.offset);
+					String& value = *srcComponent.GetScriptValue<String>(member.offset);
 					dstComponent.SetScriptValue(member.offset, value);
 					EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberName, uuid, value);
 				}
@@ -194,7 +194,7 @@ namespace Eklipse
 	{
 		return CreateRef<Scene>();
 	}
-	Ref<Scene> Scene::Load(const std::filesystem::path& filePath)
+	Ref<Scene> Scene::Load(const Path& filePath)
 	{
 		EK_CORE_TRACE("Loading scene from '{0}'", filePath.string());
 
@@ -210,7 +210,7 @@ namespace Eklipse
 		EK_CORE_DBG("Scene '{0}' loaded", scene->GetName());
 		return scene;
 	}
-	void Scene::Save(Ref<Scene> scene, const std::filesystem::path& filePath)
+	void Scene::Save(Ref<Scene> scene, const Path& filePath)
 	{
 		EK_CORE_TRACE("Saving scene '{0}'", scene->GetName());
 		if (!scene->Serialize(filePath))
@@ -274,11 +274,11 @@ namespace Eklipse
 	}
 
 	// Entity
-	Entity Scene::CreateEntity(const std::string& name)
+	Entity Scene::CreateEntity(const String& name)
 	{
 		return CreateEntity(UUID(), name);
 	}
-	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
+	Entity Scene::CreateEntity(UUID uuid, const String& name)
 	{
 		EK_CORE_TRACE("Creating entity with ID = {0}, name = {1}", uuid, name);
 		Entity entity = { m_registry.create(), this };
@@ -309,7 +309,7 @@ namespace Eklipse
 	}
 
 	// Serialization
-	bool Scene::Serialize(const std::filesystem::path& filePath)
+	bool Scene::Serialize(const Path& filePath)
 	{
 		EK_CORE_TRACE("Serializing scene '{0}'...", m_name);
 
@@ -406,7 +406,7 @@ namespace Eklipse
 			out << YAML::Key << "Properties" << YAML::Value;
 			out << YAML::BeginMap;
 
-			std::vector<std::string> toRemove;
+			std::vector<String> toRemove;
 			for (auto&& [name, member] : scriptComponent.classInfo.members)
 			{
 				auto& members = Application::Get().GetScriptLinker().GetScriptClasses().at(scriptComponent.scriptName).members;
@@ -425,8 +425,8 @@ namespace Eklipse
 						out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<float>(member.offset);
 					else if (member.type == "bool")
 						out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<bool>(member.offset);
-					else if (member.type == "std::string")
-						out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<std::string>(member.offset);
+					else if (member.type == "String")
+						out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<String>(member.offset);
 					else if (member.type == "glm::vec2")
 						out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<glm::vec2>(member.offset);
 					else if (member.type == "glm::vec3")
@@ -454,7 +454,7 @@ namespace Eklipse
 
 		return true;
 	}
-	bool Scene::Deserialize(const std::filesystem::path& filePath)
+	bool Scene::Deserialize(const Path& filePath)
 	{
 		EK_CORE_TRACE("Deserializing scene '{0}'...", m_name);
 
@@ -472,8 +472,8 @@ namespace Eklipse
 		if (!data["Scene"])
 			return false;
 
-		std::string sceneName;
-		TryDeserailize<std::string>(data, "Scene", &sceneName);
+		String sceneName;
+		TryDeserailize<String>(data, "Scene", &sceneName);
 		m_name = sceneName;
 
 		auto entities = data["Entities"];
@@ -494,11 +494,11 @@ namespace Eklipse
 		uint64_t uuid;
 		TryDeserailize<uint64_t>(entityNode, "Entity", &uuid);
 
-		std::string name;
+		String name;
 		auto nameComponent = entityNode["NameComponent"];
 		if (nameComponent)
 		{
-			TryDeserailize<std::string>(nameComponent, "Name", &name);
+			TryDeserailize<String>(nameComponent, "Name", &name);
 		}
 
 		EK_CORE_TRACE("Deserialing entity with ID = {0}, name = {1}", uuid, name);
@@ -532,14 +532,14 @@ namespace Eklipse
 		{
 			auto& mc = deserializedEntity.AddComponent<MeshComponent>();
 
-			mc.meshPath = TryDeserailize<std::string>(meshComponent, "Mesh", "");
-			mc.materialPath = TryDeserailize<std::string>(meshComponent, "Material", "");
+			mc.meshPath = TryDeserailize<String>(meshComponent, "Mesh", "");
+			mc.materialPath = TryDeserailize<String>(meshComponent, "Material", "");
 		}
 
 		auto scriptComponent = entityNode["ScriptComponent"];
 		if (scriptComponent)
 		{
-			auto scriptName = TryDeserailize<std::string>(scriptComponent, "Name", "");
+			auto scriptName = TryDeserailize<String>(scriptComponent, "Name", "");
 			auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
 			sc.scriptName = scriptName;
 			/*if (!scriptName.empty())
@@ -560,7 +560,7 @@ namespace Eklipse
 
 		return true;
 	}
-	bool Scene::DeserializeEveryScriptProperties(const std::filesystem::path& filePath)
+	bool Scene::DeserializeEveryScriptProperties(const Path& filePath)
 	{
 		EK_CORE_TRACE("Deserializing all script properties of scene '{0}'...", m_name);
 
@@ -578,7 +578,7 @@ namespace Eklipse
 		if (!data["Scene"])
 			return false;
 
-		std::string sceneName = data["Scene"].as<std::string>();
+		String sceneName = data["Scene"].as<String>();
 
 		auto entitiesNodes = data["Entities"];
 		for (auto entityNode : entitiesNodes)
@@ -607,8 +607,8 @@ namespace Eklipse
 			auto& sc = entity.GetComponent<ScriptComponent>();
 			for (auto propertyNode : propertiesNode)
 			{
-				std::string name = propertyNode.first.as<std::string>();
-				std::string type = sc.classInfo.members[name].type;
+				String name = propertyNode.first.as<String>();
+				String type = sc.classInfo.members[name].type;
 				uint32_t offset = sc.classInfo.members[name].offset;
 
 				if (type == "int")
@@ -617,8 +617,8 @@ namespace Eklipse
 					sc.SetScriptValue<float>(offset, TryDeserailize(propertiesNode, name, 0.0f));
 				else if (type == "bool")
 					sc.SetScriptValue<bool>(offset, TryDeserailize(propertiesNode, name, false));
-				else if (type == "std::string")
-					sc.SetScriptValue<std::string>(offset, TryDeserailize(propertiesNode, name, std::string{}));
+				else if (type == "String")
+					sc.SetScriptValue<String>(offset, TryDeserailize(propertiesNode, name, String{}));
 				else if (type == "glm::vec2")
 					sc.SetScriptValue<glm::vec2>(offset, TryDeserailize(propertiesNode, name, glm::vec2{}));
 				else if (type == "glm::vec3")

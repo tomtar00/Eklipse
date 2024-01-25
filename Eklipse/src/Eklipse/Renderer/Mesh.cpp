@@ -8,10 +8,11 @@ namespace Eklipse
 {
 	static Ref<VertexArray> LoadOBJ(const Path& filePath)
 	{
+		EK_PROFILE();
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
-		std::string warn, err;
+		String warn, err;
 
 		const char* meshPath = filePath.string().c_str();
 		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath))
@@ -61,7 +62,7 @@ namespace Eklipse
 
 	Mesh::Mesh(const Path& filePath)
 	{
-		std::string extension = filePath.extension().string();
+		String extension = filePath.extension().string();
 		if (extension == ".obj")
 		{
 			m_vertexArray = LoadOBJ(filePath);

@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	bool ScriptLinker::LinkScriptLibrary(const std::filesystem::path& libraryPath)
+	bool ScriptLinker::LinkScriptLibrary(const Path& libraryPath)
 	{
 		EK_CORE_TRACE("Loading script library: '{0}'", libraryPath.string());
 
@@ -43,7 +43,7 @@ namespace Eklipse
 	{
 		m_scriptClassMap.clear();
 	}
-	void ScriptLinker::FetchScriptClasses(std::vector<std::string> scriptClassNames)
+	void ScriptLinker::FetchScriptClasses(std::vector<String> scriptClassNames)
 	{
 		EK_CORE_TRACE("Fetching script classes...");
 		EK_ASSERT(m_scriptLibrary, "Script library is not loaded!");
@@ -66,7 +66,7 @@ namespace Eklipse
 	}
 	void ScriptLinker::FetchScriptClasses(std::vector<ClassReflection> scriptClassReflections)
 	{
-		std::vector<std::string> scriptClassNames;
+		std::vector<String> scriptClassNames;
 		for (const auto& scriptClassReflection : scriptClassReflections)
 		{
 			scriptClassNames.push_back(scriptClassReflection.className);
@@ -79,7 +79,7 @@ namespace Eklipse
 		return !m_scriptClassMap.empty();
 	}
 
-	const std::filesystem::path& ScriptLinker::GetLibraryPath() const
+	const Path& ScriptLinker::GetLibraryPath() const
 	{
 		return m_libraryPath;
 	}

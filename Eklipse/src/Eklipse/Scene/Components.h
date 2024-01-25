@@ -20,11 +20,11 @@ namespace Eklipse
 	};
 	struct NameComponent
 	{
-		std::string name;
+		String name;
 
 		NameComponent() = default;
 		NameComponent(const NameComponent& name) = default;
-		NameComponent(const std::string& name) : name(name) {}
+		NameComponent(const String& name) : name(name) {}
 	};
 	struct TransformComponent
 	{
@@ -60,13 +60,13 @@ namespace Eklipse
 	struct EK_API ScriptComponent
 	{
 		EklipseEngine::Script* script = nullptr;
-		std::string scriptName;
+		String scriptName;
 		EklipseEngine::Reflections::ClassInfo classInfo;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent& script) = default;
 
-		void SetScript(const std::string& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity);
+		void SetScript(const String& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity);
 		void DestroyScript();
 
 		template<typename T>

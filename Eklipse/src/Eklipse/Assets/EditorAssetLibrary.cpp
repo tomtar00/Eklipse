@@ -2,23 +2,25 @@
 #include "EditorAssetLibrary.h"
 #include "AssetImporter.h"
 #include "AssetManager.h"
+#include "AssetMetadata.h"
 
 #include <Eklipse/Utils/Yaml.h>
 #include <Eklipse/Core/Application.h>
 
 namespace Eklipse
 {
-    static std::map<std::filesystem::path, AssetType> s_assetExtensionMap = {
-        { EK_SCENE_EXTENSION,       AssetType::Scene },
-		{ EK_MATERIAL_EXTENSION,    AssetType::Material },
-		{ EK_SHADER_EXTENSION,      AssetType::Shader },
-        { ".png",                   AssetType::Texture2D },
-        { ".jpg",                   AssetType::Texture2D },
-        { ".jpeg",                  AssetType::Texture2D },
-        { ".obj", 				    AssetType::Mesh }
+    static std::map<Path, AssetType> s_assetExtensionMap = 
+    {
+        { EK_SCENE_EXTENSION,       AssetType::Scene        },
+		{ EK_MATERIAL_EXTENSION,    AssetType::Material     },
+		{ EK_SHADER_EXTENSION,      AssetType::Shader       },
+        { ".png",                   AssetType::Texture2D    },
+        { ".jpg",                   AssetType::Texture2D    },
+        { ".jpeg",                  AssetType::Texture2D    },
+        { ".obj", 				    AssetType::Mesh         }
     };
 
-    static AssetType GetAssetTypeFromFileExtension(const std::filesystem::path& extension)
+    static AssetType GetAssetTypeFromFileExtension(const Path& extension)
     {
         if (s_assetExtensionMap.find(extension) == s_assetExtensionMap.end())
         {
@@ -29,9 +31,9 @@ namespace Eklipse
         return s_assetExtensionMap.at(extension);
     }
 
-    EditorAssetLibrary::EditorAssetLibrary(const std::filesystem::path& assetDirectory) : m_assetDirectory(assetDirectory)
+    EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) : m_assetDirectory(assetDirectory)
     {
-        m_fileWatcher = CreateUnique<filewatch::FileWatch<std::string>>(assetDirectory.string(), CAPTURE_FN(OnFileWatchEvent));
+        m_fileWatcher = CreateUnique<filewatch::FileWatch<String>>(assetDirectory.string(), CAPTURE_FN(OnFileWatchEvent));
     }
 
     Ref<Asset> EditorAssetLibrary::GetAsset(AssetHandle handle)
@@ -70,7 +72,7 @@ namespace Eklipse
     {
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
-    void EditorAssetLibrary::ImportAsset(const std::filesystem::path& filepath)
+    void EditorAssetLibrary::ImportAsset(const Path& filepath)
     {
         AssetHandle handle;
         AssetMetadata metadata;
@@ -99,7 +101,7 @@ namespace Eklipse
             {
                 out << YAML::BeginMap;
                 out << YAML::Key << "Handle" << YAML::Value << handle;
-                std::string filepathStr = metadata.FilePath.generic_string();
+                String filepathStr = metadata.FilePath.generic_string();
                 out << YAML::Key << "FilePath" << YAML::Value << filepathStr;
                 out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(metadata.Type);
                 out << YAML::EndMap;
@@ -133,16 +135,16 @@ namespace Eklipse
         {
             AssetHandle handle = node["Handle"].as<uint64_t>();
             auto& metadata = m_assetRegistry[handle];
-            metadata.FilePath = node["FilePath"].as<std::string>();
-            metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
+            metadata.FilePath = node["FilePath"].as<String>();
+            metadata.Type = AssetTypeFromString(node["Type"].as<String>());
         }
 
         return true;
     }
 
-    void EditorAssetLibrary::OnFileWatchEvent(const std::string& path, filewatch::Event change_type)
+    void EditorAssetLibrary::OnFileWatchEvent(const String& path, filewatch::Event change_type)
     {
-        if (std::filesystem::is_directory(m_assetDirectory / path))
+        if (fs::is_directory(m_assetDirectory / path))
             return;
 
         switch (change_type)
@@ -156,8 +158,8 @@ namespace Eklipse
         case filewatch::Event::modified:
             EK_CORE_TRACE("Asset modified: {0}", path);
             {
-                const std::string extension = std::filesystem::path(path).extension().string();
-                const std::string pathString = (m_assetDirectory / path).string();
+                const String extension = Path(path).extension().string();
+                const String pathString = (m_assetDirectory / path).string();
 
                 if (extension == EK_SHADER_EXTENSION && !m_shaderReloadPending)
                 {
@@ -193,7 +195,7 @@ namespace Eklipse
         }
     }
 
-    AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const std::filesystem::path& path) const
+    AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path) const
     {
         for (auto&& [handle, metadata] : m_assetRegistry)
         {

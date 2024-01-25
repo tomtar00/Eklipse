@@ -7,7 +7,7 @@ namespace Eklipse
 	class DetailsPanel : public GuiPanel
 	{
 	public:
-		void Setup(std::string& name);
+		void Setup(String& name);
 		
 	private:
 		virtual bool OnGUI(float deltaTime) override;
@@ -15,6 +15,6 @@ namespace Eklipse
 		void OnMaterialGUI(Material* material);
 
 	private:
-		std::string m_entityNameBuffer;
+		String m_entityNameBuffer;
 	};
 }

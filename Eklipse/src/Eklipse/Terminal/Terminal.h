@@ -6,7 +6,7 @@ namespace Eklipse
 	struct Message
 	{
 		spdlog::details::log_msg msg;
-		std::string str;
+		String str;
 	};
 
 	template<typename Mutex>
@@ -36,9 +36,9 @@ namespace Eklipse
 
 	struct ParsedCommand
 	{
-		std::string Command;
-		std::unordered_map<std::string, std::string> Args;
-		std::vector<std::string> Flags;
+		String Command;
+		std::unordered_map<String, String> Args;
+		std::vector<String> Flags;
 	};
 	struct TerminalCommand
 	{
@@ -53,7 +53,7 @@ namespace Eklipse
 		Terminal();
 		void AddCommand(const TerminalCommand& command);
 
-		void ExcecuteCommand(const std::string& command);
+		void ExcecuteCommand(const String& command);
 		void Clear();
 
 		Ref<TerminalSink<std::mutex>> GetSink() { return m_sink; }
@@ -61,8 +61,8 @@ namespace Eklipse
 		spdlog::level::level_enum GetLevel() const { return m_level; }
 		void SetLevel(spdlog::level::level_enum level, const char* name) { Clear(); m_level = level; m_levelString = name; spdlog::set_level(level); }
 		
-		std::string& GetLevelString() { return m_levelString; }
-		std::string& GetHistoryBuffer() { return m_historyBuffer; }
+		String& GetLevelString() { return m_levelString; }
+		String& GetHistoryBuffer() { return m_historyBuffer; }
 
 		void HistoryUp();
 		void HistoryDown();
@@ -71,10 +71,10 @@ namespace Eklipse
 		std::vector<TerminalCommand> m_commands;
 		Ref<TerminalSink<std::mutex>> m_sink;
 		spdlog::level::level_enum m_level;
-		std::string m_levelString;
-		std::vector<std::string> m_history;
+		String m_levelString;
+		std::vector<String> m_history;
 		int32_t m_historyIndex;
 		int32_t m_historySizeLimit = 10;
-		std::string m_historyBuffer;
+		String m_historyBuffer;
 	};
 }

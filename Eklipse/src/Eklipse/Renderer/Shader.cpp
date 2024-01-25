@@ -14,7 +14,7 @@
 
 namespace Eklipse
 {
-    static void CreateCacheDirectoryIfNeeded(const std::string& cacheDirectory)
+    static void CreateCacheDirectoryIfNeeded(const String& cacheDirectory)
     {
         if (!fs::exists(cacheDirectory))
             fs::create_directories(cacheDirectory);
@@ -29,7 +29,7 @@ namespace Eklipse
         EK_ASSERT(false, "Unknown shader stage!");
         return "";
     }
-    static size_t GetSizeOfSpirvType(const spirv_cross::SPIRType type, const std::string& name)
+    static size_t GetSizeOfSpirvType(const spirv_cross::SPIRType type, const String& name)
     {
         switch (type.basetype)
         {
@@ -65,7 +65,7 @@ namespace Eklipse
         EK_ASSERT(false, "Unkown SPIR-V type! Type: {0}", (uint32_t)type.basetype);
         return ShaderDataType::NONE;
     }
-    static std::string DataTypeToString(ShaderDataType type)
+    static String DataTypeToString(ShaderDataType type)
     {
         switch (type)
         {
@@ -87,7 +87,7 @@ namespace Eklipse
         return "none";
     }
 
-    ShaderStage StringToShaderStage(const std::string& stage)
+    ShaderStage StringToShaderStage(const String& stage)
     {
         if (stage == "vertex")   return ShaderStage::VERTEX;
         if (stage == "fragment") return ShaderStage::FRAGMENT;
@@ -96,7 +96,7 @@ namespace Eklipse
         EK_ASSERT(false, "Wrong shader stage");
         return ShaderStage::NONE;
     }
-    std::string ShaderStageToString(ShaderStage stage)
+    String ShaderStageToString(ShaderStage stage)
     {
         switch (stage)
         {
@@ -136,12 +136,13 @@ namespace Eklipse
 
     StageSourceMap Shader::Setup()
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Setting up shader '{0}'", m_name);
 
         CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
 
         auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
-        std::string source = ReadFileFromPath(shaderPath);
+        String source = ReadFileFromPath(shaderPath);
         m_name = shaderPath.stem().string();
 
         EK_CORE_DBG("Set up shader '{0}'", m_name);
@@ -149,6 +150,7 @@ namespace Eklipse
     }
     bool Shader::Recompile()
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Recompiling shader '{0}'", m_name);
 
         Dispose();
@@ -174,7 +176,7 @@ namespace Eklipse
         return m_isValid;
     }
 
-    const std::string& Shader::GetName() const
+    const String& Shader::GetName() const
     {
         return m_name;
     }
@@ -195,8 +197,9 @@ namespace Eklipse
         return m_isValid;
     }
 
-    void Shader::Reflect(const StageSpirvMap& shaderStagesData, const std::string& shaderName)
+    void Shader::Reflect(const StageSpirvMap& shaderStagesData, const String& shaderName)
     {
+        EK_PROFILE();
         EK_CORE_DBG("Shader::Reflect - {0}", shaderName);
         for (auto&& [stage, shaderData] : shaderStagesData)
         {
@@ -304,6 +307,7 @@ namespace Eklipse
     }
     bool Shader::CompileOrGetVulkanBinaries(const StageSourceMap& shaderSources, bool forceCompile)
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Compiling vulkan binaries for shader '{0}'", m_name);
 
         bool success = true;
@@ -377,28 +381,29 @@ namespace Eklipse
         EK_CORE_DBG("Compiled vulkan binaries for shader '{0}'", m_name);
         return success;
     }
-    StageSourceMap Shader::PreProcess(const std::string& source) const
+    StageSourceMap Shader::PreProcess(const String& source) const
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Preprocessing shader source in shader '{0}'", m_name);
 
-        std::unordered_map<ShaderStage, std::string> shaderSources;
+        std::unordered_map<ShaderStage, String> shaderSources;
 
         const char* typeToken = "#stage";
         size_t typeTokenLength = strlen(typeToken);
         size_t pos = source.find(typeToken, 0);
-        while (pos != std::string::npos)
+        while (pos != String::npos)
         {
             size_t eol = source.find_first_of("\r\n", pos);
-            EK_ASSERT(eol != std::string::npos, "Shader stage syntax error (1)");
+            EK_ASSERT(eol != String::npos, "Shader stage syntax error (1)");
             size_t begin = pos + typeTokenLength + 1;
-            std::string type = source.substr(begin, eol - begin);
+            String type = source.substr(begin, eol - begin);
             EK_ASSERT(StringToShaderStage(type) != ShaderStage::NONE, "Invalid shader stage specified");
 
             size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-            EK_ASSERT(nextLinePos != std::string::npos, "Shader stage syntax error (2)");
+            EK_ASSERT(nextLinePos != String::npos, "Shader stage syntax error (2)");
             pos = source.find(typeToken, nextLinePos);
 
-            shaderSources[StringToShaderStage(type)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+            shaderSources[StringToShaderStage(type)] = (pos == String::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
         }
 
         EK_CORE_DBG("Preprocessed shader source in shader '{0}'", m_name);

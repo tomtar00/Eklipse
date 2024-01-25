@@ -21,6 +21,7 @@ namespace Eklipse
 
 		void VKMaterial::Bind()
 		{
+			EK_PROFILE();
 			Material::Bind();
 			vkCmdBindDescriptorSets(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkShader->GetPipelineLayout(), 0, 1, &m_descriptorSets[g_currentFrame], 0, nullptr);
 
@@ -29,7 +30,7 @@ namespace Eklipse
 				for (auto& pushConstant : reflection.pushConstants)
 				{
 					vkCmdPushConstants(g_currentCommandBuffer, m_vkShader->GetPipelineLayout(), 
-						VKShaderStageFromInternalStage(stage), 0, pushConstant.size, m_pushConstants[pushConstant.name].pushConstantData.get());
+						VKShaderStageFromInternalStage(stage), 0, pushConstant.size, m_pushConstants.at(pushConstant.name).pushConstantData.get());
 				}
 			}
 		}
@@ -39,6 +40,7 @@ namespace Eklipse
 		}
 		void VKMaterial::ApplyChanges()
 		{
+			EK_PROFILE();
 			Material::ApplyChanges();
 			vkDeviceWaitIdle(g_logicalDevice);
 			Dispose();
@@ -47,6 +49,8 @@ namespace Eklipse
 		
 		void VKMaterial::CreateDescriptorSets()
 		{
+			EK_PROFILE();
+			EK_CORE_TRACE("Creating descriptor sets for material {0}", m_name);
 			//if (!requiresDescriptorSets) return;
 
 			std::vector<VkDescriptorSetLayout> layouts(g_maxFramesInFlight, m_vkShader->GetDescriptorSetLayout());
@@ -110,7 +114,7 @@ namespace Eklipse
 					descriptorWrite.pImageInfo = imageInfo;
 
 					descriptorWrites.push_back(descriptorWrite);
-					EK_CORE_TRACE("Binding sampler '{0}' to descriptor set {1} at binding {2} for material {3} at location '{4}'", samplerName, i, sampler.binding, m_name, sampler.texturePath.string());
+					EK_CORE_TRACE("Binding sampler '{0}' to descriptor set {1} at binding {2} for material {3} ({4})", samplerName, i, sampler.binding, m_name, sampler.textureHandle);
 				}
 
 				vkUpdateDescriptorSets(g_logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
@@ -121,6 +125,7 @@ namespace Eklipse
 					delete write.pImageInfo;
 				}
 			}
+			EK_CORE_DBG("Created descriptor sets for material {0}", m_name);
 		}
 	}
 }

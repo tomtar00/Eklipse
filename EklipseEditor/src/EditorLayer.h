@@ -1,5 +1,6 @@
 #pragma once
 #include <Eklipse.h>
+#include <Eklipse/Project/ProjectExporter.h>
 
 #include <Panels/EntitiesPanel.h>
 #include <Panels/ViewPanel.h>
@@ -13,9 +14,9 @@ namespace Eklipse
 {
 	struct EditorSettings
 	{
-		std::string theme = "dark";
+		String theme = "dark";
 
-		ScriptModuleSettings ScriptModuleSettings;
+		ScriptManagerSettings ScriptManagerSettings;
 	};
 	enum class SelectionType
 	{
@@ -25,7 +26,7 @@ namespace Eklipse
 	};
 	struct DetailsSelectionInfo
 	{
-		SelectionType type = SelectionType::NONE;
+		SelectionType type;
 		Entity entity;
 		Material* material;
 	};
@@ -34,65 +35,74 @@ namespace Eklipse
 	{
 	public:
 		EditorLayer();
-		~EditorLayer() = default;
 
+		// === Layer ===
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnUpdate(float deltaTime) override;
 		void OnGUI(float deltaTime) override;
 
+		// === API Events ===
 		void OnAPIHasInitialized(ApiType api);
 		void OnShutdownAPI();
 
-		void NewProject(const std::filesystem::path& path, const std::string& name);
+		// === Project ===
+		void NewProject(const Path& path, const String& name);
 		void OpenProject();
 		void SaveProject();
 		void SaveProjectAs();
 		void SaveScene();
 		void ExportProject(const ProjectExportSettings& exportSettings);
+		
+		// === Settings ===
 		bool SerializeSettings() const;
 		bool DeserializeSettings();
 
+		// === Scene Events ===
 		void OnScenePlay();
 		void OnSceneStop();
 		void OnScenePause();
 		void OnSceneResume();
 
-		void OnLoadResources();
+		// === Project Events ===
 		void OnProjectLoaded();
 		void OnProjectUnload();
 
-		inline static EditorLayer& Get() { return *s_instance; }
-		inline EntitiesPanel& GetEntitiesPanel() { return m_entitiesPanel; }
-		inline DetailsPanel& GetDetailsPanel() { return m_detailsPanel; }
-		inline ViewPanel& GetViewPanel() { return m_viewPanel; }
-		inline Camera& GetEditorCamera() { return m_editorCamera; }
-		inline GuiLayerConfigInfo& GetGuiInfo() { return m_guiLayerCreateInfo; }
-		inline DetailsSelectionInfo& GetSelection() { return m_selectionInfo; }
-		inline EditorSettings& GetSettings() { return m_settings; }
-		inline bool IsPlaying() const { return Application::Get().GetActiveScene()->GetState() == SceneState::RUNNING; }
+		// === Getters ===
+		static EditorLayer& Get();
+		const EntitiesPanel& GetEntitiesPanel();
+		const DetailsPanel& GetDetailsPanel();
+		const ViewPanel& GetViewPanel();
+		const Camera& GetEditorCamera();
+		const EditorSettings& GetSettings();
+		bool IsPlaying() const;
 
-		void SetCanControlEditorCamera(bool canControl) { m_canControlEditorCamera = canControl; }
-		void SetSelection(DetailsSelectionInfo info);
+		// === Setters ===
+		void SetCanControlEditorCamera(bool canControl);
+
 		void ClearSelection();
 
+	private:
+		void OnLoadResources();
+
+	public:
 		Ref<ImGuiLayer> GUI;
+		DetailsSelectionInfo SelectionInfo{};
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
-		EditorSettings m_settings;
-
 		GuiLayerConfigInfo m_guiLayerCreateInfo{};
+
+		EditorSettings m_settings;
+		Camera m_editorCamera;
+		Transform m_editorCameraTransform;
+
 		Ref<Scene> m_editorScene;
 		Ref<Framebuffer> m_defaultFramebuffer;
 		Ref<Framebuffer> m_viewportFramebuffer;
-		Camera m_editorCamera;
-		Transform m_editorCameraTransform;
+		Ref<ScriptManager> m_scriptManager;
+
 		bool m_canControlEditorCamera = false;
-
-		//TimePoint m_scenePlayTime;
-		DetailsSelectionInfo m_selectionInfo{};
-
 		bool m_guiEnabled;
 		EntitiesPanel	m_entitiesPanel;
 		DetailsPanel	m_detailsPanel;
@@ -101,5 +111,7 @@ namespace Eklipse
 		SettingsPanel	m_settingsPanel;
 		ProfilerPanel	m_profilerPanel;
 		FilesPanel		m_filesPanel;
+		DebugPanel		m_debugPanel;
+		TerminalPanel	m_terminalPanel;
 	};
 }

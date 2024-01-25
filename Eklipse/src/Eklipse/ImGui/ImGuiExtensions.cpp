@@ -2,7 +2,7 @@
 #include "ImGuiExtensions.h"
 #include <Eklipse/Utils/File.h>
 
-bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, const std::vector<std::string>& requiredExtensions)
+bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, const std::vector<Eklipse::String>& requiredExtensions)
 {
     ImGui::PushID(id);
     if (label)

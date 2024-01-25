@@ -11,17 +11,17 @@ namespace Eklipse
  //       Parse(path);
  //       m_isCurrentlyValid = IsValid();
  //   }
- //   Path::Path(const std::string& path)
+ //   Path::Path(const String& path)
  //   {
  //       Parse(path);
  //       m_isCurrentlyValid = IsValid();
  //   }
- //   Path::Path(const std::filesystem::path& path)
+ //   Path::Path(const Path& path)
  //   {
  //       Parse(path.string());
  //       m_isCurrentlyValid = IsValid();
  //   }
- //   void Path::Parse(const std::string& path)
+ //   void Path::Parse(const String& path)
  //   {
  //       if (path.empty())
  //       {
@@ -51,14 +51,14 @@ namespace Eklipse
 	//		}
  //           else
  //           {
- //               m_fullPath = std::filesystem::absolute(m_path).string();
+ //               m_fullPath = fs::absolute(m_path).string();
 	//		}
  //       }
 
  //       // if folder relative
  //       else
  //       {
-	//		m_fullPath = std::filesystem::absolute(m_path).string();
+	//		m_fullPath = fs::absolute(m_path).string();
 	//	}
  //       std::replace(m_fullPath.begin(), m_fullPath.end(), '\\', '/');
  //   }
@@ -68,9 +68,9 @@ namespace Eklipse
  //   }
  //   bool Path::IsValid() const
  //   {
- //       return !m_fullPath.empty() && std::filesystem::exists(m_fullPath);
+ //       return !m_fullPath.empty() && fs::exists(m_fullPath);
 	//}
- //   bool Path::IsValid(const std::vector<std::string> requiredExtensions) const
+ //   bool Path::IsValid(const std::vector<String> requiredExtensions) const
  //   {
  //       bool hasExtension = requiredExtensions.size() == 0;
  //       for (const auto& requiredExtension : requiredExtensions)
@@ -96,7 +96,7 @@ namespace Eklipse
     {
         return fs::exists(path);
     }
-    bool IsPathValid(const Path& path, std::vector<std::string> extensions)
+    bool IsPathValid(const Path& path, std::vector<String> extensions)
     {
         bool hasExtension = false;
         for (const auto& extension : extensions)
@@ -110,9 +110,9 @@ namespace Eklipse
         return IsPathValid(path) && hasExtension;
     }
 
-    std::string ReadFileFromPath(const Path& filePath)
+    String ReadFileFromPath(const Path& filePath)
     {
-        std::string buffer;
+        String buffer;
         std::ifstream file(filePath, std::ios::in | std::ios::binary);
         EK_ASSERT(file.is_open(), "Failed to open file at '{0}'", filePath.string());
 
@@ -139,9 +139,9 @@ namespace Eklipse
 
         EK_CORE_DBG("Copied file content from '{0}' to '{1}'", source.string(), destination.string());
     }
-    FileDialogResult OpenFileDialog(const std::vector<std::string>& extensions)
+    FileDialogResult OpenFileDialog(const std::vector<String>& extensions)
     {
-        std::string exts = "";
+        String exts = "";
         for (const auto& extension : extensions)
         {
 			exts += extension[0] == '.' ? extension.substr(1) : extension;
@@ -159,7 +159,7 @@ namespace Eklipse
 		}
         else if (result == NFD_OKAY)
         {
-			res.path = std::string(outPath);
+			res.path = String(outPath);
 			res.type = FileDialogResultType::SUCCESS;
 		}
         else
@@ -188,7 +188,7 @@ namespace Eklipse
         }
         else if (result == NFD_OKAY)
         {
-			res.path = std::string(outPath);
+			res.path = String(outPath);
 			res.type = FileDialogResultType::SUCCESS;
 		}
         else

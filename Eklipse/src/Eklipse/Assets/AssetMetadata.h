@@ -9,7 +9,7 @@ namespace Eklipse
 	struct AssetMetadata
 	{
 		AssetType Type = AssetType::None;
-		std::filesystem::path FilePath;
+		Path FilePath;
 
 		operator bool() const { return Type != AssetType::None; }
 	};

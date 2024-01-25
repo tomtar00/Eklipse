@@ -3,17 +3,17 @@
 
 namespace Eklipse
 {
-    std::vector<ClassReflection> ScriptParser::ParseDirectory(const std::filesystem::path& directoryPath)
+    std::vector<ClassReflection> ScriptParser::ParseDirectory(const Path& directoryPath)
     {
         EK_CORE_TRACE("Parsing directory: {0}", directoryPath.string());
 
         std::vector<ClassReflection> classReflections;
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryPath))
+        for (const auto& entry : fs::recursive_directory_iterator(directoryPath))
         {
             if (entry.is_directory())
                 continue;
 			
-            std::string fileExtension = entry.path().extension().string();
+            String fileExtension = entry.path().extension().string();
             if (fileExtension == ".h" || fileExtension == ".hpp" || fileExtension == ".cpp")
             {
                 std::vector<ClassReflection> fileClassReflections{};
@@ -40,7 +40,7 @@ namespace Eklipse
         EK_CORE_DBG("Parsed directory {0}", directoryPath.string());
         return classReflections;
     }
-    bool ScriptParser::ParseFile(const std::filesystem::path& filePath, std::vector<ClassReflection>& outClassReflection)
+    bool ScriptParser::ParseFile(const Path& filePath, std::vector<ClassReflection>& outClassReflection)
 	{
         EK_CORE_TRACE("Parsing file: {0}", filePath.string());
         
@@ -49,12 +49,12 @@ namespace Eklipse
         std::ifstream file(filePath);
         if (file.is_open()) 
         {
-            std::string line;
+            String line;
             std::regex class_regex(R"(class\s+(\w+))");
             std::regex member_regex(R"((\w+)\s+(\w+)\s*(=\s*([^;]+))?;)"); // TODO: support more complex member declarations
             
             ClassReflection classReflection{};
-            std::string currentClassName = "";
+            String currentClassName = "";
             
             while (std::getline(file, line)) 
             {

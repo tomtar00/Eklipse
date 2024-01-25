@@ -1,33 +1,23 @@
 #pragma once
 #include <vector>
-#include "Vertex.h"
 
 namespace Eklipse
 {
-	enum class ShaderDataType
-	{
-		None = 0,
-		Bool,
-		Int, Int2, Int3, Int4,
-		Float, Float2, Float3, Float4,
-		Mat3, Mat4
-	};
-
 	static uint32_t ShaderDataTypeSize(ShaderDataType type)
 	{
 		switch (type)
 		{
-			case ShaderDataType::Float:    return 4;
-			case ShaderDataType::Float2:   return 4 * 2;
-			case ShaderDataType::Float3:   return 4 * 3;
-			case ShaderDataType::Float4:   return 4 * 4;
-			case ShaderDataType::Mat3:     return 4 * 3 * 3;
-			case ShaderDataType::Mat4:     return 4 * 4 * 4;
-			case ShaderDataType::Int:      return 4;
-			case ShaderDataType::Int2:     return 4 * 2;
-			case ShaderDataType::Int3:     return 4 * 3;
-			case ShaderDataType::Int4:     return 4 * 4;
-			case ShaderDataType::Bool:     return 1;
+			case ShaderDataType::FLOAT:    return 4;
+			case ShaderDataType::FLOAT2:   return 4 * 2;
+			case ShaderDataType::FLOAT3:   return 4 * 3;
+			case ShaderDataType::FLOAT4:   return 4 * 4;
+			case ShaderDataType::MAT3:     return 4 * 3 * 3;
+			case ShaderDataType::MAT4:     return 4 * 4 * 4;
+			case ShaderDataType::INT:      return 4;
+			case ShaderDataType::INT2:     return 4 * 2;
+			case ShaderDataType::INT3:     return 4 * 3;
+			case ShaderDataType::INT4:     return 4 * 4;
+			case ShaderDataType::BOOL:     return 1;
 		}
 
 		EK_ASSERT(false, "Unknown ShaderDataType!");
@@ -36,14 +26,14 @@ namespace Eklipse
 
 	struct BufferElement
 	{
-		std::string name;
+		String name;
 		ShaderDataType type;
 		uint32_t size;
 		uint32_t offset;
 		bool normalized;
 
 		BufferElement() = default;
-		BufferElement(const std::string& name, ShaderDataType type, bool normalized = false)
+		BufferElement(const String& name, ShaderDataType type, bool normalized = false)
 			: name(name), type(type), size(ShaderDataTypeSize(type)), offset(0), normalized(normalized) {}
 
 		uint32_t GetComponentCount() const;

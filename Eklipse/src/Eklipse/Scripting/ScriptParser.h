@@ -7,8 +7,8 @@ namespace Eklipse
 	class ScriptParser
 	{
 	public:
-		static std::vector<ClassReflection> ParseDirectory(const std::filesystem::path& directoryPath);
+		static std::vector<ClassReflection> ParseDirectory(const Path& directoryPath);
 	private:
-		static bool ParseFile(const std::filesystem::path& filePath, std::vector<ClassReflection>& outClassReflections);
+		static bool ParseFile(const Path& filePath, std::vector<ClassReflection>& outClassReflections);
 	};
 }

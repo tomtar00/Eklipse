@@ -16,8 +16,8 @@ namespace Eklipse {
 		Mesh
 	};
 
-	const std::string& AssetTypeToString(AssetType type);
-	AssetType AssetTypeFromString(const std::string& assetType);
+	const String& AssetTypeToString(AssetType type);
+	AssetType AssetTypeFromString(const String& assetType);
 
 	class Asset
 	{

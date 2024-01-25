@@ -48,7 +48,9 @@ namespace Eklipse
 		{
 			EK_PROFILE();
 
+#ifdef EK_DEBUG
 			if (m_isValid)
+#endif
 				glUseProgram(m_id);
 		}
 		void GLShader::Unbind() const
@@ -63,12 +65,15 @@ namespace Eklipse
 				glDeleteProgram(m_id);
 		}
 
-		const std::string GLShader::GetCacheDirectoryPath()
+		const String GLShader::GetCacheDirectoryPath()
 		{
 			return "Assets/Cache/Shader/OpenGL";
 		}
 		bool GLShader::Compile(bool forceCompile)
 		{
+			EK_PROFILE();
+			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", m_name);
+
 			auto shaderSources = Setup();
 			bool success = true;
 
@@ -84,11 +89,15 @@ namespace Eklipse
 				else EK_CORE_ERROR("Failed to compile shader {0}", Handle);
 			}
 
+			EK_CORE_DBG("Compiled OpenGL shader '{0}'", m_name);
 			return success;
 		}
 
 		bool GLShader::CompileOrGetOpenGLBinaries(bool forceCompile)
 		{
+			EK_PROFILE();
+			EK_CORE_TRACE("Compiling or getting binaries for OpenGL shader '{0}'", m_name);
+
 			auto& shaderData = m_openGLSPIRV;
 
 			bool success = true;
@@ -97,7 +106,7 @@ namespace Eklipse
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 			options.SetSourceLanguage(shaderc_source_language_glsl);
 
-			std::filesystem::path cacheDirectory = GetCacheDirectoryPath();
+			Path cacheDirectory = GetCacheDirectoryPath();
 
 			auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
 
@@ -105,7 +114,7 @@ namespace Eklipse
 			m_openGLSourceCode.clear();
 			for (auto&& [stage, spirv] : m_vulkanSPIRV)
 			{
-				std::filesystem::path cachedPath = cacheDirectory / (m_name + GLShaderStageCachedOpenGLFileExtension(stage));
+				Path cachedPath = cacheDirectory / (m_name + GLShaderStageCachedOpenGLFileExtension(stage));
 
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (!forceCompile && in.is_open())
@@ -167,10 +176,14 @@ namespace Eklipse
 					}
 				}
 			}
+			EK_CORE_DBG("Compiled or got binaries for OpenGL shader '{0}'", m_name);
 			return success;
 		}
 		void GLShader::CreateProgram()
 		{
+			EK_PROFILE();
+			EK_CORE_TRACE("Creating OpenGL shader program '{0}'", m_name);
+
 			GLuint program = glCreateProgram();
 
 			std::vector<GLuint> shaderIDs;
@@ -218,6 +231,8 @@ namespace Eklipse
 			EK_ASSERT(isValid, "Shader validation failed ({0})", Handle);
 
 			m_id = program;
+
+			EK_CORE_DBG("Created OpenGL shader program '{0}' with id {1}", m_name, m_id);
 		}
 	}
 }

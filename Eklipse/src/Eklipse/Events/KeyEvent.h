@@ -25,7 +25,7 @@ namespace Eklipse
 
 		inline int GetRepeatCount() const { return m_repeatCount; }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyPressedEvent: " << m_keyCode << " (" << m_repeatCount << " repeats)";
@@ -46,7 +46,7 @@ namespace Eklipse
 		KeyReleasedEvent(int keycode)
 			: KeyEvent(keycode) {}
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyReleasedEvent: " << m_keyCode;

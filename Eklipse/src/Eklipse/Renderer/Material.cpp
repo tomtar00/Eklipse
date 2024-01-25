@@ -12,7 +12,7 @@
 
 namespace Eklipse
 {
-    static std::string DataTypeToString(ShaderDataType type)
+    static String DataTypeToString(ShaderDataType type)
     {
         switch (type)
         {
@@ -111,10 +111,12 @@ namespace Eklipse
 
     void Material::Bind()
     {
+        EK_PROFILE();
         m_shader->Bind();
     }
     void Material::ApplyChanges()
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Applying changes to material '{0}'", m_name);
 
         auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
@@ -133,6 +135,7 @@ namespace Eklipse
 
     void Material::SetShader(Ref<Shader> shader)
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", m_name, shader->GetName());
 
         EK_ASSERT(shader != nullptr, "Shader is null");
@@ -171,6 +174,7 @@ namespace Eklipse
     }
     void Material::OnShaderReloaded()
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Material::OnShaderReloaded for material '{0}'", m_name);
 
         // Applying new shader constants
@@ -191,7 +195,7 @@ namespace Eklipse
                     auto& oldPushConstant = it->second;
 
                     uint32_t offset = 0;
-                    std::unordered_map<std::string, PushConstantData> dataPointers;
+                    std::unordered_map<String, PushConstantData> dataPointers;
                     for (auto& member : pushConstantRef.members)
                     {
                         auto& dataPointer = dataPointers[member.name];
@@ -243,6 +247,7 @@ namespace Eklipse
     }
     bool Material::Serialize(const Path& path)
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Serializing material '{0}' to '{1}'", m_name, path.string());
 
         YAML::Emitter out;
@@ -302,6 +307,7 @@ namespace Eklipse
     }
     bool Material::Deserialize(const Path& path)
     {
+        EK_PROFILE();
         EK_CORE_TRACE("Deserializing material '{0}' from '{1}'", m_name, path.string());
 
         YAML::Node yaml;
@@ -322,7 +328,7 @@ namespace Eklipse
 			return;
 		}
 
-        m_name = yaml["Name"].as<std::string>();
+        m_name = yaml["Name"].as<String>();
 
         if (!yaml["Shader"])
         {
@@ -344,11 +350,11 @@ namespace Eklipse
             for (YAML::iterator it = constantsNode.begin(); it != constantsNode.end(); ++it) 
             {
                 auto& pushConstant = it->second;
-                std::string& constantName = it->first.as<std::string>();
+                String& constantName = it->first.as<String>();
                 for (YAML::iterator it = pushConstant.begin(); it != pushConstant.end(); ++it)
                 {
                     auto& member = *it;
-                    std::string memberName = member["Name"].as<std::string>();
+                    String memberName = member["Name"].as<String>();
                     if (!member.IsDefined() || member.IsNull())
                     {
                         EK_CORE_ERROR("Failed to deserialize. Member '{1}' is not defined in material '{2}'", memberName, path.string());
@@ -357,7 +363,7 @@ namespace Eklipse
                     {
                         auto& memberData = member["Data"];
                         void* data = m_pushConstants[constantName].dataPointers[memberName].data;
-                        std::string memberType = member["Type"].as<std::string>();
+                        String memberType = member["Type"].as<String>();
 
                         try
                         {
@@ -403,7 +409,7 @@ namespace Eklipse
         return true;
     }
 
-    const std::string& Material::GetName() const
+    const String& Material::GetName() const
     {
         return m_name;
     }

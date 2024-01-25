@@ -39,27 +39,17 @@ namespace Eklipse
 		// === Frame Management ===
 		void BeginFrame(float* deltaTime);
 		void EndFrame(float deltaTime);
-		void SetAPI(ApiType api);
 
 		// === Getters ===
 		static Application& Get();
 		const ApplicationInfo& GetInfo() const;
-		const Ref<Scene> GetActiveScene() const;
 		const Ref<Window> GetWindow() const;
-		const Ref<AssetLibrary> GetAssetLibrary() const;
 		const bool IsRunning() const;
 		const bool ShouldQuit() const;
 		const bool IsMinimized() const;
-		DebugPanel& GetDebugPanel();
-		TerminalPanel& GetTerminalPanel();
-		ScriptLinker& GetScriptLinker();
-		Unique<Terminal>& GetTerminal();
 
 		// === Setters ===
-		void SetActiveScene(Ref<Scene> scene);
-
-		void SwitchScene(Ref<Scene> scene);
-		const Ref<AssetLibrary> GetMainAssetLibrary() const;
+		void SetAPI(ApiType api);
 
 		// === Virtual Event Handling ===
 		virtual void OnInitAPI(ApiType api) {}
@@ -79,6 +69,7 @@ namespace Eklipse
 		void PopLayer(Ref<Layer> layer);
 		void PopOverlay(Ref<Layer> overlay);
 
+		// === Fucntion Queues ===
 		void SubmitToMainThread(const std::function<void()>& function);
 		void SubmitToWindowFocus(const std::function<void()>& function);
 
@@ -96,14 +87,7 @@ namespace Eklipse
 
 	protected:
 		Ref<Window> m_window;
-		Ref<AssetLibrary> m_assetLibrary;
-		Ref<Scene> m_activeScene;
-
 		LayerStack m_layerStack;
-		ScriptLinker m_scriptLinker;
-
-		DebugPanel m_debugPanel;
-		TerminalPanel m_terminalPanel;
 
 	private:
 		static Application* s_instance;

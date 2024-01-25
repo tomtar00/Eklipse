@@ -17,6 +17,6 @@ namespace Eklipse
 		std::vector<std::function<void()>> m_drawRequests;
 
 		// Using it this way, because string() method of filesystem::path returns string copy
-		std::vector<std::pair<const char*, std::string>> m_projectConfigData;
+		std::vector<std::pair<const char*, String>> m_projectConfigData;
 	};
 }

@@ -26,21 +26,21 @@ namespace Eklipse
 	// Buffer data
 	struct ShaderUniformMember
 	{
-		std::string name;
+		String name;
 		size_t size;
 		size_t offset;
 		ShaderDataType type;
 	};
 	struct ShaderUniformBuffer
 	{
-		std::string name;
+		String name;
 		size_t size;
 		uint32_t binding;
 		std::vector<ShaderUniformMember> members;
 	};
 	struct ShaderPushConstant
 	{
-		std::string name;
+		String name;
 		size_t size;
 		std::vector<ShaderUniformMember> members;
 	};
@@ -48,21 +48,21 @@ namespace Eklipse
 	// Samplers
 	struct ShaderSampler
 	{
-		std::string name;
+		String name;
 		uint32_t binding;
 	};
 	
 	// Inputs and outputs
 	struct ShaderInput
 	{
-		std::string name;
+		String name;
 		uint32_t location;
 		size_t size;
 		size_t offset;
 	};
 	struct ShaderOutput
 	{
-		std::string name;
+		String name;
 		uint32_t location;
 		size_t size;
 	};
@@ -78,12 +78,12 @@ namespace Eklipse
 		uint32_t maxLocation = 0;
 	};
 
-	ShaderStage StringToShaderStage(const std::string& stage);
-	std::string ShaderStageToString(ShaderStage stage);
+	ShaderStage StringToShaderStage(const String& stage);
+	String ShaderStageToString(ShaderStage stage);
 	uint32_t ShaderStageToShaderC(const ShaderStage stage);
 
 	using StageReflectionMap = std::map<ShaderStage, ShaderReflection>;
-	using StageSourceMap = std::unordered_map<ShaderStage, std::string>;
+	using StageSourceMap = std::unordered_map<ShaderStage, String>;
 	using StageSpirvMap = std::unordered_map<ShaderStage, std::vector<uint32_t>>;
 	
 	class Shader : public Asset
@@ -96,7 +96,7 @@ namespace Eklipse
 		StageSourceMap Shader::Setup();
 		bool Recompile();
 
-		const std::string& GetName() const;
+		const String& GetName() const;
 		const StageReflectionMap& GetReflections() const;
 		const ShaderReflection& GetVertexReflection();
 		const ShaderReflection& GetFragmentReflection();
@@ -110,15 +110,15 @@ namespace Eklipse
 		virtual void Dispose() const = 0;
 
 	protected:
-		void Reflect(const StageSpirvMap& shaderData, const std::string& shaderName);
+		void Reflect(const StageSpirvMap& shaderData, const String& shaderName);
 		bool CompileOrGetVulkanBinaries(const StageSourceMap& shaderSources, bool forceCompile);
-		StageSourceMap PreProcess(const std::string& source) const;
+		StageSourceMap PreProcess(const String& source) const;
 
 		virtual bool Compile(bool forceCompile = false) = 0;
-		virtual const std::string GetCacheDirectoryPath() = 0;
+		virtual const String GetCacheDirectoryPath() = 0;
 
 	protected:
-		std::string m_name;
+		String m_name;
 		bool m_isValid;
 
 		StageReflectionMap m_reflections;

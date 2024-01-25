@@ -16,28 +16,28 @@ namespace Eklipse
 	class EditorAssetLibrary : public AssetLibrary
 	{
 	public:
-		EditorAssetLibrary(const std::filesystem::path& assetDirectory);
+		EditorAssetLibrary(const Path& assetDirectory);
 
 		virtual Ref<Asset> GetAsset(AssetHandle handle) override;
 		virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 
-		void ImportAsset(const std::filesystem::path& filepath);
+		void ImportAsset(const Path& filepath);
 
 		void SerializeAssetRegistry();
 		bool DeserializeAssetRegistry();
 
-		void OnFileWatchEvent(const std::string& path, filewatch::Event change_type);
+		void OnFileWatchEvent(const String& path, filewatch::Event change_type);
 
 	private:
-		AssetHandle GetHandleFromAssetPath(const std::filesystem::path& path) const;
+		AssetHandle GetHandleFromAssetPath(const Path& path) const;
 
 	private:
 		AssetRegistry m_assetRegistry;
-		std::filesystem::path m_assetDirectory;
+		Path m_assetDirectory;
 
-		Unique<filewatch::FileWatch<std::string>> m_fileWatcher;
+		Unique<filewatch::FileWatch<String>> m_fileWatcher;
 		bool m_shaderReloadPending;
 	};
 }

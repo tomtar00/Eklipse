@@ -28,6 +28,14 @@
 #include <array>
 #include <cstdarg>
 
+namespace Eklipse
+{
+	namespace fs = std::filesystem;
+	using Path = fs::path;
+
+	using String = std::string;
+}
+
 #include <Eklipse/Core/Core.h>
 #include <Eklipse/Utils/Stats.h>
 #include <Eklipse/Profiler/Profiler.h>

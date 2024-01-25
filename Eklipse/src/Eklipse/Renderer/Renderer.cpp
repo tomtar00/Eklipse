@@ -23,7 +23,7 @@ extern "C" {
 
 namespace Eklipse
 {
-	const std::string APITypeToString(ApiType apiType)
+	const String APITypeToString(ApiType apiType)
 	{
 		switch (apiType)
 		{
@@ -35,7 +35,7 @@ namespace Eklipse
 
 	RendererSettings Renderer::s_settings;
 	ApiType	Renderer::s_apiType = ApiType::Vulkan;
-	std::unordered_map<std::string, Ref<UniformBuffer>, std::hash<std::string>>	Renderer::s_uniformBufferCache;
+	std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
 	static Ref<UniformBuffer> s_cameraUniformBuffer;
 
 	bool Renderer::Init()
@@ -182,7 +182,7 @@ namespace Eklipse
 	}
 
 	// Uniform buffers
-	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const std::string& uniformBufferName, const size_t size, const uint32_t binding)
+	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding)
 	{
 		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
 		{
@@ -194,7 +194,7 @@ namespace Eklipse
 		EK_CORE_DBG("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
 		return uniformBuffer;
 	}
-	Ref<UniformBuffer> Renderer::GetUniformBuffer(const std::string& uniformBufferName)
+	Ref<UniformBuffer> Renderer::GetUniformBuffer(const String& uniformBufferName)
 	{
 		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
 		{

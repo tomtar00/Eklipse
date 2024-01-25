@@ -32,9 +32,9 @@ namespace Eklipse
 
 		// Breadcrumbs
 		{
-			std::vector<std::filesystem::path> paths;
-			std::filesystem::path path = m_currentPath;
-			while (path != std::filesystem::path(m_workingDirPath).parent_path())
+			std::vector<Path> paths;
+			Path path = m_currentPath;
+			while (path != Path(m_workingDirPath).parent_path())
 			{
 				paths.push_back(path);
 				path = path.parent_path();
@@ -68,7 +68,7 @@ namespace Eklipse
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_currentPath))
 		{
 			const auto& path = directoryEntry.path();
-			std::string filenameString = path.filename().string();
+			String filenameString = path.filename().string();
 
 			ImGui::PushID(filenameString.c_str());
 			Ref<GuiIcon> icon = directoryEntry.is_directory() ? m_folderIcon : m_fileIcon;
@@ -77,7 +77,7 @@ namespace Eklipse
 
 			if (ImGui::BeginDragDropSource())
 			{
-				std::filesystem::path relativePath(path);
+				Path relativePath(path);
 				const wchar_t* itemPath = relativePath.c_str();
 				ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
 				ImGui::EndDragDropSource();
@@ -152,7 +152,7 @@ namespace Eklipse
 			// create folder
 			if (ImGui::BeginPopupModal("Create New Folder", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				static std::string folderName = "NewFolder";
+				static String folderName = "NewFolder";
 
 				ImGui::InputText("Folder Name", &folderName);
 
@@ -171,7 +171,7 @@ namespace Eklipse
 
 			if (ImGui::BeginPopupModal("Create New Shader", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				static std::string shaderName = "NewShader";
+				static String shaderName = "NewShader";
 				static int templateOption = true;
 
 				ImGui::InputText("Shader Name", &shaderName);
@@ -198,7 +198,7 @@ namespace Eklipse
 
 			if (ImGui::BeginPopupModal("Create New Material", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				static std::string materialName = "NewMaterial";
+				static String materialName = "NewMaterial";
 				static Path shaderPath = "//Shaders/Default3D.eksh";
 
 				ImGui::TextUnformatted("Material Name");

@@ -16,8 +16,8 @@ namespace Eklipse
 		void CreateShader(const Path& dstPath, const Path& templatePath);
 
 	private:
-		std::filesystem::path m_currentPath;
-		std::filesystem::path m_workingDirPath;
+		Path m_currentPath;
+		Path m_workingDirPath;
 
 		Ref<GuiIcon> m_folderIcon;
 		Ref<GuiIcon> m_fileIcon;

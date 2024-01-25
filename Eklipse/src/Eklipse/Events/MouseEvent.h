@@ -15,7 +15,7 @@ namespace Eklipse
 		inline float GetX() const { return m_mouseX; }
 		inline float GetY() const { return m_mouseY; }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseMovedEvent: " << m_mouseX << ", " << m_mouseY;
@@ -39,7 +39,7 @@ namespace Eklipse
 		inline float GetXOffset() const { return m_xOffset; }
 		inline float GetYOffset() const { return m_yOffset; }
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseScrolledEvent: " << GetXOffset() << ", " << GetYOffset();
@@ -73,7 +73,7 @@ namespace Eklipse
 		MouseButtonPressedEvent(int button)
 			: MouseButtonEvent(button) {}
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseButtonPressedEvent: " << m_button;
@@ -90,7 +90,7 @@ namespace Eklipse
 		MouseButtonReleasedEvent(int button)
 			: MouseButtonEvent(button) {}
 
-		std::string ToString() const override
+		String ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseButtonReleasedEvent: " << m_button;

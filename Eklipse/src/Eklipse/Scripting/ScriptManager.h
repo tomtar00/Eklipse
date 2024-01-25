@@ -1,5 +1,5 @@
-#pragma once
-#include "ScriptParser.h"
+#pragma 
+#include "ScriptLinker.h"
 
 #include <dylib.hpp>
 #include <FileWatch.hpp>
@@ -36,32 +36,32 @@ namespace Eklipse
 	class ScriptManager
 	{
 	public:
-		ScriptManager(ScriptManagerSettings* settings);
-		~ScriptManager() = default;
+		ScriptManager(Ref<ScriptLinker> scrtiptLinker, ScriptManagerSettings* settings);
 
 		void Load();
 		void Unload();
 
 		void RecompileAll();
-		bool GenerateFactoryFile(const std::filesystem::path& targetDirectoryPath);
-		void RunPremake(const std::filesystem::path& premakeDirPath);
-		void CompileScripts(const std::filesystem::path& sourceDirectoryPath, const std::string& configuration);
+		bool GenerateFactoryFile(const Path& targetDirectoryPath);
+		void RunPremake(const Path& premakeDirPath);
+		void CompileScripts(const Path& sourceDirectoryPath, const String& configuration);
 
-		const std::string& GetState() const { return m_stateString; }
+		const String& GetState() const { return m_stateString; }
 		const ScriptsState GetScriptsState() const { return m_state; }
 
 	private:
 		void StartWatchingSource();
 		void StopWatchingSource();
-		void OnSourceWatchEvent(const std::string& path, filewatch::Event change_type);
+		void OnSourceWatchEvent(const String& path, filewatch::Event change_type);
 
 		void SetState(ScriptsState state);
 		
 	private:
 		ScriptManagerSettings* m_settings;
 		ScriptsState m_state;
-		std::string m_stateString;
+		String m_stateString;
 
-		Unique<filewatch::FileWatch<std::string>> m_sourceWatcher;
+		Ref<ScriptLinker> m_scriptLinker;
+		Unique<filewatch::FileWatch<String>> m_sourceWatcher;
 	};
 }
