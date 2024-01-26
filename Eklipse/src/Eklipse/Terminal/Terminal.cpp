@@ -59,6 +59,7 @@ namespace Eklipse
 			[this](const ParsedCommand& cmd) { Clear(); } 
 		});
 	}
+
 	void Terminal::AddCommand(const TerminalCommand& command)
 	{
 		m_commands.push_back(command);
@@ -95,6 +96,7 @@ namespace Eklipse
 	{
 		m_sink->m_buffer.clear();
 	}
+
 	void Terminal::HistoryUp()
 	{
 		if (m_history.size() == 0)
@@ -116,5 +118,33 @@ namespace Eklipse
 			m_historyIndex = m_history.size() - 1;
 
 		m_historyBuffer = m_history[m_historyIndex];
+	}
+
+	String& Terminal::GetLevelString()
+	{
+		return m_levelString;
+	}
+	String& Terminal::GetHistoryBuffer()
+	{
+		return m_historyBuffer;
+	}
+	Ref<TerminalSink<std::mutex>> Terminal::GetSink()
+	{
+		return m_sink;
+	}
+	std::deque<Message>& Terminal::GetBuffer()
+	{
+		return m_sink->m_buffer;
+	}
+	spdlog::level::level_enum Terminal::GetLevel() const
+	{
+		return m_level;
+	}
+
+	void Terminal::SetLevel(spdlog::level::level_enum level, const char* name)
+	{
+		Clear(); 
+		m_level = level; m_levelString = name; 
+		spdlog::set_level(level);
 	}
 }

@@ -6,29 +6,37 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) : m_id(0), m_framebufferInfo(framebufferInfo)
+		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) 
+			: Framebuffer(framebufferInfo), m_id(0), m_framebufferInfo(framebufferInfo)
 		{
 			m_aspectRatio = (float)framebufferInfo.width / (float)framebufferInfo.height;
 
-			if (framebufferInfo.framebufferType & FramebufferType::DEFAULT)
+			if (framebufferInfo.isDefaultFramebuffer)
 			{
-				EK_ASSERT(g_GLDefaultFramebuffer == nullptr, "Default framebuffer already exists!");
-				g_defaultFramebuffer = g_GLDefaultFramebuffer = this;
+				EK_ASSERT(false, "OpenGL does not need a default framebuffer, it already has one!");
 			}
-			if (framebufferInfo.framebufferType & FramebufferType::SCENE_VIEW)
+			else
 			{
-				EK_ASSERT(g_GLSceneFramebuffer == nullptr, "Scene framebuffer already exists!");
-				g_sceneFramebuffer = g_GLSceneFramebuffer = this;
+				g_offScreenFramebuffers.push_back(this);
+				g_GLOffScreenFramebuffers.push_back(this);
 			}
 
 			Build();
 		}
+
 		FramebufferInfo& GLFramebuffer::GetInfo()
 		{
 			return m_framebufferInfo;
 		}
+		uint32_t GLFramebuffer::GetMainColorAttachment()
+		{
+			return m_colorAttachments[0];
+		}
+
 		void GLFramebuffer::Build()
 		{
+			EK_PROFILE();
+
 			glGenFramebuffers(1, &m_id);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
@@ -104,6 +112,8 @@ namespace Eklipse
 		}
 		void GLFramebuffer::Bind()
 		{
+			EK_PROFILE();
+
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
 			glViewport(0, 0, m_framebufferInfo.width, m_framebufferInfo.height);
@@ -118,6 +128,8 @@ namespace Eklipse
 		}
 		void GLFramebuffer::Unbind()
 		{
+			EK_PROFILE();
+
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			g_currentFramebuffer = nullptr;
 		}

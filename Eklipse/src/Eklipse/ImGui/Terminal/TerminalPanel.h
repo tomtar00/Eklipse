@@ -10,9 +10,9 @@ namespace Eklipse
 		TerminalPanel();
 		bool OnGUI(float deltaTime) override;
 
-		Unique<Terminal>& GetTerminal() { return m_terminal; }
+		Terminal& GetTerminal();
 
 	private:
-		Unique<Terminal> m_terminal;
+		Terminal m_terminal;
 	};
 }

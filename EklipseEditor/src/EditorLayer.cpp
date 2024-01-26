@@ -58,8 +58,8 @@ namespace Eklipse
 		Ref<ScriptLinker> scriptLinker = CreateRef<ScriptLinker>();
 		m_scriptManager = CreateRef<ScriptManager>(scriptLinker, &m_settings.ScriptManagerSettings);
 
-		Log::AddCoreSink(m_terminalPanel.GetTerminal()->GetSink());
-		Log::AddClientSink(m_terminalPanel.GetTerminal()->GetSink());
+		Log::AddCoreSink(m_terminalPanel.GetTerminal().GetSink());
+		Log::AddClientSink(m_terminalPanel.GetTerminal().GetSink());
 
 		DeserializeSettings();
 		EK_TRACE("Editor layer attached");
@@ -281,23 +281,9 @@ namespace Eklipse
 	// === API Events ===
 	void EditorLayer::OnAPIHasInitialized(ApiType api)
 	{
-		// Create default framebuffer (for ImGui)
-		{
-			FramebufferInfo fbInfo{};
-			fbInfo.framebufferType			= FramebufferType::DEFAULT;
-			fbInfo.width					= Application::Get().GetInfo().windowWidth;
-			fbInfo.height					= Application::Get().GetInfo().windowHeight;
-			fbInfo.numSamples				= 1;
-			fbInfo.colorAttachmentInfos		= { { ImageFormat::RGBA8 } };
-			fbInfo.depthAttachmentInfo		= { ImageFormat::FORMAT_UNDEFINED };
-
-			m_defaultFramebuffer = Framebuffer::Create(fbInfo);
-		}
-
 		// Create off-screen framebuffer (for scene view)
 		{
 			FramebufferInfo fbInfo{};
-			fbInfo.framebufferType			= FramebufferType::SCENE_VIEW;
 			fbInfo.width					= GetViewPanel().GetViewportSize().x > 0 ? GetViewPanel().GetViewportSize().x : 512;
 			fbInfo.height					= GetViewPanel().GetViewportSize().y > 0 ? GetViewPanel().GetViewportSize().y : 512;
 			fbInfo.numSamples				= Renderer::GetSettings().GetMsaaSamples();
@@ -344,7 +330,7 @@ namespace Eklipse
 			return;
 		}
 
-		m_scriptManager->RunPremake(Project::GetConfig().scriptPremakeDirectoryPath);
+		m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
 		m_scriptManager->Load();
 
 		auto scene = Scene::New();
@@ -399,6 +385,13 @@ namespace Eklipse
 	}
 	void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
 	{
+		EK_ASSERT(Project::GetActive(), "Project is null!");
+
+		SaveProject();
+		if (Project::GetActive()->GetConfig().configuration != exportSettings.configuration)
+		{
+			m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.configuration);
+		}
 		if (!ProjectExporter::Export(Project::GetActive(), exportSettings))
 		{
 			EK_ERROR("Failed to export project!");

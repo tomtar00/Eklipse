@@ -36,25 +36,19 @@ namespace Eklipse
 		QueueFamilyIndices	g_queueFamilyIndices;
 
 		uint32_t			g_currentFrame;
-		uint32_t			g_imageIndex;
-
-		//ColorImage			g_colorImage;
-		//DepthImage			g_depthImage;
+		//uint32_t			g_imageIndex;
 
 		VkCommandBuffer		g_currentCommandBuffer = VK_NULL_HANDLE;
 
-		VKFramebuffer*		g_VKSceneFramebuffer;
+		//VKFramebuffer*		g_VKSceneFramebuffer;
+		std::vector<VKFramebuffer*> g_VKOffScreenFramebuffers{};
 		VKFramebuffer*		g_VKDefaultFramebuffer;
 
 		VulkanAPI::VulkanAPI() : GraphicsAPI()
 		{
-			s_instance = this;
 			g_currentFrame = 0;
 		}
-		VulkanAPI& VulkanAPI::Get()
-		{
-			return *s_instance;
-		}
+
 		bool VulkanAPI::Init()
 		{
 			if (m_initialized)
@@ -69,30 +63,21 @@ namespace Eklipse
 				CreateSurface();
 				SetupValidationLayers();
 				PickPhysicalDevice();
+
 				g_queueFamilyIndices = FindQueueFamilies(g_physicalDevice);
 				vkGetPhysicalDeviceMemoryProperties(g_physicalDevice, &g_physicalDeviceMemoryProps);
+
 				CreateLogicalDevice();
-
-				VmaAllocatorCreateInfo allocatorCreateInfo = {};
-				VmaVulkanFunctions func = {};
-				func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-				func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
-				allocatorCreateInfo.pVulkanFunctions = &func;
-				allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
-				allocatorCreateInfo.physicalDevice = g_physicalDevice;
-				allocatorCreateInfo.device = g_logicalDevice;
-				allocatorCreateInfo.instance = g_instance;
-				VkResult res = vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
-				HANDLE_VK_RESULT(res, "CREATE VMA ALLOCATOR");
-
+				CreateAllocator();
 
 				g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-				g_descriptorPool = CreateDescriptorPool({
+				g_descriptorPool = CreateDescriptorPool(
+				{
 					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			100	},
 					{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	100	},
 					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			100	}
-					}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+				}, 100, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
 
 				// PARTICLES ////////////////////////////////////////
 
@@ -118,6 +103,7 @@ namespace Eklipse
 
 				///////////////////////////////////////////////////
 
+				CreateDefaultFramebuffer();
 				CreateSyncObjects();
 
 				EK_CORE_DBG("Vulkan initialized");
@@ -147,23 +133,10 @@ namespace Eklipse
 
 			// GEOMETRY //////////////////////////////////////////
 
-			//g_colorImage.Dispose();
-			//g_depthImage.Dispose();
-
-			// DestroyImageViews(g_swapChainImageViews);
-			// vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
 			if (g_descriptorPool)
 			{
 				vkDestroyDescriptorPool(g_logicalDevice, g_descriptorPool, nullptr);
 			}
-
-			//DestroyFrameBuffers(g_swapChainFramebuffers);
-			//
-			//vkDestroyDescriptorSetLayout(g_logicalDevice, g_graphicsDescriptorSetLayout, nullptr);
-			//
-			//vkDestroyRenderPass(g_logicalDevice, g_renderPass, nullptr);
-			//vkDestroyPipeline(g_logicalDevice, g_graphicsPipeline, nullptr);
-			//vkDestroyPipelineLayout(g_logicalDevice, g_graphicsPipelineLayout, nullptr);
 
 			for (int i = 0; i < g_maxFramesInFlight; i++)
 			{
@@ -173,8 +146,6 @@ namespace Eklipse
 				if (m_computeFinishedSemaphores.size() && m_computeFinishedSemaphores[i])	vkDestroySemaphore(g_logicalDevice, m_computeFinishedSemaphores[i], nullptr);
 				if (m_computeInFlightFences.size() && m_computeInFlightFences[i])			vkDestroyFence(g_logicalDevice, m_computeInFlightFences[i], nullptr);
 			}
-
-			//FreeCommandBuffers(g_drawCommandBuffers, g_commandPool);
 
 			// PARTICLES //////////////////////////////////////////
 
@@ -189,6 +160,8 @@ namespace Eklipse
 			//FreeCommandBuffers(g_computeCommandBuffers, g_commandPool);
 
 			// COMMON /////////////////////////////////////////////
+
+			m_defaultFramebuffer->Dispose();
 
 			DestroyValidationLayers();
 			if (g_commandPool)
@@ -215,7 +188,7 @@ namespace Eklipse
 			}
 
 			g_VKDefaultFramebuffer = nullptr;
-			g_VKSceneFramebuffer = nullptr;
+			g_VKOffScreenFramebuffers.clear();
 
 			EK_CORE_DBG("Vulkan shutdown");
 			m_initialized = false;
@@ -224,10 +197,15 @@ namespace Eklipse
 		{
 			vkDeviceWaitIdle(g_logicalDevice);
 		}
+
 		void VulkanAPI::BeginFrame()
 		{
 			vkWaitForFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
-			VkResult result = vkAcquireNextImageKHR(g_logicalDevice, g_swapChain, UINT64_MAX, m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, &g_imageIndex);
+			VkResult result = vkAcquireNextImageKHR(
+				g_logicalDevice, g_swapChain, UINT64_MAX, 
+				m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, 
+				m_defaultFramebuffer->GetImageIndexPtr()
+			);
 			vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
 		}
 		void VulkanAPI::EndFrame()
@@ -235,10 +213,10 @@ namespace Eklipse
 			std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
 			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
-			std::vector<VkCommandBuffer> commandBuffers = { };
+			std::vector<VkCommandBuffer> commandBuffers(1 + g_VKOffScreenFramebuffers.size());
 
 			// TODO: get rid of 'if' statments
-			if (g_VKDefaultFramebuffer == g_VKSceneFramebuffer)
+			/*if (g_VKDefaultFramebuffer == g_VKSceneFramebuffer)
 			{
 				commandBuffers.push_back(g_VKSceneFramebuffer->GetCommandBuffer(g_currentFrame));
 			}
@@ -252,6 +230,11 @@ namespace Eklipse
 				{
 					commandBuffers.push_back(g_VKDefaultFramebuffer->GetCommandBuffer(g_currentFrame));
 				}
+			}*/
+			commandBuffers.emplace_back(m_defaultFramebuffer->GetCommandBuffer(g_currentFrame));
+			for (auto& framebuffer : g_VKOffScreenFramebuffers)
+			{
+				commandBuffers.emplace_back(framebuffer->GetCommandBuffer(g_currentFrame));
 			}
 
 			VkSubmitInfo submitInfo{};
@@ -273,7 +256,7 @@ namespace Eklipse
 			presentInfo.pWaitSemaphores = signalSemaphores.data();
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = &g_swapChain;
-			presentInfo.pImageIndices = &g_imageIndex;
+			presentInfo.pImageIndices = m_defaultFramebuffer->GetImageIndexPtr();
 			presentInfo.pResults = nullptr;
 
 			result = vkQueuePresentKHR(g_presentQueue, &presentInfo);
@@ -281,36 +264,15 @@ namespace Eklipse
 
 			g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
 		}
-		//void VulkanAPI::BeginGeometryPass()
-		//{
-		//	//g_currentCommandBuffer = m_viewportCommandBuffer = g_viewportCommandBuffers[g_currentFrame];
-		//	//BeginRenderPass(g_viewportRenderPass, g_currentCommandBuffer, g_viewportFrameBuffers[g_viewportImageIndex], g_viewportExtent);
-		//	//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_viewportPipeline);
-		//}
-		//void VulkanAPI::BeginGUIPass()
-		//{
-		//	//g_currentCommandBuffer = m_imguiCommandBuffer = g_imguiCommandBuffers[g_currentFrame];
-		//	//BeginRenderPass(g_imguiRenderPass, g_currentCommandBuffer, g_imguiFrameBuffers[g_imageIndex], g_swapChainExtent);
-		//	//vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_graphicsPipeline);
-		//}
-		//void VulkanAPI::EndPass()
-		//{
-		//	//EndRenderPass(g_currentCommandBuffer);
-		//}
+
 		void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
 		{
 			uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
 			vkCmdDrawIndexed(g_currentCommandBuffer, numIndices, 1, 0, 0, 0);
 		}
+
 		void VulkanAPI::CreateInstance()
 		{
-			/*VkResult res;
-			if (g_validationLayersEnabled)
-			{
-				res = CheckValidationLayersSupport();
-				HANDLE_VK_RESULT(res, "VALIDATION LAYERS SUPPORT");
-			}*/
-
 			VkApplicationInfo appInfo{};
 			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 			appInfo.pApplicationName = "Eklipse App";
@@ -341,54 +303,19 @@ namespace Eklipse
 			VkResult res = vkCreateInstance(&createInfo, nullptr, &g_instance);
 			HANDLE_VK_RESULT(res, "CREATE INSTANCE");
 		}
-		/*void VulkanAPI::RecreateSwapChain()
+		void VulkanAPI::CreateAllocator()
 		{
-			 while (Application::Get().GetWindow()->GetData().minimized)
-			 {
-			 	glfwWaitEvents();
-			 }
-
-			vkDeviceWaitIdle(g_logicalDevice);
-
-			DestroyFrameBuffers(g_imguiFrameBuffers);
-			DestroyFrameBuffers(g_swapChainFramebuffers);
-			DestroyImageViews(g_swapChainImageViews);
-			vkDestroySwapchainKHR(g_logicalDevice, g_swapChain, nullptr);
-
-			g_depthImage.Dispose();
-			g_colorImage.Dispose();
-
-			int width, height;
-			Application::Get().GetWindow()->GetFramebufferSize(width, height);
-			g_swapChain = CreateSwapChain(width, height, g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
-			CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
-
-			g_colorImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-			g_depthImage.Setup((VkSampleCountFlagBits)RendererSettings::GetMsaaSamples());
-
-			CreateFrameBuffers(g_swapChainFramebuffers, g_swapChainImageViews, g_renderPass, g_swapChainExtent, false);
-			CreateFrameBuffers(g_imguiFrameBuffers, g_swapChainImageViews, g_imguiRenderPass, g_swapChainExtent, true);
-
-			 uint32_t width = Application::Get().GetInfo().windowWidth;
-			 uint32_t height = Application::Get().GetInfo().windowHeight;
-			 g_VKDefaultFramebuffer->Resize(width, height);
-		}*/
-		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
-		{
-#ifdef EK_PLATFORM_WINDOWS
-			uint32_t glfwExtensionCount = 0;
-			const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-			std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-			if (g_validationLayersEnabled)
-			{
-				extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-			}
-			return extensions;
-#else
-			EK_ASSERT(false, "Platform not supported!");
-#endif
+			VmaAllocatorCreateInfo allocatorCreateInfo = {};
+			VmaVulkanFunctions func = {};
+			func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+			func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+			allocatorCreateInfo.pVulkanFunctions = &func;
+			allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+			allocatorCreateInfo.physicalDevice = g_physicalDevice;
+			allocatorCreateInfo.device = g_logicalDevice;
+			allocatorCreateInfo.instance = g_instance;
+			VkResult res = vmaCreateAllocator(&allocatorCreateInfo, &g_allocator);
+			HANDLE_VK_RESULT(res, "CREATE VMA ALLOCATOR");
 		}
 		void VulkanAPI::CreateSurface()
 		{
@@ -399,6 +326,20 @@ namespace Eklipse
 #else
 			EK_ASSERT(false, "Platform not supported!");
 #endif
+		}
+		void VulkanAPI::CreateDefaultFramebuffer()
+		{
+			m_defaultFramebuffer.reset();
+
+			FramebufferInfo framebufferInfo{};
+			framebufferInfo.isDefaultFramebuffer = true;
+			framebufferInfo.width = Application::Get().GetInfo().windowWidth;
+			framebufferInfo.height = Application::Get().GetInfo().windowHeight;
+			framebufferInfo.numSamples = 1;
+			framebufferInfo.colorAttachmentInfos = { { ImageFormat::RGBA8 } };
+			framebufferInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
+
+			m_defaultFramebuffer = CreateRef<VKFramebuffer>(framebufferInfo);
 		}
 		void VulkanAPI::CreateSyncObjects()
 		{
@@ -431,6 +372,24 @@ namespace Eklipse
 				res = vkCreateFence(g_logicalDevice, &fenceInfo, nullptr, &m_computeInFlightFences[i]);
 				HANDLE_VK_RESULT(res, "CREATE COMPUTE FENCE");
 			}
+		}
+		
+		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
+		{
+#ifdef EK_PLATFORM_WINDOWS
+			uint32_t glfwExtensionCount = 0;
+			const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+			std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+			if (g_validationLayersEnabled)
+			{
+				extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+			}
+			return extensions;
+#else
+			EK_ASSERT(false, "Platform not supported!");
+#endif
 		}
 	}
 }

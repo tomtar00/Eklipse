@@ -23,7 +23,7 @@ namespace Eklipse
 		//std::vector<VkCommandBuffer>	g_imguiCommandBuffers{};
 		//std::vector<VkFramebuffer>		g_imguiFrameBuffers{};
 		//
-		uint32_t						g_viewportImageIndex = 0;
+		//uint32_t						g_viewportImageIndex = 0;
 		VkExtent2D						g_viewportExtent = { 512, 512 };
 		//VkRenderPass					g_viewportRenderPass = VK_NULL_HANDLE;
 		//VkPipeline						g_viewportPipeline = VK_NULL_HANDLE;
@@ -80,8 +80,6 @@ namespace Eklipse
 			EK_ASSERT(g_VKDefaultFramebuffer != nullptr, "Default framebuffer is null!");
 			ImGui_ImplVulkan_Init(&init_info, g_VKDefaultFramebuffer->GetRenderPass());
 
-			SetupDescriptorSets();
-
 			auto cmd = BeginSingleCommands();
 			ImGui_ImplVulkan_CreateFontsTexture(cmd);
 			EndSingleCommands(cmd);
@@ -123,35 +121,42 @@ namespace Eklipse
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_currentCommandBuffer);
 		}
-		void VkImGuiLayer::DrawViewport(float width, float height)
+		void VkImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
 		{
-			if (width != g_viewportExtent.width || height != g_viewportExtent.height)
+			if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
 			{
-				ResizeViewport(width, height);
+				ResizeViewport(framebuffer, width, height);
 			}
 
-			g_viewportImageIndex = (g_viewportImageIndex + 1) % g_swapChainImageCount;
-			ImGui::Image(m_imageDescrSets[g_viewportImageIndex], ImVec2{ width, height });
+			VKFramebuffer* vkFramebuffer = static_cast<VKFramebuffer*>(framebuffer);
+			*vkFramebuffer->GetImageIndexPtr() = (*vkFramebuffer->GetImageIndexPtr() + 1) % g_swapChainImageCount;
+			ImGui::Image(m_imageDescrSets[*vkFramebuffer->GetImageIndexPtr()], ImVec2{ width, height });
 		}
-		void VkImGuiLayer::ResizeViewport(float width, float height)
+		void VkImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
 		{
+			if (m_imageDescrSets.size() <= 0)
+			{
+				SetupDescriptorSets(framebuffer);
+			}
+
 			if (width > 0 && height > 0)
 			{
 				vkDeviceWaitIdle(g_logicalDevice);
 				g_viewportExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
-				g_VKSceneFramebuffer->Resize(width, height);
+				framebuffer->Resize(width, height);
 
 				vkFreeDescriptorSets(g_logicalDevice, m_imguiPool, m_imageDescrSets.size(), m_imageDescrSets.data());
-				SetupDescriptorSets();
+				SetupDescriptorSets(framebuffer);
 			}
 		}
-		void VkImGuiLayer::SetupDescriptorSets()
+		void VkImGuiLayer::SetupDescriptorSets(Framebuffer* framebuffer)
 		{
+			VKFramebuffer* vkFramebuffer = static_cast<VKFramebuffer*>(framebuffer);
 			m_imageDescrSets.resize(g_swapChainImageCount);
 			for (int i = 0; i < g_swapChainImageCount; ++i)
 			{
-				auto& texture = g_VKSceneFramebuffer->GetMainColorAttachment(i);
+				auto& texture = vkFramebuffer->GetMainColorAttachment(i);
 				m_imageDescrSets[i] = ImGui_ImplVulkan_AddTexture(texture.GetSampler(), texture.GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
 		}

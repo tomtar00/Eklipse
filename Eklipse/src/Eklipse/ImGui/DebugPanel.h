@@ -10,8 +10,8 @@ namespace Eklipse
 		virtual ~DebugPanel() = default;
 
 		bool OnGUI(float deltaTime) override;
-		void AppendDrawRequest(const std::function<void()>& drawRequest) { m_drawRequests.push_back(drawRequest); }
-		void DrawAssetLibrary(const char* name, Eklipse::Ref<Eklipse::AssetLibrary> assetLibrary);
+		void AppendDrawRequest(const std::function<void()>& drawRequest);
+		void DrawAssetLibrary(const char* name, Ref<AssetLibrary> assetLibrary);
 
 	private:
 		std::vector<std::function<void()>> m_drawRequests;

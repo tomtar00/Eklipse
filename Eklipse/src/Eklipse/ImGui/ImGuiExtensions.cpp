@@ -4,7 +4,7 @@
 
 bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, const std::vector<Eklipse::String>& requiredExtensions)
 {
-    ImGui::PushID(id);
+    /*ImGui::PushID(id);
     if (label)
     {
         ImGui::Text(label);
@@ -54,12 +54,14 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
 	}
     
     ImGui::PopID();
-    return active;
+    return active;*/
+
+    return false;
 }
 
 IMGUI_API bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
 {
-    ImGui::PushID(id);
+    /*ImGui::PushID(id);
     if (label)
     {
         ImGui::Text(label);
@@ -105,5 +107,7 @@ IMGUI_API bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path&
     }
 
     ImGui::PopID();
-    return active;
+    return active;*/
+
+    return false;
 }

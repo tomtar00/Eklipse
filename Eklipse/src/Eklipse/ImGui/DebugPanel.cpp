@@ -49,16 +49,16 @@ namespace Eklipse
 
 		if (ImGui::CollapsingHeader("Assets"))
 		{
-			DrawAssetLibrary("App assets", Eklipse::Application::Get().GetAssetLibrary());
-			if (Eklipse::Project::GetActive() != nullptr)
+			DrawAssetLibrary("App assets", Application::Get().GetAssetLibrary());
+			if (Project::GetActive() != nullptr)
 			{
-				DrawAssetLibrary("Project assets", Eklipse::Project::GetActive()->GetAssetLibrary());
+				DrawAssetLibrary("Project assets", Project::GetActive()->GetAssetLibrary());
 			}
 		}
 
-		if (Eklipse::Project::GetActive() != nullptr && ImGui::CollapsingHeader("Project"))
+		if (Project::GetActive() != nullptr && ImGui::CollapsingHeader("Project"))
 		{
-			auto project = Eklipse::Project::GetActive();
+			auto project = Project::GetActive();
 
 			ImGui::Indent();
 
@@ -139,4 +139,8 @@ namespace Eklipse
 		ImGui::End();
         return true;
     }
+	void DebugPanel::AppendDrawRequest(const std::function<void()>& drawRequest)
+	{
+		m_drawRequests.push_back(drawRequest);
+	}
 }

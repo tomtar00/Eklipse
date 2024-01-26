@@ -46,19 +46,20 @@ namespace Eklipse
 
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
-		void GLImGuiLayer::DrawViewport(float width, float height)
+		void GLImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
 		{
-			if (width != g_GLSceneFramebuffer->GetInfo().width || height != g_GLSceneFramebuffer->GetInfo().height)
+			if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
 			{
-				ResizeViewport(width, height);
+				ResizeViewport(framebuffer, width, height);
 			}
 
-			ImGui::Image((ImTextureID)g_GLSceneFramebuffer->GetMainColorAttachment(), ImVec2{ width, height }, { 0, 1 }, { 1, 0 });
+			GLFramebuffer* glFramebuffer = static_cast<GLFramebuffer*>(framebuffer);
+			ImGui::Image((ImTextureID)glFramebuffer->GetMainColorAttachment(), ImVec2{ width, height }, { 0, 1 }, { 1, 0 });
 		}
-		void GLImGuiLayer::ResizeViewport(float width, float height)
+		void GLImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
 		{
 			if (width > 0 && height > 0)
-				g_GLSceneFramebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+				framebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 		}
 
 		// =============== ICONS ===============

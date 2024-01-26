@@ -11,3 +11,4 @@
 #include <Eklipse/Scene/SceneManager.h>
 #include <Eklipse/Core/Timer.h>
 #include <Eklipse/Assets/AssetManager.h>
+#include <Eklipse/Scripting/ScriptManager.h>

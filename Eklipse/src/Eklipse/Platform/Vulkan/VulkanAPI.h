@@ -2,6 +2,7 @@
 #include <Eklipse/Renderer/GraphicsAPI.h>
 #include <vulkan/vulkan.h>
 #include "VKImGuiLayer.h"
+#include "VKFramebuffer.h"
 
 namespace Eklipse
 {
@@ -11,7 +12,6 @@ namespace Eklipse
 		{
 		public:
 			VulkanAPI();
-			static VulkanAPI& Get();
 
 			bool Init() override;
 			void Shutdown() override;
@@ -19,26 +19,20 @@ namespace Eklipse
 
 			void BeginFrame() override;
 			void EndFrame() override;
-			
-			//virtual void BeginGeometryPass() override;
-			//virtual void BeginGUIPass() override;
-			//virtual void EndPass() override;
 
-			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
+			void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
 		private:
 			void CreateInstance();
+			void CreateAllocator();
 			void CreateSurface();
+			void CreateDefaultFramebuffer();
 			void CreateSyncObjects();
 
-			//void RecreateSwapChain();
 			std::vector<const char*> GetRequiredExtensions() const;
 
 		private:
-			inline static VulkanAPI* s_instance = nullptr;
-
-			VkCommandBuffer m_viewportCommandBuffer;
-			VkCommandBuffer m_imguiCommandBuffer;
+			Ref<VKFramebuffer> m_defaultFramebuffer;
 
 			std::vector<VkSemaphore> m_imageAvailableSemaphores{};
 			std::vector<VkSemaphore> m_renderFinishedSemaphores{};

@@ -10,7 +10,7 @@ namespace Eklipse
 	};
 
 	template<typename Mutex>
-	class EK_API TerminalSink : public spdlog::sinks::base_sink<Mutex>
+	class TerminalSink : public spdlog::sinks::base_sink<Mutex>
 	{
 		friend class Terminal;
 	public:
@@ -47,26 +47,26 @@ namespace Eklipse
 		std::function<void(const ParsedCommand&)> Callback;
 	};
 
-	class EK_API Terminal
+	class Terminal
 	{
 	public:
 		Terminal();
-		void AddCommand(const TerminalCommand& command);
 
+		void AddCommand(const TerminalCommand& command);
 		void ExcecuteCommand(const String& command);
 		void Clear();
-
-		Ref<TerminalSink<std::mutex>> GetSink() { return m_sink; }
-		std::deque<Message>& GetBuffer() { return m_sink->m_buffer; }
-		spdlog::level::level_enum GetLevel() const { return m_level; }
-		void SetLevel(spdlog::level::level_enum level, const char* name) { Clear(); m_level = level; m_levelString = name; spdlog::set_level(level); }
 		
-		String& GetLevelString() { return m_levelString; }
-		String& GetHistoryBuffer() { return m_historyBuffer; }
-
 		void HistoryUp();
 		void HistoryDown();
 
+		String& GetLevelString();
+		String& GetHistoryBuffer();
+		Ref<TerminalSink<std::mutex>> GetSink();
+		std::deque<Message>& GetBuffer();
+		spdlog::level::level_enum GetLevel() const;
+
+		void SetLevel(spdlog::level::level_enum level, const char* name);
+	
 	private:
 		std::vector<TerminalCommand> m_commands;
 		Ref<TerminalSink<std::mutex>> m_sink;

@@ -54,12 +54,12 @@ namespace Eklipse
 		static bool Save(Ref<Project> project, const Path& projectFilePath);
 		static bool Exists(const Path& projectDirPath);
 
-		static void SetRuntimeConfig(Ref<RuntimeConfig> runtimeConfig);
-
-		static Ref<Project> GetActive();
 		static Ref<RuntimeConfig> GetRuntimeConfig();
-		static const Path& GetProjectDirectory();
-		static ProjectConfig& GetConfig();
+		static void SetRuntimeConfig(Ref<RuntimeConfig> runtimeConfig);
+		static Ref<Project> GetActive();
+
+		const Path& GetProjectDirectory();
+		ProjectConfig& GetConfig();
 
 	private:
 		Path m_projectDirectory;

@@ -98,7 +98,6 @@ namespace Eklipse
 		Transform m_editorCameraTransform;
 
 		Ref<Scene> m_editorScene;
-		Ref<Framebuffer> m_defaultFramebuffer;
 		Ref<Framebuffer> m_viewportFramebuffer;
 		Ref<ScriptManager> m_scriptManager;
 

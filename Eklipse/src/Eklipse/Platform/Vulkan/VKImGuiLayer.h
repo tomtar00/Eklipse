@@ -31,11 +31,11 @@ namespace Eklipse
 			virtual void NewFrame() override;
 			virtual void Render() override;
 
-			virtual void DrawViewport(float width, float height) override;
-			virtual void ResizeViewport(float width, float height) override;
+			virtual void DrawViewport(Framebuffer* framebuffer, float width, float height) override;
+			virtual void ResizeViewport(Framebuffer* framebuffer, float width, float height) override;
 
 		private:
-			void SetupDescriptorSets();
+			void SetupDescriptorSets(Framebuffer* framebuffer);
 
 		private:
 			GLFWwindow* m_glfwWindow;

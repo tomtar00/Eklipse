@@ -174,10 +174,10 @@ namespace Eklipse
 	}
 	const Path& Project::GetProjectDirectory()
 	{
-		return s_activeProject->m_projectDirectory;
+		return m_projectDirectory;
 	}
 	ProjectConfig& Project::GetConfig()
 	{
-		return s_activeProject->m_config;
+		return m_config;
 	}
 }

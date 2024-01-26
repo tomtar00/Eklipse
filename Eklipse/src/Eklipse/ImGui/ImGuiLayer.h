@@ -5,6 +5,7 @@
 #include "ImGuiExtensions.h"
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/Assets/AssetLibrary.h>
+#include <Eklipse/Renderer/Framebuffer.h>
 
 namespace Eklipse
 {
@@ -73,8 +74,8 @@ namespace Eklipse
 		virtual void NewFrame() = 0;
 		virtual void Render() = 0;
 
-		virtual void DrawViewport(float width, float height) = 0;
-		virtual void ResizeViewport(float width, float height) = 0;
+		virtual void DrawViewport(Framebuffer* framebuffer, float width, float height) = 0;
+		virtual void ResizeViewport(Framebuffer* framebuffer, float width, float height) = 0;
 
 		GuiLayerConfigInfo GetConfig();
 		void SetConfig(GuiLayerConfigInfo configInfo);

@@ -34,7 +34,6 @@ namespace Eklipse
 		//extern DepthImage g_depthImage;
 
 		extern uint32_t g_currentFrame;
-		extern uint32_t g_imageIndex;
 		extern VkSwapchainKHR g_swapChain;
 		extern VkFormat g_swapChainImageFormat;
 		extern VkExtent2D g_swapChainExtent;
@@ -49,11 +48,10 @@ namespace Eklipse
 		//extern std::vector<VkFramebuffer> g_imguiFrameBuffers;
 		//
 
-		extern VKFramebuffer* g_VKSceneFramebuffer;
+		extern std::vector<VKFramebuffer*> g_VKOffScreenFramebuffers;
 		extern VKFramebuffer* g_VKDefaultFramebuffer;
 
 		// viewport
-		extern uint32_t g_viewportImageIndex;
 		extern VkExtent2D g_viewportExtent;
 		//extern VkRenderPass g_viewportRenderPass;
 		//extern VkPipeline g_viewportPipeline;

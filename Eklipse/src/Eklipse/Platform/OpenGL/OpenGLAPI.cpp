@@ -11,10 +11,10 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLFramebuffer* g_GLSceneFramebuffer = nullptr;
-		GLFramebuffer* g_GLDefaultFramebuffer = nullptr;
+		//GLFramebuffer* g_GLSceneFramebuffer = nullptr;
+		std::vector<GLFramebuffer*> g_GLOffScreenFramebuffers{};
 
-		void OpenGLMessageCallback(
+		static void OpenGLMessageCallback(
 			unsigned source,
 			unsigned type,
 			unsigned id,
@@ -68,31 +68,32 @@ namespace Eklipse
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_LINE_SMOOTH);
 
-				std::vector<float> vertices = {
-					 1.0f,  1.0f, 1.0f, 1.0f,  // top right
-					 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
-					-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
-					-1.0f,  1.0f, 0.0f, 1.0f,  // top left
-				};
-				std::vector<uint32_t> indices = {
-					0, 1, 3,
-					1, 2, 3
-				};
+				//std::vector<float> vertices = {
+				//	 1.0f,  1.0f, 1.0f, 1.0f,  // top right
+				//	 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
+				//	-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
+				//	-1.0f,  1.0f, 0.0f, 1.0f,  // top left
+				//};
+				//std::vector<uint32_t> indices = {
+				//	0, 1, 3,
+				//	1, 2, 3
+				//};
 
-				Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
-				BufferLayout layout = {
-					{ "inPos",			ShaderDataType::FLOAT2,		false },
-					{ "inTexCoords",	ShaderDataType::FLOAT2,		false },
-				};
-				vertexBuffer->SetLayout(layout);
+				//Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
+				//BufferLayout layout = {
+				//	{ "inPos",			ShaderDataType::FLOAT2,		false },
+				//	{ "inTexCoords",	ShaderDataType::FLOAT2,		false },
+				//};
+				//vertexBuffer->SetLayout(layout);
 
-				m_vertexArray = VertexArray::Create();
-				m_vertexArray->AddVertexBuffer(vertexBuffer);
-				m_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
+				//m_vertexArray = VertexArray::Create();
+				//m_vertexArray->AddVertexBuffer(vertexBuffer);
+				//m_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
 
-				std::stringstream ss;
-				ss << glGetString(GL_VERSION);
-				EK_CORE_INFO("OpenGL initialized - {0}", ss.str());
+				EK_CORE_INFO("OpenGL Info:");
+				EK_CORE_INFO("  Vendor: {0}", glGetString(GL_VENDOR));
+				EK_CORE_INFO("  Renderer: {0}", glGetString(GL_RENDERER));
+				EK_CORE_INFO("  Version: {0}", glGetString(GL_VERSION));
 				m_initialized = true;
 			}
 			catch (const std::exception& e)
@@ -111,8 +112,8 @@ namespace Eklipse
 				return;
 			}
 
-			g_GLDefaultFramebuffer = nullptr;
-			g_GLSceneFramebuffer = nullptr;
+			//g_GLDefaultFramebuffer = nullptr;
+			g_GLOffScreenFramebuffers.clear();
 
 			EK_CORE_INFO("OpenGL shutdown");
 			m_initialized = false;
@@ -128,7 +129,7 @@ namespace Eklipse
 		{
 			EK_PROFILE();
 
-			uint32_t width = Application::Get().GetInfo().windowWidth;
+			/*uint32_t width = Application::Get().GetInfo().windowWidth;
 			uint32_t height = Application::Get().GetInfo().windowHeight;
 			glViewport(0, 0, width, height);
 			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
@@ -140,7 +141,7 @@ namespace Eklipse
 			glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);
 			glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
 			RenderCommand::DrawIndexed(m_vertexArray);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);*/
 
 			Application::Get().GetWindow()->SwapBuffers();
 		}

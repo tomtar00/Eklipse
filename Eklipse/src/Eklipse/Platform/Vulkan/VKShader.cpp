@@ -78,8 +78,6 @@ namespace Eklipse
 		}
 		bool VKShader::Compile(bool forceCompile)
 		{
-			EK_PROFILE();
-
 			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", m_name);
 
 			auto shaderSources = Setup();
