@@ -35,10 +35,10 @@ namespace Eklipse
 
 		// Render stages
 		static void BeginFrame();
-		static void BeginRenderPass(Ref<Framebuffer> framebuffer);
+		static void BeginRenderPass(Framebuffer* framebuffer);
 		static void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform);
 		static void RenderScene(Ref<Scene> scene);
-		static void EndRenderPass(Ref<Framebuffer> framebuffer);
+		static void EndRenderPass(Framebuffer* framebuffer);
 		static void Submit();
 
 		// Events

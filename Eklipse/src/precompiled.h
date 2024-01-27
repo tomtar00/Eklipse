@@ -6,6 +6,8 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
 
+#define NOMINMAX
+
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -27,6 +29,7 @@
 #include <regex>
 #include <array>
 #include <cstdarg>
+#include <limits>
 
 namespace Eklipse
 {

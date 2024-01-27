@@ -174,12 +174,12 @@ namespace Eklipse
 					attributeDescription.push_back(attribute);
 				}
 
-				if (g_VKSceneFramebuffer == nullptr)
+				if (g_VKOffScreenFramebuffers[0] == nullptr)
 				{
 					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKDefaultFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
 				}
 				else
-					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKSceneFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
+					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKOffScreenFramebuffers[0]->GetRenderPass(), bindingDescription, attributeDescription);
 
 				vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
 				vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);

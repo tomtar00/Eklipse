@@ -10,7 +10,7 @@ namespace Eklipse
 		class GLImGuiIcon : public GuiIcon
 		{
 		public:
-			GLImGuiIcon(const Ref<AssetLibrary> assetLibrary, const Path& path);
+			GLImGuiIcon(const AssetHandle textureHandle);
 			virtual void* GetID() override;
 
 		private:

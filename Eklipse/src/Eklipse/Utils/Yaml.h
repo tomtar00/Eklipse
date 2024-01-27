@@ -1,6 +1,7 @@
 #pragma once
 #include <yaml-cpp/yaml.h>
 #include <glm/glm.hpp>
+#include <Eklipse/Core/UUID.h>
 
 namespace YAML {
 
@@ -183,6 +184,23 @@ namespace YAML {
             rhs.y = node[1].as<float>();
             rhs.z = node[2].as<float>();
             rhs.w = node[3].as<float>();
+            return true;
+        }
+    };
+
+    template<>
+    struct convert<Eklipse::UUID>
+    {
+        static Node encode(const Eklipse::UUID& uuid)
+        {
+            Node node;
+            node.push_back((uint64_t)uuid);
+            return node;
+        }
+
+        static bool decode(const Node& node, Eklipse::UUID& uuid)
+        {
+            uuid = node.as<uint64_t>();
             return true;
         }
     };

@@ -12,8 +12,8 @@ namespace Eklipse
 	class EK_API GuiIcon
 	{
 	public:
+		static Ref<GuiIcon> Create(const AssetHandle textureHandle);
 		virtual void* GetID() = 0;
-		static Ref<GuiIcon> Create(const Ref<AssetLibrary> assetLibrary, const Path& path);
 	};
 	class EK_API GuiPanel
 	{

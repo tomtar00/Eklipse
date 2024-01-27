@@ -28,6 +28,16 @@ namespace Eklipse
 			return 0;
 		}
 
+		GLTexture2D::GLTexture2D(const Path& path) : Texture2D(path)
+		{
+		}
+		GLTexture2D::GLTexture2D(const TextureInfo& textureInfo) : Texture2D(textureInfo)
+		{
+		}
+		GLTexture2D::GLTexture2D(const TextureData& textureData) : Texture2D(textureData)
+		{
+		}
+
 		void GLTexture2D::Init(const TextureInfo& textureInfo)
 		{
 			m_format = ConvertToGLFormat(textureInfo.imageFormat);

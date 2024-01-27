@@ -72,7 +72,7 @@ namespace Eklipse
 		Stats::Get().Reset();
 		RenderCommand::API->BeginFrame();
 	}
-	void Renderer::BeginRenderPass(Ref<Framebuffer> framebuffer)
+	void Renderer::BeginRenderPass(Framebuffer* framebuffer)
 	{
 		EK_PROFILE();
 
@@ -121,7 +121,7 @@ namespace Eklipse
 #endif
 			RenderScene(scene, *camera, *cameraTransform);
 	}
-	void Renderer::EndRenderPass(Ref<Framebuffer> framebuffer)
+	void Renderer::EndRenderPass(Framebuffer* framebuffer)
 	{
 		EK_PROFILE();
 

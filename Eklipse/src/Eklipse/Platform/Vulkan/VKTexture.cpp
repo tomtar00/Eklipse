@@ -60,7 +60,7 @@ namespace Eklipse
 
 			return sampler;
 		}
-		VkImage CreateImage(VmaAllocation* allocation, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage)
+		VkImage CreateImage(VmaAllocation allocation, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage)
 		{
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -83,11 +83,12 @@ namespace Eklipse
 			vmaAllocInfo.priority = 1.0f;
 
 			VkImage image;
-			VkResult res = vmaCreateImage(g_allocator, &imageInfo, &vmaAllocInfo, &image, allocation, nullptr);
+			VkResult res = vmaCreateImage(g_allocator, &imageInfo, &vmaAllocInfo, &image, &allocation, nullptr);
 			HANDLE_VK_RESULT(res, "CREATE IMAGE");
 
 			return image;
 		}
+		
 		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
 		{
 			VkImageMemoryBarrier barrier{};
@@ -268,6 +269,16 @@ namespace Eklipse
 			EndSingleCommands(commandBuffer);
 		}
 
+		VKTexture2D::VKTexture2D(const Path& path) : Texture2D(path)
+		{
+		}
+		VKTexture2D::VKTexture2D(const TextureInfo& textureInfo) : Texture2D(textureInfo)
+		{
+		}
+		VKTexture2D::VKTexture2D(const TextureData& textureData) : Texture2D(textureData)
+		{
+		}
+
 		void VKTexture2D::Init(const TextureInfo& textureInfo)
 		{
 			VkFormat format = ConvertToVKFormat(textureInfo.imageFormat);
@@ -276,7 +287,7 @@ namespace Eklipse
 			VkImageAspectFlagBits aspect = ConvertToVKAspect(m_textureInfo.imageAspect);
 			VkImageUsageFlagBits usage = ConvertToVKUsage(m_textureInfo.imageUsage);
 
-			m_image = CreateImage(&m_allocation, textureInfo.width, textureInfo.height, textureInfo.mipMapLevel,
+			m_image = CreateImage(m_allocation, textureInfo.width, textureInfo.height, textureInfo.mipMapLevel,
 				VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_TILING_OPTIMAL, usage);
 
 			if (textureInfo.imageLayout != ImageLayout::LAYOUT_UNDEFINED)

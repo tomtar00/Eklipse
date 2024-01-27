@@ -8,8 +8,11 @@
 
 namespace Eklipse
 {
-	ScriptManager::ScriptManager(Ref<ScriptLinker> scriptLinker, ScriptManagerSettings* settings) 
-		: m_scriptLinker(scriptLinker), m_settings(settings), m_state(ScriptsState::NONE) {}
+	ScriptManager::ScriptManager(ScriptManagerSettings* settings) 
+		: m_settings(settings), m_state(ScriptsState::NONE) 
+	{
+		m_scriptLinker = CreateRef<ScriptLinker>();
+	}
 
 	void ScriptManager::Load()
 	{
@@ -170,7 +173,7 @@ namespace Eklipse
 		Path msBuildLocation = m_settings->MsBuildPath;
 		if (msBuildLocation.empty() || !fs::is_regular_file(msBuildLocation))
 		{
-			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation);
+			EK_CORE_ERROR("Failed to locate proper MsBuild executable in location: {}", msBuildLocation.string());
 			SetState(ScriptsState::COMPILATION_FAILED);
 			return;
 		}

@@ -80,6 +80,10 @@ namespace Eklipse
 		// === Setters ===
 		void SetCanControlEditorCamera(bool canControl);
 
+		// === GUI ===
+		void AddDebugDrawInfo();
+
+		// === Selection ===
 		void ClearSelection();
 
 	private:
@@ -100,6 +104,7 @@ namespace Eklipse
 		Ref<Scene> m_editorScene;
 		Ref<Framebuffer> m_viewportFramebuffer;
 		Ref<ScriptManager> m_scriptManager;
+		Ref<EditorAssetLibrary> m_editorAssetLibrary;
 
 		bool m_canControlEditorCamera = false;
 		bool m_guiEnabled;

@@ -91,7 +91,7 @@ namespace Eklipse
             images.resize(numImages);
             for (int i = 0; i < numImages; i++)
             {
-                images[i] = ICreateImage(allocations[i], width, height, mipLevels, numSamples,
+                images[i] = CreateImage(allocations[i], width, height, mipLevels, numSamples,
                     format, tiling, usage);
             }
         }
@@ -100,10 +100,7 @@ namespace Eklipse
             imageViews.resize(images.size());
             for (size_t i = 0; i < images.size(); i++)
             {
-                imageViews[i] = ICreateImageView
-                (
-                    images[i], format, VK_IMAGE_ASPECT_COLOR_BIT, 1
-                );
+                imageViews[i] = CreateImageView( images[i], format, VK_IMAGE_ASPECT_COLOR_BIT, 1);
             }
         }
         void CreateSamplers(std::vector<VkSampler>& samplers, int numSamplers)
@@ -111,7 +108,7 @@ namespace Eklipse
             samplers.resize(numSamplers);
             for (int i = 0; i < numSamplers; i++)
             {
-                samplers[i] = ICreateSampler(0.0f);
+                samplers[i] = CreateSampler(0.0f);
             }
         }
         void CreateFrameBuffers(std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool attachOnlyView = false)

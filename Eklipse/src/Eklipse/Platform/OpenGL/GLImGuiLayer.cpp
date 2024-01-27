@@ -9,6 +9,8 @@
 #include <backends/imgui_impl_glfw.h>
 #include <Eklipse/Core/Application.h>
 
+#include <Eklipse/Assets/AssetManager.h>
+
 namespace Eklipse
 {
 	namespace OpenGL
@@ -64,9 +66,9 @@ namespace Eklipse
 
 		// =============== ICONS ===============
 
-		GLImGuiIcon::GLImGuiIcon(const Ref<AssetLibrary> assetLibrary, const Path& path)
+		GLImGuiIcon::GLImGuiIcon(const AssetHandle textureHandle)
 		{
-			m_texture = std::static_pointer_cast<GLTexture2D>(assetLibrary->GetTexture(path));
+			m_texture = AssetManager::GetAsset<GLTexture2D>(textureHandle);
 		}
 		void* GLImGuiIcon::GetID()
 		{

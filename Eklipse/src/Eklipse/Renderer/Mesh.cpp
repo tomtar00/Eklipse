@@ -44,9 +44,9 @@ namespace Eklipse
 		}
 
 		BufferLayout layout = {
-			{ "inPosition", ShaderDataType::Float3, false },
-			{ "inColor",	ShaderDataType::Float3, false },
-			{ "inTexCoord", ShaderDataType::Float2, false }
+			{ "inPosition", ShaderDataType::FLOAT3, false },
+			{ "inColor",	ShaderDataType::FLOAT3, false },
+			{ "inTexCoord", ShaderDataType::FLOAT2, false }
 		};
 
 		Ref<VertexArray> vertexArray = VertexArray::Create();

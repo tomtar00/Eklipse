@@ -23,6 +23,7 @@ namespace Eklipse
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 
+		AssetRegistry& GetAssetRegistry();
 		void ImportAsset(const Path& filepath);
 
 		void SerializeAssetRegistry();

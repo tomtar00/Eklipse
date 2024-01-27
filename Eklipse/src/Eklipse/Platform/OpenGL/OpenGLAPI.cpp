@@ -66,7 +66,6 @@ namespace Eklipse
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 				glEnable(GL_DEPTH_TEST);
-				glEnable(GL_LINE_SMOOTH);
 
 				//std::vector<float> vertices = {
 				//	 1.0f,  1.0f, 1.0f, 1.0f,  // top right
@@ -91,9 +90,9 @@ namespace Eklipse
 				//m_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
 
 				EK_CORE_INFO("OpenGL Info:");
-				EK_CORE_INFO("  Vendor: {0}", glGetString(GL_VENDOR));
-				EK_CORE_INFO("  Renderer: {0}", glGetString(GL_RENDERER));
-				EK_CORE_INFO("  Version: {0}", glGetString(GL_VERSION));
+				EK_CORE_INFO("  Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+				EK_CORE_INFO("  Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+				EK_CORE_INFO("  Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 				m_initialized = true;
 			}
 			catch (const std::exception& e)

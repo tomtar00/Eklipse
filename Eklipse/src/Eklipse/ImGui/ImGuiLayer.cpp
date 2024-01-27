@@ -150,24 +150,22 @@ namespace Eklipse
 	}
 	Ref<ImGuiLayer> ImGuiLayer::Create(const GuiLayerConfigInfo& configInfo)
 	{
-		auto apiType = Renderer::GetAPI();
-		switch (apiType)
+		switch (Renderer::GetAPI())
 		{
 			case ApiType::Vulkan: return CreateRef<Vulkan::VkImGuiLayer>(configInfo);
 			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiLayer>(configInfo);
 		}
-		EK_ASSERT(false, "API {0} not implemented for ImGui Layer creation", int(apiType));
+		EK_ASSERT(false, "ImGui Layer creation not implemented for current graphics API");
 		return nullptr;
 	}
-	Ref<GuiIcon> GuiIcon::Create(const Ref<AssetLibrary> assetLibrary, const Path& path)
+	Ref<GuiIcon> GuiIcon::Create(const AssetHandle textureHandle)
 	{
-		auto apiType = Renderer::GetAPI();
-		switch (apiType)
+		switch (Renderer::GetAPI())
 		{
-			case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(assetLibrary, path);
-			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(assetLibrary, path);
+			case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(textureHandle);
+			case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(textureHandle);
 		}
-		EK_ASSERT(false, "API {0} not implemented for ImGui Icon creation", int(apiType));
+		EK_ASSERT(false, "ImGui Icon creation not implemented for current graphics API");
 		return nullptr;
 	}
 	GuiPanel::GuiPanel() : m_visible(true) {}

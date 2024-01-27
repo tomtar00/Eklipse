@@ -233,7 +233,7 @@ namespace Eklipse
 	void Scene::InitializeAllScripts()
 	{
 		EK_CORE_TRACE("Initializing all scripts on scene '{0}'", m_name);
-		const ScriptClassMap& scriptClasseMap = Application::Get().GetScriptLinker().GetScriptClasses();
+		const ScriptClassMap& scriptClasseMap = ScriptLinker::Get().GetScriptClasses();
 
 		m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
 		{
@@ -243,8 +243,8 @@ namespace Eklipse
 			}
 			else
 			{
-				auto it = scriptClasses.find(scriptComponent.scriptName);
-				if (it == scriptClasses.end())
+				auto it = scriptClasseMap.find(scriptComponent.scriptName);
+				if (it == scriptClasseMap.end())
 				{
 					EK_CORE_ERROR("Failed to initialize script '{0}'", scriptComponent.scriptName);
 				}
@@ -264,10 +264,10 @@ namespace Eklipse
 		EK_CORE_TRACE("Applying all components on scene '{0}'", m_name);
 		m_registry.view<MeshComponent>().each([&](auto entityID, auto& meshComponent)
 		{
-			if (!meshComponent.meshPath.empty() && !meshComponent.materialPath.empty())
+			if (AssetManager::IsAssetHandleValid(meshComponent.meshHandle) && AssetManager::IsAssetHandleValid(meshComponent.materialHandle))
 			{
-				meshComponent.mesh = Application::Get().GetMainAssetLibrary()->GetMesh(meshComponent.meshPath).get();
-				meshComponent.material = Application::Get().GetMainAssetLibrary()->GetMaterial(meshComponent.materialPath).get();
+				meshComponent.mesh = AssetManager::GetAsset<Mesh>(meshComponent.meshHandle).get();
+				meshComponent.material = AssetManager::GetAsset<Material>(meshComponent.materialHandle).get();
 			}
 		});
 		EK_CORE_DBG("All components on scene '{0}' applied", m_name);
@@ -389,8 +389,8 @@ namespace Eklipse
 			out << YAML::BeginMap;
 
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			out << YAML::Key << "Mesh" << YAML::Value << meshComponent.meshPath.string();
-			out << YAML::Key << "Material" << YAML::Value << meshComponent.materialPath.string();
+			out << YAML::Key << "Mesh" << YAML::Value << meshComponent.meshHandle;
+			out << YAML::Key << "Material" << YAML::Value << meshComponent.materialHandle;
 
 			out << YAML::EndMap;
 		}
@@ -409,7 +409,7 @@ namespace Eklipse
 			std::vector<String> toRemove;
 			for (auto&& [name, member] : scriptComponent.classInfo.members)
 			{
-				auto& members = Application::Get().GetScriptLinker().GetScriptClasses().at(scriptComponent.scriptName).members;
+				auto& members = ScriptLinker::Get().GetScriptClasses().at(scriptComponent.scriptName).members;
 				auto it = members.find(name);
 				if (it == members.end()) // Serialize only when the script has the property
 				{
@@ -532,8 +532,8 @@ namespace Eklipse
 		{
 			auto& mc = deserializedEntity.AddComponent<MeshComponent>();
 
-			mc.meshPath = TryDeserailize<String>(meshComponent, "Mesh", "");
-			mc.materialPath = TryDeserailize<String>(meshComponent, "Material", "");
+			TryDeserailize<AssetHandle>(meshComponent, "Mesh", &mc.meshHandle);
+			TryDeserailize<AssetHandle>(meshComponent, "Material", &mc.materialHandle);
 		}
 
 		auto scriptComponent = entityNode["ScriptComponent"];

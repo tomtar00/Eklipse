@@ -36,7 +36,7 @@ namespace Eklipse
 	class ScriptManager
 	{
 	public:
-		ScriptManager(Ref<ScriptLinker> scrtiptLinker, ScriptManagerSettings* settings);
+		ScriptManager(ScriptManagerSettings* settings);
 
 		void Load();
 		void Unload();

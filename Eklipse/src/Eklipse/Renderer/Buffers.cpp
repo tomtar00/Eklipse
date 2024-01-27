@@ -27,17 +27,17 @@ namespace Eklipse
     {
         switch (type)
         {
-            case ShaderDataType::Float:   return 1;
-            case ShaderDataType::Float2:  return 2;
-            case ShaderDataType::Float3:  return 3;
-            case ShaderDataType::Float4:  return 4;
-            case ShaderDataType::Mat3:    return 9;
-            case ShaderDataType::Mat4:    return 16;
-            case ShaderDataType::Int:     return 1;
-            case ShaderDataType::Int2:    return 2;
-            case ShaderDataType::Int3:    return 3;
-            case ShaderDataType::Int4:    return 4;
-            case ShaderDataType::Bool:    return 1;
+            case ShaderDataType::FLOAT:   return 1;
+            case ShaderDataType::FLOAT2:  return 2;
+            case ShaderDataType::FLOAT3:  return 3;
+            case ShaderDataType::FLOAT4:  return 4;
+            case ShaderDataType::MAT3:    return 9;
+            case ShaderDataType::MAT4:    return 16;
+            case ShaderDataType::INT:     return 1;
+            case ShaderDataType::INT2:    return 2;
+            case ShaderDataType::INT3:    return 3;
+            case ShaderDataType::INT4:    return 4;
+            case ShaderDataType::BOOL:    return 1;
         }
 
         EK_ASSERT(false, "Unknown ShaderDataType!");

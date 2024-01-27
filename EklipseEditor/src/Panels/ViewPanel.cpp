@@ -75,9 +75,9 @@ namespace Eklipse
 			ImGui::Unindent(2.0f);
 
 			// Gizmos
-			if (EditorLayer::Get().GetSelection().type == SelectionType::ENTITY)
+			if (EditorLayer::Get().SelectionInfo.type == SelectionType::ENTITY)
 			{
-				auto entity = EditorLayer::Get().GetSelection().entity;
+				auto entity = EditorLayer::Get().SelectionInfo.entity;
 				auto& transComp = entity.GetComponent<TransformComponent>();
 			
 				auto* pos = glm::value_ptr(transComp.transform.position);

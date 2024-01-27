@@ -9,7 +9,7 @@
 
 namespace Eklipse
 {
-    static std::map<Path, AssetType> s_assetExtensionMap = 
+    static std::map<String, AssetType> s_assetExtensionMap = 
     {
         { EK_SCENE_EXTENSION,       AssetType::Scene        },
 		{ EK_MATERIAL_EXTENSION,    AssetType::Material     },
@@ -20,7 +20,7 @@ namespace Eklipse
         { ".obj", 				    AssetType::Mesh         }
     };
 
-    static AssetType GetAssetTypeFromFileExtension(const Path& extension)
+    static AssetType GetAssetTypeFromFileExtension(const String& extension)
     {
         if (s_assetExtensionMap.find(extension) == s_assetExtensionMap.end())
         {
@@ -31,8 +31,11 @@ namespace Eklipse
         return s_assetExtensionMap.at(extension);
     }
 
-    EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) : m_assetDirectory(assetDirectory)
+    EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) 
+        : m_shaderReloadPending(false), m_assetDirectory(assetDirectory)
     {
+        EK_ASSERT(AssetManager::s_assetLibrary == nullptr, "AssetLibrary already exists!");
+        AssetManager::s_assetLibrary = this;
         m_fileWatcher = CreateUnique<filewatch::FileWatch<String>>(assetDirectory.string(), CAPTURE_FN(OnFileWatchEvent));
     }
 
@@ -72,12 +75,17 @@ namespace Eklipse
     {
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
+    
+    AssetRegistry& EditorAssetLibrary::GetAssetRegistry()
+    {
+        return m_assetRegistry;
+    }
     void EditorAssetLibrary::ImportAsset(const Path& filepath)
     {
         AssetHandle handle;
         AssetMetadata metadata;
         metadata.FilePath = filepath;
-        metadata.Type = GetAssetTypeFromFileExtension(filepath.extension());
+        metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
         EK_ASSERT(metadata.Type != AssetType::None, "Wrong asset type!");
         Ref<Asset> asset = AssetImporter::ImportAsset(handle, metadata);
         if (asset)

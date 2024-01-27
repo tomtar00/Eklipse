@@ -12,7 +12,9 @@ namespace Eklipse
 	class ScriptLinker
 	{
 	public:
-		ScriptLinker() = default;
+		ScriptLinker();
+
+		static ScriptLinker& Get();
 
 		bool LinkScriptLibrary(const Path& libraryPath);
 		bool UnlinkScriptLibrary();
@@ -22,10 +24,13 @@ namespace Eklipse
 		void FetchScriptClasses(std::vector<ClassReflection> scriptClassReflections);
 		
 		bool HasAnyScriptClasses() const;
+		bool IsLibraryLinked() const;
+
 		const Path& GetLibraryPath() const;
 		const ScriptClassMap& GetScriptClasses() const;
 
 	private:
+		static ScriptLinker* s_instance;
 		ScriptClassMap m_scriptClassMap;
 
 		Ref<dylib> m_scriptLibrary;

@@ -10,7 +10,7 @@ namespace Eklipse
 		EK_ASSERT(project, "Project is null!");
 
 		auto& config = project->GetConfig();
-		EK_CORE_INFO("Exporting project '{0}' to '{1}'", config.name, settings.path);
+		EK_CORE_INFO("Exporting project '{0}' to '{1}'", config.name, settings.path.string());
 
 		// TODO: recompile all shaders?
 

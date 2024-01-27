@@ -15,6 +15,8 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 
+#include <Eklipse/Assets/AssetManager.h>
+
 namespace Eklipse
 {
 	namespace Vulkan
@@ -194,9 +196,9 @@ namespace Eklipse
 
 		// ==================== ICONS ===================
 
-		VKImGuiIcon::VKImGuiIcon(const Ref<AssetLibrary> assetLibrary, const Path& path)
+		VKImGuiIcon::VKImGuiIcon(const AssetHandle textureHandle)
 		{
-			m_texture = std::static_pointer_cast<VKTexture2D>(assetLibrary->GetTexture(path));
+			m_texture = AssetManager::GetAsset<VKTexture2D>(textureHandle);
 			m_descriptorSet = ImGui_ImplVulkan_AddTexture(m_texture->GetSampler(), m_texture->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		void* VKImGuiIcon::GetID()

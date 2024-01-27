@@ -7,13 +7,17 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		class GLTexture2D : public Texture2D
+		class EK_API GLTexture2D : public Texture2D
 		{
 		public:
 			GLTexture2D() = delete;
+			GLTexture2D(const Path& path);
+			GLTexture2D(const TextureInfo& textureInfo);
+			GLTexture2D(const TextureData& textureData);
 
 			virtual void Init(const TextureInfo& info) override;
 			virtual void SetData(void* data, uint32_t size) override;
+
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
 			virtual void Dispose() override;

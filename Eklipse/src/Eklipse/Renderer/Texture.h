@@ -63,8 +63,6 @@ namespace Eklipse
 
 		inline const TextureInfo& GetInfo() const { return m_textureInfo; }
 
-		virtual void Init(const TextureInfo& textureInfo) = 0;
-		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Dispose() = 0;
@@ -73,7 +71,7 @@ namespace Eklipse
 		TextureInfo m_textureInfo;
 	};
 
-	class Texture2D : public Texture
+	class EK_API Texture2D : public Texture
 	{
 	public:
 		Texture2D() = delete;
@@ -83,6 +81,9 @@ namespace Eklipse
 		static Ref<Texture2D> Create(const Path& path);
 		static Ref<Texture2D> Create(const TextureInfo& textureInfo);
 		static Ref<Texture2D> Create(const TextureData& textureData);
+
+		virtual void Init(const TextureInfo& textureInfo) = 0;
+		virtual void SetData(void* data, uint32_t size) = 0;
 
 		static AssetType GetStaticType() { return AssetType::Texture2D; }
 		virtual AssetType GetType() const override { return GetStaticType(); }

@@ -3,6 +3,19 @@
 
 namespace Eklipse
 {
+	ScriptLinker* ScriptLinker::s_instance = nullptr;
+
+	ScriptLinker::ScriptLinker()
+	{
+		EK_ASSERT(!s_instance, "ScriptLinker already exists!");
+		s_instance = this;
+	}
+
+	ScriptLinker& ScriptLinker::Get()
+	{
+		return *s_instance;
+	}
+
 	bool ScriptLinker::LinkScriptLibrary(const Path& libraryPath)
 	{
 		EK_CORE_TRACE("Loading script library: '{0}'", libraryPath.string());
@@ -11,6 +24,7 @@ namespace Eklipse
 		{
 			m_scriptLibrary = CreateRef<dylib>(libraryPath);
 			m_libraryPath = libraryPath;
+
 			EK_CORE_DBG("Linked successfully to library: '{0}'", libraryPath.string());
 			return true;
 		}
@@ -31,6 +45,7 @@ namespace Eklipse
 				m_scriptLibrary.reset();
 			}
 			EK_CORE_DBG("Unlinked successfully from library: '{0}'", m_libraryPath.string());
+			m_libraryPath = "";
 			return true;
 		}
 		catch (const std::exception& e)
@@ -39,6 +54,7 @@ namespace Eklipse
 			return false;
 		}
 	}
+	
 	void ScriptLinker::ClearScriptClasses()
 	{
 		m_scriptClassMap.clear();
@@ -77,6 +93,10 @@ namespace Eklipse
 	bool ScriptLinker::HasAnyScriptClasses() const
 	{
 		return !m_scriptClassMap.empty();
+	}
+	bool ScriptLinker::IsLibraryLinked() const
+	{
+		return m_scriptLibrary != nullptr;
 	}
 
 	const Path& ScriptLinker::GetLibraryPath() const

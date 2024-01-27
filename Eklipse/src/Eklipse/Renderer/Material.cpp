@@ -325,7 +325,7 @@ namespace Eklipse
         if (!yaml["Name"])
         {
 			EK_CORE_ERROR("Material file '{0}' is missing a name", path.string());
-			return;
+			return false;
 		}
 
         m_name = yaml["Name"].as<String>();
