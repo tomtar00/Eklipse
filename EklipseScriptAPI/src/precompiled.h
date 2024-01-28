@@ -21,5 +21,7 @@
 #include <regex>
 #include <array>
 #include <cstdarg>
+#include <limits>
+#include <mutex>
 
 #include <Eklipse/Core/Core.h>

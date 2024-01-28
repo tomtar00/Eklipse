@@ -1,6 +1,5 @@
 #pragma once
 #include <Eklipse.h>
-#include <Eklipse/Project/ProjectExporter.h>
 
 #include <Panels/EntitiesPanel.h>
 #include <Panels/ViewPanel.h>

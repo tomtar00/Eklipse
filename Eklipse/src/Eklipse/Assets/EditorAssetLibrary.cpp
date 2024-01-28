@@ -12,8 +12,8 @@ namespace Eklipse
     static std::map<String, AssetType> s_assetExtensionMap = 
     {
         { EK_SCENE_EXTENSION,       AssetType::Scene        },
-		{ EK_MATERIAL_EXTENSION,    AssetType::Material     },
-		{ EK_SHADER_EXTENSION,      AssetType::Shader       },
+        { EK_MATERIAL_EXTENSION,    AssetType::Material     },
+        { EK_SHADER_EXTENSION,      AssetType::Shader       },
         { ".png",                   AssetType::Texture2D    },
         { ".jpg",                   AssetType::Texture2D    },
         { ".jpeg",                  AssetType::Texture2D    },

@@ -21,7 +21,7 @@ namespace Eklipse
 
 		ImGui::Begin("Details");
 
-		DetailsSelectionInfo& info = EditorLayer::Get().GetSelection();
+		DetailsSelectionInfo& info = EditorLayer::Get().SelectionInfo;
 
 		if (info.type == SelectionType::NONE)
 		{
@@ -115,18 +115,18 @@ namespace Eklipse
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted("Mesh");
 					ImGui::TableSetColumnIndex(1);
-					if (ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->meshPath, { ".obj" })) // TODO: Check other formats
+					if (ImGui::InputAsset(&entity.GetUUID(), nullptr, AssetType::Mesh, meshComp->meshHandle)) // TODO: Check other formats
 					{
-						meshComp->mesh = Project::GetActive()->GetAssetLibrary()->GetMesh(meshComp->meshPath).get();
+						meshComp->mesh = AssetManager::GetAsset<Mesh>(meshComp->meshHandle).get();
 					}
 
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted("Material");
 					ImGui::TableSetColumnIndex(1);
-					if (ImGui::InputPath(&entity.GetUUID(), nullptr, meshComp->materialPath, { EK_MATERIAL_EXTENSION }))
+					if (ImGui::InputAsset(&entity.GetUUID(), nullptr, AssetType::Material, meshComp->materialHandle))
 					{
-						meshComp->material = Project::GetActive()->GetAssetLibrary()->GetMaterial(meshComp->materialPath).get();
+						meshComp->material = AssetManager::GetAsset<Material>(meshComp->materialHandle).get();
 					}
 
 					ImGui::EndTable();
@@ -145,7 +145,7 @@ namespace Eklipse
 				// script switch combo
 				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
 				{
-					for (auto&& [className, classInfo] : Project::GetActive()->GetScriptModule()->GetClasses())
+					for (auto&& [className, classInfo] : ScriptLinker::Get().GetScriptClasses())
 					{
 						bool isSelected = (scriptComp->scriptName.c_str() == className);
 						if (ImGui::Selectable(className.c_str(), isSelected))
@@ -195,17 +195,17 @@ namespace Eklipse
 		ImGui::Text(("Material: " + material->GetName()).c_str());
 		const char* id = material->GetName().c_str();
 
-		if (ImGui::InputPath(id, "Shader", material->GetShader()->GetPath(), { EK_SHADER_EXTENSION }))
+		if (ImGui::InputAsset(id, "Shader", AssetType::Shader, material->GetShaderHandle()))
 		{
-			material->SetShader(material->GetShader()->GetPath());
+			material->SetShader(material->GetShaderHandle());
 		}
 
 		ImGui::Spacing();
 
 		uint16_t i = 0;
-		for (auto&& [textureSampler, sampler] : material->GetSamplers())
+		for (auto&& [textureName, sampler] : material->GetSamplers())
 		{
-			if (ImGui::InputPath(id+(i++), textureSampler.c_str(), sampler.texturePath, {".png", ".jpg"}))
+			if (ImGui::InputAsset(id+(i++), textureName.c_str(), AssetType::Texture2D, sampler.textureHandle))
 			{
 				EK_CORE_TRACE("Texture path changed to: {0}", sampler.texturePath.string());
 			}
@@ -216,23 +216,23 @@ namespace Eklipse
 			ImGui::Text("%s", name.c_str());
 			for (auto&& [valueName, value] : pushConstant.dataPointers)
 			{
-				if (value.type == DataType::BOOL)
+				if (value.type == ShaderDataType::BOOL)
 					ImGui::Checkbox(valueName.c_str(), (bool*)value.data);
-				else if (value.type == DataType::FLOAT)
+				else if (value.type == ShaderDataType::FLOAT)
 					ImGui::DragFloat(valueName.c_str(), (float*)value.data);
-				else if (value.type == DataType::FLOAT2)
+				else if (value.type == ShaderDataType::FLOAT2)
 					ImGui::DragFloat2(valueName.c_str(), (float*)value.data);
-				else if (value.type == DataType::FLOAT3)
+				else if (value.type == ShaderDataType::FLOAT3)
 					ImGui::DragFloat3(valueName.c_str(), (float*)value.data);
-				else if (value.type == DataType::FLOAT4)
+				else if (value.type == ShaderDataType::FLOAT4)
 					ImGui::DragFloat4(valueName.c_str(), (float*)value.data);
-				else if (value.type == DataType::INT)
+				else if (value.type == ShaderDataType::INT)
 					ImGui::DragInt(valueName.c_str(), (int*)value.data);
-				else if (value.type == DataType::INT2)
+				else if (value.type == ShaderDataType::INT2)
 					ImGui::DragInt2(valueName.c_str(), (int*)value.data);
-				else if (value.type == DataType::INT3)
+				else if (value.type == ShaderDataType::INT3)
 					ImGui::DragInt3(valueName.c_str(), (int*)value.data);
-				else if (value.type == DataType::INT4)
+				else if (value.type == ShaderDataType::INT4)
 					ImGui::DragInt4(valueName.c_str(), (int*)value.data);
 			}
 		}
@@ -240,9 +240,9 @@ namespace Eklipse
 		if (ImGui::Button("Apply"))
 		{
 			bool allValid = true;
-			for (auto&& [textureSampler, sampler] : material->GetSamplers())
+			for (auto&& [textureName, sampler] : material->GetSamplers())
 			{
-				allValid = sampler.texturePath.IsValid({".png", ".jpg"}); // TODO: Check other formats
+				allValid = AssetManager::IsAssetHandleValid(sampler.textureHandle);
 				if (!allValid) 
 				{
 					break;

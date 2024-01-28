@@ -6,9 +6,16 @@
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/ImGui/ImGuiLayer.h>
 #include <Eklipse/Core/Input.h>
+
 #include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Renderer/Material.h>
+#include <Eklipse/Renderer/Texture.h>
+#include <Eklipse/Renderer/Shader.h>
+
 #include <Eklipse/Scene/Scene.h>
+
 #include <Eklipse/Scene/SceneManager.h>
 #include <Eklipse/Core/Timer.h>
 #include <Eklipse/Assets/AssetManager.h>
 #include <Eklipse/Scripting/ScriptManager.h>
+#include <Eklipse/Project/ProjectExporter.h>

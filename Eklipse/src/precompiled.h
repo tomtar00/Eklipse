@@ -30,14 +30,7 @@
 #include <array>
 #include <cstdarg>
 #include <limits>
-
-namespace Eklipse
-{
-	namespace fs = std::filesystem;
-	using Path = fs::path;
-
-	using String = std::string;
-}
+#include <mutex>
 
 #include <Eklipse/Core/Core.h>
 #include <Eklipse/Utils/Stats.h>

@@ -61,6 +61,15 @@ namespace Eklipse
         Log::AddCoreSink(m_terminalPanel.GetTerminal().GetSink());
         Log::AddClientSink(m_terminalPanel.GetTerminal().GetSink());
 
+        EklipseScriptAPI::ScriptingConfig config{};
+        // Logging
+        {
+            config.loggerConfig.name = "SCRIPT";
+            config.loggerConfig.pattern = "%^[%T] %n: %v%$";
+            config.loggerConfig.sink = m_terminalPanel.GetTerminal().GetSink();
+        }
+        EklipseScriptAPI::Init(config);
+
         DeserializeSettings();
         EK_TRACE("Editor layer attached");
     }
@@ -569,7 +578,7 @@ namespace Eklipse
                 ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableHeadersRow();
 
-                for (auto& [handle, metadata] : m_assetLibrary->GetAssetRegistry())
+                for (auto& [handle, metadata] : m_editorAssetLibrary->GetAssetRegistry())
                 {
                     ImGui::TableNextRow();
 
@@ -577,7 +586,7 @@ namespace Eklipse
                     ImGui::Text("%d", handle);
 
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextUnformatted(AssetTypeToString(metadata.Type));
+                    ImGui::TextUnformatted(AssetTypeToString(metadata.Type).c_str());
 
                     ImGui::TableSetColumnIndex(2);
                     ImGui::TextUnformatted(metadata.FilePath.string().c_str());

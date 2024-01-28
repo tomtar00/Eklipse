@@ -199,21 +199,20 @@ namespace Eklipse
 			if (ImGui::BeginPopupModal("Create New Material", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				static String materialName = "NewMaterial";
-				static Path shaderPath = "//Shaders/Default3D.eksh";
+				static AssetHandle shaderHandle = 0;
 
 				ImGui::TextUnformatted("Material Name");
 				ImGui::SameLine();
 				ImGui::InputText("##materialName", &materialName);
-				ImGui::InputPath("##shaderid", "Shader", shaderPath, { EK_SHADER_EXTENSION });
+				ImGui::InputAsset("##shaderid", "Shader", AssetType::Shader, shaderHandle);
 
 				if (ImGui::Button("Create") && !materialName.empty())
 				{
-					if (shaderPath.IsValid({ EK_SHADER_EXTENSION }))
+					if (IsPathValid(shaderPath, { EK_SHADER_EXTENSION }))
 					{
 						CreateMaterial(m_currentPath / (materialName + EK_MATERIAL_EXTENSION), shaderPath);
 						ImGui::CloseCurrentPopup();
 					}
-					else EK_CORE_WARN("Invalid shader path: '{0}'", shaderPath.string());
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel"))

@@ -20,8 +20,8 @@ namespace Eklipse
     ImageFormat ChannelsToFormat(int channels)
     {
         if (channels == 1)      return ImageFormat::R8;
-		else if (channels == 3) return ImageFormat::RGB8;
-		else if (channels == 4) return ImageFormat::RGBA8;
+        else if (channels == 3) return ImageFormat::RGB8;
+        else if (channels == 4) return ImageFormat::RGBA8;
         else 				    return ImageFormat::FORMAT_UNDEFINED;
     }
     static bool LoadTextureFromFile(const Path& path, TextureData& outData)
@@ -52,13 +52,13 @@ namespace Eklipse
         outData = TextureData
         {
             textureInfo,
-			data,
-			uint32_t(width * height * channels)
+            data,
+            uint32_t(width * height * channels)
         };
 
         EK_CORE_DBG("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", pathStr, width, height, channels);
         return true;
-	}
+    }
 
     Texture2D::Texture2D(const Path& path)
     {
@@ -79,7 +79,7 @@ namespace Eklipse
     {
         m_textureInfo = textureData.info;
         Init(m_textureInfo);
-		SetData(textureData.data, textureData.size);
+        SetData(textureData.data, textureData.size);
     }
 
     Ref<Texture2D> Texture2D::Create(const Path& path)
@@ -89,7 +89,7 @@ namespace Eklipse
             case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path);
             case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(path);
         }
-        EK_ASSERT(false, "API {0} not implemented for current graphics API Texture creation");
+        EK_ASSERT(false, "Texture creation not implemented for current graphics API");
         return nullptr;
     }
     Ref<Texture2D> Texture2D::Create(const TextureInfo& textureInfo)
@@ -99,7 +99,7 @@ namespace Eklipse
             case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureInfo);
             case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureInfo);
         }
-        EK_ASSERT(false, "API {0} not implemented for current graphics Texture creation");
+        EK_ASSERT(false, "Texture creation not implemented for current graphics API");
         return nullptr;
     }
     Ref<Texture2D> Texture2D::Create(const TextureData& textureData)
@@ -109,7 +109,21 @@ namespace Eklipse
             case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureData);
             case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureData);
         }
-        EK_ASSERT(false, "API {0} not implemented for current graphics Texture creation");
+        EK_ASSERT(false, " Texture creation not implemented for current graphics API");
         return nullptr;
+    }
+    
+    void Texture2D::Init(const TextureInfo& textureInfo)
+    {
+        EK_ASSERT(false, "Tried to call abstract Texture2D::Init function");
+    }
+    void Texture2D::SetData(void* data, uint32_t size)
+    {
+        EK_ASSERT(false, "Tried to call abstract Texture2D::SetData function");
+    }
+    
+    const TextureInfo& Texture2D::GetInfo() const
+    {
+        return m_textureInfo;
     }
 }

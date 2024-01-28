@@ -13,15 +13,6 @@ namespace Eklipse
 		{
 			editorLayer = CreateRef<EditorLayer>();
 			PushLayer(editorLayer);
-
-			EklipseScriptAPI::ScriptingConfig config{};
-			// Logging
-			{
-				config.loggerConfig.name	= "SCRIPT";
-				config.loggerConfig.pattern = "%^[%T] %n: %v%$";
-				config.loggerConfig.sink	= GetTerminal()->GetSink();
-			}
-			EklipseScriptAPI::Init(config);
 		}	
 
 		void OnAPIHasInitialized(ApiType api) override

@@ -16,21 +16,21 @@ namespace Eklipse
     {
         switch (type)
         {
-			case ShaderDataType::FLOAT:   return "float";
-			case ShaderDataType::FLOAT2:  return "float2";
-			case ShaderDataType::FLOAT3:  return "float3";
-			case ShaderDataType::FLOAT4:  return "float4";
-			case ShaderDataType::MAT3:    return "mat3";
-			case ShaderDataType::MAT4:    return "mat4";
-			case ShaderDataType::INT:     return "int";
-			case ShaderDataType::INT2:    return "int2";
-			case ShaderDataType::INT3:    return "int3";
-			case ShaderDataType::INT4:    return "int4";
-			case ShaderDataType::BOOL:    return "bool";
-		}
-		EK_ASSERT(false, "Unknown data type");
-		return "UNKNOWN";
-	}
+            case ShaderDataType::FLOAT:   return "float";
+            case ShaderDataType::FLOAT2:  return "float2";
+            case ShaderDataType::FLOAT3:  return "float3";
+            case ShaderDataType::FLOAT4:  return "float4";
+            case ShaderDataType::MAT3:    return "mat3";
+            case ShaderDataType::MAT4:    return "mat4";
+            case ShaderDataType::INT:     return "int";
+            case ShaderDataType::INT2:    return "int2";
+            case ShaderDataType::INT3:    return "int3";
+            case ShaderDataType::INT4:    return "int4";
+            case ShaderDataType::BOOL:    return "bool";
+        }
+        EK_ASSERT(false, "Unknown data type");
+        return "UNKNOWN";
+    }
     
     PushConstant::PushConstant(const PushConstant& other)
     {
@@ -68,7 +68,7 @@ namespace Eklipse
     {
         m_name = path.stem().string();
 
-        SetShader(AssetManager::GetAsset<Shader>(shaderHandle));
+        SetShader(shaderHandle);
         if (!Serialize(path))
         {
             EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
@@ -123,7 +123,7 @@ namespace Eklipse
         if (!Serialize(materialPath))
         {
             EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
-			return;
+            return;
         }
         if (!Deserialize(materialPath))
         {
@@ -133,22 +133,23 @@ namespace Eklipse
         EK_CORE_DBG("Applied changes to material '{0}'", m_name);
     }
 
-    void Material::SetShader(Ref<Shader> shader)
+    void Material::SetShader(AssetHandle shaderHandle)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", m_name, shader->GetName());
+        EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", m_name, shaderHandle);
 
-        EK_ASSERT(shader != nullptr, "Shader is null");
-        if (m_shader == shader)
+        EK_ASSERT(AssetManager::IsAssetHandleValid(shaderHandle), "Shader handle is not valid");
+        if (m_shader->Handle == shaderHandle)
         {
             return;
         }
 
-        m_shader = shader;
+        m_shader = AssetManager::GetAsset<Shader>(shaderHandle);
+        m_shaderHandle = shaderHandle;
         m_pushConstants.clear();
         m_samplers.clear();
 
-        for (auto&& [stage, reflection] : shader->GetReflections())
+        for (auto&& [stage, reflection] : m_shader->GetReflections())
         {
             for (auto& pushConstantRef : reflection.pushConstants)
             {
@@ -170,7 +171,7 @@ namespace Eklipse
             }
         }
 
-        EK_CORE_DBG("Set shader for material '{0}' to '{1}'", m_name, shader->GetName());
+        EK_CORE_DBG("Set shader for material '{0}' to '{1}'", m_name, m_shader->GetName());
     }
     void Material::OnShaderReloaded()
     {
@@ -206,7 +207,7 @@ namespace Eklipse
                         if (it != oldPushConstant.dataPointers.end())
                         {
                             std::memcpy(dataPointer.data, it->second.data, dataPointer.size);
-					    }
+                        }
 
                         offset += member.size;
                     }
@@ -239,7 +240,7 @@ namespace Eklipse
                 if (it == m_samplers.end())
                 {
                     it->second = { samplerRef.binding, 0, nullptr };
-				}
+                }
             }
         }
 
@@ -292,8 +293,8 @@ namespace Eklipse
             for (auto&& [samplerName, sampler] : m_samplers)
             {
                 out << YAML::Key << samplerName << YAML::Value << sampler.textureHandle;
-			}
-			out << YAML::EndMap;
+            }
+            out << YAML::EndMap;
         }
 
         out << YAML::EndMap;
@@ -324,9 +325,9 @@ namespace Eklipse
 
         if (!yaml["Name"])
         {
-			EK_CORE_ERROR("Material file '{0}' is missing a name", path.string());
-			return false;
-		}
+            EK_CORE_ERROR("Material file '{0}' is missing a name", path.string());
+            return false;
+        }
 
         m_name = yaml["Name"].as<String>();
 
@@ -337,14 +338,13 @@ namespace Eklipse
         }
 
         AssetHandle shaderHandle = yaml["Shader"].as<AssetHandle>();
-        auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
-        SetShader(shader);
+        SetShader(shaderHandle);
 
         auto& constantsNode = yaml["PushConstants"];
         if (!constantsNode.IsDefined() || constantsNode.IsNull())
         {
-			EK_CORE_ERROR("Material file '{0}' is missing a push constants node", path.string());
-		}
+            EK_CORE_ERROR("Material file '{0}' is missing a push constants node", path.string());
+        }
         else
         {
             for (YAML::iterator it = constantsNode.begin(); it != constantsNode.end(); ++it) 
@@ -417,11 +417,15 @@ namespace Eklipse
     {
         return m_shader;
     }
+    AssetHandle& Material::GetShaderHandle() 
+    {
+        return m_shaderHandle;
+    }
     const PushConstantMap& Material::GetPushConstants() const
     {
         return m_pushConstants;
     }
-    const Sampler2DMap& Material::GetSamplers() const
+    Sampler2DMap& Material::GetSamplers()
     {
         return m_samplers;
     }

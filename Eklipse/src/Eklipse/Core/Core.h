@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <filesystem>
 
 #ifdef EK_PLATFORM_WINDOWS
 
@@ -35,6 +36,10 @@
 
 namespace Eklipse
 {
+	namespace fs = std::filesystem;
+	using Path = fs::path;
+	using String = std::string;
+
 	template<typename T>
 	using Unique = std::unique_ptr<T>;
 	template<typename T, typename ... Args>
