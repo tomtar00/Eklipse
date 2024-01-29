@@ -158,7 +158,7 @@ namespace Eklipse
 					}
 					else
 					{
-						shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+						shaderData[stage] = Vec<uint32_t>(module.cbegin(), module.cend());
 
 						std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
 						if (out.is_open())
@@ -186,7 +186,7 @@ namespace Eklipse
 
 			GLuint program = glCreateProgram();
 
-			std::vector<GLuint> shaderIDs;
+			Vec<GLuint> shaderIDs;
 			for (auto&& [stage, spirv] : m_openGLSPIRV)
 			{
 				GLuint shaderID = shaderIDs.emplace_back(glCreateShader(GLShaderStageFromInternalStage(stage)));
@@ -204,7 +204,7 @@ namespace Eklipse
 				GLint maxLength;
 				glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
-				std::vector<GLchar> infoLog(maxLength);
+				Vec<GLchar> infoLog(maxLength);
 				glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
 				if (infoLog.data())
 					EK_CORE_ERROR("Shader linking failed ({0}): {1}", Handle, infoLog.data());

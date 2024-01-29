@@ -6,17 +6,17 @@ namespace Eklipse
 	namespace Vulkan
 	{
 		VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount,
-			VkFormat& imageFormat, VkExtent2D& extent, std::vector<VkImage>& images);
+			VkFormat& imageFormat, VkExtent2D& extent, Vec<VkImage>& images);
 
-		void CreateImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
+		void CreateImages(Vec<VkImage>& images, Vec<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
 			VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
-		void CreateImageViews(std::vector<VkImageView>& imageViews, std::vector<VkImage>& images, VkFormat format);
-		void CreateSamplers(std::vector<VkSampler>& samplers, int numSamplers);
-		void CreateFrameBuffers(std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool);
+		void CreateImageViews(Vec<VkImageView>& imageViews, Vec<VkImage>& images, VkFormat format);
+		void CreateSamplers(Vec<VkSampler>& samplers, int numSamplers);
+		void CreateFrameBuffers(Vec<VkFramebuffer>& framebuffers, Vec<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool);
 
-		void DestroyImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations);
-		void DestroySamplers(std::vector<VkSampler>& samplers);
-		void DestroyImageViews(std::vector<VkImageView>& imageViews);
-		void DestroyFrameBuffers(std::vector<VkFramebuffer>& buffers);
+		void DestroyImages(Vec<VkImage>& images, Vec<VmaAllocation>& allocations);
+		void DestroySamplers(Vec<VkSampler>& samplers);
+		void DestroyImageViews(Vec<VkImageView>& imageViews);
+		void DestroyFrameBuffers(Vec<VkFramebuffer>& buffers);
 	}
 }

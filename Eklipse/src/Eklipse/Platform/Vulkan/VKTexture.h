@@ -9,7 +9,7 @@ namespace Eklipse
     {
         VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
         VkSampler CreateSampler(float mipLevels);
-        VkImage CreateImage(VmaAllocation allocation, uint32_t width, uint32_t height, uint32_t mipLevels,
+        VkImage CreateImage(VmaAllocation& allocation, uint32_t width, uint32_t height, uint32_t mipLevels,
             VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
             VkImageUsageFlags usage);
 

@@ -20,10 +20,10 @@ namespace Eklipse
         //VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
         //VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
 
-        VkPipeline CreateGraphicsPipeline(std::vector<VkPipelineShaderStageCreateInfo> shaderStages,
+        VkPipeline CreateGraphicsPipeline(Vec<VkPipelineShaderStageCreateInfo> shaderStages,
             VkPipelineLayout pipelineLayout, VkRenderPass renderPass,
-            std::vector<VkVertexInputBindingDescription> bindingDesc,
-            std::vector<VkVertexInputAttributeDescription> attribteDesc)
+            Vec<VkVertexInputBindingDescription> bindingDesc,
+            Vec<VkVertexInputAttributeDescription> attribteDesc)
         {
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -93,7 +93,7 @@ namespace Eklipse
             depthStencil.depthBoundsTestEnable = VK_FALSE;
             depthStencil.stencilTestEnable = VK_FALSE;
 
-            std::vector<VkDynamicState> dynamicStates = {
+            Vec<VkDynamicState> dynamicStates = {
                 VK_DYNAMIC_STATE_VIEWPORT,
                 VK_DYNAMIC_STATE_SCISSOR
             };
@@ -128,7 +128,7 @@ namespace Eklipse
 
             return pipeline;
         }
-        VkPipelineLayout CreatePipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts, std::vector<VkPushConstantRange> pushConstantRanges)
+        VkPipelineLayout CreatePipelineLayout(Vec<VkDescriptorSetLayout> descSetLayouts, Vec<VkPushConstantRange> pushConstantRanges)
         {
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -210,7 +210,7 @@ namespace Eklipse
             depthAttachmentRef.attachment = 1;
             depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            std::vector<VkAttachmentDescription> attachments =
+            Vec<VkAttachmentDescription> attachments =
             {
                 colorAttachment,
                 depthAttachment

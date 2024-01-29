@@ -44,7 +44,7 @@ namespace Eklipse
         return 0;
     }
 
-    Ref<VertexBuffer> VertexBuffer::Create(const std::vector<float>& vertices)
+    Ref<VertexBuffer> VertexBuffer::Create(const Vec<float>& vertices)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)
@@ -56,7 +56,7 @@ namespace Eklipse
         return nullptr;
     }
 
-    Ref<IndexBuffer> IndexBuffer::Create(const std::vector<uint32_t>& indices)
+    Ref<IndexBuffer> IndexBuffer::Create(const Vec<uint32_t>& indices)
     {
         auto apiType = Renderer::GetAPI();
         switch (apiType)

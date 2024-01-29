@@ -12,14 +12,14 @@ namespace Eklipse
         VkPhysicalDeviceProperties  g_physicalDeviceProps{};
         VkPhysicalDeviceMemoryProperties g_physicalDeviceMemoryProps{};
 
-        const std::vector<const char*>   g_deviceExtensions =
+        const Vec<const char*>   g_deviceExtensions =
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
 		void CreateLogicalDevice()
 		{      
-            std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+            Vec<VkDeviceQueueCreateInfo> queueCreateInfos;
             std::set<uint32_t> uniqueQueueFamilies = 
             {
                 g_queueFamilyIndices.graphicsAndComputeFamily,
@@ -76,7 +76,7 @@ namespace Eklipse
 			res = vkEnumeratePhysicalDevices(g_instance, &gpuCount, nullptr);
 			HANDLE_VK_RESULT(res, "GET NUMBER OF PHYSICAL DEVICES");
 
-			std::vector<VkPhysicalDevice> gpus(gpuCount);
+			Vec<VkPhysicalDevice> gpus(gpuCount);
 			res = vkEnumeratePhysicalDevices(g_instance, &gpuCount, gpus.data());
 			HANDLE_VK_RESULT(res, "ALLOCATE PHYSICAL DEVICES VECTOR");
 

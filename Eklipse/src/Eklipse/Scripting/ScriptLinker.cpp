@@ -59,7 +59,7 @@ namespace Eklipse
 	{
 		m_scriptClassMap.clear();
 	}
-	void ScriptLinker::FetchScriptClasses(std::vector<String> scriptClassNames)
+	void ScriptLinker::FetchScriptClasses(Vec<String> scriptClassNames)
 	{
 		EK_CORE_TRACE("Fetching script classes...");
 		EK_ASSERT(m_scriptLibrary, "Script library is not loaded!");
@@ -80,9 +80,9 @@ namespace Eklipse
 
 		EK_CORE_DBG("Script classes fetched!");
 	}
-	void ScriptLinker::FetchScriptClasses(std::vector<ClassReflection> scriptClassReflections)
+	void ScriptLinker::FetchScriptClasses(Vec<ClassReflection> scriptClassReflections)
 	{
-		std::vector<String> scriptClassNames;
+		Vec<String> scriptClassNames;
 		for (const auto& scriptClassReflection : scriptClassReflections)
 		{
 			scriptClassNames.push_back(scriptClassReflection.className);

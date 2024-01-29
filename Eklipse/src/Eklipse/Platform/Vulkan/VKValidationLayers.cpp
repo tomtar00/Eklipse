@@ -14,7 +14,7 @@ namespace Eklipse
 #endif
 
 		VkDebugUtilsMessengerEXT g_debugMessanger			= VK_NULL_HANDLE;
-		const std::vector<const char*> g_validationLayers	= { "VK_LAYER_KHRONOS_validation"};
+		const Vec<const char*> g_validationLayers	= { "VK_LAYER_KHRONOS_validation"};
 
 		void SetupValidationLayers()
 		{
@@ -49,7 +49,7 @@ namespace Eklipse
 			uint32_t layerCount;
 			vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-			std::vector<VkLayerProperties> availableLayers(layerCount);
+			Vec<VkLayerProperties> availableLayers(layerCount);
 			vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 			for (const char* layerName : g_validationLayers)

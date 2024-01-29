@@ -36,13 +36,13 @@ namespace Eklipse
 		String name;
 		size_t size;
 		uint32_t binding;
-		std::vector<ShaderUniformMember> members;
+		Vec<ShaderUniformMember> members;
 	};
 	struct ShaderPushConstant
 	{
 		String name;
 		size_t size;
-		std::vector<ShaderUniformMember> members;
+		Vec<ShaderUniformMember> members;
 	};
 
 	// Samplers
@@ -70,11 +70,11 @@ namespace Eklipse
 	// Reflection
 	struct ShaderReflection
 	{
-		std::vector<ShaderInput> inputs;
-		std::vector<ShaderOutput> outputs;
-		std::vector<ShaderUniformBuffer> uniformBuffers;
-		std::vector<ShaderPushConstant> pushConstants;
-		std::vector<ShaderSampler> samplers;
+		Vec<ShaderInput> inputs;
+		Vec<ShaderOutput> outputs;
+		Vec<ShaderUniformBuffer> uniformBuffers;
+		Vec<ShaderPushConstant> pushConstants;
+		Vec<ShaderSampler> samplers;
 		uint32_t maxLocation = 0;
 	};
 
@@ -84,9 +84,9 @@ namespace Eklipse
 
 	using StageReflectionMap = std::map<ShaderStage, ShaderReflection>;
 	using StageSourceMap = std::unordered_map<ShaderStage, String>;
-	using StageSpirvMap = std::unordered_map<ShaderStage, std::vector<uint32_t>>;
+	using StageSpirvMap = std::unordered_map<ShaderStage, Vec<uint32_t>>;
 	
-	class Shader : public Asset
+	class EK_API Shader : public Asset
 	{
 	public:
 		Shader() = delete;

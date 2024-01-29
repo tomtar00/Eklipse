@@ -16,11 +16,12 @@ namespace Eklipse {
 		Mesh
 	};
 
-	const String& AssetTypeToString(AssetType type);
-	AssetType AssetTypeFromString(const String& assetType);
-
-	class Asset
+	class EK_API Asset
 	{
+	public:
+		static const String& TypeToString(AssetType type);
+		static AssetType TypeFromString(const String& assetType);
+
 	public:
 		AssetHandle Handle;
 

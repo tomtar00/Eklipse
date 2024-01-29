@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLVertexBuffer : public Eklipse::VertexBuffer
 		{
 		public:
-			GLVertexBuffer(const std::vector<float>& vertices);
+			GLVertexBuffer(const Vec<float>& vertices);
 			~GLVertexBuffer();
 
 			virtual void SetData(const void* data, uint32_t size) override;
@@ -24,7 +24,7 @@ namespace Eklipse
 		class GLIndexBuffer : public Eklipse::IndexBuffer
 		{
 		public:
-			GLIndexBuffer(const std::vector<uint32_t>& indices);
+			GLIndexBuffer(const Vec<uint32_t>& indices);
 			~GLIndexBuffer();
 
 			virtual void Bind() const override;

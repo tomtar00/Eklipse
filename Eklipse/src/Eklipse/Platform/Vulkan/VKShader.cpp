@@ -104,10 +104,10 @@ namespace Eklipse
 				fragShaderStageInfo.module = fragShaderModule;
 				fragShaderStageInfo.pName = "main";
 
-				std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+				Vec<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
 
 				// Create descriptor set layout
-				std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
+				Vec<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
 				for (auto&& [stage, reflection] : m_reflections)
 				{
 					for (auto& uniformBuffer : reflection.uniformBuffers)
@@ -134,7 +134,7 @@ namespace Eklipse
 
 				m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
 
-				std::vector<VkPushConstantRange> pushConstantRanges;
+				Vec<VkPushConstantRange> pushConstantRanges;
 				for (auto&& [stage, reflection] : m_reflections)
 				{
 					for (auto& pushConstant : reflection.pushConstants)
@@ -156,14 +156,14 @@ namespace Eklipse
 				for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
 					inputSize += vertexReflection.size;
 
-				std::vector<VkVertexInputBindingDescription> bindingDescription;
+				Vec<VkVertexInputBindingDescription> bindingDescription;
 				VkVertexInputBindingDescription vertexInputDescription{};
 				vertexInputDescription.binding = 0;
 				vertexInputDescription.stride = inputSize;
 				vertexInputDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 				bindingDescription.push_back(vertexInputDescription);
 
-				std::vector<VkVertexInputAttributeDescription> attributeDescription;
+				Vec<VkVertexInputAttributeDescription> attributeDescription;
 				for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
 				{
 					VkVertexInputAttributeDescription attribute{};

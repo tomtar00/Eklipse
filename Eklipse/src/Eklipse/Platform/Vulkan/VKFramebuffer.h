@@ -9,7 +9,7 @@ namespace Eklipse
 	{
 		struct VkFramebufferAttachments
 		{
-			std::vector<Ref<VKTexture2D>> colorAttachments{};
+			Vec<Ref<VKTexture2D>> colorAttachments{};
 			Ref<VKTexture2D> depthAttachment;
 		};
 
@@ -38,9 +38,9 @@ namespace Eklipse
 		private:
 			FramebufferInfo m_framebufferInfo;
 			VkRenderPass m_renderPass;
-			std::vector<VkFramebuffer> m_framebuffers;
-			std::vector<VkFramebufferAttachments> m_framebufferAttachments;
-			std::vector<VkCommandBuffer> m_commandBuffers;
+			Vec<VkFramebuffer> m_framebuffers;
+			Vec<VkFramebufferAttachments> m_framebufferAttachments;
+			Vec<VkCommandBuffer> m_commandBuffers;
 			uint32_t m_imageIndex = 0;
 		};
 	}

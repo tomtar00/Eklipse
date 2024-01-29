@@ -9,6 +9,10 @@ namespace Eklipse
     {
         return s_assetLibrary->IsAssetHandleValid(handle);
     }
+    bool AssetManager::IsAssetHandleValidAndOfType(AssetHandle handle, AssetType type)
+    {
+        return IsAssetHandleValid(handle) && GetMetadata(handle).Type == type;
+    }
     bool AssetManager::IsAssetLoaded(AssetHandle handle)
     {
         return s_assetLibrary->IsAssetLoaded(handle);

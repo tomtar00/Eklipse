@@ -10,6 +10,6 @@ namespace Eklipse
 	struct ClassReflection
 	{
 		String className;
-		std::vector<ClassMemberReflection> members;
+		Vec<ClassMemberReflection> members;
 	};
 }

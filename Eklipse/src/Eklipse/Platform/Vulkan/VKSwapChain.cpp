@@ -14,12 +14,12 @@ namespace Eklipse
         VkFormat					g_swapChainImageFormat;
         VkExtent2D					g_swapChainExtent;
         uint32_t                    g_swapChainImageCount;
-        std::vector<VkImage>		g_swapChainImages;
-        std::vector<VkImageView>	g_swapChainImageViews;
-        //std::vector<VkFramebuffer>	g_swapChainFramebuffers;
+        Vec<VkImage>		g_swapChainImages;
+        Vec<VkImageView>	g_swapChainImageViews;
+        //Vec<VkFramebuffer>	g_swapChainFramebuffers;
 
         VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount, 
-            VkFormat& imageFormat, VkExtent2D& extent, std::vector<VkImage>& images)
+            VkFormat& imageFormat, VkExtent2D& extent, Vec<VkImage>& images)
         {
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(g_physicalDevice);
             VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats, imageFormat);
@@ -83,7 +83,7 @@ namespace Eklipse
             return swapchain;
         }
 
-        void CreateImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
+        void CreateImages(Vec<VkImage>& images, Vec<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
             VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
             VkImageUsageFlags usage)
         {
@@ -95,7 +95,7 @@ namespace Eklipse
                     format, tiling, usage);
             }
         }
-        void CreateImageViews(std::vector<VkImageView>& imageViews, std::vector<VkImage>& images, VkFormat format)
+        void CreateImageViews(Vec<VkImageView>& imageViews, Vec<VkImage>& images, VkFormat format)
         {
             imageViews.resize(images.size());
             for (size_t i = 0; i < images.size(); i++)
@@ -103,7 +103,7 @@ namespace Eklipse
                 imageViews[i] = CreateImageView( images[i], format, VK_IMAGE_ASPECT_COLOR_BIT, 1);
             }
         }
-        void CreateSamplers(std::vector<VkSampler>& samplers, int numSamplers)
+        void CreateSamplers(Vec<VkSampler>& samplers, int numSamplers)
         {
             samplers.resize(numSamplers);
             for (int i = 0; i < numSamplers; i++)
@@ -111,12 +111,12 @@ namespace Eklipse
                 samplers[i] = CreateSampler(0.0f);
             }
         }
-        void CreateFrameBuffers(std::vector<VkFramebuffer>& framebuffers, std::vector<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool attachOnlyView = false)
+        void CreateFrameBuffers(Vec<VkFramebuffer>& framebuffers, Vec<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool attachOnlyView = false)
         {
             framebuffers.resize(imageViews.size());
             for (size_t i = 0; i < imageViews.size(); i++)
             {
-                std::vector<VkImageView> attachments;
+                Vec<VkImageView> attachments;
 
                 if (attachOnlyView)
                 {
@@ -160,7 +160,7 @@ namespace Eklipse
             }
         }
 
-        void DestroyImages(std::vector<VkImage>& images, std::vector<VmaAllocation>& allocations)
+        void DestroyImages(Vec<VkImage>& images, Vec<VmaAllocation>& allocations)
         {
             int i = 0;
             for (auto image : images)
@@ -168,21 +168,21 @@ namespace Eklipse
                 vmaDestroyImage(g_allocator, image, allocations[i++]);
             }
         }
-        void DestroyImageViews(std::vector<VkImageView>& imageViews)
+        void DestroyImageViews(Vec<VkImageView>& imageViews)
         {
             for (auto imageView : imageViews)
             {
                 vkDestroyImageView(g_logicalDevice, imageView, nullptr);
             }
         }
-        void DestroySamplers(std::vector<VkSampler>& samplers)
+        void DestroySamplers(Vec<VkSampler>& samplers)
         {
             for (auto sampler : samplers)
             {
                 vkDestroySampler(g_logicalDevice, sampler, nullptr);
             }
         }
-        void DestroyFrameBuffers(std::vector<VkFramebuffer>& buffers)
+        void DestroyFrameBuffers(Vec<VkFramebuffer>& buffers)
         {
             for (auto framebuffer : buffers)
             {

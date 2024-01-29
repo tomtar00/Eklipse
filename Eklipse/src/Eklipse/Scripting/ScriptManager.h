@@ -33,7 +33,7 @@ namespace Eklipse
 		NEEDS_RECOMPILATION
 	};
 
-	class ScriptManager
+	class EK_API ScriptManager
 	{
 	public:
 		ScriptManager(ScriptManagerSettings* settings);

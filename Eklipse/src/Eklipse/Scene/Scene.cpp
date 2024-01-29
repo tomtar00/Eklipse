@@ -406,7 +406,7 @@ namespace Eklipse
 			out << YAML::Key << "Properties" << YAML::Value;
 			out << YAML::BeginMap;
 
-			std::vector<String> toRemove;
+			Vec<String> toRemove;
 			for (auto&& [name, member] : scriptComponent.classInfo.members)
 			{
 				auto& members = ScriptLinker::Get().GetScriptClasses().at(scriptComponent.scriptName).members;

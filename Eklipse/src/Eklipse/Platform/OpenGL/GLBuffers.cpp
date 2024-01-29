@@ -11,7 +11,7 @@ namespace Eklipse
 		// VERTEX BUFFER ///////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 
-		GLVertexBuffer::GLVertexBuffer(const std::vector<float>& vertices) : m_id(0)
+		GLVertexBuffer::GLVertexBuffer(const Vec<float>& vertices) : m_id(0)
 		{
 			m_count = vertices.size();
 			glCreateBuffers(1, &m_id);
@@ -44,7 +44,7 @@ namespace Eklipse
 		// INDEX BUFFER ////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 
-		GLIndexBuffer::GLIndexBuffer(const std::vector<uint32_t>& indices) : m_id(0)
+		GLIndexBuffer::GLIndexBuffer(const Vec<uint32_t>& indices) : m_id(0)
 		{
 			m_count = indices.size();
 			glCreateBuffers(1, &m_id);

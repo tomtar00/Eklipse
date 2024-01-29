@@ -29,17 +29,17 @@ namespace Eklipse
 			void CreateDefaultFramebuffer();
 			void CreateSyncObjects();
 
-			std::vector<const char*> GetRequiredExtensions() const;
+			Vec<const char*> GetRequiredExtensions() const;
 
 		private:
 			Ref<VKFramebuffer> m_defaultFramebuffer;
 
-			std::vector<VkSemaphore> m_imageAvailableSemaphores{};
-			std::vector<VkSemaphore> m_renderFinishedSemaphores{};
-			std::vector<VkFence> m_renderInFlightFences{};
+			Vec<VkSemaphore> m_imageAvailableSemaphores{};
+			Vec<VkSemaphore> m_renderFinishedSemaphores{};
+			Vec<VkFence> m_renderInFlightFences{};
 
-			std::vector<VkFence> m_computeInFlightFences{};
-			std::vector<VkSemaphore> m_computeFinishedSemaphores{};
+			Vec<VkFence> m_computeInFlightFences{};
+			Vec<VkSemaphore> m_computeFinishedSemaphores{};
 		};
 	}
 }

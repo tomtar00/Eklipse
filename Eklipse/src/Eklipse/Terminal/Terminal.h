@@ -38,7 +38,7 @@ namespace Eklipse
 	{
 		String Command;
 		std::unordered_map<String, String> Args;
-		std::vector<String> Flags;
+		Vec<String> Flags;
 	};
 	struct TerminalCommand
 	{
@@ -47,7 +47,7 @@ namespace Eklipse
 		std::function<void(const ParsedCommand&)> Callback;
 	};
 
-	class Terminal
+	class EK_API Terminal
 	{
 	public:
 		Terminal();
@@ -68,11 +68,11 @@ namespace Eklipse
 		void SetLevel(spdlog::level::level_enum level, const char* name);
 	
 	private:
-		std::vector<TerminalCommand> m_commands;
+		Vec<TerminalCommand> m_commands;
 		Ref<TerminalSink<std::mutex>> m_sink;
 		spdlog::level::level_enum m_level;
 		String m_levelString;
-		std::vector<String> m_history;
+		Vec<String> m_history;
 		int32_t m_historyIndex;
 		int32_t m_historySizeLimit = 10;
 		String m_historyBuffer;

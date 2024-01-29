@@ -24,13 +24,13 @@ namespace Eklipse
         else if (channels == 4) return ImageFormat::RGBA8;
         else 				    return ImageFormat::FORMAT_UNDEFINED;
     }
-    static bool LoadTextureFromFile(const Path& path, TextureData& outData)
+    bool LoadTextureFromFile(const Path& path, TextureData& outData)
     {
-        const char* pathStr = path.string().c_str();
+        String pathStr = path.string();
         EK_CORE_TRACE("Loading texture from path: {0}", pathStr);
 
         int width, height, channels;
-        uint8_t* data = stbi_load(pathStr, &width, &height, &channels, STBI_rgb_alpha);
+        uint8_t* data = stbi_load(pathStr.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
         if (data == nullptr)
         {
@@ -61,25 +61,13 @@ namespace Eklipse
     }
 
     Texture2D::Texture2D(const Path& path)
-    {
-        TextureData textureData{};
-        if (LoadTextureFromFile(path, textureData))
-        {
-            m_textureInfo = textureData.info;
-            Init(m_textureInfo);
-            SetData(textureData.data, textureData.size);
-        }
+    {      
     }
     Texture2D::Texture2D(const TextureInfo& textureInfo)
-    {
-        m_textureInfo = textureInfo;
-        Init(m_textureInfo);
+    { 
     }
     Texture2D::Texture2D(const TextureData& textureData)
-    {
-        m_textureInfo = textureData.info;
-        Init(m_textureInfo);
-        SetData(textureData.data, textureData.size);
+    {   
     }
 
     Ref<Texture2D> Texture2D::Create(const Path& path)
@@ -111,15 +99,6 @@ namespace Eklipse
         }
         EK_ASSERT(false, " Texture creation not implemented for current graphics API");
         return nullptr;
-    }
-    
-    void Texture2D::Init(const TextureInfo& textureInfo)
-    {
-        EK_ASSERT(false, "Tried to call abstract Texture2D::Init function");
-    }
-    void Texture2D::SetData(void* data, uint32_t size)
-    {
-        EK_ASSERT(false, "Tried to call abstract Texture2D::SetData function");
     }
     
     const TextureInfo& Texture2D::GetInfo() const

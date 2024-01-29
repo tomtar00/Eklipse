@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	class SceneManager
+	class EK_API SceneManager
 	{
 	public:
 		static void SetActiveScene(const Ref<Scene>& scene);

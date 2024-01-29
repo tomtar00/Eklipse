@@ -21,8 +21,8 @@ namespace Eklipse
 		struct SwapChainSupportDetails
 		{
 			VkSurfaceCapabilitiesKHR capabilities{};
-			std::vector<VkSurfaceFormatKHR> formats;
-			std::vector<VkPresentModeKHR> presentModes;
+			Vec<VkSurfaceFormatKHR> formats;
+			Vec<VkPresentModeKHR> presentModes;
 		};
 
 		VkFormat ConvertToVKFormat(Eklipse::ImageFormat format);
@@ -30,15 +30,15 @@ namespace Eklipse
 		VkImageUsageFlagBits ConvertToVKUsage(uint32_t internalUsage);
 		VkImageLayout ConvertToVKLayout(Eklipse::ImageLayout layout);
 
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat);
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const Vec<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat);
+		VkPresentModeKHR ChooseSwapPresentMode(const Vec<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int frameWidth, int frameHeight);
-		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
+		VkShaderModule CreateShaderModule(const Vec<uint32_t>& code);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		VkFormat FindSupportedFormat(const Vec<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat FindDepthFormat();
 		bool HasStencilComponent(VkFormat format);
 	}

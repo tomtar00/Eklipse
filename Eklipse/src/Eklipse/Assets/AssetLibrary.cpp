@@ -111,8 +111,8 @@
 //        }
 //
 //        tinyobj::attrib_t attrib;
-//        std::vector<tinyobj::shape_t> shapes;
-//        std::vector<tinyobj::material_t> materials;
+//        Vec<tinyobj::shape_t> shapes;
+//        Vec<tinyobj::material_t> materials;
 //        String warn, err;
 //
 //        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.full_c_str()))
@@ -122,8 +122,8 @@
 //        }
 //
 //        std::unordered_map<Vertex, uint32_t, std::hash<Vertex>> uniqueVertices{};
-//        std::vector<float> vertices{};
-//        std::vector<uint32_t> indices{};
+//        Vec<float> vertices{};
+//        Vec<uint32_t> indices{};
 //
 //        for (const auto& shape : shapes)
 //        {

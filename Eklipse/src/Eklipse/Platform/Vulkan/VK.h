@@ -17,10 +17,10 @@ namespace Eklipse
 
 		extern bool g_validationLayersEnabled;
 		extern VkDebugUtilsMessengerEXT g_debugMessanger;
-		extern const std::vector<const char*> g_validationLayers;
+		extern const Vec<const char*> g_validationLayers;
 
 		extern VkDevice g_logicalDevice;
-		extern const std::vector<const char*> g_deviceExtensions;
+		extern const Vec<const char*> g_deviceExtensions;
 		extern VkPhysicalDevice g_physicalDevice;
 		extern VkPhysicalDeviceProperties g_physicalDeviceProps;
 		extern VkPhysicalDeviceMemoryProperties g_physicalDeviceMemoryProps;
@@ -38,17 +38,17 @@ namespace Eklipse
 		extern VkFormat g_swapChainImageFormat;
 		extern VkExtent2D g_swapChainExtent;
 		extern uint32_t g_swapChainImageCount;
-		extern std::vector<VkImage> g_swapChainImages;
-		extern std::vector<VkImageView> g_swapChainImageViews;
-		//extern std::vector<VkFramebuffer> g_swapChainFramebuffers;
+		extern Vec<VkImage> g_swapChainImages;
+		extern Vec<VkImageView> g_swapChainImageViews;
+		//extern Vec<VkFramebuffer> g_swapChainFramebuffers;
 
 		// imgui
 		//extern VkRenderPass g_imguiRenderPass;
-		//extern std::vector<VkCommandBuffer> g_imguiCommandBuffers;
-		//extern std::vector<VkFramebuffer> g_imguiFrameBuffers;
+		//extern Vec<VkCommandBuffer> g_imguiCommandBuffers;
+		//extern Vec<VkFramebuffer> g_imguiFrameBuffers;
 		//
 
-		extern std::vector<VKFramebuffer*> g_VKOffScreenFramebuffers;
+		extern Vec<VKFramebuffer*> g_VKOffScreenFramebuffers;
 		extern VKFramebuffer* g_VKDefaultFramebuffer;
 
 		// viewport
@@ -56,21 +56,21 @@ namespace Eklipse
 		//extern VkRenderPass g_viewportRenderPass;
 		//extern VkPipeline g_viewportPipeline;
 		//extern VkPipelineLayout g_viewportPipelineLayout;
-		//extern std::vector<VkCommandBuffer> g_viewportCommandBuffers;
-		//extern std::vector<Image> g_viewportImages;
-		//extern std::vector<VkFramebuffer> g_viewportFrameBuffers;
+		//extern Vec<VkCommandBuffer> g_viewportCommandBuffers;
+		//extern Vec<Image> g_viewportImages;
+		//extern Vec<VkFramebuffer> g_viewportFrameBuffers;
 		//
 
 		//extern VkDescriptorSetLayout g_graphicsDescriptorSetLayout;
 		//extern VkDescriptorSetLayout g_computeDescriptorSetLayout;
 		extern VkDescriptorPool g_descriptorPool;
-		//extern std::vector<VkDescriptorSet> g_graphicsDescriptorSets;
-		//extern std::vector<VkDescriptorSet> g_computeDescriptorSets;
+		//extern Vec<VkDescriptorSet> g_graphicsDescriptorSets;
+		//extern Vec<VkDescriptorSet> g_computeDescriptorSets;
 
 		extern VkCommandPool g_commandPool;
 		extern VkCommandBuffer g_currentCommandBuffer;
-		//extern std::vector<VkCommandBuffer> g_drawCommandBuffers;
-		//extern std::vector<VkCommandBuffer> g_computeCommandBuffers;
+		//extern Vec<VkCommandBuffer> g_drawCommandBuffers;
+		//extern Vec<VkCommandBuffer> g_computeCommandBuffers;
 
 		//extern VkRenderPass g_renderPass;
 		//extern VkPipeline g_graphicsPipeline;

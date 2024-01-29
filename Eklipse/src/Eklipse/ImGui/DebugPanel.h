@@ -12,6 +12,6 @@ namespace Eklipse
 		void AppendDrawRequest(const std::function<void()>& drawRequest);
 
 	private:
-		std::vector<std::function<void()>> m_drawRequests;
+		Vec<std::function<void()>> m_drawRequests;
 	};
 }

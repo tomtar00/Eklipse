@@ -9,7 +9,7 @@ namespace Eklipse
 	using ClassInfo = EklipseEngine::Reflections::ClassInfo;
 	using ScriptClassMap = std::map<String, ClassInfo>;
 
-	class ScriptLinker
+	class EK_API ScriptLinker
 	{
 	public:
 		ScriptLinker();
@@ -20,8 +20,8 @@ namespace Eklipse
 		bool UnlinkScriptLibrary();
 
 		void ClearScriptClasses();
-		void FetchScriptClasses(std::vector<String> scriptClassNames);
-		void FetchScriptClasses(std::vector<ClassReflection> scriptClassReflections);
+		void FetchScriptClasses(Vec<String> scriptClassNames);
+		void FetchScriptClasses(Vec<ClassReflection> scriptClassReflections);
 		
 		bool HasAnyScriptClasses() const;
 		bool IsLibraryLinked() const;

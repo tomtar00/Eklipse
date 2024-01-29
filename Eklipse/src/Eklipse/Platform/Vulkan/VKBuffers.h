@@ -24,7 +24,7 @@ namespace Eklipse
 		class VKVertexBuffer : public Eklipse::VertexBuffer, public VKBuffer
 		{
 		public:
-			VKVertexBuffer(const std::vector<float>& vertices);
+			VKVertexBuffer(const Vec<float>& vertices);
 			virtual void SetData(const void* data, uint32_t size) override;
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
@@ -34,7 +34,7 @@ namespace Eklipse
 		class VKIndexBuffer : public Eklipse::IndexBuffer, public VKBuffer
 		{
 		public:
-			VKIndexBuffer(const std::vector<uint32_t>& indices);
+			VKIndexBuffer(const Vec<uint32_t>& indices);
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
 			virtual void Dispose() const override;

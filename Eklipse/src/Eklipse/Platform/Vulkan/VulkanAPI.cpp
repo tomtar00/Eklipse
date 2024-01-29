@@ -19,6 +19,8 @@
 #include "VKDescriptor.h"
 #include "VKBuffers.h"
 
+#include <vk_mem_alloc.h>
+
 namespace Eklipse
 {
 	namespace Vulkan
@@ -41,8 +43,42 @@ namespace Eklipse
 		VkCommandBuffer		g_currentCommandBuffer = VK_NULL_HANDLE;
 
 		//VKFramebuffer*		g_VKSceneFramebuffer;
-		std::vector<VKFramebuffer*> g_VKOffScreenFramebuffers{};
+		Vec<VKFramebuffer*> g_VKOffScreenFramebuffers{};
 		VKFramebuffer*		g_VKDefaultFramebuffer;
+
+		/*static void LogTotalStatistics(const VmaTotalStatistics& stats) {
+			std::cout << "Total Statistics:" << std::endl;
+			std::cout << "Block Count: " << stats.total.statistics.blockCount << std::endl;
+			std::cout << "Allocation Count: " << stats.total.statistics.allocationCount << std::endl;
+			std::cout << "Block Bytes: " << stats.total.statistics.blockBytes << std::endl;
+			std::cout << "Allocation Bytes: " << stats.total.statistics.allocationBytes << std::endl;
+		}
+		static void LogDetailedStatistics(const VmaDetailedStatistics& stats, const char* title) {
+			std::cout << title << " Statistics:" << std::endl;
+			std::cout << "Block Count: " << stats.statistics.blockCount << std::endl;
+			std::cout << "Allocation Count: " << stats.statistics.allocationCount << std::endl;
+			std::cout << "Block Bytes: " << stats.statistics.blockBytes << std::endl;
+			std::cout << "Allocation Bytes: " << stats.statistics.allocationBytes << std::endl;
+			std::cout << "Unused Range Count: " << stats.unusedRangeCount << std::endl;
+			std::cout << "Allocation Size Min: " << stats.allocationSizeMin << std::endl;
+			std::cout << "Allocation Size Max: " << stats.allocationSizeMax << std::endl;
+			std::cout << "Unused Range Size Min: " << stats.unusedRangeSizeMin << std::endl;
+			std::cout << "Unused Range Size Max: " << stats.unusedRangeSizeMax << std::endl;
+		}
+		static void ListMemoryStatistics(VmaAllocator allocator) {
+			VmaTotalStatistics stats;
+			vmaCalculateStatistics(allocator, &stats);
+
+			LogTotalStatistics(stats);
+
+			for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; ++i) {
+				LogDetailedStatistics(stats.memoryType[i], "Memory Type");
+			}
+
+			for (uint32_t i = 0; i < VK_MAX_MEMORY_HEAPS; ++i) {
+				LogDetailedStatistics(stats.memoryHeap[i], "Memory Heap");
+			}
+		}*/
 
 		VulkanAPI::VulkanAPI() : GraphicsAPI()
 		{
@@ -162,6 +198,14 @@ namespace Eklipse
 			// COMMON /////////////////////////////////////////////
 
 			m_defaultFramebuffer->Dispose();
+			m_defaultFramebuffer.reset();
+			g_VKDefaultFramebuffer = nullptr;
+
+			for (auto& framebuffer : g_VKOffScreenFramebuffers)
+            {
+                framebuffer->Dispose();
+            }
+			g_VKOffScreenFramebuffers.clear();
 
 			DestroyValidationLayers();
 			if (g_commandPool)
@@ -171,6 +215,7 @@ namespace Eklipse
 
 			if (g_allocator)
 			{
+				//ListMemoryStatistics(g_allocator);
 				vmaDestroyAllocator(g_allocator);
 			}
 
@@ -186,9 +231,6 @@ namespace Eklipse
 			{
 				vkDestroyInstance(g_instance, nullptr);
 			}
-
-			g_VKDefaultFramebuffer = nullptr;
-			g_VKOffScreenFramebuffers.clear();
 
 			EK_CORE_DBG("Vulkan shutdown");
 			m_initialized = false;
@@ -213,7 +255,7 @@ namespace Eklipse
 			std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
 			std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
-			std::vector<VkCommandBuffer> commandBuffers(1 + g_VKOffScreenFramebuffers.size());
+			Vec<VkCommandBuffer> commandBuffers{};
 
 			// TODO: get rid of 'if' statments
 			/*if (g_VKDefaultFramebuffer == g_VKSceneFramebuffer)
@@ -231,10 +273,10 @@ namespace Eklipse
 					commandBuffers.push_back(g_VKDefaultFramebuffer->GetCommandBuffer(g_currentFrame));
 				}
 			}*/
-			commandBuffers.emplace_back(m_defaultFramebuffer->GetCommandBuffer(g_currentFrame));
+			commandBuffers.push_back(m_defaultFramebuffer->GetCommandBuffer(g_currentFrame));
 			for (auto& framebuffer : g_VKOffScreenFramebuffers)
 			{
-				commandBuffers.emplace_back(framebuffer->GetCommandBuffer(g_currentFrame));
+				commandBuffers.push_back(framebuffer->GetCommandBuffer(g_currentFrame));
 			}
 
 			VkSubmitInfo submitInfo{};
@@ -374,13 +416,13 @@ namespace Eklipse
 			}
 		}
 		
-		std::vector<const char*> VulkanAPI::GetRequiredExtensions() const
+		Vec<const char*> VulkanAPI::GetRequiredExtensions() const
 		{
 #ifdef EK_PLATFORM_WINDOWS
 			uint32_t glfwExtensionCount = 0;
 			const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-			std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+			Vec<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 			if (g_validationLayersEnabled)
 			{

@@ -43,7 +43,7 @@ namespace Eklipse
 		// VERTEX BUFFER ////////////////////////////////
 		/////////////////////////////////////////////////
 
-		VKVertexBuffer::VKVertexBuffer(const std::vector<float>& vertices)
+		VKVertexBuffer::VKVertexBuffer(const Vec<float>& vertices)
 		{
 			m_count = vertices.size();
 			size_t size = sizeof(float) * vertices.size();
@@ -76,7 +76,7 @@ namespace Eklipse
 		// INDEX BUFFER /////////////////////////////////
 		/////////////////////////////////////////////////
 
-		VKIndexBuffer::VKIndexBuffer(const std::vector<uint32_t>& indices)
+		VKIndexBuffer::VKIndexBuffer(const Vec<uint32_t>& indices)
 		{
 			m_count = indices.size();
 			size_t size = sizeof(indices[0]) * m_count;

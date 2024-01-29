@@ -41,7 +41,7 @@ namespace Eklipse
 				DetailsSelectionInfo info{};
 				info.type = SelectionType::ENTITY;
 				info.entity = entity;
-				EditorLayer::Get().SetSelection(info);
+				EditorLayer::Get().SelectionInfo = info;
 				EditorLayer::Get().GetDetailsPanel().Setup(nameComponent.name);
 			}
 

@@ -55,8 +55,7 @@ namespace Eklipse
         m_entitiesPanel.SetContext(m_editorScene);
         SceneManager::SetActiveScene(m_editorScene);
 
-        m_scriptManager = CreateRef<ScriptManager>(m_settings.ScriptManagerSettings);
-        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>();
+        m_scriptManager = CreateRef<ScriptManager>(&m_settings.ScriptManagerSettings);
 
         Log::AddCoreSink(m_terminalPanel.GetTerminal().GetSink());
         Log::AddClientSink(m_terminalPanel.GetTerminal().GetSink());
@@ -76,6 +75,7 @@ namespace Eklipse
     void EditorLayer::OnDetach()
     {
         SerializeSettings();
+        m_editorScene.reset();
         EK_TRACE("Editor layer detached");
     }
     void EditorLayer::OnUpdate(float deltaTime)
@@ -307,7 +307,7 @@ namespace Eklipse
         Application::Get().PushOverlay(GUI);
         GUI->Init();
 
-        OnLoadResources();
+        m_filesPanel.LoadResources();
     }
     void EditorLayer::OnShutdownAPI()
     {
@@ -315,9 +315,11 @@ namespace Eklipse
         ClearSelection();
 
         GUI->Shutdown();
-        m_viewportFramebuffer->Dispose();
 
-        m_viewportFramebuffer.reset();
+        m_filesPanel.UnloadResources();
+
+        //m_viewportFramebuffer->Dispose();
+        //m_viewportFramebuffer.reset();
     }
     
     // === Project ===
@@ -354,7 +356,7 @@ namespace Eklipse
     }
     void EditorLayer::OpenProject()
     {
-        auto& result = OpenFileDialog({ EK_PROJECT_EXTENSION });
+        auto& result = FileUtilities::OpenFileDialog({ EK_PROJECT_EXTENSION });
         if (result.type == FileDialogResultType::SUCCESS)
         {
             OnProjectUnload();
@@ -521,9 +523,10 @@ namespace Eklipse
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         ClearSelection();
-        // load aasets
+        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(
+            Project::GetActive()->GetConfig().assetsDirectoryPath
+        );
         m_filesPanel.OnContextChanged();
-
         m_editorScene->ApplyAllComponents();
     }
     
@@ -532,13 +535,21 @@ namespace Eklipse
     {
         return *s_instance;
     }
+    EditorSettings& EditorLayer::GetSettings()
+    {
+        return m_settings;
+    }
+    Framebuffer* EditorLayer::GetViewportFramebuffer() const
+    {
+        return m_viewportFramebuffer.get();
+    }
+    DetailsPanel& EditorLayer::GetDetailsPanel()
+    {
+        return m_detailsPanel;
+    }
     const EntitiesPanel& EditorLayer::GetEntitiesPanel()
     {
         return m_entitiesPanel;
-    }
-    const DetailsPanel& EditorLayer::GetDetailsPanel()
-    {
-        return m_detailsPanel;
     }
     const ViewPanel& EditorLayer::GetViewPanel()
     {
@@ -548,13 +559,13 @@ namespace Eklipse
     {
         return m_editorCamera;
     }
-    const EditorSettings& EditorLayer::GetSettings()
-    {
-        return m_settings;
-    }
     bool EditorLayer::IsPlaying() const
     {
         return SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
+    }
+    const Ref<EditorAssetLibrary> EditorLayer::GetAssetLibrary() const
+    {
+        return m_editorAssetLibrary;
     }
 
     // === Setters ===	
@@ -586,7 +597,7 @@ namespace Eklipse
                     ImGui::Text("%d", handle);
 
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextUnformatted(AssetTypeToString(metadata.Type).c_str());
+                    ImGui::TextUnformatted(Asset::TypeToString(metadata.Type).c_str());
 
                     ImGui::TableSetColumnIndex(2);
                     ImGui::TextUnformatted(metadata.FilePath.string().c_str());
@@ -684,10 +695,5 @@ namespace Eklipse
     {
         SelectionInfo.type = SelectionType::NONE;
         SelectionInfo.entity.MarkNull();
-    }
-
-    void EditorLayer::OnLoadResources()
-    {
-        m_filesPanel.LoadResources();
     }
 }

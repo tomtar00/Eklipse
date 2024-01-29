@@ -47,25 +47,25 @@ namespace Eklipse
 		BufferLayout(std::initializer_list<BufferElement> elements);
 
 		inline uint32_t GetStride() const { return m_stride; }
-		inline const std::vector<BufferElement>& GetElements() const { return m_elements; }
+		inline const Vec<BufferElement>& GetElements() const { return m_elements; }
 
-		std::vector<BufferElement>::iterator begin() { return m_elements.begin(); }
-		std::vector<BufferElement>::iterator end() { return m_elements.end(); }
-		std::vector<BufferElement>::const_iterator begin() const { return m_elements.begin(); }
-		std::vector<BufferElement>::const_iterator end() const { return m_elements.end(); }
+		Vec<BufferElement>::iterator begin() { return m_elements.begin(); }
+		Vec<BufferElement>::iterator end() { return m_elements.end(); }
+		Vec<BufferElement>::const_iterator begin() const { return m_elements.begin(); }
+		Vec<BufferElement>::const_iterator end() const { return m_elements.end(); }
 
 	private:
 		void CalculateOffsetAndStride();
 
 	private:
-		std::vector<BufferElement> m_elements;
+		Vec<BufferElement> m_elements;
 		uint32_t m_stride;
 	};
 
 	class EK_API VertexBuffer
 	{
 	public:
-		static Ref<VertexBuffer> Create(const std::vector<float>& vertices);
+		static Ref<VertexBuffer> Create(const Vec<float>& vertices);
 		virtual ~VertexBuffer() = default;
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
@@ -85,7 +85,7 @@ namespace Eklipse
 	class EK_API IndexBuffer
 	{
 	public:
-		static Ref<IndexBuffer> Create(const std::vector<uint32_t>& indices);
+		static Ref<IndexBuffer> Create(const Vec<uint32_t>& indices);
 		virtual ~IndexBuffer() = default;
 
 		virtual void Bind() const = 0;

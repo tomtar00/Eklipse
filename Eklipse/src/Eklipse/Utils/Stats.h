@@ -13,7 +13,7 @@ namespace Eklipse
 
 		float fps;
 		float frameTime;
-		std::vector<float> frameTimes;
+		Vec<float> frameTimes;
 		uint32_t drawCalls;
 		uint32_t numVertices;
 

@@ -69,11 +69,13 @@ namespace Eklipse
 
 		// === Getters ===
 		static EditorLayer& Get();
+		EditorSettings& GetSettings();
+		Framebuffer* GetViewportFramebuffer() const;
+		DetailsPanel& GetDetailsPanel();
 		const EntitiesPanel& GetEntitiesPanel();
-		const DetailsPanel& GetDetailsPanel();
 		const ViewPanel& GetViewPanel();
 		const Camera& GetEditorCamera();
-		const EditorSettings& GetSettings();
+		const Ref<EditorAssetLibrary> GetAssetLibrary() const;
 		bool IsPlaying() const;
 
 		// === Setters ===
@@ -84,9 +86,6 @@ namespace Eklipse
 
 		// === Selection ===
 		void ClearSelection();
-
-	private:
-		void OnLoadResources();
 
 	public:
 		Ref<ImGuiLayer> GUI;

@@ -40,7 +40,8 @@ namespace Eklipse
 	#define EK_ERROR(...)			SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), __VA_ARGS__)
 	#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), __VA_ARGS__)
 
-	#define VMA_DEBUG_LOG(format, ...) SPDLOG_LOGGER_TRACE(Eklipse::Log::coreLogger(), format) // TODO: Formatting not working
+	#define VMA_DEBUG_LOG(format, ...)	SPDLOG_LOGGER_TRACE(Eklipse::Log::coreLogger(), format) // TODO: Formatting not working
+	#define VMA_DEBUG_LOG_FORMAT(...)	printf(__VA_ARGS__); printf("\n")
 
 #elif EK_RELEASE
 	#define EK_CORE_TRACE(...)
@@ -58,6 +59,8 @@ namespace Eklipse
 	#define EK_CRITICAL(...)		SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), __VA_ARGS__)
 
 	#define VMA_DEBUG_LOG(format, ...)
+	#define VMA_DEBUG_LOG_FORMAT(...)
+
 #elif EK_DIST
 	#define EK_CORE_TRACE(...)
 	#define EK_CORE_DBG(...)
@@ -74,4 +77,5 @@ namespace Eklipse
 	#define EK_CRITICAL(...)
 
 	#define VMA_DEBUG_LOG(format, ...)
+	#define VMA_DEBUG_LOG_FORMAT(...)
 #endif

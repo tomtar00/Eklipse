@@ -3,11 +3,11 @@
 
 namespace Eklipse
 {
-    std::vector<ClassReflection> ScriptParser::ParseDirectory(const Path& directoryPath)
+    Vec<ClassReflection> ScriptParser::ParseDirectory(const Path& directoryPath)
     {
         EK_CORE_TRACE("Parsing directory: {0}", directoryPath.string());
 
-        std::vector<ClassReflection> classReflections;
+        Vec<ClassReflection> classReflections;
         for (const auto& entry : fs::recursive_directory_iterator(directoryPath))
         {
             if (entry.is_directory())
@@ -16,7 +16,7 @@ namespace Eklipse
             String fileExtension = entry.path().extension().string();
             if (fileExtension == ".h" || fileExtension == ".hpp" || fileExtension == ".cpp")
             {
-                std::vector<ClassReflection> fileClassReflections{};
+                Vec<ClassReflection> fileClassReflections{};
                 if (ParseFile(entry.path(), fileClassReflections))
                 {
                     classReflections.insert(classReflections.end(), fileClassReflections.begin(), fileClassReflections.end());
@@ -40,11 +40,11 @@ namespace Eklipse
         EK_CORE_DBG("Parsed directory {0}", directoryPath.string());
         return classReflections;
     }
-    bool ScriptParser::ParseFile(const Path& filePath, std::vector<ClassReflection>& outClassReflection)
+    bool ScriptParser::ParseFile(const Path& filePath, Vec<ClassReflection>& outClassReflection)
 	{
         EK_CORE_TRACE("Parsing file: {0}", filePath.string());
         
-        std::vector<ClassReflection> classReflections{};
+        Vec<ClassReflection> classReflections{};
 
         std::ifstream file(filePath);
         if (file.is_open()) 

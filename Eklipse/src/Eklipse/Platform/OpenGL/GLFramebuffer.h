@@ -42,7 +42,7 @@ namespace Eklipse
 			FramebufferInfo m_framebufferInfo;
 			GLenum m_texTarget;
 
-			std::vector<uint32_t> m_colorAttachments{};
+			Vec<uint32_t> m_colorAttachments{};
 			uint32_t m_depthAttachment{0};
 		};
 	}

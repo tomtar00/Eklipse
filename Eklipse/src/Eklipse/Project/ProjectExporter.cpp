@@ -15,7 +15,7 @@ namespace Eklipse
         // TODO: recompile all shaders?
 
         Path destinationDir = settings.path;
-        if (!IsPathDirectory(destinationDir))
+        if (!FileUtilities::IsPathDirectory(destinationDir))
         {
             EK_CORE_ERROR("Invalid export path '{0}'! Destination must be a directory.", destinationDir.string());
             return false;

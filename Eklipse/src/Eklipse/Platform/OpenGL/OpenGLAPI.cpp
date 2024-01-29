@@ -12,7 +12,7 @@ namespace Eklipse
     namespace OpenGL
     {
         //GLFramebuffer* g_GLSceneFramebuffer = nullptr;
-        std::vector<GLFramebuffer*> g_GLOffScreenFramebuffers{};
+        Vec<GLFramebuffer*> g_GLOffScreenFramebuffers{};
 
         static void OpenGLMessageCallback(
             unsigned source,
@@ -67,13 +67,13 @@ namespace Eklipse
 
                 glEnable(GL_DEPTH_TEST);
 
-                //std::vector<float> vertices = {
+                //Vec<float> vertices = {
                 //	 1.0f,  1.0f, 1.0f, 1.0f,  // top right
                 //	 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
                 //	-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
                 //	-1.0f,  1.0f, 0.0f, 1.0f,  // top left
                 //};
-                //std::vector<uint32_t> indices = {
+                //Vec<uint32_t> indices = {
                 //	0, 1, 3,
                 //	1, 2, 3
                 //};

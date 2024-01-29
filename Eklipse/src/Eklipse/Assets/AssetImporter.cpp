@@ -44,7 +44,7 @@ namespace Eklipse
     {
         if (s_assetImportFunctions.find(metadata.Type) == s_assetImportFunctions.end())
         {
-            EK_CORE_ERROR("No import function available for asset type: {}", AssetTypeToString(metadata.Type));
+            EK_CORE_ERROR("No import function available for asset type: {}", Asset::TypeToString(metadata.Type));
             return nullptr;
         }
 

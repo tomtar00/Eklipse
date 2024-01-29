@@ -9,28 +9,6 @@
 
 namespace Eklipse
 {
-    static std::map<String, AssetType> s_assetExtensionMap = 
-    {
-        { EK_SCENE_EXTENSION,       AssetType::Scene        },
-        { EK_MATERIAL_EXTENSION,    AssetType::Material     },
-        { EK_SHADER_EXTENSION,      AssetType::Shader       },
-        { ".png",                   AssetType::Texture2D    },
-        { ".jpg",                   AssetType::Texture2D    },
-        { ".jpeg",                  AssetType::Texture2D    },
-        { ".obj", 				    AssetType::Mesh         }
-    };
-
-    static AssetType GetAssetTypeFromFileExtension(const String& extension)
-    {
-        if (s_assetExtensionMap.find(extension) == s_assetExtensionMap.end())
-        {
-            EK_CORE_WARN("Could not find AssetType for {0}", extension);
-            return AssetType::None;
-        }
-
-        return s_assetExtensionMap.at(extension);
-    }
-
     EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) 
         : m_shaderReloadPending(false), m_assetDirectory(assetDirectory)
     {
@@ -111,7 +89,7 @@ namespace Eklipse
                 out << YAML::Key << "Handle" << YAML::Value << handle;
                 String filepathStr = metadata.FilePath.generic_string();
                 out << YAML::Key << "FilePath" << YAML::Value << filepathStr;
-                out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(metadata.Type);
+                out << YAML::Key << "Type" << YAML::Value << Asset::TypeToString(metadata.Type);
                 out << YAML::EndMap;
             }
             out << YAML::EndSeq;
@@ -144,7 +122,7 @@ namespace Eklipse
             AssetHandle handle = node["Handle"].as<uint64_t>();
             auto& metadata = m_assetRegistry[handle];
             metadata.FilePath = node["FilePath"].as<String>();
-            metadata.Type = AssetTypeFromString(node["Type"].as<String>());
+            metadata.Type = Asset::TypeFromString(node["Type"].as<String>());
         }
 
         return true;
@@ -203,6 +181,21 @@ namespace Eklipse
         }
     }
 
+    AssetType EditorAssetLibrary::GetAssetTypeFromFileExtension(const String& extension)
+    {
+        if (extension == EK_SCENE_EXTENSION)    return AssetType::Scene;
+        if (extension == EK_MATERIAL_EXTENSION) return AssetType::Material;
+        if (extension == EK_SHADER_EXTENSION)   return AssetType::Shader;
+
+        if (extension == ".png")    return AssetType::Texture2D;
+        if (extension == ".jpg")    return AssetType::Texture2D;
+        if (extension == ".jpeg")   return AssetType::Texture2D;
+
+        if (extension == ".obj") return AssetType::Mesh;
+
+        EK_CORE_ERROR("Unknown asset type '{0}'!", extension);
+        return AssetType::None;
+    }
     AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path) const
     {
         for (auto&& [handle, metadata] : m_assetRegistry)

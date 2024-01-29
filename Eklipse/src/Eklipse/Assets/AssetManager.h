@@ -6,7 +6,7 @@
 
 namespace Eklipse 
 {
-	class AssetManager
+	class EK_API AssetManager
 	{
 		friend EditorAssetLibrary;
 
@@ -19,6 +19,7 @@ namespace Eklipse
 		}
 
 		static bool IsAssetHandleValid(AssetHandle handle);
+		static bool IsAssetHandleValidAndOfType(AssetHandle handle, AssetType type);
 		static bool IsAssetLoaded(AssetHandle handle);
 		static const AssetMetadata& GetMetadata(AssetHandle handle);
 

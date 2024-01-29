@@ -7,8 +7,8 @@ namespace Eklipse
 	struct MeshData
 	{
 		BufferLayout layout;
-		std::vector<float> vertices;
-		std::vector<uint32_t> indices;
+		Vec<float> vertices;
+		Vec<uint32_t> indices;
 	};
 
 	class Mesh : public Asset

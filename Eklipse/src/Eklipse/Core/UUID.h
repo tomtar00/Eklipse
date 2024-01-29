@@ -2,7 +2,7 @@
 
 namespace Eklipse 
 {
-	class UUID
+	class EK_API UUID
 	{
 	public:
 		UUID();

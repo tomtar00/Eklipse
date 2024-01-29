@@ -9,7 +9,7 @@ namespace Eklipse
 {
     Framebuffer* g_defaultFramebuffer = nullptr;
     Framebuffer* g_currentFramebuffer = nullptr;
-    std::vector<Framebuffer*> g_offScreenFramebuffers{};
+    Vec<Framebuffer*> g_offScreenFramebuffers{};
 
     Framebuffer::Framebuffer(const FramebufferInfo& framebufferInfo)
     {

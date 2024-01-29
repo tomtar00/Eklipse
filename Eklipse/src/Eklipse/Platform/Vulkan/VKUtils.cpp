@@ -64,7 +64,7 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat)
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const Vec<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat)
 		{
 			for (const auto& availableFormat : availableFormats)
 			{
@@ -76,7 +76,7 @@ namespace Eklipse
 
 			return availableFormats[0];
 		}
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+		VkPresentModeKHR ChooseSwapPresentMode(const Vec<VkPresentModeKHR>& availablePresentModes)
 		{
 			for (const auto& availablePresentMode : availablePresentModes)
 			{
@@ -108,7 +108,7 @@ namespace Eklipse
 				return actualExtent;
 			}
 		}
-		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code)
+		VkShaderModule CreateShaderModule(const Vec<uint32_t>& code)
 		{
 			VkShaderModuleCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -152,7 +152,7 @@ namespace Eklipse
 			uint32_t queueFamilyCount = 0;
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
-			std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+			Vec<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 			int i = 0;
@@ -205,7 +205,7 @@ namespace Eklipse
 
 			EK_ASSERT(false, "Failed to find memory type!");
 		}
-		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+		VkFormat FindSupportedFormat(const Vec<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 		{
 			for (VkFormat format : candidates)
 			{

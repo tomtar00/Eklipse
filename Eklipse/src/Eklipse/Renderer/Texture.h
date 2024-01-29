@@ -56,6 +56,8 @@ namespace Eklipse
     int FormatToChannels(ImageFormat format);
     ImageFormat ChannelsToFormat(int channels);
 
+    bool LoadTextureFromFile(const Path& path, TextureData& outData);
+
     class Texture : public Asset
     {
     public:
@@ -77,8 +79,8 @@ namespace Eklipse
         static Ref<Texture2D> Create(const TextureInfo& textureInfo);
         static Ref<Texture2D> Create(const TextureData& textureData);
 
-        virtual void Init(const TextureInfo& textureInfo);
-        virtual void SetData(void* data, uint32_t size);
+        virtual void Init(const TextureInfo& textureInfo) = 0;
+        virtual void SetData(void* data, uint32_t size) = 0;
 
         static AssetType GetStaticType() { return AssetType::Texture2D; }
         virtual AssetType GetType() const override { return GetStaticType(); }

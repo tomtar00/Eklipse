@@ -55,8 +55,8 @@ namespace Eklipse
 
         if (ImGui::BeginCombo("Level", m_terminal.GetLevelString().c_str()))
 		{
-            static std::vector<spdlog::level::level_enum> levels = { spdlog::level::trace, spdlog::level::debug, spdlog::level::info, spdlog::level::warn, spdlog::level::err, spdlog::level::critical, spdlog::level::off };
-            static std::vector<const char*> levelStrings = { "Trace", "Debug", "Info", "Warn", "Error", "Critical", "Off"};
+            static Vec<spdlog::level::level_enum> levels = { spdlog::level::trace, spdlog::level::debug, spdlog::level::info, spdlog::level::warn, spdlog::level::err, spdlog::level::critical, spdlog::level::off };
+            static Vec<const char*> levelStrings = { "Trace", "Debug", "Info", "Warn", "Error", "Critical", "Off"};
 			for (int i = 0; i < levels.size(); i++)
 			{
 				if (ImGui::Selectable(levelStrings[i], m_terminal.GetLevel() == levels[i]))

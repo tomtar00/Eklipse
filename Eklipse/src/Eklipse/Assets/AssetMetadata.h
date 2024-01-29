@@ -6,12 +6,11 @@
 
 namespace Eklipse 
 {
-	struct AssetMetadata
-	{
-		AssetType Type = AssetType::None;
-		Path FilePath;
+    struct AssetMetadata
+    {
+        AssetType Type = AssetType::None;
+        Path FilePath;
 
-		operator bool() const { return Type != AssetType::None; }
-	};
-
+        operator bool() const { return Type != AssetType::None; }
+    };
 }

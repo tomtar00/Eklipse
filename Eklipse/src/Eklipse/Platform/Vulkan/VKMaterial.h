@@ -24,7 +24,7 @@ namespace Eklipse
 
 		private:
 			Ref<VKShader> m_vkShader;
-			std::vector<VkDescriptorSet> m_descriptorSets;
+			Vec<VkDescriptorSet> m_descriptorSets;
 		};
 	}
 }

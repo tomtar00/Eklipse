@@ -13,7 +13,7 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
     }
 
     bool active = false;
-    bool isCurrentlyValid = Eklipse::AssetManager::IsAssetHandleValid(assetHandle) && Eklipse::AssetManager::GetMetadata(assetHandle).Type == assetType;
+    bool isCurrentlyValid = Eklipse::AssetManager::IsAssetHandleValidAndOfType(assetHandle, assetType);
     if (!isCurrentlyValid)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -27,7 +27,7 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
         if (payload)
         {
             Eklipse::AssetHandle* payloadHandlePtr = reinterpret_cast<Eklipse::AssetHandle*>(payload->Data);
-            if (Eklipse::AssetManager::IsAssetHandleValid(*payloadHandlePtr) && Eklipse::AssetManager::GetMetadata(*payloadHandlePtr).Type == assetType)
+            if (Eklipse::AssetManager::IsAssetHandleValidAndOfType(*payloadHandlePtr, assetType))
             {
                 assetHandle = *payloadHandlePtr;
                 active = true;
@@ -47,7 +47,7 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
     return active;
 }
 
-bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, const std::vector<Eklipse::String>& requiredExtensions)
+bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Vec<Eklipse::String>& requiredExtensions)
 {
     ImGui::PushID(id);
     if (label)
@@ -57,7 +57,7 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
     }
 
     bool active = false;
-    bool isCurrentlyValid = Eklipse::IsPathValid(path, requiredExtensions);
+    bool isCurrentlyValid = Eklipse::FileUtilities::IsPathValid(path, requiredExtensions);
     if (!isCurrentlyValid)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -76,7 +76,7 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
 
     if (active)
     {
-        if (Eklipse::IsPathValid(path, requiredExtensions))
+        if (Eklipse::FileUtilities::IsPathValid(path, requiredExtensions))
             active = true;
         else
             active = false;
@@ -86,7 +86,7 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
     ImGui::SameLine();
     if (ImGui::Button("..."))
     {
-        auto& result = Eklipse::OpenFileDialog(requiredExtensions);
+        auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions);
         if (result.type == Eklipse::FileDialogResultType::SUCCESS)
         {
             path = result.path;
@@ -107,7 +107,7 @@ bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
         ImGui::SameLine();
     }
 
-    bool isCurrentlyValid = Eklipse::IsPathValid(path);
+    bool isCurrentlyValid = Eklipse::FileUtilities::IsPathValid(path);
     if (!isCurrentlyValid)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -127,7 +127,7 @@ bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
 
     if (active)
     {
-        if (Eklipse::IsPathValid(path))
+        if (Eklipse::FileUtilities::IsPathValid(path))
             active = true;
         else
             active = false;
@@ -136,7 +136,7 @@ bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
     ImGui::SameLine();
     if (ImGui::Button("..."))
     {
-        auto& result = Eklipse::OpenDirDialog();
+        auto& result = Eklipse::FileUtilities::OpenDirDialog();
         if (result.type == Eklipse::FileDialogResultType::SUCCESS)
             path = result.path;
     }

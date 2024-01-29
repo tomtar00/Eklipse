@@ -4,7 +4,7 @@
 
 namespace Eklipse
 {
-	class TerminalPanel : public GuiPanel
+	class EK_API TerminalPanel : public GuiPanel
 	{
 	public:
 		TerminalPanel();

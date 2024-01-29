@@ -60,7 +60,7 @@ namespace Eklipse
 
             return sampler;
         }
-        VkImage CreateImage(VmaAllocation allocation, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage)
+        VkImage CreateImage(VmaAllocation& allocation, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage)
         {
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -271,12 +271,24 @@ namespace Eklipse
 
         VKTexture2D::VKTexture2D(const Path& path) : Texture2D(path)
         {
+            TextureData textureData{};
+            if (LoadTextureFromFile(path, textureData))
+            {
+                m_textureInfo = textureData.info;
+                Init(m_textureInfo);
+                SetData(textureData.data, textureData.size);
+            }
         }
         VKTexture2D::VKTexture2D(const TextureInfo& textureInfo) : Texture2D(textureInfo)
         {
+            m_textureInfo = textureInfo;
+            Init(m_textureInfo);
         }
         VKTexture2D::VKTexture2D(const TextureData& textureData) : Texture2D(textureData)
         {
+            m_textureInfo = textureData.info;
+            Init(m_textureInfo);
+            SetData(textureData.data, textureData.size);
         }
 
         void VKTexture2D::Init(const TextureInfo& textureInfo)

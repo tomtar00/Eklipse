@@ -13,66 +13,70 @@
 
 namespace Eklipse
 {
-	namespace OpenGL
-	{
-		GLImGuiLayer::GLImGuiLayer(const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(configInfo)
-		{
-			m_glfwWindow = Application::Get().GetWindow()->GetGlfwWindow();
-			EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in GL ImGui Layer!");
-		}
-		void GLImGuiLayer::Init()
-		{
-			if (s_initialized) return;
-			s_initialized = true;
+    namespace OpenGL
+    {
+        GLImGuiLayer::GLImGuiLayer(const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(configInfo)
+        {
+            m_glfwWindow = Application::Get().GetWindow()->GetGlfwWindow();
+            EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in GL ImGui Layer!");
+        }
+        void GLImGuiLayer::Init()
+        {
+            if (s_initialized) return;
+            s_initialized = true;
 
-			ImGui_ImplGlfw_InitForOpenGL(m_glfwWindow, true);
-			ImGui_ImplOpenGL3_Init("#version 430");
-		}
-		void GLImGuiLayer::Shutdown()
-		{
-			if (!s_initialized) return;
-			s_initialized = false;
+            ImGui_ImplGlfw_InitForOpenGL(m_glfwWindow, true);
+            ImGui_ImplOpenGL3_Init("#version 430");
+        }
+        void GLImGuiLayer::Shutdown()
+        {
+            if (!s_initialized) return;
+            s_initialized = false;
 
-			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGuiLayer::Shutdown();
-		}
-		void GLImGuiLayer::NewFrame()
-		{
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-		}
-		void GLImGuiLayer::Render()
-		{
-			if (!(*m_config.enabled)) return;
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGuiLayer::Shutdown();
+        }
+        void GLImGuiLayer::NewFrame()
+        {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+        }
+        void GLImGuiLayer::Render()
+        {
+            if (!(*m_config.enabled)) return;
 
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		}
-		void GLImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
-		{
-			if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
-			{
-				ResizeViewport(framebuffer, width, height);
-			}
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
+        void GLImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
+        {
+            if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
+            {
+                ResizeViewport(framebuffer, width, height);
+            }
 
-			GLFramebuffer* glFramebuffer = static_cast<GLFramebuffer*>(framebuffer);
-			ImGui::Image((ImTextureID)glFramebuffer->GetMainColorAttachment(), ImVec2{ width, height }, { 0, 1 }, { 1, 0 });
-		}
-		void GLImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
-		{
-			if (width > 0 && height > 0)
-				framebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
-		}
+            GLFramebuffer* glFramebuffer = static_cast<GLFramebuffer*>(framebuffer);
+            ImGui::Image((ImTextureID)glFramebuffer->GetMainColorAttachment(), ImVec2{ width, height }, { 0, 1 }, { 1, 0 });
+        }
+        void GLImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
+        {
+            if (width > 0 && height > 0)
+                framebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+        }
 
-		// =============== ICONS ===============
+        // =============== ICONS ===============
 
-		GLImGuiIcon::GLImGuiIcon(const AssetHandle textureHandle)
-		{
-			m_texture = AssetManager::GetAsset<GLTexture2D>(textureHandle);
-		}
-		void* GLImGuiIcon::GetID()
-		{
-			return (void*)m_texture->GetID();
-		}
-	}
+        GLImGuiIcon::GLImGuiIcon(const Path& texturePath)
+        {
+            m_texture = CreateRef<GLTexture2D>(texturePath);
+        }
+        void* GLImGuiIcon::GetID()
+        {
+            return (void*)m_texture->GetID();
+        }
+        void GLImGuiIcon::Dispose()
+        {
+            m_texture->Dispose();
+        }
+    }
 }

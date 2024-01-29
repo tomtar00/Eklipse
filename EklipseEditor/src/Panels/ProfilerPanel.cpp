@@ -14,13 +14,13 @@ namespace Eklipse
             default: return 0xFFFFFFFF;
         }
     }
-    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, std::vector<ProfilerNode>& lastestFrame, std::vector<ProfilerFrameData>& framesData)
+    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, Vec<ProfilerNode>& lastestFrame, Vec<ProfilerFrameData>& framesData)
     {
         drawList->AddRectFilled(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }, 0x55555555);
 
         const size_t labelCount = lastestFrame.size();
-        std::vector<ImVec2> lastFrameGlobalPositions;
-        std::vector<float> lastFrameHeights;
+        Vec<ImVec2> lastFrameGlobalPositions;
+        Vec<float> lastFrameHeights;
         float barWidth = graphSize.x / MAX_PROFILED_FRAMES;
         float spacingX = barWidth / 2.0f;
         float spacingY = 5.0f;
@@ -101,7 +101,7 @@ namespace Eklipse
             }
         }
     }
-    static void DrawTable(float indent, std::vector<ProfilerNode>& data, bool ascending, int columnIndex, uint32_t i)
+    static void DrawTable(float indent, Vec<ProfilerNode>& data, bool ascending, int columnIndex, uint32_t i)
     {
         if (Profiler::IsProfilingCurrentFrame())
         {
@@ -188,8 +188,8 @@ namespace Eklipse
 
         ImGui::Begin("Profiler");
 
-        static std::vector<ProfilerNode> data{};
-        static std::vector<ProfilerFrameData> framesData{};
+        static Vec<ProfilerNode> data{};
+        static Vec<ProfilerFrameData> framesData{};
         if (Profiler::IsProfilingCurrentFrame())
         {
             data = Profiler::GetLastFrameData().ProfileNodes;

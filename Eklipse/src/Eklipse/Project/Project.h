@@ -41,7 +41,7 @@ namespace Eklipse
 		Path startScenePath;
 	};
 
-	class Project
+	class EK_API Project
 	{
 	public:
 		Project() = default;

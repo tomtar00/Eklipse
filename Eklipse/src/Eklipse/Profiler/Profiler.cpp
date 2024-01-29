@@ -2,7 +2,7 @@
 
 namespace Eklipse
 {
-	std::vector<ProfilerFrameData>	Profiler::m_frameData;
+	Vec<ProfilerFrameData>	Profiler::m_frameData;
 	ProfilerTimer					Profiler::m_timer;
 	ProfilerFrameData				Profiler::FrameData;
 	float							Profiler::m_timeAcc = 0;
@@ -42,7 +42,7 @@ namespace Eklipse
 	{
 		return m_allowProfiling;
 	}
-	std::vector<ProfilerFrameData>& Profiler::GetData()
+	Vec<ProfilerFrameData>& Profiler::GetData()
 	{
 		return m_frameData;
 	}

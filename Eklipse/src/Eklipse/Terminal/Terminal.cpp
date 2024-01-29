@@ -10,7 +10,7 @@ namespace Eklipse
 
 		String mainCommand;
 		std::unordered_map<String, String> args;
-		std::vector<String> flags;
+		Vec<String> flags;
 
 		iss >> mainCommand;
 
@@ -39,7 +39,12 @@ namespace Eklipse
 	{
 		m_sink = CreateRef<TerminalSink<std::mutex>>();
 		m_historyIndex = 0;
-		SetLevel(spdlog::level::debug, "Debug");
+
+#ifdef EK_DEBUG
+		SetLevel(spdlog::level::trace, "Trace");
+#else
+        SetLevel(spdlog::level::info, "Info");
+#endif
 
 		AddCommand({
 			"help", "Display all available commands",

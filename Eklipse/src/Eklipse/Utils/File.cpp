@@ -70,7 +70,7 @@ namespace Eklipse
  //   {
  //       return !m_fullPath.empty() && fs::exists(m_fullPath);
 	//}
- //   bool Path::IsValid(const std::vector<String> requiredExtensions) const
+ //   bool Path::IsValid(const Vec<String> requiredExtensions) const
  //   {
  //       bool hasExtension = requiredExtensions.size() == 0;
  //       for (const auto& requiredExtension : requiredExtensions)
@@ -84,19 +84,19 @@ namespace Eklipse
  //       return IsValid() && hasExtension;
  //   }
 
-    bool IsPathFile(const Path& path)
+    bool FileUtilities::IsPathFile(const Path& path)
     {
         return fs::is_regular_file(path);
     }
-    bool IsPathDirectory(const Path& path)
+    bool FileUtilities::IsPathDirectory(const Path& path)
     {
         return fs::is_directory(path);
     }
-    bool IsPathValid(const Path& path)
+    bool FileUtilities::IsPathValid(const Path& path)
     {
         return fs::exists(path);
     }
-    bool IsPathValid(const Path& path, std::vector<String> extensions)
+    bool FileUtilities::IsPathValid(const Path& path, const Vec<String>& extensions)
     {
         bool hasExtension = false;
         for (const auto& extension : extensions)
@@ -110,7 +110,7 @@ namespace Eklipse
         return IsPathValid(path) && hasExtension;
     }
 
-    String ReadFileFromPath(const Path& filePath)
+    String FileUtilities::ReadFileFromPath(const Path& filePath)
     {
         String buffer;
         std::ifstream file(filePath, std::ios::in | std::ios::binary);
@@ -127,19 +127,22 @@ namespace Eklipse
 
         return buffer;
     }
-    void Eklipse::CopyFileContent(const Path& destination, const Path& source)
+    String FileUtilities::AppendExtensionIfNotPresent(const String& name, const String& extension)
     {
-        EK_ASSERT(!destination.empty() && !source.empty(), "Copy file error. Source or destination path is empty. destionation={0} source={1}", destination.string(), source.string());
-        EK_ASSERT(destination != source, "Copy file error. Source and destination are the same. destionation={0} source={1}", destination.string(), source.string());
-
-        std::ifstream sourceFile(source, std::ios::binary);
-        std::ofstream destFile(destination, std::ios::binary);
-
-        destFile << sourceFile.rdbuf();
-
-        EK_CORE_DBG("Copied file content from '{0}' to '{1}'", source.string(), destination.string());
+        if (name.size() < extension.size() || name.substr(name.size() - extension.size()) != extension)
+        {
+            return name + extension;
+        }
     }
-    FileDialogResult OpenFileDialog(const std::vector<String>& extensions)
+    String FileUtilities::AppendExtensionIfNotPresent(const Path& path, const String& extension)
+    {
+        if (path.extension() != extension)
+        {
+            return path.string() + extension;
+        }
+    }
+
+    FileDialogResult FileUtilities::OpenFileDialog(const Vec<String>& extensions)
     {
         String exts = "";
         for (const auto& extension : extensions)
@@ -171,11 +174,11 @@ namespace Eklipse
         free(outPath);
         return res;
     }
-    FileDialogResult OpenFileDialog()
+    FileDialogResult FileUtilities::OpenFileDialog()
     {
         return OpenFileDialog({});
     }
-    FileDialogResult OpenDirDialog()
+    FileDialogResult FileUtilities::OpenDirDialog()
     {
         nfdchar_t* outPath = nullptr;
         nfdresult_t result = NFD_PickFolder(nullptr, &outPath);

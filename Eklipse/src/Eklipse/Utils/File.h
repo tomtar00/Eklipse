@@ -12,7 +12,7 @@ namespace Eklipse
 		Path(const Path& path);
 
 		bool IsValid() const;
-		bool IsValid(const std::vector<String> requiredExtensions) const;
+		bool IsValid(const Vec<String> requiredExtensions) const;
 		void Parse(const String& path);
 		void ParseSelf();
 
@@ -50,14 +50,6 @@ namespace Eklipse
 		bool m_isCurrentlyValid = false;
 	};*/
 
-	bool IsPathFile(const Path& path);
-	bool IsPathDirectory(const Path& path);
-	bool IsPathValid(const Path& path);
-	bool IsPathValid(const Path& path, std::vector<String> extensions);
-
-	String ReadFileFromPath(const Path& filePath);
-	void CopyFileContent(const Path& destination, const Path& source);
-
 	enum class FileDialogResultType
 	{
 		SUCCESS = 0,
@@ -69,7 +61,21 @@ namespace Eklipse
 		FileDialogResultType type;
 		Path path;
 	};
-	FileDialogResult OpenFileDialog(const std::vector<String>& extensions);
-	FileDialogResult OpenFileDialog();
-	FileDialogResult OpenDirDialog();
+
+	static class EK_API FileUtilities
+	{
+	public:
+		static bool IsPathFile(const Path& path);
+		static bool IsPathDirectory(const Path& path);
+		static bool IsPathValid(const Path& path);
+		static bool IsPathValid(const Path& path, const Vec<String>& extensions);
+
+		static String ReadFileFromPath(const Path& filePath);
+		static String AppendExtensionIfNotPresent(const String& name, const String& extension);
+		static String AppendExtensionIfNotPresent(const Path& path, const String& extension);
+
+		static FileDialogResult OpenFileDialog(const Vec<String>& extensions);
+		static FileDialogResult OpenFileDialog();
+		static FileDialogResult OpenDirDialog();
+	};
 }

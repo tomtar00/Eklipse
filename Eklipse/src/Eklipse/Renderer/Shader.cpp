@@ -142,7 +142,7 @@ namespace Eklipse
         CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
 
         auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
-        String source = ReadFileFromPath(shaderPath);
+        String source = FileUtilities::ReadFileFromPath(shaderPath);
         m_name = shaderPath.stem().string();
 
         EK_CORE_DBG("Set up shader '{0}'", m_name);
@@ -355,7 +355,7 @@ namespace Eklipse
                 }
                 else
                 {
-                    shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+                    shaderData[stage] = Vec<uint32_t>(module.cbegin(), module.cend());
 
                     EK_CORE_TRACE("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
                     std::ofstream out(cachedPath, std::ios::out | std::ios::binary);

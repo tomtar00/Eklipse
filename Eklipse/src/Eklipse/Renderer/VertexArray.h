@@ -16,12 +16,12 @@ namespace Eklipse
 		virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) = 0;
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
 
-		inline const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_vertexBuffers; }
+		inline const Vec<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_vertexBuffers; }
 		inline const Ref<IndexBuffer>& GetIndexBuffer() const { return m_indexBuffer; }
 		inline const uint32_t GetTotalNumVertices() const { return m_totalNumVertices; }
 
 	protected:
-		std::vector<Ref<VertexBuffer>> m_vertexBuffers;
+		Vec<Ref<VertexBuffer>> m_vertexBuffers;
 		Ref<IndexBuffer> m_indexBuffer;
 		uint32_t m_totalNumVertices{0};
 	};

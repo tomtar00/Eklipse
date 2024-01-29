@@ -11,34 +11,35 @@
 
 namespace Eklipse 
 {
-	using AssetRegistry = std::map<AssetHandle, AssetMetadata>;
+    using AssetRegistry = std::map<AssetHandle, AssetMetadata>;
 
-	class EditorAssetLibrary : public AssetLibrary
-	{
-	public:
-		EditorAssetLibrary(const Path& assetDirectory);
+    class EK_API EditorAssetLibrary : public AssetLibrary
+    {
+    public:
+        EditorAssetLibrary(const Path& assetDirectory);
 
-		virtual Ref<Asset> GetAsset(AssetHandle handle) override;
-		virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
-		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
-		virtual bool IsAssetLoaded(AssetHandle handle) const override;
+        virtual Ref<Asset> GetAsset(AssetHandle handle) override;
+        virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
+        virtual bool IsAssetHandleValid(AssetHandle handle) const override;
+        virtual bool IsAssetLoaded(AssetHandle handle) const override;
 
-		AssetRegistry& GetAssetRegistry();
-		void ImportAsset(const Path& filepath);
+        AssetRegistry& GetAssetRegistry();
+        void ImportAsset(const Path& filepath);
 
-		void SerializeAssetRegistry();
-		bool DeserializeAssetRegistry();
+        void SerializeAssetRegistry();
+        bool DeserializeAssetRegistry();
 
-		void OnFileWatchEvent(const String& path, filewatch::Event change_type);
+        void OnFileWatchEvent(const String& path, filewatch::Event change_type);
+        static AssetType GetAssetTypeFromFileExtension(const String& extension);
 
-	private:
-		AssetHandle GetHandleFromAssetPath(const Path& path) const;
+    private:
+        AssetHandle GetHandleFromAssetPath(const Path& path) const;
 
-	private:
-		AssetRegistry m_assetRegistry;
-		Path m_assetDirectory;
+    private:
+        AssetRegistry m_assetRegistry;
+        Path m_assetDirectory;
 
-		Unique<filewatch::FileWatch<String>> m_fileWatcher;
-		bool m_shaderReloadPending;
-	};
+        Unique<filewatch::FileWatch<String>> m_fileWatcher;
+        bool m_shaderReloadPending;
+    };
 }

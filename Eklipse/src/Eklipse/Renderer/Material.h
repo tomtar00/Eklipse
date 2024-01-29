@@ -35,7 +35,7 @@ namespace Eklipse
     using PushConstantMap = std::map<String, PushConstant>;
     using Sampler2DMap = std::map<String, Sampler2D>;
 
-    class Material : public Asset
+    class EK_API Material : public Asset
     {
     public:
         Material() = delete;

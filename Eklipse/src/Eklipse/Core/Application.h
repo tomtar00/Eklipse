@@ -99,10 +99,10 @@ namespace Eklipse
 
 		MainLoopTimer m_timer;
 
-		std::vector<std::function<void()>> m_mainThreadQueue;
+		Vec<std::function<void()>> m_mainThreadQueue;
 		std::mutex m_mainThreadQueueMutex;
 
-		std::vector<std::function<void()>> m_mainThreadWindowFocusQueue;
+		Vec<std::function<void()>> m_mainThreadWindowFocusQueue;
 		std::mutex m_mainThreadWindowForcusQueueMutex;
 	};
 

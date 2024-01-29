@@ -30,12 +30,24 @@ namespace Eklipse
 
         GLTexture2D::GLTexture2D(const Path& path) : Texture2D(path)
         {
+            TextureData textureData{};
+            if (LoadTextureFromFile(path, textureData))
+            {
+                m_textureInfo = textureData.info;
+                Init(m_textureInfo);
+                SetData(textureData.data, textureData.size);
+            }
         }
         GLTexture2D::GLTexture2D(const TextureInfo& textureInfo) : Texture2D(textureInfo)
         {
+            m_textureInfo = textureInfo;
+            Init(m_textureInfo);
         }
         GLTexture2D::GLTexture2D(const TextureData& textureData) : Texture2D(textureData)
         {
+            m_textureInfo = textureData.info;
+            Init(m_textureInfo);
+            SetData(textureData.data, textureData.size);
         }
 
         void GLTexture2D::Init(const TextureInfo& textureInfo)

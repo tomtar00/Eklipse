@@ -53,7 +53,7 @@ namespace Eklipse
 			EK_CORE_TRACE("Creating descriptor sets for material {0}", m_name);
 			//if (!requiresDescriptorSets) return;
 
-			std::vector<VkDescriptorSetLayout> layouts(g_maxFramesInFlight, m_vkShader->GetDescriptorSetLayout());
+			Vec<VkDescriptorSetLayout> layouts(g_maxFramesInFlight, m_vkShader->GetDescriptorSetLayout());
 			VkDescriptorSetAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfo.descriptorPool = g_descriptorPool; // TODO: create some descriptor pool manager
@@ -66,7 +66,7 @@ namespace Eklipse
 
 			for (size_t i = 0; i < g_maxFramesInFlight; i++)
 			{
-				std::vector<VkWriteDescriptorSet> descriptorWrites{};
+				Vec<VkWriteDescriptorSet> descriptorWrites{};
 				for (auto&& [stage, reflection] : m_shader->GetReflections())
 				{
 					for (auto& ubo : reflection.uniformBuffers)

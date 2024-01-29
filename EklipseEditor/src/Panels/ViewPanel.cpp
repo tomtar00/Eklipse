@@ -33,7 +33,7 @@ namespace Eklipse
 		// Scene
 		m_viewportPosition = ImGui::GetWindowPos();
 		m_viewportSize = ImGui::GetContentRegionAvail();
-		EditorLayer::Get().GUI->DrawViewport(m_viewportSize.x, m_viewportSize.y);
+		EditorLayer::Get().GUI->DrawViewport(EditorLayer::Get().GetViewportFramebuffer(), m_viewportSize.x, m_viewportSize.y);
 		m_aspectRatio = m_viewportSize.x / m_viewportSize.y;
 
 		if (!EditorLayer::Get().IsPlaying())

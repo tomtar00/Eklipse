@@ -11,12 +11,12 @@ namespace Eklipse
 	{
 		uint32_t width{ 1 }, height{ 1 };
 		uint32_t numSamples{ 1 };
-		std::vector<FramebufferAttachmentInfo> colorAttachmentInfos;
+		Vec<FramebufferAttachmentInfo> colorAttachmentInfos;
 		FramebufferAttachmentInfo depthAttachmentInfo;
 		bool isDefaultFramebuffer{ false };
 	};
 
-	class Framebuffer
+	class EK_API Framebuffer
 	{
 	public:
 		Framebuffer(const FramebufferInfo& framebufferInfo);
@@ -35,7 +35,7 @@ namespace Eklipse
 		float m_aspectRatio;
 	};
 
-	extern Framebuffer* g_defaultFramebuffer;
-	extern Framebuffer* g_currentFramebuffer;
-	extern std::vector<Framebuffer*> g_offScreenFramebuffers;
+	extern EK_API Framebuffer* g_defaultFramebuffer;
+	extern EK_API Framebuffer* g_currentFramebuffer;
+	extern EK_API Vec<Framebuffer*> g_offScreenFramebuffers;
 }

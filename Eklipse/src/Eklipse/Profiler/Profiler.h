@@ -13,12 +13,12 @@ namespace Eklipse
 		uint32_t numCalls{ 1 };
 		float execTimeMs{ 0.0f };
 
-		std::vector<ProfilerNode> ChildNodes;
+		Vec<ProfilerNode> ChildNodes;
 	};
 
 	struct ProfilerFrameData
 	{
-		std::vector<ProfilerNode> ProfileNodes;
+		Vec<ProfilerNode> ProfileNodes;
 	};
 
 	class EK_API ProfilerTimer
@@ -57,13 +57,13 @@ namespace Eklipse
 		static void EndFrame(float deltaTime);
 
 		static bool IsProfilingCurrentFrame();
-		static std::vector<ProfilerFrameData>& GetData();
+		static Vec<ProfilerFrameData>& GetData();
 		static ProfilerFrameData& GetLastFrameData();
 
 		static ProfilerFrameData FrameData;
 
 	private:
-		static std::vector<ProfilerFrameData> m_frameData;
+		static Vec<ProfilerFrameData> m_frameData;
 		static ProfilerTimer m_timer;
 		static float m_timeAcc;
 		static bool m_allowProfiling;

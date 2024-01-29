@@ -9,7 +9,7 @@ namespace Eklipse
 		String configuration = "Debug";
 	};
 
-	static class ProjectExporter
+	static class EK_API ProjectExporter
 	{
 	public:
 		static bool Export(const Ref<Project> project, const ProjectExportSettings& settings);

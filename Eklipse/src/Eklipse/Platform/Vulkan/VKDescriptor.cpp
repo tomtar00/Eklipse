@@ -14,12 +14,12 @@ namespace Eklipse
 		//VkDescriptorSetLayout			g_graphicsDescriptorSetLayout	= VK_NULL_HANDLE;
 		//VkDescriptorSetLayout			g_computeDescriptorSetLayout	= VK_NULL_HANDLE;
 		VkDescriptorPool				g_descriptorPool				= VK_NULL_HANDLE;
-		//std::vector<VkDescriptorSet>	g_graphicsDescriptorSets{};
-		//std::vector<VkDescriptorSet>	g_computeDescriptorSets{};
+		//Vec<VkDescriptorSet>	g_graphicsDescriptorSets{};
+		//Vec<VkDescriptorSet>	g_computeDescriptorSets{};
 
-		//std::vector<VkVertexInputBindingDescription> GetVertexBindingDescription()
+		//Vec<VkVertexInputBindingDescription> GetVertexBindingDescription()
 		//{
-		//	std::vector<VkVertexInputBindingDescription> bindingDescription{1};
+		//	Vec<VkVertexInputBindingDescription> bindingDescription{1};
 
 		//	bindingDescription[0].binding = 0;
 		//	bindingDescription[0].stride = sizeof(Vertex);
@@ -27,9 +27,9 @@ namespace Eklipse
 
 		//	return bindingDescription;
 		//}
-		//std::vector<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions()
+		//Vec<VkVertexInputAttributeDescription> GetVertexAttributeDescriptions()
 		//{
-		//	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{3};
+		//	Vec<VkVertexInputAttributeDescription> attributeDescriptions{3};
 
 		//	// position attributes
 		//	attributeDescriptions[0].binding = 0;
@@ -52,9 +52,9 @@ namespace Eklipse
 		//	return attributeDescriptions;
 		//}
 
-		//std::vector<VkVertexInputBindingDescription> GetParticleBindingDescription()
+		//Vec<VkVertexInputBindingDescription> GetParticleBindingDescription()
 		//{
-		//	std::vector<VkVertexInputBindingDescription> bindingDescription{1};
+		//	Vec<VkVertexInputBindingDescription> bindingDescription{1};
 
 		//	bindingDescription[0].binding = 0;
 		//	bindingDescription[0].stride = sizeof(Particle);
@@ -62,9 +62,9 @@ namespace Eklipse
 
 		//	return bindingDescription;
 		//}
-		//std::vector<VkVertexInputAttributeDescription> GetParticleAttributeDescriptions()
+		//Vec<VkVertexInputAttributeDescription> GetParticleAttributeDescriptions()
 		//{
-		//	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{2};
+		//	Vec<VkVertexInputAttributeDescription> attributeDescriptions{2};
 
 		//	attributeDescriptions[0].binding = 0;
 		//	attributeDescriptions[0].location = 0;
@@ -79,7 +79,7 @@ namespace Eklipse
 		//	return attributeDescriptions;
 		//}
 
-		VkDescriptorSetLayout CreateDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings)
+		VkDescriptorSetLayout CreateDescriptorSetLayout(Vec<VkDescriptorSetLayoutBinding> bindings)
 		{
 			VkDescriptorSetLayoutCreateInfo layoutInfo{};
 			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -92,7 +92,7 @@ namespace Eklipse
 
 			return layout;
 		}
-		VkDescriptorPool CreateDescriptorPool(std::vector<VkDescriptorPoolSize> poolSizes, int maxSets, VkDescriptorPoolCreateFlags flags)
+		VkDescriptorPool CreateDescriptorPool(Vec<VkDescriptorPoolSize> poolSizes, int maxSets, VkDescriptorPoolCreateFlags flags)
 		{
 			VkDescriptorPoolCreateInfo poolInfo{};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
