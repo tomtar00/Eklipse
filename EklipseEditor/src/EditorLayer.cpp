@@ -53,21 +53,25 @@ namespace Eklipse
 
         m_editorScene = CreateRef<Scene>();
         m_entitiesPanel.SetContext(m_editorScene);
-        SceneManager::SetActiveScene(m_editorScene);
+        SceneManager::SetActiveScene(m_editorScene.get());
 
         m_scriptManager = CreateRef<ScriptManager>(&m_settings.ScriptManagerSettings);
 
-        Log::AddCoreSink(m_terminalPanel.GetTerminal().GetSink());
-        Log::AddClientSink(m_terminalPanel.GetTerminal().GetSink());
-
+        auto terminalSink = m_terminalPanel.GetTerminal().GetSink();
+        
+        Log::AddCoreSink(terminalSink);
+        Log::AddClientSink(terminalSink);
+        
         EklipseScriptAPI::ScriptingConfig config{};
         // Logging
         {
             config.loggerConfig.name = "SCRIPT";
             config.loggerConfig.pattern = "%^[%T] %n: %v%$";
-            config.loggerConfig.sink = m_terminalPanel.GetTerminal().GetSink();
+            config.loggerConfig.sink = terminalSink;
         }
         EklipseScriptAPI::Init(config);
+
+        AddDebugDrawInfo();
 
         DeserializeSettings();
         EK_TRACE("Editor layer attached");
@@ -75,7 +79,6 @@ namespace Eklipse
     void EditorLayer::OnDetach()
     {
         SerializeSettings();
-        m_editorScene.reset();
         EK_TRACE("Editor layer detached");
     }
     void EditorLayer::OnUpdate(float deltaTime)
@@ -228,25 +231,22 @@ namespace Eklipse
         {
             ImGui::OpenPopup("Create New Project");
             openNewProjectPopup = false;
+            ImGui::SetNextWindowSize({ 500, 150 });
         }
-        if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+        if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_NoResize))
         {
-            static String nameBuffer;
-            static Path outPath;
+            static String projectName;
+            static Path projectsLocation = m_settings.projectsPath;
             ImGui::Text("Project Name");
             ImGui::SameLine();
-            ImGui::InputText("##Project Name", &nameBuffer);
-            ImGui::InputDir("prjlocation", "Project Location", outPath);
-
-            if (ImGui::Button("Create"))
+            ImGui::InputText("##Project Name", &projectName);
+            if (ImGui::CollapsingHeader("Advanced"))
             {
-                if (nameBuffer.empty()) { EK_WARN("Project name is empty!"); }
-                else if (outPath.empty()) { EK_WARN("Project path is empty!"); }
-                else
-                {
-                    NewProject(outPath, nameBuffer);
-                }
+                ImGui::InputDirPath("prjlocation", "Projects Location", projectsLocation);
+            }
 
+            if (ImGui::Button("Create") && NewProject(projectsLocation / projectName, projectName))
+            {
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
@@ -267,7 +267,7 @@ namespace Eklipse
         if (ImGui::BeginPopupModal("Export Project", nullptr, ImGuiWindowFlags_NoResize))
         {
             static ProjectExportSettings exportSettings{};
-            ImGui::InputDir("exportpath", "Export path", exportSettings.path);
+            ImGui::InputDirPath("exportpath", "Export path", exportSettings.path);
             static int configurationIndex = 0;
             if (ImGui::Combo("Configuration", &configurationIndex, "Debug\0Release\0Dist\0"))
             {
@@ -302,7 +302,6 @@ namespace Eklipse
             m_viewportFramebuffer = Framebuffer::Create(fbInfo);
         }
 
-        GUI.reset();
         GUI = ImGuiLayer::Create(m_guiLayerCreateInfo);
         Application::Get().PushOverlay(GUI);
         GUI->Init();
@@ -323,53 +322,83 @@ namespace Eklipse
     }
     
     // === Project ===
-    void EditorLayer::NewProject(const Path& dirPath, const String& name)
+    bool EditorLayer::NewProject(const Path& dirPath, const String& name)
     {
+        if (dirPath.empty()) {
+            EK_ERROR("Project directory path is empty!"); 
+            return false;
+        }
+        if (FileUtilities::IsPathValid(dirPath)) {
+            EK_ERROR("Project directory path is invalid!"); 
+            return false;
+        }
+        if (name.empty()) {
+            EK_ERROR("Project name is empty!"); 
+            return false;
+        }
+        if (Project::Exists(dirPath)) {
+            EK_ERROR("Project already exists in directory '{}'!", dirPath.string());
+            return false;
+        }
+
+        EK_INFO("Creating new project '{}' at '{}'", name, dirPath.string());
+
         OnProjectUnload();
 
         auto project = Project::New();
-        if (Project::Exists(dirPath))
-        {
-            EK_ERROR("Project already exists!");
-            return;
-        }
         if (!Project::SetupActive(name, dirPath))
         {
             EK_ERROR("Failed to setup project!");
-            return;
+            return false;
         }
+        auto& config = Project::GetActive()->GetConfig();
 
+        // init asset library
+        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
+
+        // import start scene
+        AssetHandle handle = m_editorAssetLibrary->ImportAsset(config.startScenePath);
+        config.startSceneHandle = handle;
+
+        // get start scene
+        m_editorScene = AssetManager::GetAsset<Scene>(handle);
+        m_entitiesPanel.SetContext(m_editorScene);
+        SceneManager::SetActiveScene(m_editorScene.get());
+
+        // setup script manager
         m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
         m_scriptManager->Load();
 
-        auto scene = Scene::New();
-        SceneManager::SetActiveScene(scene);
-
-        Path projectFilePath = dirPath / (name + EK_PROJECT_EXTENSION);
-        Project::Save(project, projectFilePath);
-
-        m_editorScene.reset();
-        m_editorScene = scene;
-        m_entitiesPanel.SetContext(m_editorScene);
+        // save project
+        Project::SaveActive();
 
         OnProjectLoaded();
+
+        EK_INFO("Project created successfully!");
+        return true;
     }
     void EditorLayer::OpenProject()
     {
         auto& result = FileUtilities::OpenFileDialog({ EK_PROJECT_EXTENSION });
         if (result.type == FileDialogResultType::SUCCESS)
         {
+            EK_INFO("Opening project at path '{}'", result.path.string());
             OnProjectUnload();
 
             auto project = Project::Load(result.path);
-            m_scriptManager->Load();
+            auto& config = project->GetConfig();
 
-            auto scene = Scene::Load(project->GetConfig().startScenePath);
-            SceneManager::SetActiveScene(scene);
+            m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
+            if (!m_editorAssetLibrary->DeserializeAssetRegistry())
+            {
+                EK_ERROR("Failed to deserialize asset registry!");
+            }
 
-            m_editorScene.reset();
-            m_editorScene = scene;
+            m_editorScene = AssetManager::GetAsset<Scene>(config.startSceneHandle);
+            SceneManager::SetActiveScene(m_editorScene.get());
             m_entitiesPanel.SetContext(m_editorScene);
+
+            m_scriptManager->Load();
 
             OnProjectLoaded();
         }
@@ -389,8 +418,8 @@ namespace Eklipse
     {
         if (!Project::GetActive()) return;
 
-        Path scenePath = AssetManager::GetMetadata(m_editorScene->Handle).FilePath;
-        Scene::Save(m_editorScene, scenePath);
+        auto& filePath = m_editorAssetLibrary->GetMetadata(m_editorScene->Handle).FilePath;
+        Scene::Save(m_editorScene.get(), filePath);
     }
     void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
     {
@@ -417,13 +446,14 @@ namespace Eklipse
         {
             out << YAML::BeginMap;
             out << YAML::Key << "Theme" << YAML::Value << m_settings.theme;
+            out << YAML::Key << "ProjectsPath" << YAML::Value << m_settings.projectsPath;
             out << YAML::EndMap;
         }
 
         out << YAML::Key << "ScriptManager" << YAML::Value;
         {
             out << YAML::BeginMap;
-            out << YAML::Key << "MsBuildPath" << YAML::Value << m_settings.ScriptManagerSettings.MsBuildPath.string();
+            out << YAML::Key << "MsBuildPath" << YAML::Value << m_settings.ScriptManagerSettings.MsBuildPath;
             out << YAML::EndMap;
         }
 
@@ -451,11 +481,12 @@ namespace Eklipse
             return false;
 
         TryDeserailize<String>(preferencesNode, "Theme", &m_settings.theme);
+        TryDeserailize<Path>(preferencesNode, "ProjectsPath", &m_settings.projectsPath);
 
         auto& scriptModuleNode = data["ScriptManager"];
         if (scriptModuleNode)
         {
-            m_settings.ScriptManagerSettings.MsBuildPath = TryDeserailize<String>(scriptModuleNode, "MsBuildPath", "");
+            TryDeserailize<Path>(scriptModuleNode, "MsBuildPath", &m_settings.ScriptManagerSettings.MsBuildPath);
         }
     }
     
@@ -467,8 +498,8 @@ namespace Eklipse
 
         m_canControlEditorCamera = false;
 
-        auto sceneCopy = Scene::Copy(m_editorScene);
-        SceneManager::SetActiveScene(sceneCopy);
+        auto sceneCopy = Scene::Copy(m_editorScene.get());
+        SceneManager::SetActiveScene(sceneCopy.get());
         SceneManager::GetActiveScene()->OnSceneStart();
 
         m_entitiesPanel.SetContext(sceneCopy);
@@ -482,7 +513,7 @@ namespace Eklipse
         m_canControlEditorCamera = true;
 
         SceneManager::GetActiveScene()->OnSceneStop();
-        SceneManager::SetActiveScene(m_editorScene);
+        SceneManager::SetActiveScene(m_editorScene.get());
 
         m_entitiesPanel.SetContext(m_editorScene);
         ClearSelection();
@@ -516,16 +547,13 @@ namespace Eklipse
     // === Project Events ===
     void EditorLayer::OnProjectUnload()
     {
-        // unload assets
+        m_editorAssetLibrary.reset();
     }
     void EditorLayer::OnProjectLoaded()
     {
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         ClearSelection();
-        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(
-            Project::GetActive()->GetConfig().assetsDirectoryPath
-        );
         m_filesPanel.OnContextChanged();
         m_editorScene->ApplyAllComponents();
     }
@@ -581,11 +609,11 @@ namespace Eklipse
 
             if (!Project::GetActive()) return;
 
-            ImGui::SeparatorText("AssetRegistry");
-            if (ImGui::BeginTable("Assets##Table", 2))
+            ImGui::SeparatorText("Asset Registry");
+            if (ImGui::BeginTable("Assets##Table", 3))
             {
-                ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed, 200.0f);
-                ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+                ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 150.0f);
                 ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableHeadersRow();
 
@@ -594,7 +622,7 @@ namespace Eklipse
                     ImGui::TableNextRow();
 
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("%d", handle);
+                    ImGui::Text("%llu", handle);
 
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextUnformatted(Asset::TypeToString(metadata.Type).c_str());
@@ -619,6 +647,12 @@ namespace Eklipse
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Configuration");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(config.configuration.c_str());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Assets path");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(config.assetsDirectoryPath.string().c_str());
@@ -631,9 +665,39 @@ namespace Eklipse
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Start scene handle");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%llu", config.startSceneHandle);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Scripts path");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(config.scriptsDirectoryPath.string().c_str());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Scripts resources path");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(config.scriptResourcesDirectoryPath.string().c_str());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Scripts generated path");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(config.scriptGeneratedDirectoryPath.string().c_str());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Scripts premake path");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(config.scriptPremakeDirectoryPath.string().c_str());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Scripts build path");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextUnformatted(config.scriptBuildDirectoryPath.string().c_str());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -641,11 +705,7 @@ namespace Eklipse
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(config.scriptsSourceDirectoryPath.string().c_str());
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImGui::TextUnformatted("Scripts build path");
-                ImGui::TableSetColumnIndex(1);
-                ImGui::TextUnformatted(config.scriptBuildDirectoryPath.string().c_str());
+                
 
                 ImGui::EndTable();
             }

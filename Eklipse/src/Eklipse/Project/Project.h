@@ -19,9 +19,10 @@ namespace Eklipse
 		String configuration;
 		Path projectDir;
 
-		// setup
-		Path startScenePath;
+		// assets
 		Path assetsDirectoryPath;
+		Path startScenePath;
+		AssetHandle startSceneHandle;
 
 		// scripts
 		Path scriptsDirectoryPath;
@@ -39,6 +40,7 @@ namespace Eklipse
 		Path assetsDirectoryPath;
 		Path scriptsLibraryPath;
 		Path startScenePath;
+		AssetHandle startSceneHandle;
 	};
 
 	class EK_API Project

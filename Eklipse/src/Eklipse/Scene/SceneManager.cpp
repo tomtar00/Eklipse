@@ -3,12 +3,13 @@
 
 namespace Eklipse
 {
-	Ref<Scene> SceneManager::s_activeScene = nullptr;
-	void SceneManager::SetActiveScene(const Ref<Scene>& scene)
+	Scene* SceneManager::s_activeScene = nullptr;
+
+	void SceneManager::SetActiveScene(Scene* scene)
 	{
 		s_activeScene = scene;
 	}
-	Ref<Scene> SceneManager::GetActiveScene()
+	Scene* SceneManager::GetActiveScene()
 	{
 		return s_activeScene;
 	}

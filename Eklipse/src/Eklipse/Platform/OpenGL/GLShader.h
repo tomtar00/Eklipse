@@ -9,7 +9,7 @@ namespace Eklipse
 		class GLShader : public Shader
 		{
 		public:
-			GLShader(const Path& filePath);
+			GLShader(const Path& filePath, const AssetHandle handle = AssetHandle());
 
 			uint32_t GetID() const;
 

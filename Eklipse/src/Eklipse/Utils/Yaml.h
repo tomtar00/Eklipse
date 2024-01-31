@@ -204,34 +204,64 @@ namespace YAML {
             return true;
         }
     };
+
+    template<>
+    struct convert<std::filesystem::path>
+    {
+        static Node encode(const std::filesystem::path& path)
+        {
+            Node node;
+            node.push_back(path.generic_string());
+            return node;
+        }
+
+        static bool decode(const Node& node, std::filesystem::path& path)
+        {
+            path = node.as<std::string>();
+            return true;
+        }
+    };
 }
 
 namespace Eklipse
 {
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v);
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v);
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v);
-
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat3& v);
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat4& v);
-
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec2& v);
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec3& v);
-    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec4& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat3& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat4& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec2& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec3& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec4& v);
+    EK_API YAML::Emitter& operator<<(YAML::Emitter& out, const std::filesystem::path& v);
 
     template<typename T>
     void TryDeserailize(const YAML::Node& node, const String& key, T* value)
     {
-        if (node[key])
-            *value = node[key].as<T>();
-        else EK_CORE_WARN("Could not find key {0} in node {1}", key, node.Tag());
+        try
+        {
+            if (node[key])
+                *value = node[key].as<T>();
+            else EK_CORE_WARN("Could not find key {0} in node {1}", key, node.Tag());
+        }
+        catch(YAML::Exception& e)
+        {
+            EK_CORE_ERROR("Could not deserialize key {0} in node {1}: {2}", key, node.Tag(), e.what());
+        }
     }
     template<typename T>
     T TryDeserailize(const YAML::Node& node, const String& key, T defaultValue)
     {
-        if (node[key])
-            return node[key].as<T>();
-        EK_CORE_WARN("Could not find key {0} in node {1}", key, node.Tag());
+        try
+        {
+            if (node[key])
+                return node[key].as<T>();
+            EK_CORE_WARN("Could not find key {0} in node {1}", key, node.Tag());
+        }
+        catch (YAML::Exception& e)
+        {
+            EK_CORE_ERROR("Could not deserialize key {0} in node {1}: {2}", key, node.Tag(), e.what());
+        }
         return defaultValue;
     }
 }

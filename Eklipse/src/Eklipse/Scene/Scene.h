@@ -34,14 +34,14 @@ namespace Eklipse
 		void OnSceneStop();
 		
 		// Scene
-		static Ref<Scene> New();
-		static Ref<Scene> Copy(Ref<Scene> other);
-		static Ref<Scene> Load(const Path& filePath);
-		static void Save(Ref<Scene> scene, const Path& filePath);
+		static Ref<Scene> New(const String& name);
+		static Ref<Scene> Copy(Scene* other);
+		static Ref<Scene> Load(const Path& filePath, const AssetHandle handle = AssetHandle());
+		static void Save(Scene* scene, const Path& filePath);
 
 		// Scripts
 		void DestroyAllScripts();
-		void InitializeAllScripts();
+		void InitializeAllScripts(const Path& filePath);
 
 		// Components
 		void ApplyAllComponents();

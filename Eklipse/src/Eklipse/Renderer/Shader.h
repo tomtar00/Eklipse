@@ -90,8 +90,8 @@ namespace Eklipse
 	{
 	public:
 		Shader() = delete;
-		Shader(const Path& filePath);
-		static Ref<Shader> Create(const Path& filePath);
+		Shader(const Path& filePath, const AssetHandle handle = AssetHandle());
+		static Ref<Shader> Create(const Path& filePath, const AssetHandle handle = AssetHandle());
 
 		StageSourceMap Shader::Setup();
 		bool Recompile();

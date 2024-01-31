@@ -69,7 +69,6 @@ namespace Eklipse
 
 		// Create framebuffer
 		FramebufferInfo fbInfo{};
-		fbInfo.framebufferType		= FramebufferType::DEFAULT;
 		fbInfo.width				= Application::Get().GetInfo().windowWidth;
 		fbInfo.height				= Application::Get().GetInfo().windowHeight;
 		fbInfo.numSamples			= Renderer::GetSettings().GetMsaaSamples();
@@ -81,6 +80,5 @@ namespace Eklipse
 	void AppLayer::OnShutdownAPI()
 	{
 		m_framebuffer->Dispose();
-		m_framebuffer.reset();
 	}
 }

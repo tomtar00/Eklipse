@@ -198,7 +198,7 @@ namespace Eklipse
 			// COMMON /////////////////////////////////////////////
 
 			m_defaultFramebuffer->Dispose();
-			m_defaultFramebuffer.reset();
+			m_defaultFramebuffer = nullptr;
 			g_VKDefaultFramebuffer = nullptr;
 
 			for (auto& framebuffer : g_VKOffScreenFramebuffers)
@@ -371,8 +371,6 @@ namespace Eklipse
 		}
 		void VulkanAPI::CreateDefaultFramebuffer()
 		{
-			m_defaultFramebuffer.reset();
-
 			FramebufferInfo framebufferInfo{};
 			framebufferInfo.isDefaultFramebuffer = true;
 			framebufferInfo.width = Application::Get().GetInfo().windowWidth;

@@ -11,7 +11,7 @@ namespace Eklipse
         {
         public:
             GLTexture2D() = delete;
-            GLTexture2D(const Path& path);
+            GLTexture2D(const Path& path, const AssetHandle handle = AssetHandle());
             GLTexture2D(const TextureInfo& textureInfo);
             GLTexture2D(const TextureData& textureData);
 

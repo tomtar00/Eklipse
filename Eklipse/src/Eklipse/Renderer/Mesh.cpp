@@ -60,8 +60,9 @@ namespace Eklipse
 		return vertexArray;
 	}
 
-	Mesh::Mesh(const Path& filePath)
+	Mesh::Mesh(const Path& filePath, const AssetHandle handle)
 	{
+		Handle = handle;
 		String extension = filePath.extension().string();
 		if (extension == ".obj")
 		{
@@ -82,9 +83,9 @@ namespace Eklipse
 		m_vertexArray->AddVertexBuffer(vertexBuffer);
 		m_vertexArray->SetIndexBuffer(indexBuffer);
 	}
-	Ref<Mesh> Mesh::Create(const Path& filePath)
+	Ref<Mesh> Mesh::Create(const Path& filePath, const AssetHandle handle)
 	{
-		return CreateRef<Mesh>(filePath);
+		return CreateRef<Mesh>(filePath, handle);
 	}
 	Ref<Mesh> Mesh::Create(const MeshData& data)
 	{

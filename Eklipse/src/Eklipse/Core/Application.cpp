@@ -2,6 +2,8 @@
 #include "Application.h"
 #include "Input.h"
 
+#include <Eklipse/Scene/SceneManager.h>
+
 namespace Eklipse
 {
 	ApplicationInfo::ApplicationInfo(const ApplicationInfo& info)

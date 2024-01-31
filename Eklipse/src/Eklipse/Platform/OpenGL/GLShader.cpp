@@ -34,7 +34,8 @@ namespace Eklipse
 			return "";
 		}
 
-		GLShader::GLShader(const Path& filePath) : m_id(0), Shader(filePath)
+		GLShader::GLShader(const Path& filePath, const AssetHandle handle) 
+			: m_id(0), Shader(filePath, handle)
 		{
 			m_isValid = Compile();
 		}

@@ -17,6 +17,7 @@ namespace Eklipse
     {
     public:
         EditorAssetLibrary(const Path& assetDirectory);
+        ~EditorAssetLibrary();
 
         virtual Ref<Asset> GetAsset(AssetHandle handle) override;
         virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
@@ -24,12 +25,13 @@ namespace Eklipse
         virtual bool IsAssetLoaded(AssetHandle handle) const override;
 
         AssetRegistry& GetAssetRegistry();
-        void ImportAsset(const Path& filepath);
+        AssetHandle ImportAsset(const Path& filepath);
 
         void SerializeAssetRegistry();
         bool DeserializeAssetRegistry();
 
         void OnFileWatchEvent(const String& path, filewatch::Event change_type);
+
         static AssetType GetAssetTypeFromFileExtension(const String& extension);
 
     private:

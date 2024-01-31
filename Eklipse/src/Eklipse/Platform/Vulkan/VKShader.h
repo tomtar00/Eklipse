@@ -12,7 +12,7 @@ namespace Eklipse
 		class VKShader : public Shader
 		{
 		public:
-			VKShader(const Path& filePath);
+			VKShader(const Path& filePath, const AssetHandle handle = AssetHandle());
 
 			VkDescriptorSetLayout GetDescriptorSetLayout() const;
 			VkPipelineLayout GetPipelineLayout() const;

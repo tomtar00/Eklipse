@@ -19,3 +19,4 @@
 #include <Eklipse/Assets/AssetManager.h>
 #include <Eklipse/Scripting/ScriptManager.h>
 #include <Eklipse/Project/ProjectExporter.h>
+#include <Eklipse/Utils/File.h>

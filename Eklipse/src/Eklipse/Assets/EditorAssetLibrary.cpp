@@ -16,6 +16,10 @@ namespace Eklipse
         AssetManager::s_assetLibrary = this;
         m_fileWatcher = CreateUnique<filewatch::FileWatch<String>>(assetDirectory.string(), CAPTURE_FN(OnFileWatchEvent));
     }
+    EditorAssetLibrary::~EditorAssetLibrary()
+    {
+        AssetManager::s_assetLibrary = nullptr;
+    }
 
     Ref<Asset> EditorAssetLibrary::GetAsset(AssetHandle handle)
     {
@@ -43,6 +47,7 @@ namespace Eklipse
     }
     const AssetMetadata& EditorAssetLibrary::GetMetadata(AssetHandle handle) const
     {
+        EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_assetRegistry.at(handle);
     }
     bool EditorAssetLibrary::IsAssetHandleValid(AssetHandle handle) const
@@ -51,6 +56,7 @@ namespace Eklipse
     }
     bool EditorAssetLibrary::IsAssetLoaded(AssetHandle handle) const
     {
+        EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
     
@@ -58,8 +64,10 @@ namespace Eklipse
     {
         return m_assetRegistry;
     }
-    void EditorAssetLibrary::ImportAsset(const Path& filepath)
+    AssetHandle EditorAssetLibrary::ImportAsset(const Path& filepath)
     {
+        EK_CORE_TRACE("Importing asset: {0}", filepath.string());
+
         AssetHandle handle;
         AssetMetadata metadata;
         metadata.FilePath = filepath;
@@ -73,6 +81,9 @@ namespace Eklipse
             m_assetRegistry[handle] = metadata;
             SerializeAssetRegistry();
         }
+
+        EK_CORE_DBG("Asset from path '{0}' imported with handle: {1}", filepath.string(), handle);
+        return handle;
     }
     
     void EditorAssetLibrary::SerializeAssetRegistry()
@@ -87,8 +98,7 @@ namespace Eklipse
             {
                 out << YAML::BeginMap;
                 out << YAML::Key << "Handle" << YAML::Value << handle;
-                String filepathStr = metadata.FilePath.generic_string();
-                out << YAML::Key << "FilePath" << YAML::Value << filepathStr;
+                out << YAML::Key << "FilePath" << YAML::Value << metadata.FilePath.generic_string();
                 out << YAML::Key << "Type" << YAML::Value << Asset::TypeToString(metadata.Type);
                 out << YAML::EndMap;
             }
@@ -119,10 +129,10 @@ namespace Eklipse
 
         for (const auto& node : rootNode)
         {
-            AssetHandle handle = node["Handle"].as<uint64_t>();
+            AssetHandle handle = TryDeserailize<AssetHandle>(node, "Handle", -1);
             auto& metadata = m_assetRegistry[handle];
-            metadata.FilePath = node["FilePath"].as<String>();
-            metadata.Type = Asset::TypeFromString(node["Type"].as<String>());
+            metadata.FilePath = TryDeserailize<String>(node, "FilePath", "");
+            metadata.Type = Asset::TypeFromString(TryDeserailize<String>(node, "Type", ""));
         }
 
         return true;
@@ -130,22 +140,34 @@ namespace Eklipse
 
     void EditorAssetLibrary::OnFileWatchEvent(const String& path, filewatch::Event change_type)
     {
-        if (fs::is_directory(m_assetDirectory / path))
+        Path absolutePath = m_assetDirectory / path;
+        if (fs::is_directory(absolutePath))
             return;
 
         switch (change_type)
         {
         case filewatch::Event::added:
             EK_CORE_TRACE("Asset added: {0}", path);
+            {
+                ImportAsset(absolutePath);
+            }
             break;
         case filewatch::Event::removed:
             EK_CORE_TRACE("Asset removed: {0}", path);
+            {
+                AssetHandle handle = GetHandleFromAssetPath(path);
+                if (IsAssetHandleValid(handle))
+                {
+                    m_assetRegistry.erase(handle);
+                    m_loadedAssets.erase(handle);
+                }
+            }
             break;
         case filewatch::Event::modified:
             EK_CORE_TRACE("Asset modified: {0}", path);
             {
-                const String extension = Path(path).extension().string();
-                const String pathString = (m_assetDirectory / path).string();
+                const String extension = absolutePath.extension().string();
+                const String pathString = absolutePath.string();
 
                 if (extension == EK_SHADER_EXTENSION && !m_shaderReloadPending)
                 {
@@ -193,7 +215,6 @@ namespace Eklipse
 
         if (extension == ".obj") return AssetType::Mesh;
 
-        EK_CORE_ERROR("Unknown asset type '{0}'!", extension);
         return AssetType::None;
     }
     AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path) const

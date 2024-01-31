@@ -60,8 +60,9 @@ namespace Eklipse
         return true;
     }
 
-    Texture2D::Texture2D(const Path& path)
+    Texture2D::Texture2D(const Path& path, const AssetHandle handle)
     {      
+        Handle = handle;
     }
     Texture2D::Texture2D(const TextureInfo& textureInfo)
     { 
@@ -70,12 +71,12 @@ namespace Eklipse
     {   
     }
 
-    Ref<Texture2D> Texture2D::Create(const Path& path)
+    Ref<Texture2D> Texture2D::Create(const Path& path, const AssetHandle handle)
     {
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(path);
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path, handle);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(path, handle);
         }
         EK_ASSERT(false, "Texture creation not implemented for current graphics API");
         return nullptr;

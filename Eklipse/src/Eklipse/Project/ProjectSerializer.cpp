@@ -31,8 +31,9 @@ namespace Eklipse
 				out << YAML::Key << "Name" << YAML::Value << config.name;
 				out << YAML::Key << "Configuration" << YAML::Value << config.configuration;
 
-				out << YAML::Key << "StartScene" << YAML::Value << abs_to_rel(config.startScenePath);
 				out << YAML::Key << "AssetsDirectory" << YAML::Value << abs_to_rel(config.assetsDirectoryPath);
+				out << YAML::Key << "StartScene" << YAML::Value << abs_to_rel(config.startScenePath);
+				out << YAML::Key << "StartSceneHandle" << YAML::Value << config.startSceneHandle;
 
 				out << YAML::Key << "ScriptsDirectory" << YAML::Value << abs_to_rel(config.scriptsDirectoryPath);
 				out << YAML::Key << "ScriptsResourcesDirectory" << YAML::Value << abs_to_rel(config.scriptResourcesDirectoryPath);
@@ -78,8 +79,10 @@ namespace Eklipse
 
 		config.projectDir						= filepath.parent_path();
 
-		config.startScenePath					= rel_to_abs(TryDeserailize<String>(projectNode, "StartScene", ""));
 		config.assetsDirectoryPath				= rel_to_abs(TryDeserailize<String>(projectNode, "AssetsDirectory", "Assets"));
+		config.startScenePath					= rel_to_abs(TryDeserailize<String>(projectNode, "StartScene", ""));
+		config.startSceneHandle                 = TryDeserailize<AssetHandle>(projectNode, "StartSceneHandle", -1);
+
 		config.scriptsDirectoryPath				= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsDirectory", "Scripts"));
 		config.scriptResourcesDirectoryPath		= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsResourcesDirectory", "Scripts/Resources"));
 		config.scriptGeneratedDirectoryPath		= rel_to_abs(TryDeserailize<String>(projectNode, "ScriptsGeneratedDirectory", "Scripts/Resources/Generated"));
@@ -112,6 +115,7 @@ namespace Eklipse
 			out << YAML::Key << "AssetsDirectory" << YAML::Value << runtime_abs_to_rel(runtimeConfig.assetsDirectoryPath);
 			out << YAML::Key << "ScriptsLibrary" << YAML::Value << runtime_abs_to_rel(runtimeConfig.scriptsLibraryPath);
 			out << YAML::Key << "StartScene" << YAML::Value << runtime_abs_to_rel(runtimeConfig.startScenePath);
+			out << YAML::Key << "StartSceneHandle" << YAML::Value << runtimeConfig.startSceneHandle;
 			out << YAML::EndMap;
 		}
 
@@ -148,6 +152,7 @@ namespace Eklipse
 		runtimeConfig.assetsDirectoryPath	= runtime_rel_to_abs(TryDeserailize<String>(configNode, "AssetsDirectory", "Assets"));
 		runtimeConfig.scriptsLibraryPath	= runtime_rel_to_abs(TryDeserailize<String>(configNode, "ScriptsLibrary", ""));
 		runtimeConfig.startScenePath		= runtime_rel_to_abs(TryDeserailize<String>(configNode, "StartScene", ""));
+		runtimeConfig.startSceneHandle		= TryDeserailize<AssetHandle>(configNode, "StartSceneHandle", -1);
 
 		auto rendererSettingsNode = data["RendererSettings"];
 		if (rendererSettingsNode)

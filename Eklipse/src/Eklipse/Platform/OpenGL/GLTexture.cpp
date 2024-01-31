@@ -28,7 +28,7 @@ namespace Eklipse
             return 0;
         }
 
-        GLTexture2D::GLTexture2D(const Path& path) : Texture2D(path)
+        GLTexture2D::GLTexture2D(const Path& path, const AssetHandle handle) : Texture2D(path, handle)
         {
             TextureData textureData{};
             if (LoadTextureFromFile(path, textureData))

@@ -119,16 +119,17 @@ namespace Eklipse
         return 0;
     }
 
-    Shader::Shader(const Path& filePath) : m_isValid(false)
+    Shader::Shader(const Path& filePath, const AssetHandle handle) : m_isValid(false)
     {
+        Handle = handle;
         m_name = filePath.stem().string();
     }
-    Ref<Shader> Shader::Create(const Path& filePath)
+    Ref<Shader> Shader::Create(const Path& filePath, const AssetHandle handle)
     {
         switch (Renderer::GetAPI())
         {
-        case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath);
-        case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(filePath);
+        case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
+        case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(filePath, handle);
         }
         EK_ASSERT(false, "Shader creation not implemented for current graphics API");
         return nullptr;

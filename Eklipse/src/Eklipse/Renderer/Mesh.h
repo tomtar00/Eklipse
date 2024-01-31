@@ -15,9 +15,9 @@ namespace Eklipse
 	{
 	public:
 		Mesh() = delete;
-		Mesh(const Path& filePath);
+		Mesh(const Path& filePath, const AssetHandle handle = AssetHandle());
 		Mesh(const MeshData& data);
-		static Ref<Mesh> Create(const Path& filePath);
+		static Ref<Mesh> Create(const Path& filePath, const AssetHandle handle = AssetHandle());
 		static Ref<Mesh> Create(const MeshData& data);
 
 		const Ref<VertexArray>& GetVertexArray() const;

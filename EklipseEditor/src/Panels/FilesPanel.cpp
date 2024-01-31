@@ -20,19 +20,13 @@ namespace Eklipse
 
     void FilesPanel::LoadResources()
     {
-        m_folderIcon.reset();
         m_folderIcon = GuiIcon::Create("Assets/Icons/folder.png");
-        
-        m_fileIcon.reset();
         m_fileIcon = GuiIcon::Create("Assets/Icons/file.png");
     }
     void FilesPanel::UnloadResources()
     {
         m_folderIcon->Dispose();
-        m_folderIcon.reset();
-
         m_fileIcon->Dispose();
-        m_fileIcon.reset();
     }
     void FilesPanel::OnContextChanged()
     {
@@ -136,7 +130,7 @@ namespace Eklipse
                 // TODO: open scene
             }
 
-            if (ImGui::IsItemClicked())
+            if (ImGui::IsItemClicked() && path.has_extension())
             {
                 if (EditorAssetLibrary::GetAssetTypeFromFileExtension(path.extension().string()) == AssetType::Material)
                 {
@@ -270,7 +264,10 @@ namespace Eklipse
         String name = FileUtilities::AppendExtensionIfNotPresent(materialName, EK_MATERIAL_EXTENSION);
         Path materialPath = m_currentPath / name;
 
+        // serialization
         Ref<Material> material = Material::Create(materialPath, shaderHandle);
+
+        // deserialization
         EditorLayer::Get().GetAssetLibrary()->ImportAsset(materialPath);
 
         return true;
@@ -297,7 +294,6 @@ namespace Eklipse
             EK_CORE_ERROR("Failed to create shader from template '{}' to path '{}'", templatePath.string(), shaderPath.string());
             return false;
         }
-        Ref<Shader> shader = Shader::Create(shaderPath);
         EditorLayer::Get().GetAssetLibrary()->ImportAsset(shaderPath);
 
         return true;

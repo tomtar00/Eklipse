@@ -72,10 +72,10 @@ namespace Eklipse
     {
     public:
         Texture2D() = delete;
-        Texture2D(const Path& path);
+        Texture2D(const Path& path, const AssetHandle handle = AssetHandle());
         Texture2D(const TextureInfo& textureInfo);
         Texture2D(const TextureData& textureData);
-        static Ref<Texture2D> Create(const Path& path);
+        static Ref<Texture2D> Create(const Path& path, const AssetHandle handle = AssetHandle());
         static Ref<Texture2D> Create(const TextureInfo& textureInfo);
         static Ref<Texture2D> Create(const TextureData& textureData);
 

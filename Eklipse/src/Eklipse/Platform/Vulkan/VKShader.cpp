@@ -38,7 +38,7 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VKShader::VKShader(const Path& filePath) : Shader(filePath)
+		VKShader::VKShader(const Path& filePath, const AssetHandle handle) : Shader(filePath, handle)
 		{		
 			m_isValid = Compile();
 		}

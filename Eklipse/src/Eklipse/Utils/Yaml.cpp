@@ -53,4 +53,9 @@ namespace Eklipse
         out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
         return out;
     }
+    YAML::Emitter& operator<<(YAML::Emitter& out, const std::filesystem::path& v)
+    {
+        out << v.generic_string();
+        return out;
+    }
 }

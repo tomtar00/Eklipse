@@ -3,7 +3,7 @@
 
 namespace Eklipse
 {
-	const String& Asset::TypeToString(AssetType type)
+	const String Asset::TypeToString(AssetType type)
 	{
 		if (type == AssetType::None)			return "None";
 		else if (type == AssetType::Scene)		return "Scene";

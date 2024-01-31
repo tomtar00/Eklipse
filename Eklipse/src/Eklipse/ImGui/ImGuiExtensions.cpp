@@ -47,7 +47,7 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
     return active;
 }
 
-bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Vec<Eklipse::String>& requiredExtensions)
+bool ImGui::InputFilePath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Vec<Eklipse::String>& requiredExtensions)
 {
     ImGui::PushID(id);
     if (label)
@@ -64,8 +64,11 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
+    static char pathBuffer[512];
+    strncpy(pathBuffer, path.string().c_str(), sizeof(pathBuffer));
+
     ImGui::PushItemWidth(-30);
-    active = ImGui::InputTextWithHint("##InputPath", "Select file", (char*)path.c_str(), path.string().size());    
+    active = ImGui::InputTextWithHint("##InputPath", "Select file", pathBuffer, sizeof(pathBuffer));
     ImGui::PopItemWidth();
 
     if (!isCurrentlyValid)
@@ -76,11 +79,8 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
 
     if (active)
     {
-        if (Eklipse::FileUtilities::IsPathValid(path, requiredExtensions))
-            active = true;
-        else
-            active = false;
-
+        active = Eklipse::FileUtilities::IsPathValid(path, requiredExtensions);
+        path = Eklipse::Path(pathBuffer);
     }
 
     ImGui::SameLine();
@@ -98,7 +98,7 @@ bool ImGui::InputPath(const void* id, const char* label, Eklipse::Path& path, co
     return active;
 }
 
-bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
+bool ImGui::InputDirPath(const void* id, const char* label, Eklipse::Path& path)
 {
     ImGui::PushID(id);
     if (label)
@@ -114,9 +114,11 @@ bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
+    static char pathBuffer[512];
+    strncpy(pathBuffer, path.string().c_str(), sizeof(pathBuffer));
+
     ImGui::PushItemWidth(-30);
-    char* pathBuffer = (char*)path.c_str();
-    bool active = ImGui::InputTextWithHint("##InputPath", "Select directory", pathBuffer, path.string().size());
+    bool active = ImGui::InputTextWithHint("##InputPath", "Select directory", pathBuffer, sizeof(pathBuffer));
     ImGui::PopItemWidth();
 
     if (!isCurrentlyValid)
@@ -127,10 +129,8 @@ bool ImGui::InputDir(const void* id, const char* label, Eklipse::Path& path)
 
     if (active)
     {
-        if (Eklipse::FileUtilities::IsPathValid(path))
-            active = true;
-        else
-            active = false;
+        active = Eklipse::FileUtilities::IsPathValid(path);
+        path = Eklipse::Path(pathBuffer);
     }
 
     ImGui::SameLine();

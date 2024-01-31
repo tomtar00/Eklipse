@@ -21,7 +21,7 @@ namespace Eklipse
         {
         public:
             VKTexture2D() = delete;
-            VKTexture2D(const Path& path);
+            VKTexture2D(const Path& path, const AssetHandle handle = AssetHandle());
             VKTexture2D(const TextureInfo& textureInfo);
             VKTexture2D(const TextureData& textureData);
 

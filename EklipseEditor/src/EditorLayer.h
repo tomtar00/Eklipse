@@ -14,6 +14,7 @@ namespace Eklipse
 	struct EditorSettings
 	{
 		String theme = "dark";
+		Path projectsPath;
 
 		ScriptManagerSettings ScriptManagerSettings;
 	};
@@ -46,7 +47,7 @@ namespace Eklipse
 		void OnShutdownAPI();
 
 		// === Project ===
-		void NewProject(const Path& path, const String& name);
+		bool NewProject(const Path& path, const String& name);
 		void OpenProject();
 		void SaveProject();
 		void SaveProjectAs();

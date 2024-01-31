@@ -105,9 +105,9 @@ namespace Eklipse
 
         factoryFile << "\n";
 
-        if (m_scriptLinker->HasAnyScriptClasses())
+        if (!m_scriptLinker->HasAnyScriptClasses())
         {
-            EK_CORE_WARN("No script classes found!");
+            EK_CORE_DBG("No script classes found!");
             return false;
         }
 
@@ -131,7 +131,7 @@ namespace Eklipse
     }
     void ScriptManager::RunPremake(const Path& premakeDirPath)
     {
-        EK_CORE_TRACE("Running premake5.lua at path '{}'", premakeDirPath.string());
+        EK_CORE_DBG("Running premake5.lua at path '{}'", premakeDirPath.string());
 
         auto premakeLuaFilePath = premakeDirPath / "premake5.lua";
         EK_ASSERT(fs::exists(premakeLuaFilePath), "Premake5.lua file does not exist!");
@@ -146,12 +146,13 @@ namespace Eklipse
         String command = "cd " + (currentPath / "Resources/Scripting/Premake").string() + " && premake5 xcode4 --file=" + premakeLuaFilePath.string();
 #endif
 
-        EK_CORE_DBG("Running command: {0}", command);
+        EK_CORE_TRACE("Running command: {0}", command);
         int res = system(command.c_str());
         EK_ASSERT(res == 0, "Failed to run premake5.lua!");
     }
     void ScriptManager::CompileScripts(const Path& sourceDirectoryPath, const String& configuration)
     {
+        EK_ASSERT(fs::exists(sourceDirectoryPath), "Source directory does not exist!");
         EK_CORE_TRACE("Compiling scripts...");
 
         String configuration_ = configuration;
@@ -161,7 +162,6 @@ namespace Eklipse
             EK_CORE_WARN("Invalid configuration: {0}. Using default configuration: {1}", configuration, configuration_);
         }
 
-        EK_ASSERT(fs::exists(sourceDirectoryPath), "Source directory does not exist!");
         SetState(ScriptsState::COMPILING);
         String command;
 
@@ -210,7 +210,7 @@ namespace Eklipse
         EK_CORE_INFO("Recompiling scripts...");
 
         auto& config = Project::GetActive()->GetConfig();
-        auto& activeScene = SceneManager::GetActiveScene();
+        auto activeScene = SceneManager::GetActiveScene();
 
         auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
 
@@ -238,7 +238,7 @@ namespace Eklipse
 
             if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
             {
-                activeScene->InitializeAllScripts();
+                activeScene->InitializeAllScripts(scenePath);
                 EK_CORE_INFO("Recompilation successfull!");
             }
             else

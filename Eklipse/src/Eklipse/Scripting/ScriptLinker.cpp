@@ -36,7 +36,7 @@ namespace Eklipse
 	}
 	bool ScriptLinker::UnlinkScriptLibrary()
 	{
-		EK_CORE_TRACE("Unloading script library: '{0}'", m_libraryPath.string());
+		EK_CORE_TRACE("Unlinking script library: '{0}'", m_libraryPath.string());
 
 		try
 		{

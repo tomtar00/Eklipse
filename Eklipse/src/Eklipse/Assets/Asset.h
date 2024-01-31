@@ -19,7 +19,7 @@ namespace Eklipse {
 	class EK_API Asset
 	{
 	public:
-		static const String& TypeToString(AssetType type);
+		static const String TypeToString(AssetType type);
 		static AssetType TypeFromString(const String& assetType);
 
 	public:

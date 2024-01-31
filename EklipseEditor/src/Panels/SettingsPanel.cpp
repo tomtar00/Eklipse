@@ -25,7 +25,7 @@ namespace Eklipse
 				Renderer::OnMultiSamplingChanged(Renderer::GetSettings().GetMsaaSamples());
 			}
 
-			if (!EditorLayer::Get().IsPlaying()) // TODO: Should fix (Play > Change API > Stop > CRASH)
+			if (!EditorLayer::Get().IsPlaying()) // TODO: fix (Play > Change API > Stop > CRASH)
 			{
 				static const char* APIs[]{ "Vulkan", "OpenGL" };
 				static int api = (int)Renderer::GetAPI();
@@ -38,8 +38,11 @@ namespace Eklipse
 
 		ImGui::SeparatorText("Scripting");
 #if EK_PLATFORM_WINDOWS
-		ImGui::InputPath("msbuild", "MSBuild Path", EditorLayer::Get().GetSettings().ScriptManagerSettings.MsBuildPath, { ".exe" });
+		ImGui::InputFilePath("msbuild", "MSBuild Path", EditorLayer::Get().GetSettings().ScriptManagerSettings.MsBuildPath, { ".exe" });
 #endif
+		ImGui::SeparatorText("Preferences");
+		ImGui::InputText("Theme", &EditorLayer::Get().GetSettings().theme);
+		ImGui::InputDirPath("Project", "Projects Path", EditorLayer::Get().GetSettings().projectsPath);
 
 		ImGui::End();
 

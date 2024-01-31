@@ -269,7 +269,7 @@ namespace Eklipse
             EndSingleCommands(commandBuffer);
         }
 
-        VKTexture2D::VKTexture2D(const Path& path) : Texture2D(path)
+        VKTexture2D::VKTexture2D(const Path& path, const AssetHandle handle) : Texture2D(path, handle)
         {
             TextureData textureData{};
             if (LoadTextureFromFile(path, textureData))

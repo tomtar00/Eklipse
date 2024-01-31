@@ -40,7 +40,7 @@ namespace Eklipse
 
 	bool Renderer::Init()
 	{
-		RenderCommand::API.reset();
+		//RenderCommand::API.reset();
 		RenderCommand::API = GraphicsAPI::Create();
 		return RenderCommand::API->Init();
 	}
@@ -78,7 +78,7 @@ namespace Eklipse
 
 		framebuffer->Bind();
 	}
-	void Renderer::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
+	void Renderer::RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform)
 	{
 		EK_PROFILE();
 
@@ -102,7 +102,7 @@ namespace Eklipse
 
 		// ...
 	}
-	void Renderer::RenderScene(Ref<Scene> scene)
+	void Renderer::RenderScene(Scene* scene)
 	{
 		auto camera = scene->GetMainCamera();
 		auto cameraTransform = scene->GetMainCameraTransform();

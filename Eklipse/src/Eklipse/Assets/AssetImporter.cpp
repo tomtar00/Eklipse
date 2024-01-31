@@ -11,23 +11,25 @@ namespace Eklipse
 {
     static Ref<Scene> ImportScene(AssetHandle handle, const AssetMetadata& metadata)
     {
-		return Scene::Load(metadata.FilePath);
+		return Scene::Load(metadata.FilePath, handle);
 	}
 	static Ref<Texture2D> ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)
 	{
-		return Texture2D::Create(metadata.FilePath);
+		return Texture2D::Create(metadata.FilePath, handle);
 	}
     static Ref<Mesh> ImportMesh(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return Mesh::Create(metadata.FilePath);
+        return Mesh::Create(metadata.FilePath, handle);
     }
     static Ref<Shader> ImportShader(AssetHandle handle, const AssetMetadata& metadata)
     {
-		return Shader::Create(metadata.FilePath);
+		return Shader::Create(metadata.FilePath, handle);
 	}
     static Ref<Material> ImportMaterial(AssetHandle handle, const AssetMetadata& metadata)
     {
-		return Material::Create(metadata.FilePath);
+		auto mat = Material::Create(metadata.FilePath);
+        mat->Handle = handle;
+        return mat;
 	}
 
     using AssetImportFunction = std::function<Ref<Asset>(AssetHandle, const AssetMetadata&)>;
@@ -49,6 +51,7 @@ namespace Eklipse
         }
 
         AssetImportFunction importFunction = s_assetImportFunctions.at(metadata.Type);
-        return importFunction(handle, metadata);
+        Ref<Asset> asset = importFunction(handle, metadata);
+        return asset;
     }
 }

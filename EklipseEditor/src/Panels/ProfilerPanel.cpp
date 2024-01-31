@@ -199,7 +199,7 @@ namespace Eklipse
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         auto size = ImGui::GetContentRegionAvail();
         auto pos = ImGui::GetCursorScreenPos();
-        static float labelWidth = 200.0f;
+        static float labelWidth = 150.0f;
         static float graphHeight = 200.0f;
         DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetLastFrameData().ProfileNodes, Profiler::GetData());
 
