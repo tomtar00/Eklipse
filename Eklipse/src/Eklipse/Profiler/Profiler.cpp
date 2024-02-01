@@ -24,7 +24,7 @@ namespace Eklipse
 		m_timer.Stop();
 		EK_CORE_TRACE("Stage '{0}' took {1}ms", m_timer.GetName(), m_timer.GetTimeMs());
 	}
-	void Profiler::EndFrame(float deltaTime)
+	void Profiler::Submit(float deltaTime)
 	{
 		if (m_allowProfiling) m_allowProfiling = false;
 

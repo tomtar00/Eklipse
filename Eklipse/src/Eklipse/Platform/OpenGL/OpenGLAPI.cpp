@@ -47,7 +47,7 @@ namespace Eklipse
             if (m_initialized)
             {
                 EK_CORE_WARN("OpenGL API already initialized!");
-                return false;
+                return true;
             }
 
             try
@@ -67,33 +67,13 @@ namespace Eklipse
 
                 glEnable(GL_DEPTH_TEST);
 
-                //Vec<float> vertices = {
-                //	 1.0f,  1.0f, 1.0f, 1.0f,  // top right
-                //	 1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
-                //	-1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
-                //	-1.0f,  1.0f, 0.0f, 1.0f,  // top left
-                //};
-                //Vec<uint32_t> indices = {
-                //	0, 1, 3,
-                //	1, 2, 3
-                //};
-
-                //Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
-                //BufferLayout layout = {
-                //	{ "inPos",			ShaderDataType::FLOAT2,		false },
-                //	{ "inTexCoords",	ShaderDataType::FLOAT2,		false },
-                //};
-                //vertexBuffer->SetLayout(layout);
-
-                //m_vertexArray = VertexArray::Create();
-                //m_vertexArray->AddVertexBuffer(vertexBuffer);
-                //m_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
-
-                EK_CORE_INFO("OpenGL Info:");
+                EK_CORE_INFO("OpenGL initialization info:");
                 EK_CORE_INFO("  Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
                 EK_CORE_INFO("  Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
                 EK_CORE_INFO("  Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
                 m_initialized = true;
+
+                return true;
             }
             catch (const std::exception& e)
             {
@@ -122,27 +102,28 @@ namespace Eklipse
         }
         void OpenGLAPI::BeginFrame()
         {
-            
-        }
-        void OpenGLAPI::EndFrame()
-        {
             EK_PROFILE();
 
-            /*uint32_t width = Application::Get().GetInfo().windowWidth;
+            uint32_t width = Application::Get().GetInfo().windowWidth;
             uint32_t height = Application::Get().GetInfo().windowHeight;
             glViewport(0, 0, width, height);
             glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-            auto& spriteShader = Application::Get().GetAssetLibrary()->GetShader("Assets/Shaders/Default2D.eksh");
-            spriteShader->Bind();
-            glDisable(GL_DEPTH_TEST);
-            glActiveTexture(GL_TEXTURE0 + spriteShader->GetFragmentReflection().samplers[0].binding);
-            glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
-            RenderCommand::DrawIndexed(m_vertexArray);
-            glBindTexture(GL_TEXTURE_2D, 0);*/
+        }
+        void OpenGLAPI::Submit()
+        {
+            EK_PROFILE();
 
             Application::Get().GetWindow()->SwapBuffers();
+        }
+        void OpenGLAPI::BeginDefaultRenderPass()
+        {
+        }
+        void OpenGLAPI::EndDefaultRenderPass()
+        {
+        }
+        void OpenGLAPI::OnWindowResize(uint32_t width, uint32_t height)
+        {
         }
         void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)
         {	

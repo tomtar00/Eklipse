@@ -139,7 +139,7 @@ namespace Eklipse
         EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", m_name, shaderHandle);
 
         EK_ASSERT(AssetManager::IsAssetHandleValid(shaderHandle), "Shader handle is not valid");
-        if (m_shader->Handle == shaderHandle)
+        if (m_shader && m_shader->Handle == shaderHandle)
         {
             return;
         }

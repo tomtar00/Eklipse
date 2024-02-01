@@ -14,8 +14,8 @@
 extern "C" {
 #endif
 
-	__declspec(dllexport) uint32_t NvOptimusEnablement = 1;
-	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+    __declspec(dllexport) uint32_t NvOptimusEnablement = 1;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
 #ifdef __cplusplus
 }
@@ -23,205 +23,219 @@ extern "C" {
 
 namespace Eklipse
 {
-	const String APITypeToString(ApiType apiType)
-	{
-		switch (apiType)
-		{
-		case ApiType::Vulkan: return "Vulkan";
-		case ApiType::OpenGL: return "OpenGL";
-		}
-		return "Unknown";
-	}
+    const String APITypeToString(ApiType apiType)
+    {
+        switch (apiType)
+        {
+        case ApiType::Vulkan: return "Vulkan";
+        case ApiType::OpenGL: return "OpenGL";
+        }
+        return "Unknown";
+    }
 
-	RendererSettings Renderer::s_settings;
-	ApiType	Renderer::s_apiType = ApiType::Vulkan;
-	std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
-	static Ref<UniformBuffer> s_cameraUniformBuffer;
+    RendererSettings Renderer::s_settings;
+    ApiType	Renderer::s_apiType = ApiType::Vulkan;
+    std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
+    static Ref<UniformBuffer> s_cameraUniformBuffer;
 
-	bool Renderer::Init()
-	{
-		//RenderCommand::API.reset();
-		RenderCommand::API = GraphicsAPI::Create();
-		return RenderCommand::API->Init();
-	}
-	void Renderer::InitParameters()
-	{
-		s_cameraUniformBuffer = Renderer::CreateUniformBuffer("uCamera", sizeof(glm::mat4), 0);
-	}
+    bool Renderer::Init()
+    {
+        RenderCommand::API.reset();
+        RenderCommand::API = GraphicsAPI::Create();
+        return RenderCommand::API->Init();
+    }
+    void Renderer::InitParameters()
+    {
+        s_cameraUniformBuffer = Renderer::CreateUniformBuffer("uCamera", sizeof(glm::mat4), 0);
+    }
 
-	void Renderer::WaitDeviceIdle()
-	{
-		RenderCommand::API->WaitDeviceIdle();
-	}
+    void Renderer::WaitDeviceIdle()
+    {
+        RenderCommand::API->WaitDeviceIdle();
+    }
 
-	void Renderer::Shutdown()
-	{
-		for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
-		{
-			uniformBuffer->Dispose();
-		}
-		s_uniformBufferCache.clear();
-		RenderCommand::API->Shutdown();
-	}
+    void Renderer::Shutdown()
+    {
+        for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
+        {
+            uniformBuffer->Dispose();
+        }
+        s_uniformBufferCache.clear();
+        RenderCommand::API->Shutdown();
+    }
 
-	// Render stages
-	void Renderer::BeginFrame()
-	{
-		EK_PROFILE();
+    // Render stages
+    void Renderer::BeginFrame()
+    {
+        EK_PROFILE();
 
-		Stats::Get().Reset();
-		RenderCommand::API->BeginFrame();
-	}
-	void Renderer::BeginRenderPass(Framebuffer* framebuffer)
-	{
-		EK_PROFILE();
+        Stats::Get().Reset();
+        RenderCommand::API->BeginFrame();
+    }
+    void Renderer::BeginDefaultRenderPass()
+    {
+        EK_PROFILE();
 
-		framebuffer->Bind();
-	}
-	void Renderer::RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform)
-	{
-		EK_PROFILE();
+        RenderCommand::API->BeginDefaultRenderPass();
+    }
+    void Renderer::EndDefaultRenderPass()
+    {
+        EK_PROFILE();
 
-		camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
-		s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
+        RenderCommand::API->EndDefaultRenderPass();
+    }
+    void Renderer::RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform)
+    {
+        EK_PROFILE();
 
-		// Geometry
-		auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
-		for (auto& entity : view)
-		{
-			auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
+        camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
+        s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
 
-#ifdef EK_DEBUG
-			if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) continue;
-#endif
-
-			glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
-			meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
-			RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
-		}
-
-		// ...
-	}
-	void Renderer::RenderScene(Scene* scene)
-	{
-		auto camera = scene->GetMainCamera();
-		auto cameraTransform = scene->GetMainCameraTransform();
+        // Geometry
+        auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
+        for (auto& entity : view)
+        {
+            auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
 #ifdef EK_DEBUG
-		if (!camera)
-		{
-			EK_CORE_ERROR("No main camera present on the scene!");
-			return;
-		}
-		else if (!cameraTransform)
-		{
-			EK_CORE_ERROR("Main camera transform is null!");
-		}
-		else
+            if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) continue;
 #endif
-			RenderScene(scene, *camera, *cameraTransform);
-	}
-	void Renderer::EndRenderPass(Framebuffer* framebuffer)
-	{
-		EK_PROFILE();
 
-		framebuffer->Unbind();
-	}
-	void Renderer::Submit()
-	{
-		EK_PROFILE();
+            glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
+            meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
+            RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
+        }
 
-		RenderCommand::API->EndFrame();
-	}
+        // ...
+    }
+    void Renderer::RenderScene(Scene* scene)
+    {
+        auto camera = scene->GetMainCamera();
+        auto cameraTransform = scene->GetMainCameraTransform();
 
-	// Events
-	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
-	{
-		g_defaultFramebuffer->Resize(width, height);
-	}
-	void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
-	{
-		if (s_settings.GetMsaaSamples() == numSamples) return;
-		s_settings.MsaaSamplesIndex = numSamples >> 1;
+#ifdef EK_DEBUG
+        if (!camera)
+        {
+            EK_CORE_ERROR("No main camera present on the scene!");
+            return;
+        }
+        else if (!cameraTransform)
+        {
+            EK_CORE_ERROR("Main camera transform is null!");
+        }
+        else
+#endif
+            RenderScene(scene, *camera, *cameraTransform);
+    }
+    void Renderer::Submit()
+    {
+        EK_PROFILE();
 
-		// TODO: Works with Vulkan, but not with OpenGL
-		// ImGui doesn't work with multisampled GLTexture2Ds as ImGui::Image() input
+        RenderCommand::API->Submit();
+    }
 
-		/*
-		auto& fbInfo = g_sceneFramebuffer->GetInfo();
-		fbInfo.numSamples = numSamples;
-		g_sceneFramebuffer->Resize(fbInfo.width, fbInfo.height);
-		*/
-	}
-	void Renderer::OnVsyncChanged(bool enabled)
-	{
-		if (s_settings.Vsync) return;
-		s_settings.Vsync = enabled;
+    // Render calls
+    void Renderer::BeginRenderPass(Framebuffer* framebuffer)
+    {
+        EK_PROFILE();
+
+        framebuffer->Bind();
+    }
+    void Renderer::EndRenderPass(Framebuffer* framebuffer)
+    {
+        EK_PROFILE();
+
+        framebuffer->Unbind();
+    }
+
+    // Events
+    void Renderer::OnWindowResize(uint32_t width, uint32_t height)
+    {
+        RenderCommand::API->OnWindowResize(width, height);
+    }
+    void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
+    {
+        if (s_settings.GetMsaaSamples() == numSamples) return;
+        s_settings.MsaaSamplesIndex = numSamples >> 1;
+
+        // TODO: Works with Vulkan, but not with OpenGL
+        // ImGui doesn't work with multisampled GLTexture2Ds as ImGui::Image() input
+
+        /*
+        auto& fbInfo = g_sceneFramebuffer->GetInfo();
+        fbInfo.numSamples = numSamples;
+        g_sceneFramebuffer->Resize(fbInfo.width, fbInfo.height);
+        */
+    }
+    void Renderer::OnVsyncChanged(bool enabled)
+    {
+        if (s_settings.Vsync) return;
+        s_settings.Vsync = enabled;
 
 #ifdef EK_PLATFORM_WINDOWS
-		glfwSwapInterval(enabled);
+        glfwSwapInterval(enabled);
 #endif
-	}
+    }
 
-	// Getters / Setters
-	ApiType Renderer::GetAPI()
-	{
-		return s_apiType;
-	}
-	void Renderer::SetStartupAPI(ApiType apiType)
-	{
-		s_apiType = apiType;
-	}
-	void Renderer::SetAPI(ApiType apiType)
-	{
-		s_apiType = apiType;
-	}
-	RendererSettings& Renderer::GetSettings()
-	{
-		return s_settings;
-	}
+    // Getters / Setters
+    ApiType Renderer::GetAPI()
+    {
+        return s_apiType;
+    }
+    void Renderer::SetStartupAPI(ApiType apiType)
+    {
+        s_apiType = apiType;
+    }
+    void Renderer::SetAPI(ApiType apiType)
+    {
+        s_apiType = apiType;
+    }
+    RendererSettings& Renderer::GetSettings()
+    {
+        return s_settings;
+    }
 
-	// Uniform buffers
-	Ref<UniformBuffer> Renderer::CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding)
-	{
-		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
-		{
-			return s_uniformBufferCache[uniformBufferName];
-		}
+    // Uniform buffers
+    Ref<UniformBuffer> Renderer::CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding)
+    {
+        if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
+        {
+            return s_uniformBufferCache[uniformBufferName];
+        }
 
-		Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
-		s_uniformBufferCache[uniformBufferName] = uniformBuffer;
-		EK_CORE_DBG("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
-		return uniformBuffer;
-	}
-	Ref<UniformBuffer> Renderer::GetUniformBuffer(const String& uniformBufferName)
-	{
-		if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
-		{
-			return s_uniformBufferCache[uniformBufferName];
-		}
+        Ref<UniformBuffer> uniformBuffer = UniformBuffer::Create(size, binding);
+        s_uniformBufferCache[uniformBufferName] = uniformBuffer;
+        EK_CORE_DBG("Created uniform buffer '{0}' with size {1} and binding {2}", uniformBufferName, size, binding);
+        return uniformBuffer;
+    }
+    Ref<UniformBuffer> Renderer::GetUniformBuffer(const String& uniformBufferName)
+    {
+        if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
+        {
+            return s_uniformBufferCache[uniformBufferName];
+        }
 
-		EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
-		return nullptr;
-	}
+        EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
+        return nullptr;
+    }
 
-	// Settings
-	void Renderer::SerializeRendererSettings(YAML::Emitter& out)
-	{
-		out << YAML::Key << "RendererSettings" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Vsync" << YAML::Value << s_settings.Vsync;
-			out << YAML::Key << "MsaaSamplesIndex" << YAML::Value << s_settings.MsaaSamplesIndex;
-			out << YAML::EndMap;
-		}
-	}
-	void Renderer::DeserializeRendererSettings(const YAML::Node& data)
-	{
-		s_settings.Vsync = TryDeserailize<bool>(data, "Vsync", false);
-		OnVsyncChanged(s_settings.Vsync);
+    // Settings
+    void Renderer::SerializeRendererSettings(YAML::Emitter& out)
+    {
+        out << YAML::Key << "RendererSettings" << YAML::Value;
+        {
+            out << YAML::BeginMap;
+            out << YAML::Key << "Vsync" << YAML::Value << s_settings.Vsync;
+            out << YAML::Key << "MsaaSamplesIndex" << YAML::Value << s_settings.MsaaSamplesIndex;
+            out << YAML::EndMap;
+        }
+    }
+    void Renderer::DeserializeRendererSettings(const YAML::Node& data)
+    {
+        s_settings.Vsync = TryDeserailize<bool>(data, "Vsync", false);
+        OnVsyncChanged(s_settings.Vsync);
 
-		s_settings.MsaaSamplesIndex = TryDeserailize<int>(data, "MsaaSamplesIndex", 0);
-		OnMultiSamplingChanged(s_settings.MsaaSamplesIndex);
-	}
+        s_settings.MsaaSamplesIndex = TryDeserailize<int>(data, "MsaaSamplesIndex", 0);
+        OnMultiSamplingChanged(s_settings.MsaaSamplesIndex);
+    }
 }

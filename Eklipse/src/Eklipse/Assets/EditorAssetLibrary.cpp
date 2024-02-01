@@ -160,6 +160,7 @@ namespace Eklipse
                 {
                     m_assetRegistry.erase(handle);
                     m_loadedAssets.erase(handle);
+                    SerializeAssetRegistry();
                 }
             }
             break;
@@ -182,7 +183,7 @@ namespace Eklipse
                             auto& shaderRef = AssetManager::GetAsset<Shader>(shaderHandle);
 
                             EK_CORE_DBG("Recompiling shader from path '{0}'", pathString);
-                            if (!shaderRef->Recompile())
+                            if (!shaderRef->Recompile(absolutePath))
                             {
                                 EK_CORE_ERROR("Failed to recompile shader at path '{0}'", pathString);
                             }
@@ -192,7 +193,7 @@ namespace Eklipse
                     }
                     else
                     {
-                        EK_CORE_TRACE("Shader at path '{0}' is not in the asset registry! Import this shader first.", pathString);
+                        EK_CORE_TRACE("Shader at path '{0}' with handle '{1}' is not in the asset registry! Import this shader first.", pathString, shaderHandle);
                     }
                 }
             }
@@ -216,6 +217,17 @@ namespace Eklipse
         if (extension == ".obj") return AssetType::Mesh;
 
         return AssetType::None;
+    }
+    Vec<String> EditorAssetLibrary::GetAssetFileExtensions(AssetType type)
+    {
+        if (type == AssetType::Scene)    return { EK_SCENE_EXTENSION };
+        if (type == AssetType::Material) return { EK_MATERIAL_EXTENSION };
+        if (type == AssetType::Shader)   return { EK_SHADER_EXTENSION };
+
+        if (type == AssetType::Texture2D) return { ".png", ".jpg", ".jpeg" };
+        if (type == AssetType::Mesh)      return { ".obj" };
+
+        return {};
     }
     AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path) const
     {

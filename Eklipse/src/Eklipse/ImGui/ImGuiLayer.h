@@ -2,7 +2,6 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include "ImGuiExtensions.h"
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/Assets/AssetLibrary.h>
 #include <Eklipse/Renderer/Framebuffer.h>

@@ -19,10 +19,10 @@ namespace Eklipse
 
 		protected:
 			virtual const String GetCacheDirectoryPath() override;
-			virtual bool Compile(bool forceCompile = false) override;
+			virtual bool Compile(const Path& shaderPath, bool forceCompile = false) override;
 
 		private:
-			bool CompileOrGetOpenGLBinaries(bool forceCompile);
+			bool CompileOrGetOpenGLBinaries(const Path& shaderPath, bool forceCompile);
 			void CreateProgram();
 
 		private:

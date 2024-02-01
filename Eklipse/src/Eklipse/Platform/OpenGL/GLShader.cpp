@@ -37,7 +37,7 @@ namespace Eklipse
 		GLShader::GLShader(const Path& filePath, const AssetHandle handle) 
 			: m_id(0), Shader(filePath, handle)
 		{
-			m_isValid = Compile();
+			m_isValid = Compile(filePath);
 		}
 
 		uint32_t GLShader::GetID() const
@@ -70,18 +70,18 @@ namespace Eklipse
 		{
 			return "Assets/Cache/Shader/OpenGL";
 		}
-		bool GLShader::Compile(bool forceCompile)
+		bool GLShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
 			EK_PROFILE();
 			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", m_name);
 
-			auto shaderSources = Setup();
+			auto shaderSources = Setup(shaderPath);
 			bool success = true;
 
 			{
 				Timer timer;
-				success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
-				success = success && CompileOrGetOpenGLBinaries(forceCompile);
+				success = success && CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
+				success = success && CompileOrGetOpenGLBinaries(shaderPath, forceCompile);
 				if (success)
 				{
 					CreateProgram();
@@ -94,7 +94,7 @@ namespace Eklipse
 			return success;
 		}
 
-		bool GLShader::CompileOrGetOpenGLBinaries(bool forceCompile)
+		bool GLShader::CompileOrGetOpenGLBinaries(const Path& shaderPath, bool forceCompile)
 		{
 			EK_PROFILE();
 			EK_CORE_TRACE("Compiling or getting binaries for OpenGL shader '{0}'", m_name);
@@ -108,8 +108,6 @@ namespace Eklipse
 			options.SetSourceLanguage(shaderc_source_language_glsl);
 
 			Path cacheDirectory = GetCacheDirectoryPath();
-
-			auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
 
 			shaderData.clear();
 			m_openGLSourceCode.clear();

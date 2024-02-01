@@ -254,6 +254,8 @@ namespace Eklipse
         }
         void VKFramebuffer::Resize(uint32_t width, uint32_t height)
         {
+            m_imageIndex = 0;
+
             Framebuffer::Resize(width, height);
 
             // destroy

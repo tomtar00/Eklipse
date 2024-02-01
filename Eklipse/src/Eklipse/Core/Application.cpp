@@ -6,253 +6,253 @@
 
 namespace Eklipse
 {
-	ApplicationInfo::ApplicationInfo(const ApplicationInfo& info)
-		: appName(info.appName), windowWidth(info.windowWidth), windowHeight(info.windowHeight) {}
+    ApplicationInfo::ApplicationInfo(const ApplicationInfo& info)
+        : appName(info.appName), windowWidth(info.windowWidth), windowHeight(info.windowHeight) {}
 
-	// === Static Initialization ===
-	Application* Application::s_instance = nullptr;
-	Application::Application(ApplicationInfo& info) :
-		m_running(true), m_quit(false), m_minimized(false), m_appInfo(info) 
-	{
-		EK_ASSERT(s_instance == nullptr, "Application already exists!");
-		s_instance = this;
-	}
-	Application::~Application()
-	{
-		m_layerStack.Shutdown();
-		EK_PROFILE_END();
-	}
+    // === Static Initialization ===
+    Application* Application::s_instance = nullptr;
+    Application::Application(ApplicationInfo& info) :
+        m_running(true), m_quit(false), m_minimized(false), m_appInfo(info) 
+    {
+        EK_ASSERT(s_instance == nullptr, "Application already exists!");
+        s_instance = this;
+    }
+    Application::~Application()
+    {
+        m_layerStack.Shutdown();
+        EK_PROFILE_END();
+    }
 
-	// === Initialization and Shutdown ===
-	void Application::Init()
-	{
-		EK_PROFILE_BEGIN("Startup");
+    // === Initialization and Shutdown ===
+    void Application::Init()
+    {
+        EK_PROFILE_BEGIN("Startup");
 
-		m_running = true;
-		m_quit = false;
+        m_running = true;
+        m_quit = false;
 
-		int tries = 0;
-		ApiType api = Renderer::GetAPI();
-		do
-		{
-			Renderer::SetAPI((ApiType)(((int)api + tries) % API_TYPE_COUNT));
+        int tries = 0;
+        ApiType api = Renderer::GetAPI();
+        do
+        {
+            Renderer::SetAPI((ApiType)(((int)api + tries) % API_TYPE_COUNT));
 
-			if (++tries > API_TYPE_COUNT)
-			{
-				EK_CORE_CRITICAL("Could not find any supported Graphics API!");
-				exit(-1);
-			}
+            if (++tries > API_TYPE_COUNT)
+            {
+                EK_CORE_CRITICAL("Could not find any supported Graphics API!");
+                exit(-1);
+            }
 
-			WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
-			m_window.reset();
-			m_window = Window::Create(data);
-			m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
+            WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
+            m_window.reset();
+            m_window = Window::Create(data);
+            m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
-			OnInitAPI(Renderer::GetAPI());
-		} 
-		while (!Renderer::Init());
+            OnInitAPI(Renderer::GetAPI());
+        } 
+        while (!Renderer::Init());
 
-		OnAPIHasInitialized(Renderer::GetAPI());
-		Renderer::InitParameters();
+        OnAPIHasInitialized(Renderer::GetAPI());
+        Renderer::InitParameters();
 
-		EK_PROFILE_END();
-	}
-	void Application::Shutdown()
-	{
-		EK_PROFILE_BEGIN("Shutdown");
+        EK_PROFILE_END();
+    }
+    void Application::Shutdown()
+    {
+        EK_PROFILE_BEGIN("Shutdown");
 
-		Renderer::WaitDeviceIdle();
+        Renderer::WaitDeviceIdle();
 
-		OnShutdownAPI();
-		Renderer::Shutdown();
-		OnAPIHasShutdown();
-	}
+        OnShutdownAPI();
+        Renderer::Shutdown();
+        OnAPIHasShutdown();
+    }
 
-	// === Frame Management ===
-	void Application::BeginFrame(float* deltaTime)
-	{
-		m_timer.Record();
-		*deltaTime = m_timer.DeltaTime();
+    // === Frame Management ===
+    void Application::BeginFrame(float* deltaTime)
+    {
+        m_timer.Record();
+        *deltaTime = m_timer.DeltaTime();
 
-		ExecuteMainThreadQueue();
-	}
-	void Application::EndFrame(float deltaTime)
-	{
-		Input::Reset();
-		m_window->Update(deltaTime);
-		Stats::Get().Update(deltaTime);
-		EK_PROFILE_END_FRAME(deltaTime);
-	}
+        ExecuteMainThreadQueue();
+    }
+    void Application::Submit(float deltaTime)
+    {
+        Input::Reset();
+        m_window->Update(deltaTime);
+        Stats::Get().Update(deltaTime);
+        EK_PROFILE_END_FRAME(deltaTime);
+    }
 
-	// === Getters ===
-	Application& Application::Get()									{ return *s_instance; }
-	const ApplicationInfo& Application::GetInfo() const				{ return m_appInfo; }
-	const Ref<Window> Application::GetWindow() const				{ return m_window; }
-	const bool Application::IsRunning() const						{ return m_running; }
-	const bool Application::ShouldQuit() const						{ return m_quit; }
-	const bool Application::IsMinimized() const						{ return m_minimized; }
+    // === Getters ===
+    Application& Application::Get()									{ return *s_instance; }
+    const ApplicationInfo& Application::GetInfo() const				{ return m_appInfo; }
+    const Ref<Window> Application::GetWindow() const				{ return m_window; }
+    const bool Application::IsRunning() const						{ return m_running; }
+    const bool Application::ShouldQuit() const						{ return m_quit; }
+    const bool Application::IsMinimized() const						{ return m_minimized; }
 
-	// === Setters ===
-	void Application::SetAPI(ApiType api)
-	{
-		if (Renderer::GetAPI() == api)
-		{
-			EK_CORE_WARN("API already set to {0}", APITypeToString(api));
-			return;
-		}
-		EK_CORE_INFO("Setting API to {0}", APITypeToString(api));
+    // === Setters ===
+    void Application::SetAPI(ApiType api)
+    {
+        if (Renderer::GetAPI() == api)
+        {
+            EK_CORE_WARN("API already set to {0}", APITypeToString(api));
+            return;
+        }
+        EK_CORE_INFO("Setting API to {0}", APITypeToString(api));
 
-		Renderer::SetAPI(api);
+        Renderer::SetAPI(api);
 
-		m_running = false;
-		m_quit = false;
-	}
+        m_running = false;
+        m_quit = false;
+    }
 
-	// === Event Handling ===
-	void Application::OnEventReceived(Event& event)
-	{
-		EK_PROFILE();
+    // === Event Handling ===
+    void Application::OnEventReceived(Event& event)
+    {
+        EK_PROFILE();
 
-		//EK_CORE_TRACE(event.ToString());
+        //EK_CORE_TRACE(event.ToString());
 
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));
-		dispatcher.Dispatch<WindowFocusEvent>(CAPTURE_FN(OnWindowFocus));
-		dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized));
-		dispatcher.Dispatch<MouseMovedEvent>(CAPTURE_FN(OnMouseMove));
-		dispatcher.Dispatch<MouseScrolledEvent>(CAPTURE_FN(OnMouseScroll));
+        EventDispatcher dispatcher(event);
+        dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));
+        dispatcher.Dispatch<WindowFocusEvent>(CAPTURE_FN(OnWindowFocus));
+        dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized));
+        dispatcher.Dispatch<MouseMovedEvent>(CAPTURE_FN(OnMouseMove));
+        dispatcher.Dispatch<MouseScrolledEvent>(CAPTURE_FN(OnMouseScroll));
 
-		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
-		{
-			if (event.Handled)
-				break;
+        for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
+        {
+            if (event.Handled)
+                break;
 
-			(*--it)->OnEvent(event);
-		}
-	}
-	void Application::OnWindowClose(WindowCloseEvent& event)
-	{
-		Close();
-	}
-	void Application::OnWindowResized(WindowResizeEvent& event)
-	{
-		m_appInfo.windowWidth = event.GetWidth();
-		m_appInfo.windowHeight = event.GetHeight();
+            (*--it)->OnEvent(event);
+        }
+    }
+    void Application::OnWindowClose(WindowCloseEvent& event)
+    {
+        Close();
+    }
+    void Application::OnWindowResized(WindowResizeEvent& event)
+    {
+        m_appInfo.windowWidth = event.GetWidth();
+        m_appInfo.windowHeight = event.GetHeight();
 
-		if (m_appInfo.windowWidth == 0 || m_appInfo.windowHeight == 0)
-		{
-			m_minimized = true;
-			m_window->WaitEvents();
-			return;
-		}
+        if (m_appInfo.windowWidth == 0 || m_appInfo.windowHeight == 0)
+        {
+            m_minimized = true;
+            m_window->WaitEvents();
+            return;
+        }
 
-		m_minimized = false;
-		Renderer::OnWindowResize(m_appInfo.windowWidth, m_appInfo.windowHeight);
-	}
-	void Application::OnWindowFocus(WindowFocusEvent& event)
-	{
-		std::scoped_lock<std::mutex> lock(m_mainThreadWindowForcusQueueMutex);
+        m_minimized = false;
+        Renderer::OnWindowResize(m_appInfo.windowWidth, m_appInfo.windowHeight);
+    }
+    void Application::OnWindowFocus(WindowFocusEvent& event)
+    {
+        std::scoped_lock<std::mutex> lock(m_mainThreadWindowForcusQueueMutex);
 
-		for (auto& func : m_mainThreadWindowFocusQueue)
-			func();
+        for (auto& func : m_mainThreadWindowFocusQueue)
+            func();
 
-		m_mainThreadWindowFocusQueue.clear();
-	}
-	void Application::OnMouseMove(MouseMovedEvent& event)
-	{
-		Input::m_mousePosition = { event.GetX(), event.GetY() };
-	}
-	void Application::OnMouseScroll(MouseScrolledEvent& event)
-	{
-		Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
-	}
+        m_mainThreadWindowFocusQueue.clear();
+    }
+    void Application::OnMouseMove(MouseMovedEvent& event)
+    {
+        Input::m_mousePosition = { event.GetX(), event.GetY() };
+    }
+    void Application::OnMouseScroll(MouseScrolledEvent& event)
+    {
+        Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
+    }
 
-	// === Main Loop ===
-	void Application::Run()
-	{
-		EK_CORE_TRACE("========== Starting Eklipse Engine ==========");
+    // === Main Loop ===
+    void Application::Run()
+    {
+        EK_CORE_TRACE("========== Starting Eklipse Engine ==========");
 
-		Application::Init();
+        Application::Init();
 
-		float deltaTime = 0.0f;
-		while (Application::IsRunning())
-		{
-			Application::BeginFrame(&deltaTime);
+        float deltaTime = 0.0f;
+        while (Application::IsRunning())
+        {
+            Application::BeginFrame(&deltaTime);
 
-			if (!Application::IsMinimized())
-			{
-				{
-					EK_PROFILE_NAME("GUI");
+            if (!Application::IsMinimized())
+            {
+                {
+                    EK_PROFILE_NAME("GUI");
 
-					OnPreGUI(deltaTime);
-					for (auto& layer : m_layerStack)
-					{
-						layer->OnGUI(deltaTime);
-					}
-					OnPostGUI(deltaTime);
-				}
+                    OnPreGUI(deltaTime);
+                    for (auto& layer : m_layerStack)
+                    {
+                        layer->OnGUI(deltaTime);
+                    }
+                    OnPostGUI(deltaTime);
+                }
 
-				{
-					EK_PROFILE_NAME("Update");
+                {
+                    EK_PROFILE_NAME("Update");
 
-					Renderer::BeginFrame();
-					for (auto& layer : m_layerStack)
-					{
-						layer->OnUpdate(deltaTime);
-					}
-					Renderer::Submit();
-				}
-			}
+                    Renderer::BeginFrame();
+                    for (auto& layer : m_layerStack)
+                    {
+                        layer->OnUpdate(deltaTime);
+                    }
+                    Renderer::Submit();
+                }
+            }
 
-			Application::EndFrame(deltaTime);
-		}
+            Application::Submit(deltaTime);
+        }
 
-		EK_CORE_TRACE("========== Closing Eklipse Engine ==========");
+        EK_CORE_TRACE("========== Closing Eklipse Engine ==========");
 
-		Application::Shutdown();
-	}
-	void Application::Close()
-	{
-		m_running = false;
-		m_quit = true;
-	}
+        Application::Shutdown();
+    }
+    void Application::Close()
+    {
+        m_running = false;
+        m_quit = true;
+    }
 
-	// === Layer Management ===
-	void Application::PushLayer(Ref<Layer> layer)
-	{
-		m_layerStack.PushLayer(layer);
-	}
-	void Application::PushOverlay(Ref<Layer> overlay)
-	{
-		m_layerStack.PushOverlay(overlay);
-	}
-	void Application::PopLayer(Ref<Layer> layer)
-	{
-		m_layerStack.PopLayer(layer);
-	}
-	void Application::PopOverlay(Ref<Layer> overlay)
-	{
-		m_layerStack.PopOverlay(overlay);
-	}
+    // === Layer Management ===
+    void Application::PushLayer(Ref<Layer> layer)
+    {
+        m_layerStack.PushLayer(layer);
+    }
+    void Application::PushOverlay(Ref<Layer> overlay)
+    {
+        m_layerStack.PushOverlay(overlay);
+    }
+    void Application::PopLayer(Ref<Layer> layer)
+    {
+        m_layerStack.PopLayer(layer);
+    }
+    void Application::PopOverlay(Ref<Layer> overlay)
+    {
+        m_layerStack.PopOverlay(overlay);
+    }
 
-	// === Fucntion Queues ===
-	void Application::SubmitToMainThread(const std::function<void()>& function)
-	{
-		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
+    // === Fucntion Queues ===
+    void Application::SubmitToMainThread(const std::function<void()>& function)
+    {
+        std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
 
-		m_mainThreadQueue.emplace_back(function);
-	}
-	void Application::ExecuteMainThreadQueue()
-	{
-		std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
+        m_mainThreadQueue.emplace_back(function);
+    }
+    void Application::ExecuteMainThreadQueue()
+    {
+        std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
 
-		for (auto& func : m_mainThreadQueue)
-			func();
+        for (auto& func : m_mainThreadQueue)
+            func();
 
-		m_mainThreadQueue.clear();
-	}
-	void Application::SubmitToWindowFocus(const std::function<void()>& function)
-	{
-		m_mainThreadWindowFocusQueue.emplace_back(function);
-	}
+        m_mainThreadQueue.clear();
+    }
+    void Application::SubmitToWindowFocus(const std::function<void()>& function)
+    {
+        m_mainThreadWindowFocusQueue.emplace_back(function);
+    }
 }

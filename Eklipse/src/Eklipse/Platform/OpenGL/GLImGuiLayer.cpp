@@ -26,7 +26,7 @@ namespace Eklipse
             s_initialized = true;
 
             ImGui_ImplGlfw_InitForOpenGL(m_glfwWindow, true);
-            ImGui_ImplOpenGL3_Init("#version 430");
+            ImGui_ImplOpenGL3_Init("#version 460");
         }
         void GLImGuiLayer::Shutdown()
         {

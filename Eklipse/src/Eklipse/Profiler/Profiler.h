@@ -54,7 +54,7 @@ namespace Eklipse
 
 		static void Begin(char* name);
 		static void End();
-		static void EndFrame(float deltaTime);
+		static void Submit(float deltaTime);
 
 		static bool IsProfilingCurrentFrame();
 		static Vec<ProfilerFrameData>& GetData();
@@ -87,7 +87,7 @@ namespace Eklipse
 	#define EK_PROFILE_BEGIN(name)	Eklipse::Profiler::Begin(name)
 	#define EK_PROFILE_END()		Eklipse::Profiler::End()
 
-	#define EK_PROFILE_END_FRAME(dt)	Eklipse::Profiler::EndFrame(dt)
+	#define EK_PROFILE_END_FRAME(dt)	Eklipse::Profiler::Submit(dt)
 #else
 	#define EK_PROFILE_NAME(name)
 	#define EK_PROFILE()	

@@ -35,11 +35,15 @@ namespace Eklipse
 
 		// Render stages
 		static void BeginFrame();
+		static void BeginDefaultRenderPass();
+		static void EndDefaultRenderPass();
 		static void BeginRenderPass(Framebuffer* framebuffer);
-		static void RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform);
-		static void RenderScene(Scene* scene);
 		static void EndRenderPass(Framebuffer* framebuffer);
 		static void Submit();
+
+		// Render calls
+		static void RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform);
+		static void RenderScene(Scene* scene);
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);

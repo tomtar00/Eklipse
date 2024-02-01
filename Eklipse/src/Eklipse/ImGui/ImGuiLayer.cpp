@@ -11,26 +11,25 @@
 
 namespace Eklipse
 {
-    static ImFont* s_font = nullptr;
-
     ImGuiLayer::ImGuiLayer(const GuiLayerConfigInfo& configInfo)
         : m_config(configInfo), m_first_time(true) {}
 
     void ImGuiLayer::OnAttach()
     {
-        EK_ASSERT(CTX, "Set ImGui context (s_ctx) before pushing ImGui layer.")
+        IMGUI_CHECKVERSION();
+        EK_ASSERT(CTX != nullptr, "ImGui context is null. Set ImGuiLayer::CTX to ImGui::CreateContext().");
         ImGui::SetCurrentContext(CTX);
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (m_config.dockingEnabled)
         {
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
 
-        if (s_font == nullptr) s_font = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", 16);
-        EK_ASSERT(s_font != nullptr, "Failed to load font");
+        float fontSize = 16.0f;
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", fontSize);
 
-        IMGUI_CHECKVERSION();
+        ImGui::StyleColorsDark();
 
         EK_CORE_TRACE("{0} imgui layer attached", typeid(*this).name());
     }
@@ -47,11 +46,7 @@ namespace Eklipse
     }
     void ImGuiLayer::Shutdown()
     {
-        ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->ClearFonts();
-        s_font = nullptr;
-
-        ImGui::DestroyContext();
+        ImGui::DestroyContext(CTX);
 
         EK_CORE_TRACE("{0} imgui layer shutdown", typeid(*this).name());
     }
@@ -60,11 +55,9 @@ namespace Eklipse
         NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
-        ImGui::PushFont(s_font);
     }
     void ImGuiLayer::End()
     {
-        ImGui::PopFont();
         ImGui::Render();
     }
     void ImGuiLayer::DrawDockspace()
@@ -90,7 +83,7 @@ namespace Eklipse
         ImGui::PopStyleVar();
         ImGui::PopStyleVar(2);
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
             ImGuiID dockspace_id = ImGui::GetID("DockSpace");

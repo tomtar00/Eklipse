@@ -40,7 +40,7 @@ namespace Eklipse
 
 		VKShader::VKShader(const Path& filePath, const AssetHandle handle) : Shader(filePath, handle)
 		{		
-			m_isValid = Compile();
+			m_isValid = Compile(filePath);
 		}
 
 		VkDescriptorSetLayout VKShader::GetDescriptorSetLayout() const
@@ -76,15 +76,15 @@ namespace Eklipse
 		{
 			return "Assets/Cache/Shader/Vulkan";
 		}
-		bool VKShader::Compile(bool forceCompile)
+		bool VKShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
 			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", m_name);
 
-			auto shaderSources = Setup();
+			auto shaderSources = Setup(shaderPath);
 			bool success = true;
 
 			Timer timer;
-			success = success && CompileOrGetVulkanBinaries(shaderSources, forceCompile);
+			success = success && CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
 			if (success)
 			{
 				// Create modules

@@ -2,6 +2,7 @@
 #include "ImGuiExtensions.h"
 #include <Eklipse/Utils/File.h>
 #include <Eklipse/Assets/AssetManager.h>
+#include <EditorLayer.h>
 
 bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType assetType, Eklipse::AssetHandle& assetHandle)
 {
@@ -20,13 +21,18 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
-    ImGui::PushItemWidth(-FLT_MIN);
+    ImGui::PushItemWidth(-30);
+    const char* buttonLabel = isCurrentlyValid ? 
+        Eklipse::AssetManager::GetMetadata(assetHandle).FilePath.filename().string().c_str() : 
+        ("Drop " + Eklipse::Asset::TypeToString(assetType) + " asset here").c_str();
+    ImGui::Button(buttonLabel);
     if (ImGui::BeginDragDropTarget()) 
     {
-        const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(label);
+        const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM");
         if (payload)
         {
             Eklipse::AssetHandle* payloadHandlePtr = reinterpret_cast<Eklipse::AssetHandle*>(payload->Data);
+            EK_CORE_TRACE("Accepted asset handle: {0}", *payloadHandlePtr);
             if (Eklipse::AssetManager::IsAssetHandleValidAndOfType(*payloadHandlePtr, assetType))
             {
                 assetHandle = *payloadHandlePtr;
@@ -41,6 +47,18 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
     {
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("..."))
+    {
+        Eklipse::Vec<Eklipse::String> requiredExtensions = Eklipse::EditorAssetLibrary::GetAssetFileExtensions(assetType);
+        auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions);
+        if (result.type == Eklipse::FileDialogResultType::SUCCESS)
+        {
+            assetHandle = Eklipse::EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(result.path);
+            active = true;
+        }
     }
 
     ImGui::PopID();

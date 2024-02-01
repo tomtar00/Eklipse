@@ -125,18 +125,24 @@ namespace Eklipse
         }
         void VkImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
         {
+            if (m_imageDescrSets.size() <= 0) // TODO: What if we want to draw multiple viewports?
+            {
+                SetupDescriptorSets(framebuffer);
+            }
+
             if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
             {
                 ResizeViewport(framebuffer, width, height);
             }
 
             VKFramebuffer* vkFramebuffer = static_cast<VKFramebuffer*>(framebuffer);
-            *vkFramebuffer->GetImageIndexPtr() = (*vkFramebuffer->GetImageIndexPtr() + 1) % g_swapChainImageCount;
-            ImGui::Image(m_imageDescrSets[*vkFramebuffer->GetImageIndexPtr()], ImVec2{ width, height });
+            uint32_t* vkImageIndex = vkFramebuffer->GetImageIndexPtr();
+            *vkImageIndex = (*vkImageIndex + 1) % g_swapChainImageCount;
+            ImGui::Image(m_imageDescrSets[*vkImageIndex], ImVec2{ width, height });
         }
         void VkImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
         {
-            if (m_imageDescrSets.size() <= 0)
+            if (m_imageDescrSets.size() <= 0) // TODO: What if we want to draw multiple viewports?
             {
                 SetupDescriptorSets(framebuffer);
             }

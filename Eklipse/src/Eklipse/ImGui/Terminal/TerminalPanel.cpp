@@ -1,6 +1,7 @@
 #include "precompiled.h"
 #include "TerminalPanel.h"
 #include <Eklipse/Core/Application.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 namespace Eklipse
 {

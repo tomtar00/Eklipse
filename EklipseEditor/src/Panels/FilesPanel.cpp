@@ -105,9 +105,8 @@ namespace Eklipse
 
             if (ImGui::BeginDragDropSource())
             {
-                Path relativePath(path);
-                const wchar_t* itemPath = relativePath.c_str();
-                ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+                Path absoluteAssetPath = m_currentPath / path;
+                ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &m_pathHandleMap.at(absoluteAssetPath), sizeof(AssetHandle*), ImGuiCond_Once);
                 ImGui::EndDragDropSource();
             }
 
@@ -267,8 +266,7 @@ namespace Eklipse
         // serialization
         Ref<Material> material = Material::Create(materialPath, shaderHandle);
 
-        // deserialization
-        EditorLayer::Get().GetAssetLibrary()->ImportAsset(materialPath);
+        // the editor asset library will import the shader automatically
 
         return true;
     }
@@ -294,7 +292,8 @@ namespace Eklipse
             EK_CORE_ERROR("Failed to create shader from template '{}' to path '{}'", templatePath.string(), shaderPath.string());
             return false;
         }
-        EditorLayer::Get().GetAssetLibrary()->ImportAsset(shaderPath);
+
+        // the editor asset library will import the shader automatically
 
         return true;
     }

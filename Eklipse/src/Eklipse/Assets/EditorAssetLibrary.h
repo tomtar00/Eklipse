@@ -33,8 +33,8 @@ namespace Eklipse
         void OnFileWatchEvent(const String& path, filewatch::Event change_type);
 
         static AssetType GetAssetTypeFromFileExtension(const String& extension);
+        static Vec<String> GetAssetFileExtensions(AssetType type);
 
-    private:
         AssetHandle GetHandleFromAssetPath(const Path& path) const;
 
     private:

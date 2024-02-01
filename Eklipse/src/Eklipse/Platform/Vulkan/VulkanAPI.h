@@ -18,7 +18,12 @@ namespace Eklipse
 			void WaitDeviceIdle() override;
 
 			void BeginFrame() override;
-			void EndFrame() override;
+			void Submit() override;
+
+			virtual void BeginDefaultRenderPass() override;
+			virtual void EndDefaultRenderPass() override;
+
+			virtual void OnWindowResize(uint32_t width, uint32_t height) override;
 
 			void DrawIndexed(Ref<VertexArray> vertexArray) override;
 

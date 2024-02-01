@@ -155,9 +155,9 @@ namespace Eklipse
 
         Renderer::EndRenderPass(m_viewportFramebuffer.get());
 
-        Renderer::BeginRenderPass(g_defaultFramebuffer);
+        Renderer::BeginDefaultRenderPass();
         GUI->Render();
-        Renderer::EndRenderPass(g_defaultFramebuffer);
+        Renderer::EndDefaultRenderPass();
         // ===================================
     }
     void EditorLayer::OnGUI(float deltaTime)
@@ -311,14 +311,12 @@ namespace Eklipse
     void EditorLayer::OnShutdownAPI()
     {
         Application::Get().PopOverlay(GUI);
+        GUI->Shutdown();
+        GUI.reset();
+
         ClearSelection();
 
-        GUI->Shutdown();
-
         m_filesPanel.UnloadResources();
-
-        //m_viewportFramebuffer->Dispose();
-        //m_viewportFramebuffer.reset();
     }
     
     // === Project ===

@@ -18,6 +18,7 @@ namespace Eklipse
 		void OnAPIHasInitialized(ApiType api) override
 		{
 			ImGuiLayer::CTX = ImGui::CreateContext();
+			ImGui::SetCurrentContext(ImGuiLayer::CTX);
 			editorLayer->OnAPIHasInitialized(api);
 		}
 		void OnShutdownAPI() override

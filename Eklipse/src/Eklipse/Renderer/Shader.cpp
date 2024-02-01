@@ -135,27 +135,26 @@ namespace Eklipse
         return nullptr;
     }
 
-    StageSourceMap Shader::Setup()
+    StageSourceMap Shader::Setup(const Path& shaderPath)
     {
         EK_PROFILE();
         EK_CORE_TRACE("Setting up shader '{0}'", m_name);
 
         CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
 
-        auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
         String source = FileUtilities::ReadFileFromPath(shaderPath);
         m_name = shaderPath.stem().string();
 
         EK_CORE_DBG("Set up shader '{0}'", m_name);
         return PreProcess(source);
     }
-    bool Shader::Recompile()
+    bool Shader::Recompile(const Path& shaderPath)
     {
         EK_PROFILE();
         EK_CORE_TRACE("Recompiling shader '{0}'", m_name);
 
         Dispose();
-        m_isValid = Compile(true);
+        m_isValid = Compile(shaderPath, true);
 
         // reload all materials that use this shader
         for (auto&& [handle, asset] : AssetManager::GetLoadedAssets())
@@ -306,7 +305,7 @@ namespace Eklipse
             m_reflections[stage] = reflection;
         }
     }
-    bool Shader::CompileOrGetVulkanBinaries(const StageSourceMap& shaderSources, bool forceCompile)
+    bool Shader::CompileOrGetVulkanBinaries(const Path& shaderPath, const StageSourceMap& shaderSources, bool forceCompile)
     {
         EK_PROFILE();
         EK_CORE_TRACE("Compiling vulkan binaries for shader '{0}'", m_name);
@@ -322,8 +321,6 @@ namespace Eklipse
 
         Path cacheDirectory = "Assets/Cache/Shader/Vulkan";
         CreateCacheDirectoryIfNeeded(cacheDirectory.string());
-
-        auto& shaderPath = AssetManager::GetMetadata(Handle).FilePath;
 
         auto& shaderData = m_vulkanSPIRV;
         shaderData.clear();

@@ -9,6 +9,8 @@
 #include <Panels/ProfilerPanel.h>
 #include <Panels/FilesPanel.h>
 
+#include <ImGui/ImGuiExtensions.h>
+
 namespace Eklipse
 {
 	struct EditorSettings

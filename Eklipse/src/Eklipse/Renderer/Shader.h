@@ -93,8 +93,8 @@ namespace Eklipse
 		Shader(const Path& filePath, const AssetHandle handle = AssetHandle());
 		static Ref<Shader> Create(const Path& filePath, const AssetHandle handle = AssetHandle());
 
-		StageSourceMap Shader::Setup();
-		bool Recompile();
+		StageSourceMap Shader::Setup(const Path& shaderPath);
+		bool Recompile(const Path& shaderPath);
 
 		const String& GetName() const;
 		const StageReflectionMap& GetReflections() const;
@@ -111,10 +111,10 @@ namespace Eklipse
 
 	protected:
 		void Reflect(const StageSpirvMap& shaderData, const String& shaderName);
-		bool CompileOrGetVulkanBinaries(const StageSourceMap& shaderSources, bool forceCompile);
+		bool CompileOrGetVulkanBinaries(const Path& shaderPath, const StageSourceMap& shaderSources, bool forceCompile);
 		StageSourceMap PreProcess(const String& source) const;
 
-		virtual bool Compile(bool forceCompile = false) = 0;
+		virtual bool Compile(const Path& shaderPath, bool forceCompile = false) = 0;
 		virtual const String GetCacheDirectoryPath() = 0;
 
 	protected:

@@ -63,9 +63,7 @@ namespace Eklipse
 
 		// ID
 		{
-			//static int id = entity.GetUUID();
-			//ImGui::InputInt("ID", &id, 1, 100, ImGuiInputTextFlags_ReadOnly);
-			ImGui::Text("ID: %d", entity.GetUUID());
+			ImGui::Text("ID: %llu", entity.GetUUID());
 		}
 
 		// Name
