@@ -109,6 +109,10 @@ namespace Eklipse
 		}
         return IsPathValid(path) && hasExtension;
     }
+    bool FileUtilities::ArePathsEqual(const Path& path1, const Path& path2)
+    {
+        return fs::equivalent(path1, path2);
+    }
 
     String FileUtilities::ReadFileFromPath(const Path& filePath)
     {
@@ -142,46 +146,17 @@ namespace Eklipse
         }
     }
 
-    FileDialogResult FileUtilities::OpenFileDialog(const Vec<String>& extensions)
+    FileDialogResult FileUtilities::OpenFileDialog(const Vec<String>& extensions, const Path& path)
     {
         String exts = "";
         for (const auto& extension : extensions)
         {
-			exts += extension[0] == '.' ? extension.substr(1) : extension;
-			exts += ";";
-		}
+            exts += extension[0] == '.' ? extension.substr(1) : extension;
+            exts += ";";
+        }
 
         nfdchar_t* outPath = nullptr;
-        nfdresult_t result = NFD_OpenDialog(exts.empty() ? nullptr : exts.c_str(), nullptr, &outPath);
-
-        FileDialogResult res{};
-        if (result == NFD_CANCEL)
-        {
-			res.path = "";
-            res.type = FileDialogResultType::CANCEL;
-		}
-        else if (result == NFD_OKAY)
-        {
-			res.path = String(outPath);
-			res.type = FileDialogResultType::SUCCESS;
-		}
-        else
-        {
-			res.path = "";
-            res.type = FileDialogResultType::FAIL;
-            EK_CORE_ERROR("Failed to open file! {0}", NFD_GetError());
-		}
-        free(outPath);
-        return res;
-    }
-    FileDialogResult FileUtilities::OpenFileDialog()
-    {
-        return OpenFileDialog({});
-    }
-    FileDialogResult FileUtilities::OpenDirDialog()
-    {
-        nfdchar_t* outPath = nullptr;
-        nfdresult_t result = NFD_PickFolder(nullptr, &outPath);
+        nfdresult_t result = NFD_OpenDialog(exts.empty() ? nullptr : exts.c_str(), path.string().c_str(), &outPath);
 
         FileDialogResult res{};
         if (result == NFD_CANCEL)
@@ -191,16 +166,58 @@ namespace Eklipse
         }
         else if (result == NFD_OKAY)
         {
-			res.path = String(outPath);
-			res.type = FileDialogResultType::SUCCESS;
-		}
+            res.path = String(outPath);
+            res.type = FileDialogResultType::SUCCESS;
+        }
         else
         {
-			res.path = "";
-			res.type = FileDialogResultType::FAIL;
-            EK_CORE_ERROR("Failed to open directory! {0}", NFD_GetError());
-		}
+            res.path = "";
+            res.type = FileDialogResultType::FAIL;
+            EK_CORE_ERROR("Failed to open file! {0}", NFD_GetError());
+        }
         free(outPath);
         return res;
+    }
+    FileDialogResult FileUtilities::OpenFileDialog(const Vec<String>& extensions)
+    {
+        return OpenFileDialog(extensions, {});
+    }
+    FileDialogResult FileUtilities::OpenFileDialog(const Path& path)
+    {
+        return OpenFileDialog({}, path);
+    }
+    FileDialogResult FileUtilities::OpenFileDialog()
+    {
+        return OpenFileDialog({}, {});
+    }
+
+    FileDialogResult FileUtilities::OpenDirDialog(const Path& path)
+    {
+        nfdchar_t* outPath = nullptr;
+        nfdresult_t result = NFD_PickFolder(path.string().c_str(), &outPath);
+
+        FileDialogResult res{};
+        if (result == NFD_CANCEL)
+        {
+            res.path = "";
+            res.type = FileDialogResultType::CANCEL;
+        }
+        else if (result == NFD_OKAY)
+        {
+            res.path = String(outPath);
+            res.type = FileDialogResultType::SUCCESS;
+        }
+        else
+        {
+            res.path = "";
+            res.type = FileDialogResultType::FAIL;
+            EK_CORE_ERROR("Failed to open directory! {0}", NFD_GetError());
+        }
+        free(outPath);
+        return res;
+    }
+    FileDialogResult FileUtilities::OpenDirDialog()
+    {
+        return OpenDirDialog({});
     }
 }

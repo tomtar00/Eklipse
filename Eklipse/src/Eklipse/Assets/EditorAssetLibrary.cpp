@@ -59,10 +59,35 @@ namespace Eklipse
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
+    void EditorAssetLibrary::UnloadAssets()
+    {
+        for (auto&& [handle, asset] : m_loadedAssets)
+        {
+            asset->Dispose();
+        }
+    }
+    void EditorAssetLibrary::LoadAssets()
+    {
+        Vec<AssetHandle> handlesToLoad;
+        for (auto&& [handle, asset] : m_loadedAssets)
+        {
+            handlesToLoad.push_back(handle);
+        }
+        m_loadedAssets.clear();
+
+        for (auto& handle : handlesToLoad)
+        {
+            GetAsset(handle);
+        }
+    }
     
     AssetRegistry& EditorAssetLibrary::GetAssetRegistry()
     {
         return m_assetRegistry;
+    }
+    Path& EditorAssetLibrary::GetAssetDirectory()
+    {
+       return m_assetDirectory;
     }
     AssetHandle EditorAssetLibrary::ImportAsset(const Path& filepath)
     {
@@ -155,12 +180,17 @@ namespace Eklipse
         case filewatch::Event::removed:
             EK_CORE_TRACE("Asset removed: {0}", path);
             {
-                AssetHandle handle = GetHandleFromAssetPath(path);
+                AssetHandle handle = GetHandleFromAssetPath(absolutePath);
                 if (IsAssetHandleValid(handle))
                 {
+                    EK_CORE_TRACE("Removing asset with handle: {0}", handle);
                     m_assetRegistry.erase(handle);
                     m_loadedAssets.erase(handle);
                     SerializeAssetRegistry();
+                }
+                else 
+                {
+                    EK_CORE_TRACE("Asset at path '{0}' with handle '{1}' is not in the asset registry!", absolutePath.string(), handle);
                 }
             }
             break;
@@ -172,20 +202,20 @@ namespace Eklipse
 
                 if (extension == EK_SHADER_EXTENSION && !m_shaderReloadPending)
                 {
-                    AssetHandle shaderHandle = GetHandleFromAssetPath(path);
+                    AssetHandle shaderHandle = GetHandleFromAssetPath(absolutePath);
                     if (IsAssetHandleValid(shaderHandle))
                     {
                         m_shaderReloadPending = true;
-                        Application::Get().SubmitToMainThread([&, pathString]()
+                        Application::Get().SubmitToMainThread([&, shaderHandle, absolutePath]()
                         {
                             Renderer::WaitDeviceIdle();
 
                             auto& shaderRef = AssetManager::GetAsset<Shader>(shaderHandle);
 
-                            EK_CORE_DBG("Recompiling shader from path '{0}'", pathString);
+                            EK_CORE_DBG("Recompiling shader '{0}'", shaderHandle);
                             if (!shaderRef->Recompile(absolutePath))
                             {
-                                EK_CORE_ERROR("Failed to recompile shader at path '{0}'", pathString);
+                                EK_CORE_ERROR("Failed to recompile shader '{0}'", shaderHandle);
                             }
 
                             m_shaderReloadPending = false;
@@ -233,7 +263,7 @@ namespace Eklipse
     {
         for (auto&& [handle, metadata] : m_assetRegistry)
         {
-            if (metadata.FilePath == path)
+            if (FileUtilities::ArePathsEqual(metadata.FilePath, path))
                 return handle;
         }
         return 0;

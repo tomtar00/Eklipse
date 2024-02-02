@@ -21,27 +21,26 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
-    ImGui::PushItemWidth(-30);
-    const char* buttonLabel = isCurrentlyValid ? 
+    Eklipse::String buttonLabel = isCurrentlyValid ? 
         Eklipse::AssetManager::GetMetadata(assetHandle).FilePath.filename().string().c_str() : 
         ("Drop " + Eklipse::Asset::TypeToString(assetType) + " asset here").c_str();
-    ImGui::Button(buttonLabel);
+
+    ImGui::Button(buttonLabel.c_str(), {-30, 0});
     if (ImGui::BeginDragDropTarget()) 
     {
         const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM");
         if (payload)
         {
             Eklipse::AssetHandle* payloadHandlePtr = reinterpret_cast<Eklipse::AssetHandle*>(payload->Data);
-            EK_CORE_TRACE("Accepted asset handle: {0}", *payloadHandlePtr);
             if (Eklipse::AssetManager::IsAssetHandleValidAndOfType(*payloadHandlePtr, assetType))
             {
+                EK_CORE_TRACE("Accepted asset handle: {0}", *payloadHandlePtr);
                 assetHandle = *payloadHandlePtr;
                 active = true;
             }
         }
         ImGui::EndDragDropTarget();
     }
-    ImGui::PopItemWidth();
 
     if (!isCurrentlyValid)
     {
@@ -52,11 +51,12 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
     ImGui::SameLine();
     if (ImGui::Button("..."))
     {
+        auto& assetLibrary = Eklipse::EditorLayer::Get().GetAssetLibrary();
         Eklipse::Vec<Eklipse::String> requiredExtensions = Eklipse::EditorAssetLibrary::GetAssetFileExtensions(assetType);
-        auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions);
+        auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions, assetLibrary->GetAssetDirectory());
         if (result.type == Eklipse::FileDialogResultType::SUCCESS)
         {
-            assetHandle = Eklipse::EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(result.path);
+            assetHandle = assetLibrary->GetHandleFromAssetPath(result.path);
             active = true;
         }
     }
@@ -65,7 +65,7 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
     return active;
 }
 
-bool ImGui::InputFilePath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Vec<Eklipse::String>& requiredExtensions)
+IMGUI_API bool ImGui::InputFilePath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Vec<Eklipse::String>& requiredExtensions, const Eklipse::Path& defaultPath)
 {
     ImGui::PushID(id);
     if (label)
@@ -104,7 +104,7 @@ bool ImGui::InputFilePath(const void* id, const char* label, Eklipse::Path& path
     ImGui::SameLine();
     if (ImGui::Button("..."))
     {
-        auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions);
+        auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions, defaultPath);
         if (result.type == Eklipse::FileDialogResultType::SUCCESS)
         {
             path = result.path;
@@ -115,8 +115,12 @@ bool ImGui::InputFilePath(const void* id, const char* label, Eklipse::Path& path
     ImGui::PopID();
     return active;
 }
+bool ImGui::InputFilePath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Vec<Eklipse::String>& requiredExtensions)
+{
+    return InputFilePath(id, label, path, requiredExtensions, {});
+}
 
-bool ImGui::InputDirPath(const void* id, const char* label, Eklipse::Path& path)
+bool ImGui::InputDirPath(const void* id, const char* label, Eklipse::Path& path, const Eklipse::Path& defaultPath)
 {
     ImGui::PushID(id);
     if (label)
@@ -154,11 +158,15 @@ bool ImGui::InputDirPath(const void* id, const char* label, Eklipse::Path& path)
     ImGui::SameLine();
     if (ImGui::Button("..."))
     {
-        auto& result = Eklipse::FileUtilities::OpenDirDialog();
+        auto& result = Eklipse::FileUtilities::OpenDirDialog(defaultPath);
         if (result.type == Eklipse::FileDialogResultType::SUCCESS)
             path = result.path;
     }
 
     ImGui::PopID();
     return active;
+}
+bool ImGui::InputDirPath(const void* id, const char* label, Eklipse::Path& path)
+{
+    return InputDirPath(id, label, path, {});
 }

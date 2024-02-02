@@ -21,9 +21,10 @@ namespace Eklipse
 			ImGui::SetCurrentContext(ImGuiLayer::CTX);
 			editorLayer->OnAPIHasInitialized(api);
 		}
-		void OnShutdownAPI() override
+		void OnShutdownAPI(bool quit) override
 		{
-			editorLayer->OnShutdownAPI();
+			editorLayer->OnShutdownAPI(quit);
+			ImGui::SetCurrentContext(ImGuiLayer::CTX = nullptr);
 		}
 
 		void OnPreGUI(float deltaTime) override

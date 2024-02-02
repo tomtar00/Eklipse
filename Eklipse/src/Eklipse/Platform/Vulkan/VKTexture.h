@@ -30,7 +30,7 @@ namespace Eklipse
 
             virtual void Bind() const override;
             virtual void Unbind() const override;
-            virtual void Dispose() override;
+            virtual void Dispose() const override;
 
             inline VkImage GetImage() const { return m_image; }
             inline VkImageView GetImageView() const { return m_imageView; }

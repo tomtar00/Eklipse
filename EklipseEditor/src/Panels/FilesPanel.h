@@ -26,6 +26,6 @@ namespace Eklipse
         Ref<GuiIcon> m_folderIcon;
         Ref<GuiIcon> m_fileIcon;
 
-        std::map<Path, AssetHandle> m_pathHandleMap;
+        //std::map<Path, AssetHandle> m_pathHandleMap;
     };
 }

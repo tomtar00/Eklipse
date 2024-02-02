@@ -299,8 +299,7 @@ namespace Eklipse
 
         out << YAML::EndMap;
 
-        auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
-        std::ofstream fout(materialPath);
+        std::ofstream fout(path);
         fout << out.c_str();
 
         EK_CORE_DBG("Serialized material '{0}' to '{1}'", m_name, path.string());
@@ -314,8 +313,7 @@ namespace Eklipse
         YAML::Node yaml;
         try
         {
-            auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
-            yaml = YAML::LoadFile(materialPath.string());
+            yaml = YAML::LoadFile(path.string());
         }
         catch (std::runtime_error e)
         {

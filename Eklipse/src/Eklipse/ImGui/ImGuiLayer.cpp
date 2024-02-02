@@ -47,6 +47,7 @@ namespace Eklipse
     void ImGuiLayer::Shutdown()
     {
         ImGui::DestroyContext(CTX);
+        ImGui::SetCurrentContext(CTX = nullptr);
 
         EK_CORE_TRACE("{0} imgui layer shutdown", typeid(*this).name());
     }

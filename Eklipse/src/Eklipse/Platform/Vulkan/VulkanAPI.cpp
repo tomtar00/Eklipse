@@ -374,7 +374,7 @@ namespace Eklipse
             framebufferInfo.width = Application::Get().GetInfo().windowWidth;
             framebufferInfo.height = Application::Get().GetInfo().windowHeight;
             framebufferInfo.numSamples = 1;
-            framebufferInfo.colorAttachmentInfos = { { ImageFormat::RGBA8 } };
+            framebufferInfo.colorAttachmentInfos = { { ImageFormat::RGBA32F } };
             framebufferInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
 
             m_defaultFramebuffer = CreateRef<VKFramebuffer>(framebufferInfo);

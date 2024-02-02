@@ -63,7 +63,7 @@ namespace Eklipse
 
         Renderer::WaitDeviceIdle();
 
-        OnShutdownAPI();
+        OnShutdownAPI(m_quit);
         Renderer::Shutdown();
         OnAPIHasShutdown();
     }

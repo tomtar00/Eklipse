@@ -251,7 +251,7 @@ namespace Eklipse
                 {
                     EK_CORE_ERROR("Failed to initialize script '{0}'", scriptComponent.scriptName);
                 }
-                scriptComponent.SetScript(it->first, it->second, Entity(entityID, this));
+                else scriptComponent.SetScript(it->first, it->second, Entity(entityID, this));
             }
         });
 
@@ -639,5 +639,9 @@ namespace Eklipse
         EK_CORE_TRACE("Deserialized script properties of entity {0}", entity.GetUUID());
 
         return true;
+    }
+
+    void Scene::Dispose() const
+    {
     }
 }

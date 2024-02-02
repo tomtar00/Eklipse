@@ -307,8 +307,16 @@ namespace Eklipse
         GUI->Init();
 
         m_filesPanel.LoadResources();
+        if (m_editorAssetLibrary)
+        {
+            m_editorAssetLibrary->LoadAssets();
+        }
+        if (m_editorScene)
+        {
+            m_editorScene->ApplyAllComponents();
+        }
     }
-    void EditorLayer::OnShutdownAPI()
+    void EditorLayer::OnShutdownAPI(bool quit)
     {
         Application::Get().PopOverlay(GUI);
         GUI->Shutdown();
@@ -317,6 +325,7 @@ namespace Eklipse
         ClearSelection();
 
         m_filesPanel.UnloadResources();
+        m_editorAssetLibrary->UnloadAssets();
     }
     
     // === Project ===
@@ -377,7 +386,7 @@ namespace Eklipse
     }
     void EditorLayer::OpenProject()
     {
-        auto& result = FileUtilities::OpenFileDialog({ EK_PROJECT_EXTENSION });
+        auto& result = FileUtilities::OpenFileDialog(Vec<String>{ EK_PROJECT_EXTENSION });
         if (result.type == FileDialogResultType::SUCCESS)
         {
             EK_INFO("Opening project at path '{}'", result.path.string());
@@ -545,7 +554,11 @@ namespace Eklipse
     // === Project Events ===
     void EditorLayer::OnProjectUnload()
     {
-        m_editorAssetLibrary.reset();
+        if (m_editorAssetLibrary)
+        {
+            m_editorAssetLibrary->UnloadAssets();
+            m_editorAssetLibrary.reset();
+        }
     }
     void EditorLayer::OnProjectLoaded()
     {

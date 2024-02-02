@@ -14,10 +14,10 @@ namespace Eklipse
 		Vec<tinyobj::material_t> materials;
 		String warn, err;
 
-		const char* meshPath = filePath.string().c_str();
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath))
+		String meshPath = filePath.string();
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.c_str()))
 		{
-			EK_CORE_ERROR("Failed to load model at location: {0}. {1}", meshPath, warn + err);
+			EK_CORE_ERROR("Failed to load model at location: {0}. {1}", meshPath.c_str(), warn + err);
 			return nullptr;
 		}
 
@@ -37,7 +37,7 @@ namespace Eklipse
 				vertices.push_back(attrib.colors[3 * index.vertex_index + 2]);
 
 				vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-				vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 1]);
+				vertices.push_back(1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
 
 				indices.push_back(indices.size());
 			}
@@ -90,6 +90,13 @@ namespace Eklipse
 	Ref<Mesh> Mesh::Create(const MeshData& data)
 	{
 		return CreateRef<Mesh>(data);
+	}
+
+	void Mesh::Dispose() const
+	{
+		EK_CORE_TRACE("Disposing mesh with handle: {0}", Handle);
+	    m_vertexArray->Dispose();
+		EK_CORE_DBG("Mesh disposed with handle: {0}", Handle);
 	}
 
 	const Ref<VertexArray>& Mesh::GetVertexArray() const

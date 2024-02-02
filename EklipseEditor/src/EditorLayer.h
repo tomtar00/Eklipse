@@ -46,7 +46,7 @@ namespace Eklipse
 
 		// === API Events ===
 		void OnAPIHasInitialized(ApiType api);
-		void OnShutdownAPI();
+		void OnShutdownAPI(bool quit);
 
 		// === Project ===
 		bool NewProject(const Path& path, const String& name);

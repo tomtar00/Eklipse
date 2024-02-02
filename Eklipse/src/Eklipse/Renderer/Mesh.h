@@ -20,6 +20,8 @@ namespace Eklipse
 		static Ref<Mesh> Create(const Path& filePath, const AssetHandle handle = AssetHandle());
 		static Ref<Mesh> Create(const MeshData& data);
 
+		virtual void Dispose() const override;
+
 		const Ref<VertexArray>& GetVertexArray() const;
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }

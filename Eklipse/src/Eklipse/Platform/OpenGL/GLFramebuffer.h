@@ -16,6 +16,7 @@ namespace Eklipse
 				case ImageFormat::RGB8:				return GL_RGB;
 				case ImageFormat::RGBA8:			return GL_RGBA;
 				case ImageFormat::BGRA8:			return GL_BGRA;
+				case ImageFormat::RGBA32F:			return GL_RGBA32F;
 				case ImageFormat::D24S8:			return GL_DEPTH24_STENCIL8;
 			}
 

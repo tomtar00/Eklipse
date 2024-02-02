@@ -36,7 +36,7 @@ namespace Eklipse
 			EK_ASSERT(usageFlag != 0, "Wrong image usage");
 			return (VkImageUsageFlagBits)usageFlag;
 		}
-		VkImageLayout ConvertToVKLayout(Eklipse::ImageLayout layout)
+		VkImageLayout ConvertToVKLayout(ImageLayout layout)
 		{
 			switch (layout)
 			{
@@ -47,6 +47,21 @@ namespace Eklipse
 
 			EK_ASSERT(false, "Wrong image layout");
 			return VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+		ImageFormat ConvertFromVKFormat(VkFormat format)
+		{
+			switch (format)
+			{
+                case VK_FORMAT_R8_SRGB:				return ImageFormat::R8;
+                case VK_FORMAT_R8G8B8_SRGB:			return ImageFormat::RGB8;
+                case VK_FORMAT_R8G8B8A8_SRGB:		return ImageFormat::RGBA8;
+                case VK_FORMAT_B8G8R8A8_SRGB:		return ImageFormat::BGRA8;
+                case VK_FORMAT_R32G32B32A32_SFLOAT:	return ImageFormat::RGBA32F;
+                case VK_FORMAT_D24_UNORM_S8_UINT:	return ImageFormat::D24S8;
+            }
+
+			EK_ASSERT(false, "Wrong image format");
+			return ImageFormat::FORMAT_UNDEFINED;
 		}
 		VkFormat ConvertToVKFormat(ImageFormat format)
 		{

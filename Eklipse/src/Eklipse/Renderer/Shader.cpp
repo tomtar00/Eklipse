@@ -156,22 +156,25 @@ namespace Eklipse
         Dispose();
         m_isValid = Compile(shaderPath, true);
 
-        // reload all materials that use this shader
-        for (auto&& [handle, asset] : AssetManager::GetLoadedAssets())
+        if (m_isValid)
         {
-            if (asset->GetType() != AssetType::Material)
-                continue;
-
-            Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-            if (material->GetShader().get() == this)
+            // reload all materials that use this shader
+            for (auto&& [handle, asset] : AssetManager::GetLoadedAssets())
             {
-                EK_CORE_TRACE("Reloading material {0}, because shader {1} has been recompiled", material->Handle, Handle);
-                material->OnShaderReloaded();
-                material->ApplyChanges();
+                if (asset->GetType() != AssetType::Material)
+                    continue;
+
+                Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+                if (material->GetShaderHandle() == Handle)
+                {
+                    EK_CORE_TRACE("Reloading material {0}, because shader {1} has been recompiled", material->Handle, Handle);
+                    material->OnShaderReloaded();
+                    material->ApplyChanges();
+                }
             }
         }
 
-        EK_CORE_DBG("Recompiled shader '{0}'", m_name);
+        EK_CORE_DBG("Recompiled shader '{0}'. Success: {1}", m_name, m_isValid);
 
         return m_isValid;
     }
@@ -331,7 +334,7 @@ namespace Eklipse
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (!forceCompile && in.is_open())
             {
-                EK_CORE_TRACE("Reading Vulkan shader cache binaries from path: '{0}'", cachedPath.string());
+                EK_CORE_TRACE("Reading Vulkan shader '{0}' at stage '{1}' cache binaries from path: '{2}'", Handle, ShaderStageToString(stage), cachedPath.string());
 
                 in.seekg(0, std::ios::end);
                 auto size = in.tellg();
@@ -343,19 +346,19 @@ namespace Eklipse
             }
             else
             {
-                EK_CORE_TRACE("Compiling shader {0} to Vulkan binaries", Handle);
+                EK_CORE_TRACE("Compiling shader '{0}' at stage '{1}' to Vulkan binaries", Handle, ShaderStageToString(stage));
 
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), shaderPath.string().c_str(), options);
                 if (module.GetCompilationStatus() != shaderc_compilation_status_success)
                 {
                     success = false;
-                    EK_CORE_ERROR("Failed to compile shader {0}. {1}", Handle, module.GetErrorMessage());
+                    EK_CORE_ERROR("Failed to compile shader {0} at stage {1}. {2}", Handle, ShaderStageToString(stage), module.GetErrorMessage());
                 }
                 else
                 {
                     shaderData[stage] = Vec<uint32_t>(module.cbegin(), module.cend());
 
-                    EK_CORE_TRACE("Writing Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
+                    EK_CORE_TRACE("Writing Vulkan shader '{0}' at stage '{1}' cache binaries to path: '{2}'", Handle, ShaderStageToString(stage), cachedPath.string());
                     std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
                     if (out.is_open())
                     {
@@ -367,16 +370,17 @@ namespace Eklipse
                     else
                     {
                         success = false;
-                        EK_CORE_ERROR("Failed to write Vulkan shader cache binaries to path: '{0}'", cachedPath.string());
+                        EK_CORE_ERROR("Failed to write Vulkan shader '{0}' at stage '{1}' cache binaries to path: '{2}'", Handle, ShaderStageToString(stage), cachedPath.string());
                     }
                 }
             }
         }
 
         if (success)
+        {
             Reflect(m_vulkanSPIRV, m_name);
-
-        EK_CORE_DBG("Compiled vulkan binaries for shader '{0}'", m_name);
+            EK_CORE_DBG("Compiled vulkan binaries for shader '{0}'", m_name);
+        }
         return success;
     }
     StageSourceMap Shader::PreProcess(const String& source) const

@@ -69,13 +69,19 @@ namespace Eklipse
 		static bool IsPathDirectory(const Path& path);
 		static bool IsPathValid(const Path& path);
 		static bool IsPathValid(const Path& path, const Vec<String>& extensions);
+		static bool ArePathsEqual(const Path& path1, const Path& path2);
 
 		static String ReadFileFromPath(const Path& filePath);
 		static String AppendExtensionIfNotPresent(const String& name, const String& extension);
 		static String AppendExtensionIfNotPresent(const Path& path, const String& extension);
 
+		static FileDialogResult OpenFileDialog(const Vec<String>& extensions, const Path& path);
 		static FileDialogResult OpenFileDialog(const Vec<String>& extensions);
+		static FileDialogResult OpenFileDialog(const Path& path);
 		static FileDialogResult OpenFileDialog();
+
+		static FileDialogResult OpenDirDialog(const Path& path);
 		static FileDialogResult OpenDirDialog();
+
 	};
 }

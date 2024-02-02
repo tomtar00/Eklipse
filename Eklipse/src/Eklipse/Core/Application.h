@@ -54,7 +54,7 @@ namespace Eklipse
 		// === Virtual Event Handling ===
 		virtual void OnInitAPI(ApiType api) {}
 		virtual void OnAPIHasInitialized(ApiType api) {}
-		virtual void OnShutdownAPI() {}
+		virtual void OnShutdownAPI(bool quit) {}
 		virtual void OnAPIHasShutdown() {}
 		virtual void OnPreGUI(float deltaTime) {}
 		virtual void OnPostGUI(float deltaTime) {}

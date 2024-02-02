@@ -20,7 +20,7 @@ namespace Eklipse
 
             virtual void Bind() const override;
             virtual void Unbind() const override;
-            virtual void Dispose() override;
+            virtual void Dispose() const override;
 
             inline uint32_t GetID() const { return m_id; }
 

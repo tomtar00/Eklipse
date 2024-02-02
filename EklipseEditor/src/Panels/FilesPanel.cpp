@@ -33,10 +33,10 @@ namespace Eklipse
         m_workingDirPath = Project::GetActive()->GetConfig().assetsDirectoryPath;
         m_currentPath = m_workingDirPath;
 
-        for (auto& [handle, metadata] : EditorLayer::Get().GetAssetLibrary()->GetAssetRegistry())
+        /*for (auto& [handle, metadata] : EditorLayer::Get().GetAssetLibrary()->GetAssetRegistry())
         {
             m_pathHandleMap[metadata.FilePath] = handle;
-        }
+        }*/
     }
 
     bool FilesPanel::OnGUI(float deltaTime)
@@ -105,8 +105,8 @@ namespace Eklipse
 
             if (ImGui::BeginDragDropSource())
             {
-                Path absoluteAssetPath = m_currentPath / path;
-                ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &m_pathHandleMap.at(absoluteAssetPath), sizeof(AssetHandle*), ImGuiCond_Once);
+                AssetHandle assetHandle = EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(m_currentPath / path);
+                ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &assetHandle, sizeof(AssetHandle*), ImGuiCond_Once);
                 ImGui::EndDragDropSource();
             }
 
@@ -129,12 +129,11 @@ namespace Eklipse
                 // TODO: open scene
             }
 
-            if (ImGui::IsItemClicked() && path.has_extension())
+            if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && path.has_extension())
             {
                 if (EditorAssetLibrary::GetAssetTypeFromFileExtension(path.extension().string()) == AssetType::Material)
                 {
-                    EK_ASSERT(m_pathHandleMap.find(path) != m_pathHandleMap.end(), "Material path not found in map");
-                    AssetHandle materialHandle = m_pathHandleMap.at(path);
+                    AssetHandle materialHandle = EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(m_currentPath / path);
                     DetailsSelectionInfo info{};
                     info.type = SelectionType::MATERIAL;
                     info.material = AssetManager::GetAsset<Material>(materialHandle).get();

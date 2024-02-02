@@ -13,7 +13,7 @@ namespace Eklipse
 			GLMaterial(const Path& path, AssetHandle shaderHandle);
 
 			virtual void Bind() override;
-			virtual void Dispose() override;
+			virtual void Dispose() const override;
 
 		private:
 			Ref<GLShader> m_glShader;

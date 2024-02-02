@@ -25,10 +25,11 @@ namespace Eklipse
 			Vec<VkPresentModeKHR> presentModes;
 		};
 
-		VkFormat ConvertToVKFormat(Eklipse::ImageFormat format);
-		VkImageAspectFlagBits ConvertToVKAspect(Eklipse::ImageAspect aspect);
+		ImageFormat ConvertFromVKFormat(VkFormat format);
+		VkFormat ConvertToVKFormat(ImageFormat format);
+		VkImageAspectFlagBits ConvertToVKAspect(ImageAspect aspect);
 		VkImageUsageFlagBits ConvertToVKUsage(uint32_t internalUsage);
-		VkImageLayout ConvertToVKLayout(Eklipse::ImageLayout layout);
+		VkImageLayout ConvertToVKLayout(ImageLayout layout);
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const Vec<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat);
 		VkPresentModeKHR ChooseSwapPresentMode(const Vec<VkPresentModeKHR>& availablePresentModes);

@@ -10,6 +10,19 @@ namespace Eklipse
 {
     namespace Vulkan
     {
+        static VkFormat ConvertToSupportedTextureVKFormat(ImageFormat format)
+        {
+            VkFormat vkFormat = ConvertToVKFormat(format);
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(g_physicalDevice, vkFormat, &props);
+            if (!(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+            {
+                EK_CORE_DBG("Texture image format does not support sampled image!");
+                vkFormat = VK_FORMAT_R8G8B8A8_SRGB; // TODO: find supported format (TEMPORARY SOLUTION)
+            }
+            return vkFormat;
+        }
+
         VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
         {
             VkImageViewCreateInfo viewInfo{};
@@ -50,9 +63,7 @@ namespace Eklipse
             samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 
             samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            samplerInfo.minLod = 0.0f; // Optional
             samplerInfo.maxLod = mipLevels;
-            samplerInfo.mipLodBias = 0.0f; // Optional
 
             VkSampler sampler;
             VkResult res = vkCreateSampler(g_logicalDevice, &samplerInfo, nullptr, &sampler);
@@ -293,8 +304,9 @@ namespace Eklipse
 
         void VKTexture2D::Init(const TextureInfo& textureInfo)
         {
-            VkFormat format = ConvertToVKFormat(textureInfo.imageFormat);
+            VkFormat format = ConvertToSupportedTextureVKFormat(textureInfo.imageFormat);
             EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
+            m_textureInfo.imageFormat = ConvertFromVKFormat(format);
 
             VkImageAspectFlagBits aspect = ConvertToVKAspect(m_textureInfo.imageAspect);
             VkImageUsageFlagBits usage = ConvertToVKUsage(m_textureInfo.imageUsage);
@@ -319,7 +331,7 @@ namespace Eklipse
 
             {
                 VKStagingBuffer stagingBuffer(data, size);
-                VkFormat format = ConvertToVKFormat(m_textureInfo.imageFormat);
+                VkFormat format = ConvertToSupportedTextureVKFormat(m_textureInfo.imageFormat);
                 EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
 
                 TransitionImageLayout(m_image, format, VK_IMAGE_LAYOUT_UNDEFINED,
@@ -336,7 +348,7 @@ namespace Eklipse
         }
         void VKTexture2D::Bind() const {}
         void VKTexture2D::Unbind() const {}
-        void VKTexture2D::Dispose()
+        void VKTexture2D::Dispose() const
         {
             vkDestroySampler(g_logicalDevice, m_sampler, nullptr);
             vkDestroyImageView(g_logicalDevice, m_imageView, nullptr);

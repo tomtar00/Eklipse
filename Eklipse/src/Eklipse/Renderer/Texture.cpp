@@ -27,18 +27,18 @@ namespace Eklipse
     bool LoadTextureFromFile(const Path& path, TextureData& outData)
     {
         String pathStr = path.string();
-        EK_CORE_TRACE("Loading texture from path: {0}", pathStr);
+        EK_CORE_TRACE("Loading texture from location: {0}", pathStr);
 
-        int width, height, channels;
-        uint8_t* data = stbi_load(pathStr.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        int width, height/*, channels*/;
+        uint8_t* data = stbi_load(pathStr.c_str(), &width, &height, /*&channels*/nullptr, STBI_rgb_alpha);
 
         if (data == nullptr)
         {
-            EK_CORE_ERROR("Failed to load texture from location: {0}", pathStr);
+            EK_CORE_ERROR("Failed to load texture from location: {0}. {1}", pathStr.c_str(), stbi_failure_reason());
             return false;
         }
 
-        ImageFormat format = ChannelsToFormat(channels);
+        ImageFormat format = ImageFormat::RGBA8;/*ChannelsToFormat(channels);*/
 
         TextureInfo textureInfo{};
         textureInfo.width = width;
@@ -53,10 +53,10 @@ namespace Eklipse
         {
             textureInfo,
             data,
-            uint32_t(width * height * channels)
+            uint32_t(width * height * 4/*channels*/)
         };
 
-        EK_CORE_DBG("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", pathStr, width, height, channels);
+        EK_CORE_DBG("Loaded texture from path '{0}'. Width: {1} Height: {2} Channels: {3}", pathStr, width, height, 4/*channels*/);
         return true;
     }
 
