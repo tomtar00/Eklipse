@@ -6,10 +6,6 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		GLMaterial::GLMaterial(const Path& path) : Material(path)
-		{
-			m_glShader = std::static_pointer_cast<GLShader>(m_shader);
-		}
 		GLMaterial::GLMaterial(const Path& path, AssetHandle shaderHandle) : Material(path, shaderHandle)
 		{
 			m_glShader = std::static_pointer_cast<GLShader>(m_shader);

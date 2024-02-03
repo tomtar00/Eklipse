@@ -69,6 +69,7 @@ namespace Eklipse
 		static bool IsPathDirectory(const Path& path);
 		static bool IsPathValid(const Path& path);
 		static bool IsPathValid(const Path& path, const Vec<String>& extensions);
+		static bool ArePathsEqualAndExists(const Path& path1, const Path& path2);
 		static bool ArePathsEqual(const Path& path1, const Path& path2);
 
 		static String ReadFileFromPath(const Path& filePath);

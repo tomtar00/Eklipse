@@ -29,16 +29,20 @@ namespace Eklipse
         AssetRegistry& GetAssetRegistry();
         Path& GetAssetDirectory();
         AssetHandle ImportAsset(const Path& filepath);
+        AssetHandle ImportDefaultMaterial(const Path& filepath, AssetHandle shaderHandle);
+        void RemoveAsset(AssetHandle handle);
+        AssetHandle GetHandleFromAssetPath(const Path& path, bool reqExists = true) const;
+        void Validate();
 
         void SerializeAssetRegistry();
         bool DeserializeAssetRegistry();
 
+        void StartFileWatcher();
         void OnFileWatchEvent(const String& path, filewatch::Event change_type);
 
         static AssetType GetAssetTypeFromFileExtension(const String& extension);
         static Vec<String> GetAssetFileExtensions(AssetType type);
 
-        AssetHandle GetHandleFromAssetPath(const Path& path) const;
 
     private:
         AssetRegistry m_assetRegistry;

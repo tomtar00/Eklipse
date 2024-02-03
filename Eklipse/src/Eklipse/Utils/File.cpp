@@ -109,9 +109,19 @@ namespace Eklipse
 		}
         return IsPathValid(path) && hasExtension;
     }
+    bool FileUtilities::ArePathsEqualAndExists(const Path& path1, const Path& path2)
+    {
+        std::error_code ec;
+        bool eq = fs::equivalent(path1, path2, ec);
+        if (ec)
+        {
+            EK_CORE_TRACE("Error comparing paths: {0}", ec.message());
+        }
+        return eq && !ec;
+    }
     bool FileUtilities::ArePathsEqual(const Path& path1, const Path& path2)
     {
-        return fs::equivalent(path1, path2);
+        return path1 == path2;
     }
 
     String FileUtilities::ReadFileFromPath(const Path& filePath)

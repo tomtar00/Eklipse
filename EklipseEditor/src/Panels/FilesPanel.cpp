@@ -10,9 +10,9 @@ namespace Eklipse
         switch (option)
         {
         case 0:
-            return "Assets/Shaders/Default3D.eksh";
+            return "Assets/Shaders/3D.glsl";
         case 1:
-            return "Assets/Shaders/Default2D.eksh";
+            return "Assets/Shaders/2D.glsl";
         default:
             return "";
         }
@@ -165,6 +165,10 @@ namespace Eklipse
             {
                 popupName = "Create New Material";
             }
+            if (ImGui::MenuItem("Import Asset"))
+            {
+                ImportAsset();
+            }
 
             ImGui::EndPopup();
         }
@@ -295,5 +299,22 @@ namespace Eklipse
         // the editor asset library will import the shader automatically
 
         return true;
+    }
+    bool FilesPanel::ImportAsset() const
+    {
+        FileDialogResult result = FileUtilities::OpenFileDialog();
+        if (result.type == FileDialogResultType::SUCCESS)
+        {
+            Path filePath = result.path;
+            Path destPath = m_currentPath / result.path.filename();
+            if (!fs::copy_file(filePath, destPath, fs::copy_options::skip_existing))
+            {
+                EK_CORE_ERROR("Failed to import asset from '{}' to path '{}'", filePath.string(), destPath.string());
+                return false;
+            }
+
+            // the editor asset library will import the shader automatically
+        }
+        return false;
     }
 }

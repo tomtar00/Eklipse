@@ -8,11 +8,6 @@ namespace Eklipse
 {
 	namespace Vulkan
 	{
-		VKMaterial::VKMaterial(const Path& path) : Material(path)
-		{
-			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
-			CreateDescriptorSets();
-		}
 		VKMaterial::VKMaterial(const Path& path, AssetHandle shaderHandle) : Material(path, shaderHandle)
 		{
 			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);

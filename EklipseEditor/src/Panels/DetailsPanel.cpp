@@ -113,7 +113,7 @@ namespace Eklipse
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted("Mesh");
 					ImGui::TableSetColumnIndex(1);
-					if (ImGui::InputAsset(&entity.GetUUID(), nullptr, AssetType::Mesh, meshComp->meshHandle)) // TODO: Check other formats
+					if (ImGui::InputAsset(&entity.GetUUID(), nullptr, AssetType::Mesh, meshComp->meshHandle))
 					{
 						meshComp->mesh = AssetManager::GetAsset<Mesh>(meshComp->meshHandle).get();
 					}

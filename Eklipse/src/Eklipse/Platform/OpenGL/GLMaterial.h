@@ -9,7 +9,6 @@ namespace Eklipse
 		class GLMaterial : public Material
 		{
 		public:
-			GLMaterial(const Path& path);
 			GLMaterial(const Path& path, AssetHandle shaderHandle);
 
 			virtual void Bind() override;

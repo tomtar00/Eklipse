@@ -90,6 +90,14 @@ namespace Eklipse
 		// === Selection ===
 		void ClearSelection();
 
+		// === Default Assets ===
+		AssetHandle GetDefaultCubeHandle() const;
+		AssetHandle GetDefaultSphereHandle() const;
+		AssetHandle GetDefault3DShaderHandle() const;
+		AssetHandle GetDefault2DShaderHandle() const;
+		AssetHandle GetDefault3DMaterialHandle() const;
+		AssetHandle GetDefault2DMaterialHandle() const;
+
 	public:
 		Ref<ImGuiLayer> GUI;
 		DetailsSelectionInfo SelectionInfo{};
@@ -118,5 +126,13 @@ namespace Eklipse
 		FilesPanel		m_filesPanel;
 		DebugPanel		m_debugPanel;
 		TerminalPanel	m_terminalPanel;
+
+		// default asset handles
+		AssetHandle m_cubeHandle;
+		AssetHandle m_sphereHandle;
+		AssetHandle m_shader3dHandle;
+		AssetHandle m_shader2dHandle;
+		AssetHandle m_material3dHandle;
+		AssetHandle m_material2dHandle;
 	};
 }

@@ -367,6 +367,14 @@ namespace Eklipse
         AssetHandle handle = m_editorAssetLibrary->ImportAsset(config.startScenePath);
         config.startSceneHandle = handle;
 
+        // import default assets
+        m_cubeHandle = m_editorAssetLibrary->ImportAsset("Assets/Meshes/cube.obj");
+        m_sphereHandle = m_editorAssetLibrary->ImportAsset("Assets/Meshes/sphere.obj");
+        m_shader3dHandle = m_editorAssetLibrary->ImportAsset("Assets/Shaders/3D.glsl");
+        m_shader2dHandle = m_editorAssetLibrary->ImportAsset("Assets/Shaders/2D.glsl");
+        m_material3dHandle = m_editorAssetLibrary->ImportDefaultMaterial(config.assetsDirectoryPath / "Materials/3D.ekmt", m_shader3dHandle);
+        m_material2dHandle = m_editorAssetLibrary->ImportDefaultMaterial(config.assetsDirectoryPath / "Materials/2D.ekmt", m_shader2dHandle);
+
         // get start scene
         m_editorScene = AssetManager::GetAsset<Scene>(handle);
         m_entitiesPanel.SetContext(m_editorScene);
@@ -378,6 +386,7 @@ namespace Eklipse
 
         // save project
         Project::SaveActive();
+        m_editorAssetLibrary->StartFileWatcher();
 
         OnProjectLoaded();
 
@@ -406,6 +415,7 @@ namespace Eklipse
             m_entitiesPanel.SetContext(m_editorScene);
 
             m_scriptManager->Load();
+            m_editorAssetLibrary->StartFileWatcher();
 
             OnProjectLoaded();
         }
@@ -766,5 +776,31 @@ namespace Eklipse
     {
         SelectionInfo.type = SelectionType::NONE;
         SelectionInfo.entity.MarkNull();
+    }
+    
+    // === Default Assets ===
+    AssetHandle EditorLayer::GetDefaultCubeHandle() const
+    {
+        return m_cubeHandle;
+    }
+    AssetHandle EditorLayer::GetDefaultSphereHandle() const
+    {
+        return m_sphereHandle;
+    }
+    AssetHandle EditorLayer::GetDefault3DShaderHandle() const
+    {
+        return m_shader3dHandle;
+    }
+    AssetHandle EditorLayer::GetDefault2DShaderHandle() const
+    {
+        return m_shader2dHandle;
+    }
+    AssetHandle EditorLayer::GetDefault3DMaterialHandle() const
+    {
+        return m_material3dHandle;
+    }
+    AssetHandle EditorLayer::GetDefault2DMaterialHandle() const
+    {
+        return m_material2dHandle;
     }
 }

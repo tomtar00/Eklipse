@@ -27,7 +27,7 @@ namespace Eklipse
 	}
     static Ref<Material> ImportMaterial(AssetHandle handle, const AssetMetadata& metadata)
     {
-		auto mat = Material::Create(metadata.FilePath);
+		auto mat = Material::Create(metadata.FilePath, 0);
         mat->Handle = handle;
         return mat;
 	}

@@ -39,9 +39,7 @@ namespace Eklipse
     {
     public:
         Material() = delete;
-        Material(const Path& path);
         Material(const Path& path, AssetHandle shaderHandle);
-        static Ref<Material> Create(const Path& path);
         static Ref<Material> Create(const Path& path, AssetHandle shaderHandle);
 
         template <typename T>

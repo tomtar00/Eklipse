@@ -18,6 +18,7 @@ namespace Eklipse
     private:
         bool CreateMaterial(const String& materialName, const AssetHandle shaderHandle) const;
         bool CreateShader(const String& shaderName, const uint32_t templateOption) const;
+        bool ImportAsset() const;
 
     private:
         Path m_currentPath;

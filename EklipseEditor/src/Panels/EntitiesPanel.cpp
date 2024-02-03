@@ -20,8 +20,34 @@ namespace Eklipse
 
 		if (ImGui::BeginPopupContextWindow())
 		{
-			if (ImGui::MenuItem("New Entity"))
+			if (ImGui::MenuItem("Empty Entity"))
 				m_sceneContext->CreateEntity();
+			if (ImGui::MenuItem("Camera"))
+			{
+                auto entity = m_sceneContext->CreateEntity("Camera");
+                auto& cam = entity.AddComponent<CameraComponent>();
+				cam.camera.m_isMain = true;
+                EditorLayer::Get().SelectionInfo.type = SelectionType::ENTITY;
+                EditorLayer::Get().SelectionInfo.entity = entity;
+            }
+			if (ImGui::MenuItem("Cube"))
+			{
+				auto entity = m_sceneContext->CreateEntity("Cube");
+				auto& mesh = entity.AddComponent<MeshComponent>();
+				mesh.materialHandle = EditorLayer::Get().GetDefault3DMaterialHandle();
+				mesh.meshHandle = EditorLayer::Get().GetDefaultCubeHandle();
+				mesh.material = AssetManager::GetAsset<Material>(mesh.materialHandle).get();
+				mesh.mesh = AssetManager::GetAsset<Mesh>(mesh.meshHandle).get();
+			}
+			if (ImGui::MenuItem("Sphere"))
+			{
+                auto entity = m_sceneContext->CreateEntity("Sphere");
+                auto& mesh = entity.AddComponent<MeshComponent>();
+                mesh.materialHandle = EditorLayer::Get().GetDefault3DMaterialHandle();
+                mesh.meshHandle = EditorLayer::Get().GetDefaultSphereHandle();
+                mesh.material = AssetManager::GetAsset<Material>(mesh.materialHandle).get();
+                mesh.mesh = AssetManager::GetAsset<Mesh>(mesh.meshHandle).get();
+            }
 
 			ImGui::EndPopup();
 		}

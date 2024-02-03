@@ -56,33 +56,25 @@ namespace Eklipse
         }
     }
 
-    Material::Material(const Path& path)
-    {
-        m_name = path.stem().string();
-        if (!Deserialize(path))
-        {
-            EK_CORE_ERROR("Failed to deserialize material '{0}'", m_name);
-        }
-    }
     Material::Material(const Path& path, AssetHandle shaderHandle)
     {
         m_name = path.stem().string();
 
-        SetShader(shaderHandle);
-        if (!Serialize(path))
+        if (FileUtilities::IsPathValid(path))
         {
-            EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
+            if (!Deserialize(path))
+            {
+                EK_CORE_ERROR("Failed to deserialize material '{0}'", m_name);
+            }
         }
-    }
-    Ref<Material> Material::Create(const Path& path)
-    {
-        switch (Renderer::GetAPI())
+        else
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path);
+            SetShader(shaderHandle);
+            if (!Serialize(path))
+            {
+                EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
+            }
         }
-        EK_ASSERT(false, "Material creation not implemented for current graphics API");
-        return nullptr;
     }
     Ref<Material> Material::Create(const Path& path, AssetHandle shaderHandle)
     {

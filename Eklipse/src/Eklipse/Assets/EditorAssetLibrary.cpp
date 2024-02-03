@@ -6,6 +6,9 @@
 
 #include <Eklipse/Utils/Yaml.h>
 #include <Eklipse/Core/Application.h>
+#include <Eklipse/Renderer/Material.h>
+
+#define EK_REGISTRY_EXTENSION ".ekreg"
 
 namespace Eklipse
 {
@@ -14,7 +17,8 @@ namespace Eklipse
     {
         EK_ASSERT(AssetManager::s_assetLibrary == nullptr, "AssetLibrary already exists!");
         AssetManager::s_assetLibrary = this;
-        m_fileWatcher = CreateUnique<filewatch::FileWatch<String>>(assetDirectory.string(), CAPTURE_FN(OnFileWatchEvent));
+
+        Validate();
     }
     EditorAssetLibrary::~EditorAssetLibrary()
     {
@@ -97,7 +101,11 @@ namespace Eklipse
         AssetMetadata metadata;
         metadata.FilePath = filepath;
         metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
-        EK_ASSERT(metadata.Type != AssetType::None, "Wrong asset type!");
+        if(metadata.Type == AssetType::None)
+        {
+            EK_CORE_ERROR("Failed to import asset from path: {0}. Unsupported asset type!", filepath.string());
+            return 0;
+        }
         Ref<Asset> asset = AssetImporter::ImportAsset(handle, metadata);
         if (asset)
         {
@@ -110,9 +118,87 @@ namespace Eklipse
         EK_CORE_DBG("Asset from path '{0}' imported with handle: {1}", filepath.string(), handle);
         return handle;
     }
+    AssetHandle EditorAssetLibrary::ImportDefaultMaterial(const Path& filepath, AssetHandle shaderHandle)
+    {
+        AssetHandle handle;
+        AssetMetadata metadata;
+        metadata.FilePath = filepath;
+        metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
+        EK_ASSERT(metadata.Type == AssetType::Material, "Wrong asset type!");
+        Ref<Material> material = Material::Create(filepath, shaderHandle);
+        if (material)
+        {
+            material->Handle = handle;
+            m_loadedAssets[handle] = material;
+            m_assetRegistry[handle] = metadata;
+            SerializeAssetRegistry();
+        }
+        return handle;
+    }
+    void EditorAssetLibrary::RemoveAsset(AssetHandle handle)
+    {
+        if (IsAssetHandleValid(handle))
+        {
+            EK_CORE_TRACE("Removing asset with handle: {0}", handle);
+
+            if (IsAssetLoaded(handle))
+            {
+                auto& asset = m_loadedAssets.at(handle);
+                if (asset)
+                {
+                    asset->Dispose();
+                }
+                m_loadedAssets.erase(handle);
+            }
+            m_assetRegistry.erase(handle);
+
+            SerializeAssetRegistry();
+        }
+        else
+        {
+            EK_CORE_TRACE("Asset with handle '{0}' is not in the asset registry", handle);
+        }
+    }
+    AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path, bool reqExists) const
+    {
+        for (auto&& [handle, metadata] : m_assetRegistry)
+        {
+            if (reqExists && FileUtilities::ArePathsEqualAndExists(metadata.FilePath, path))
+                return handle;
+            else if (FileUtilities::ArePathsEqual(metadata.FilePath, path))
+                return handle;
+        }
+
+        EK_CORE_WARN("Asset with path: {0} not found in the asset registry!", path.string());
+        return 0;
+    }
+    void EditorAssetLibrary::Validate()
+    {
+        EK_CORE_TRACE("Validating asset library...");
+
+        bool hasInvalidAssets = false;
+        for (auto&& [handle, metadata] : m_assetRegistry)
+        {
+            if (!FileUtilities::IsPathValid(metadata.FilePath))
+            {
+                hasInvalidAssets = true;
+                EK_CORE_WARN("Asset with handle: {0} and path: {1} is not valid!", handle, metadata.FilePath.string());
+                m_assetRegistry.erase(handle);
+            }
+        }
+
+        if (hasInvalidAssets)
+        {
+            SerializeAssetRegistry();
+        }
+
+        EK_CORE_DBG("Asset library validated!");
+    }
     
     void EditorAssetLibrary::SerializeAssetRegistry()
     {
+        EK_CORE_TRACE("Serializing asset registry...");
+
         YAML::Emitter out;
         {
             out << YAML::BeginMap;
@@ -131,12 +217,16 @@ namespace Eklipse
             out << YAML::EndMap;
         }
 
-        std::ofstream fout(m_assetDirectory / "assets.ekreg");
+        std::ofstream fout(m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION)));
         fout << out.c_str();
+
+        EK_CORE_DBG("Asset registry serialized!");
     }
     bool EditorAssetLibrary::DeserializeAssetRegistry()
     {
-        auto path = (m_assetDirectory / "assets.ekreg").string();
+        EK_CORE_TRACE("Deserializing asset registry...");
+
+        auto path = (m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION))).string();
         YAML::Node data;
         try
         {
@@ -160,9 +250,14 @@ namespace Eklipse
             metadata.Type = Asset::TypeFromString(TryDeserailize<String>(node, "Type", ""));
         }
 
+        EK_CORE_DBG("Asset registry deserialized!");
         return true;
     }
 
+    void EditorAssetLibrary::StartFileWatcher()
+    {
+        m_fileWatcher = CreateUnique<filewatch::FileWatch<String>>(m_assetDirectory.string(), CAPTURE_FN(OnFileWatchEvent));
+    }
     void EditorAssetLibrary::OnFileWatchEvent(const String& path, filewatch::Event change_type)
     {
         Path absolutePath = m_assetDirectory / path;
@@ -174,24 +269,23 @@ namespace Eklipse
         case filewatch::Event::added:
             EK_CORE_TRACE("Asset added: {0}", path);
             {
-                ImportAsset(absolutePath);
+                if (Path(path).extension() != EK_REGISTRY_EXTENSION)
+                {
+                    Application::Get().SubmitToMainThread([&, absolutePath]()
+                    {
+                        ImportAsset(absolutePath);
+                    });
+                }
             }
             break;
         case filewatch::Event::removed:
             EK_CORE_TRACE("Asset removed: {0}", path);
             {
-                AssetHandle handle = GetHandleFromAssetPath(absolutePath);
-                if (IsAssetHandleValid(handle))
+                Application::Get().SubmitToMainThread([&, absolutePath]()
                 {
-                    EK_CORE_TRACE("Removing asset with handle: {0}", handle);
-                    m_assetRegistry.erase(handle);
-                    m_loadedAssets.erase(handle);
-                    SerializeAssetRegistry();
-                }
-                else 
-                {
-                    EK_CORE_TRACE("Asset at path '{0}' with handle '{1}' is not in the asset registry!", absolutePath.string(), handle);
-                }
+                    AssetHandle handle = GetHandleFromAssetPath(absolutePath, false);
+                    RemoveAsset(handle);
+                });
             }
             break;
         case filewatch::Event::modified:
@@ -258,14 +352,5 @@ namespace Eklipse
         if (type == AssetType::Mesh)      return { ".obj" };
 
         return {};
-    }
-    AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path) const
-    {
-        for (auto&& [handle, metadata] : m_assetRegistry)
-        {
-            if (FileUtilities::ArePathsEqual(metadata.FilePath, path))
-                return handle;
-        }
-        return 0;
     }
 }
