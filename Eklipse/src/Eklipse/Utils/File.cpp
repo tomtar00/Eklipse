@@ -94,7 +94,7 @@ namespace Eklipse
     }
     bool FileUtilities::IsPathValid(const Path& path)
     {
-        return fs::exists(path);
+        return !path.empty() && fs::exists(path);
     }
     bool FileUtilities::IsPathValid(const Path& path, const Vec<String>& extensions)
     {

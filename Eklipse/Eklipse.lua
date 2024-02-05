@@ -73,7 +73,8 @@ project "Eklipse"
 
 	postbuildcommands
 	{
-		"{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/"
+		"{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/",
+        "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/"
 	}
 
 	filter "system:windows"

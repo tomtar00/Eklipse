@@ -1,10 +1,10 @@
 #pragma once
 #include <Eklipse.h>
-#include <dylib.hpp>
+#include <Eklipse/Assets/RuntimeAssetLibrary.h>
 
 namespace Eklipse
 {
-	class AppLayer : public Layer
+	class RuntimeLayer : public Layer
 	{
 	public:
 		void OnAttach() override;
@@ -16,8 +16,8 @@ namespace Eklipse
 		void OnShutdownAPI();
 
 	private:
-		Ref<Framebuffer> m_framebuffer;
 		Ref<RuntimeConfig> m_runtimeConfig;
-		Ref<dylib> m_library;
+		Ref<RuntimeAssetLibrary> m_runtimeAssetLibrary;
+		Ref<ScriptLinker> m_scriptLinker;
 	};
 }

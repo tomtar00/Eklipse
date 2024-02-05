@@ -124,7 +124,7 @@ namespace Eklipse
 		fs::create_directories(config.scriptBuildDirectoryPath / "Dist");
 
 		Ref<Scene> startScene = Scene::New(defaultSceneName);
-		Scene::Save(startScene.get(), config.startScenePath);
+		Scene::Save(startScene, config.startScenePath);
 
 		Path& currentPath = fs::current_path();
 

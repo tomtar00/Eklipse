@@ -42,8 +42,8 @@ namespace Eklipse
 		static void Submit();
 
 		// Render calls
-		static void RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform);
-		static void RenderScene(Scene* scene);
+		static void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform);
+		static void RenderScene(Ref<Scene> scene);
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);

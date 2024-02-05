@@ -40,11 +40,9 @@ namespace Eklipse
         EK_CORE_DBG("Parsed directory {0}", directoryPath.string());
         return classReflections;
     }
-    bool ScriptParser::ParseFile(const Path& filePath, Vec<ClassReflection>& outClassReflection)
+    bool ScriptParser::ParseFile(const Path& filePath, Vec<ClassReflection>& outClassReflections)
 	{
         EK_CORE_TRACE("Parsing file: {0}", filePath.string());
-        
-        Vec<ClassReflection> classReflections{};
 
         std::ifstream file(filePath);
         if (file.is_open()) 
@@ -63,7 +61,7 @@ namespace Eklipse
                 { 
                     if (currentClassName != "")
                     {
-						classReflections.push_back(classReflection);
+                        outClassReflections.push_back(classReflection);
 					}
 
                     currentClassName = match[1].str();
@@ -84,11 +82,11 @@ namespace Eklipse
 
             if (currentClassName != "")
             {
-                classReflections.push_back(classReflection);
+                outClassReflections.push_back(classReflection);
             }
 
             file.close();
-            return classReflections.size() > 0;
+            return outClassReflections.size() > 0;
         }
         else
         {

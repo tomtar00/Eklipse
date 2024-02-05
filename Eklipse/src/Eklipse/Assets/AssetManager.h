@@ -3,12 +3,14 @@
 #include <Eklipse/Core/Application.h>
 #include "AssetMetadata.h"
 #include "EditorAssetLibrary.h"
+#include "RuntimeAssetLibrary.h"
 
 namespace Eklipse 
 {
 	class EK_API AssetManager
 	{
 		friend EditorAssetLibrary;
+		friend RuntimeAssetLibrary;
 
 	public:
 		template<typename T>

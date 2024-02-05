@@ -70,7 +70,7 @@ namespace Eklipse
             asset->Dispose();
         }
     }
-    void EditorAssetLibrary::LoadAssets()
+    void EditorAssetLibrary::ReloadAssets()
     {
         Vec<AssetHandle> handlesToLoad;
         for (auto&& [handle, asset] : m_loadedAssets)

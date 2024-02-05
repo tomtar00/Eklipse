@@ -42,7 +42,7 @@ namespace Eklipse
 		void Unload();
 
 		void RecompileAll();
-		bool GenerateFactoryFile(const Path& targetDirectoryPath);
+		bool GenerateFactoryFile(const Path& targetDirectoryPath, const Vec<ClassReflection>& classReflections);
 		void RunPremake(const Path& premakeDirPath);
 		void CompileScripts(const Path& sourceDirectoryPath, const String& configuration);
 

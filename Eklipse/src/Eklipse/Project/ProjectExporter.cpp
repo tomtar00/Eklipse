@@ -86,6 +86,7 @@ namespace Eklipse
         runtimeConfig.executablePath = destinationExecutablePath;
 
         runtimeConfig.startScenePath = destinationAssetsDir / fs::relative(config.startScenePath, config.assetsDirectoryPath);
+        runtimeConfig.startSceneHandle = config.startSceneHandle;
 
         // Generate config.yaml file
         ProjectSerializer serializer(project);

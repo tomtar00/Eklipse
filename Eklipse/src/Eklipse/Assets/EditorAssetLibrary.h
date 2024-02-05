@@ -23,8 +23,9 @@ namespace Eklipse
         virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
         virtual bool IsAssetHandleValid(AssetHandle handle) const override;
         virtual bool IsAssetLoaded(AssetHandle handle) const override;
-        virtual void UnloadAssets() override;
-        virtual void LoadAssets() override;
+
+        void UnloadAssets();
+        void ReloadAssets();
 
         AssetRegistry& GetAssetRegistry();
         Path& GetAssetDirectory();

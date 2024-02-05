@@ -84,7 +84,7 @@ namespace Eklipse
 
         RenderCommand::API->EndDefaultRenderPass();
     }
-    void Renderer::RenderScene(Scene* scene, Camera& camera, Transform& cameraTransform)
+    void Renderer::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
         EK_PROFILE();
 
@@ -108,7 +108,7 @@ namespace Eklipse
 
         // ...
     }
-    void Renderer::RenderScene(Scene* scene)
+    void Renderer::RenderScene(Ref<Scene> scene)
     {
         auto camera = scene->GetMainCamera();
         auto cameraTransform = scene->GetMainCameraTransform();

@@ -213,7 +213,7 @@ namespace Eklipse
         EK_CORE_DBG("Scene '{0}' loaded", scene->GetName());
         return scene;
     }
-    void Scene::Save(Scene* scene, const Path& filePath)
+    void Scene::Save(Ref<Scene> scene, const Path& filePath)
     {
         EK_CORE_TRACE("Saving scene '{0}'", scene->GetName());
         if (!scene->Serialize(filePath))
@@ -487,7 +487,7 @@ namespace Eklipse
             }
         }
 
-        EK_CORE_TRACE("Deserialized scene '{0}'", sceneName);
+        EK_CORE_DBG("Deserialized scene '{0}'", sceneName);
 
         return true;
     }
@@ -610,8 +610,9 @@ namespace Eklipse
             for (auto propertyNode : propertiesNode)
             {
                 String name = propertyNode.first.as<String>();
-                String type = sc.classInfo.members[name].type;
-                uint32_t offset = sc.classInfo.members[name].offset;
+                EK_ASSERT(sc.classInfo.members.find(name) != sc.classInfo.members.end(), "Script property not found in class info");
+                String type = sc.classInfo.members.at(name).type;
+                uint32_t offset = sc.classInfo.members.at(name).offset;
 
                 if (type == "int")
                     sc.SetScriptValue<int>(offset, TryDeserailize(propertiesNode, name, 0));

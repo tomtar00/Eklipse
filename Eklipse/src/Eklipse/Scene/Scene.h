@@ -37,7 +37,7 @@ namespace Eklipse
 		static Ref<Scene> New(const String& name);
 		static Ref<Scene> Copy(Scene* other);
 		static Ref<Scene> Load(const Path& filePath, const AssetHandle handle = AssetHandle());
-		static void Save(Scene* scene, const Path& filePath);
+		static void Save(Ref<Scene> scene, const Path& filePath);
 
 		// Scripts
 		void DestroyAllScripts();

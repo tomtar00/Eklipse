@@ -47,6 +47,7 @@ project "EklipseScriptAPI"
 		"{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
 
 		"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
+        "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
     }
 
     defines

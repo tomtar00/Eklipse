@@ -1,0 +1,62 @@
+Scene: Untitled
+Entities:
+  - Entity: 15336445345007936918
+    NameComponent:
+      Name: Sphere
+    TransformComponent:
+      Position: [0, 0, 1.35767257]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Mesh: 5756264914750367782
+      Material: 15941156834627045376
+  - Entity: 150340169337539902
+    NameComponent:
+      Name: Cube
+    TransformComponent:
+      Position: [0, 0, -1.49022615]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Mesh: 6095352003233711552
+      Material: 15941156834627045376
+  - Entity: 13748720558145679883
+    NameComponent:
+      Name: Camera
+    TransformComponent:
+      Position: [-1, 0, 1]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        IsMain: true
+        FOV: 120
+        Near: 0.100000001
+        Far: 100
+  - Entity: 4699025267442016412
+    NameComponent:
+      Name: Cube
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Mesh: 6095352003233711552
+      Material: 15941156834627045376
+  - Entity: 13245520248855372456
+    NameComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [-2.01672506, 0, -0.629293203]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Mesh: 16746509999713882958
+      Material: 16524539593838936760
+    ScriptComponent:
+      Name: Rotate
+      Properties:
+        x: 12
+        y: 0
+        z: 0
+        speed: 0

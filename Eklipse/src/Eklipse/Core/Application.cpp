@@ -66,6 +66,11 @@ namespace Eklipse
         OnShutdownAPI(m_quit);
         Renderer::Shutdown();
         OnAPIHasShutdown();
+
+        if (m_quit)
+        {
+            SceneManager::Dispose();
+        }
     }
 
     // === Frame Management ===

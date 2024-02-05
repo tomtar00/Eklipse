@@ -53,7 +53,7 @@ namespace Eklipse
 
         m_editorScene = CreateRef<Scene>();
         m_entitiesPanel.SetContext(m_editorScene);
-        SceneManager::SetActiveScene(m_editorScene.get());
+        SceneManager::SetActiveScene(m_editorScene);
 
         m_scriptManager = CreateRef<ScriptManager>(&m_settings.ScriptManagerSettings);
 
@@ -309,7 +309,7 @@ namespace Eklipse
         m_filesPanel.LoadResources();
         if (m_editorAssetLibrary)
         {
-            m_editorAssetLibrary->LoadAssets();
+            m_editorAssetLibrary->ReloadAssets();
         }
         if (m_editorScene)
         {
@@ -325,7 +325,16 @@ namespace Eklipse
         ClearSelection();
 
         m_filesPanel.UnloadResources();
-        m_editorAssetLibrary->UnloadAssets();
+
+        if (Project::GetActive())
+        {
+            m_editorAssetLibrary->UnloadAssets();
+
+            if (SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING)
+            {
+                SceneManager::GetActiveScene()->OnSceneStop();
+            }
+        }
     }
     
     // === Project ===
@@ -378,7 +387,7 @@ namespace Eklipse
         // get start scene
         m_editorScene = AssetManager::GetAsset<Scene>(handle);
         m_entitiesPanel.SetContext(m_editorScene);
-        SceneManager::SetActiveScene(m_editorScene.get());
+        SceneManager::SetActiveScene(m_editorScene);
 
         // setup script manager
         m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
@@ -411,7 +420,7 @@ namespace Eklipse
             }
 
             m_editorScene = AssetManager::GetAsset<Scene>(config.startSceneHandle);
-            SceneManager::SetActiveScene(m_editorScene.get());
+            SceneManager::SetActiveScene(m_editorScene);
             m_entitiesPanel.SetContext(m_editorScene);
 
             m_scriptManager->Load();
@@ -436,14 +445,14 @@ namespace Eklipse
         if (!Project::GetActive()) return;
 
         auto& filePath = m_editorAssetLibrary->GetMetadata(m_editorScene->Handle).FilePath;
-        Scene::Save(m_editorScene.get(), filePath);
+        Scene::Save(m_editorScene, filePath);
     }
     void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
     {
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         SaveProject();
-        if (Project::GetActive()->GetConfig().configuration != exportSettings.configuration)
+        if (Project::GetActive()->GetConfig().configuration != exportSettings.configuration && ScriptLinker::Get().HasAnyScriptClasses())
         {
             m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.configuration);
         }
@@ -516,7 +525,7 @@ namespace Eklipse
         m_canControlEditorCamera = false;
 
         auto sceneCopy = Scene::Copy(m_editorScene.get());
-        SceneManager::SetActiveScene(sceneCopy.get());
+        SceneManager::SetActiveScene(sceneCopy);
         SceneManager::GetActiveScene()->OnSceneStart();
 
         m_entitiesPanel.SetContext(sceneCopy);
@@ -530,7 +539,7 @@ namespace Eklipse
         m_canControlEditorCamera = true;
 
         SceneManager::GetActiveScene()->OnSceneStop();
-        SceneManager::SetActiveScene(m_editorScene.get());
+        SceneManager::SetActiveScene(m_editorScene);
 
         m_entitiesPanel.SetContext(m_editorScene);
         ClearSelection();

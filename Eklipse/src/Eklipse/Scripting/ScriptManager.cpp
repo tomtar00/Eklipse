@@ -70,7 +70,7 @@ namespace Eklipse
             Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
     }
 
-    bool ScriptManager::GenerateFactoryFile(const Path& targetDirectoryPath)
+    bool ScriptManager::GenerateFactoryFile(const Path& targetDirectoryPath, const Vec<ClassReflection>& classReflections)
     {
         EK_CORE_TRACE("Generating script factory file at path: {0}", targetDirectoryPath.string());
 
@@ -105,7 +105,7 @@ namespace Eklipse
 
         factoryFile << "\n";
 
-        if (!m_scriptLinker->HasAnyScriptClasses())
+        if (classReflections.size() <= 0)
         {
             EK_CORE_DBG("No script classes found!");
             return false;
@@ -114,14 +114,14 @@ namespace Eklipse
         factoryFile << "extern \"C\"\n";
         factoryFile << "{\n";
 
-        for (const auto& [className, classInfo] : m_scriptLinker->GetScriptClasses())
+        for (const auto& classRef : classReflections)
         {
-            factoryFile << "\t" << "EK_EXPORT void Get__" << className << "(ClassInfo& info)\n";
+            factoryFile << "\t" << "EK_EXPORT void Get__" << classRef.className << "(ClassInfo& info)\n";
             factoryFile << "\t" << "{\n";
-            factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << className << "(); script->SetEntity(entity); return script; };\n";
-            for (const auto& [memberName, memberInfo] : classInfo.members)
+            factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << classRef.className << "(); script->SetEntity(entity); return script; };\n";
+            for (const auto& memberRef : classRef.members)
             {
-                factoryFile << "\t" << "	info.members[\"" << memberName << "\"] = { " << "\"" << memberInfo.type << "\", " << "offsetof(" << className << ", " << memberName << ") };\n";
+                factoryFile << "\t" << "	info.members[\"" << memberRef.memberName << "\"] = { " << "\"" << memberRef.memberType << "\", " << "offsetof(" << classRef.className << ", " << memberRef.memberName << ") };\n";
             }
             factoryFile << "\t" << "}\n";
         }
@@ -213,27 +213,31 @@ namespace Eklipse
         auto activeScene = SceneManager::GetActiveScene();
 
         auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
+        bool hasCodeToCompile = classReflections.size() > 0;
 
         Path scenePath = AssetManager::GetMetadata(activeScene->Handle).FilePath;
         Scene::Save(activeScene, scenePath);
         activeScene->DestroyAllScripts();
 
         Unload();
+        GenerateFactoryFile(config.scriptGeneratedDirectoryPath, classReflections);
 
-        bool hasCodeToCompile = GenerateFactoryFile(config.scriptGeneratedDirectoryPath);
         if (hasCodeToCompile)
         {
             RunPremake(config.scriptPremakeDirectoryPath);
             CompileScripts(config.scriptsSourceDirectoryPath, config.configuration);
 
-            auto& libraryPath = m_scriptLinker->GetLibraryPath();
-            if (fs::exists(libraryPath) && m_scriptLinker->LinkScriptLibrary(libraryPath))
+            auto& libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+            if (FileUtilities::IsPathValid(libraryPath))
             {
-                m_scriptLinker->FetchScriptClasses(classReflections);
+                if (m_scriptLinker->LinkScriptLibrary(libraryPath))
+                    m_scriptLinker->FetchScriptClasses(classReflections);
+                else
+                    EK_CORE_ERROR("Library link failed at path: '{0}'. Cannot fetch scripts!", libraryPath.string());
             }
             else
             {
-                EK_CORE_ERROR("Library link failed at path: '{0}'. Cannot fetch scripts!", libraryPath.string());
+                EK_CORE_ERROR("Library path is invalid: '{0}'", libraryPath.string());
             }
 
             if (m_state == ScriptsState::COMPILATION_SUCCEEDED)

@@ -21,7 +21,6 @@ namespace EklipseEngine
 		struct ClassInfo
 		{
 			Script* (*create)(Ref<Eklipse::Entity> entity);
-			std::string baseClass;
 			std::unordered_map<std::string, ClassMemberInfo> members;
 		};
 	}

@@ -174,7 +174,7 @@ namespace Eklipse
 					attributeDescription.push_back(attribute);
 				}
 
-				if (g_VKOffScreenFramebuffers[0] == nullptr)
+				if (g_VKOffScreenFramebuffers.size() <= 0)
 				{
 					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKDefaultFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
 				}

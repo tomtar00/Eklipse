@@ -6,10 +6,12 @@ namespace Eklipse
 	class EK_API SceneManager
 	{
 	public:
-		static void SetActiveScene(Scene* scene);
-		static Scene* GetActiveScene();
+		static void SetActiveScene(Ref<Scene> scene);
+		static Ref<Scene> GetActiveScene();
+
+		static void Dispose();
 
 	private:
-		static Scene* s_activeScene;
+		static Ref<Scene> s_activeScene;
 	};
 }

@@ -1,0 +1,12 @@
+Name: NewMaterial
+Shader: 7292033772507894079
+PushConstants:
+  pConstants:
+    - Name: Model
+      Type: mat4
+      Data: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [-2.01672506, 0, -0.629293203, 1]]
+    - Name: Tint
+      Type: float3
+      Data: [1, 1, 1]
+Samplers:
+  texSampler: 17116328772492371489

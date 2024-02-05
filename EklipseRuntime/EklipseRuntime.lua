@@ -43,6 +43,7 @@ project "EklipseRuntime"
 
 	defines
 	{
+        "EK_ENABLE_ASSERTS",
 		"SPDLOG_COMPILED_LIB"
 	}
 

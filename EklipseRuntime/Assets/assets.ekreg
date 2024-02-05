@@ -1,0 +1,34 @@
+AssetRegistry:
+  - Handle: 5756264914750367782
+    FilePath: Assets/Meshes/sphere.obj
+    Type: Mesh
+  - Handle: 6095352003233711552
+    FilePath: Assets/Meshes/cube.obj
+    Type: Mesh
+  - Handle: 7292033772507894079
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Shaders/3d_sampled.glsl
+    Type: Shader
+  - Handle: 8063606637489910226
+    FilePath: Assets/Shaders/3D.glsl
+    Type: Shader
+  - Handle: 8699975344002982388
+    FilePath: Assets/Shaders/2D.glsl
+    Type: Shader
+  - Handle: 10094526034968617192
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Scenes/Untitled.eksc
+    Type: Scene
+  - Handle: 11476325439977445302
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Materials/2D.ekmt
+    Type: Material
+  - Handle: 15941156834627045376
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Materials/3D.ekmt
+    Type: Material
+  - Handle: 16524539593838936760
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Materials/NewMaterial.ekmt
+    Type: Material
+  - Handle: 16746509999713882958
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Meshes/viking.obj
+    Type: Mesh
+  - Handle: 17116328772492371489
+    FilePath: C:/Users/User/Desktop/EklipseProjects/example4/Assets/Textures/viking.png
+    Type: Texture2D

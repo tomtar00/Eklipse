@@ -1,0 +1,9 @@
+Name: 3D
+Shader: 8063606637489910226
+PushConstants:
+  pConstants:
+    - Name: Model
+      Type: mat4
+      Data: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 1.35767257, 1]]
+Samplers:
+  {}
