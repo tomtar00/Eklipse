@@ -140,6 +140,7 @@ namespace Eklipse
 
         CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
+        auto& scriptClassMap = ScriptLinker::Get().GetScriptClasses();
         auto view = srcSceneRegistry.view<ScriptComponent>();
         for (auto srcEntity : view)
         {
@@ -149,43 +150,45 @@ namespace Eklipse
 
             auto& srcComponent = srcSceneRegistry.get<ScriptComponent>(srcEntity);
             auto& dstComponent = dstEntityHandle.AddComponent<ScriptComponent>();
-            dstComponent.SetScript(srcComponent.scriptName, srcComponent.classInfo, dstEntityHandle);
+            EK_ASSERT(scriptClassMap.find(srcComponent.scriptName) != scriptClassMap.end(), "Script '{}' not found", srcComponent.scriptName);
+            auto& scriptClassInfo = scriptClassMap.at(srcComponent.scriptName);
+
+            dstComponent.SetScript(srcComponent.scriptName, scriptClassInfo, dstEntityHandle);
 
             EK_CORE_TRACE("Copying script '{0}' of entity with ID = {1}, name = {2}", srcComponent.scriptName, uuid, dstEntityHandle.GetName());
 
-            // TODO: refactor
-            for (auto& [memberName, member] : srcComponent.classInfo.members)
+            for (auto& [memberName, memberRef] : scriptClassInfo.reflection.members)
             {
-                if (member.type == "int")
+                if (memberRef.memberType == "EK_INT")
                 {
-                    int value = *srcComponent.GetScriptValue<int>(member.offset);
-                    dstComponent.SetScriptValue(member.offset, value);
-                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberName, uuid, value);
+                    int value = *srcComponent.GetScriptValue<int>(memberRef.memberOffset);
+                    dstComponent.SetScriptValue(memberRef.memberOffset, value);
+                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberRef.memberName, uuid, value);
                 }
-                else if (member.type == "float")
+                else if (memberRef.memberType == "EK_FLOAT")
                 {
-                    float value = *srcComponent.GetScriptValue<float>(member.offset);
-                    dstComponent.SetScriptValue(member.offset, value);
-                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberName, uuid, value);
+                    float value = *srcComponent.GetScriptValue<float>(memberRef.memberOffset);
+                    dstComponent.SetScriptValue(memberRef.memberOffset, value);
+                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberRef.memberName, uuid, value);
                 }
-                else if (member.type == "bool")
+                else if (memberRef.memberType == "EK_BOOL")
                 {
-                    bool value = *srcComponent.GetScriptValue<bool>(member.offset);
-                    dstComponent.SetScriptValue(member.offset, value);
-                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberName, uuid, value);
+                    bool value = *srcComponent.GetScriptValue<bool>(memberRef.memberOffset);
+                    dstComponent.SetScriptValue(memberRef.memberOffset, value);
+                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberRef.memberName, uuid, value);
                 }
-                else if (member.type == "String")
+                else if (memberRef.memberType == "EK_STR")
                 {
-                    String& value = *srcComponent.GetScriptValue<String>(member.offset);
-                    dstComponent.SetScriptValue(member.offset, value);
-                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberName, uuid, value);
+                    String& value = *srcComponent.GetScriptValue<String>(memberRef.memberOffset);
+                    dstComponent.SetScriptValue(memberRef.memberOffset, value);
+                    EK_CORE_TRACE("Copying script property '{}' of entity with ID = {}, value = {}", memberRef.memberName, uuid, value);
                 }
-                else if (member.type == "glm::vec2")
-                    dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<glm::vec2>(member.offset));
-                else if (member.type == "glm::vec3")
-                    dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<glm::vec3>(member.offset));
-                else if (member.type == "glm::vec4")
-                    dstComponent.SetScriptValue(member.offset, *srcComponent.GetScriptValue<glm::vec4>(member.offset));
+                else if (memberRef.memberType == "EK_VEC2")
+                    dstComponent.SetScriptValue(memberRef.memberOffset, *srcComponent.GetScriptValue<glm::vec2>(memberRef.memberOffset));
+                else if (memberRef.memberType == "EK_VEC3")
+                    dstComponent.SetScriptValue(memberRef.memberOffset, *srcComponent.GetScriptValue<glm::vec3>(memberRef.memberOffset));
+                else if (memberRef.memberType == "EK_VEC4")
+                    dstComponent.SetScriptValue(memberRef.memberOffset, *srcComponent.GetScriptValue<glm::vec4>(memberRef.memberOffset));
             }
         }
         return newScene;
@@ -406,48 +409,48 @@ namespace Eklipse
             out << YAML::Key << "Name" << YAML::Value << scriptComponent.scriptName;
 
             out << YAML::Key << "Properties" << YAML::Value;
-            out << YAML::BeginMap;
+            out << YAML::BeginSeq;
 
             Vec<String> toRemove;
-            for (auto&& [name, member] : scriptComponent.classInfo.members)
+            const ScriptClassMap& scriptClasses = ScriptLinker::Get().GetScriptClasses();
+            auto scriptIter = scriptClasses.find(scriptComponent.scriptName);
+            for (auto& [memberName, memberRef] : scriptIter->second.reflection.members)
             {
-                auto& members = ScriptLinker::Get().GetScriptClasses().at(scriptComponent.scriptName).members;
-                auto it = members.find(name);
-                if (it == members.end()) // Serialize only when the script has the property
-                {
-                    toRemove.push_back(name);
-                    continue;
-                }
-
                 if (scriptComponent.script != nullptr)
                 {
-                    if (member.type == "int")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<int>(member.offset);
-                    else if (member.type == "float")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<float>(member.offset);
-                    else if (member.type == "bool")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<bool>(member.offset);
-                    else if (member.type == "String")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<String>(member.offset);
-                    else if (member.type == "glm::vec2")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<glm::vec2>(member.offset);
-                    else if (member.type == "glm::vec3")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<glm::vec3>(member.offset);
-                    else if (member.type == "glm::vec4")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<glm::vec4>(member.offset);
-                    else if (member.type == "glm::mat4")
-                        out << YAML::Key << name << YAML::Value << *scriptComponent.GetScriptValue<glm::mat4>(member.offset);
+                    out << YAML::BeginMap;
+
+                    out << YAML::Key << "Name" << YAML::Value << memberRef.memberName;
+
+                    if (memberRef.memberType == "EK_INT")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<int>(memberRef.memberOffset);
+                    else if (memberRef.memberType == "EK_FLOAT")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<float>(memberRef.memberOffset);
+                    else if (memberRef.memberType == "EK_BOOL")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<bool>(memberRef.memberOffset);
+                    else if (memberRef.memberType == "EK_STR")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<String>(memberRef.memberOffset);
+                    else if (memberRef.memberType == "EK_VEC2")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::vec2>(memberRef.memberOffset);
+                    else if (memberRef.memberType == "EK_VEC3")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::vec3>(memberRef.memberOffset);
+                    else if (memberRef.memberType == "EK_VEC4")
+                        out << YAML::Key << "Value" << YAML::Value << *scriptComponent.GetScriptValue<glm::vec4>(memberRef.memberOffset);
                     else
-                        EK_CORE_WARN("Unknown type '{0}' for script property '{1}' while serializing entity {2}", member.type, name, entity.GetUUID());
+                        EK_CORE_WARN("Unknown type '{0}' for script property '{1}' while serializing entity {2}", memberRef.memberType, memberRef.memberName, entity.GetUUID());
+
+                    out << YAML::Key << "Type" << YAML::Value << memberRef.memberType;
+                    out << YAML::Key << "Offset" << YAML::Value << memberRef.memberOffset;
+                    
+                    out << YAML::EndMap;
                 }
                 else
                 {
                     EK_CORE_WARN("Script '{0}' has never been initialized!", scriptComponent.scriptName);
                 }
             }
-            for (auto& name : toRemove)
-                scriptComponent.classInfo.members.erase(name);
-            out << YAML::EndMap;
+
+            out << YAML::EndSeq;
             out << YAML::EndMap;
         }
         out << YAML::EndMap;
@@ -542,8 +545,9 @@ namespace Eklipse
         if (scriptComponent)
         {
             auto scriptName = TryDeserailize<String>(scriptComponent, "Name", "");
-            auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
-            sc.scriptName = scriptName;
+            auto& scriptComponent = deserializedEntity.AddComponent<ScriptComponent>();
+            scriptComponent.scriptName = scriptName;
+            ScriptLinker::Get().FetchScriptClasses({ scriptName });
             /*if (!scriptName.empty())
             {
                 EklipseEngine::Reflections::ClassInfo info{};
@@ -604,41 +608,39 @@ namespace Eklipse
     {
         EK_CORE_TRACE("Deserializing script properties of entity {0}", entity.GetUUID());
 
-        if (propertiesNode)
+        auto& scriptClassMap = ScriptLinker::Get().GetScriptClasses();
+        auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+        for (auto propertyNode : propertiesNode)
         {
-            auto& sc = entity.GetComponent<ScriptComponent>();
-            for (auto propertyNode : propertiesNode)
-            {
-                String name = propertyNode.first.as<String>();
-                EK_ASSERT(sc.classInfo.members.find(name) != sc.classInfo.members.end(), "Script property not found in class info");
-                String type = sc.classInfo.members.at(name).type;
-                uint32_t offset = sc.classInfo.members.at(name).offset;
+            String name = TryDeserailize<String>(propertyNode, "Name", "");
+            String type = TryDeserailize<String>(propertyNode, "Type", "");
+            uint32_t offset = TryDeserailize<uint32_t>(propertyNode, "Offset", (uint32_t)0);
 
-                if (type == "int")
-                    sc.SetScriptValue<int>(offset, TryDeserailize(propertiesNode, name, 0));
-                else if (type == "float")
-                    sc.SetScriptValue<float>(offset, TryDeserailize(propertiesNode, name, 0.0f));
-                else if (type == "bool")
-                    sc.SetScriptValue<bool>(offset, TryDeserailize(propertiesNode, name, false));
-                else if (type == "String")
-                    sc.SetScriptValue<String>(offset, TryDeserailize(propertiesNode, name, String{}));
-                else if (type == "glm::vec2")
-                    sc.SetScriptValue<glm::vec2>(offset, TryDeserailize(propertiesNode, name, glm::vec2{}));
-                else if (type == "glm::vec3")
-                    sc.SetScriptValue<glm::vec3>(offset, TryDeserailize(propertiesNode, name, glm::vec3{}));
-                else if (type == "glm::vec4")
-                    sc.SetScriptValue<glm::vec4>(offset, TryDeserailize(propertiesNode, name, glm::vec4{}));
-                else if (type == "glm::mat4")
-                    sc.SetScriptValue<glm::mat4>(offset, TryDeserailize(propertiesNode, name, glm::mat4 {}));
-                else
-                    EK_CORE_WARN("Unknown type '{0}' for script property '{1}' while deserializing script properties on entity {2}", type, name, entity.GetUUID());
+            if (type == "EK_INT")
+                scriptComponent.SetScriptValue<int>(offset, TryDeserailize(propertyNode, "Value", 0));
+            else if (type == "EK_FLOAT")
+                scriptComponent.SetScriptValue<float>(offset, TryDeserailize(propertyNode, "Value", 0.0f));
+            else if (type == "EK_BOOL")
+                scriptComponent.SetScriptValue<bool>(offset, TryDeserailize(propertyNode, "Value", false));
+            else if (type == "EK_STR")
+                scriptComponent.SetScriptValue<String>(offset, TryDeserailize(propertyNode, "Value", String{}));
+            else if (type == "EK_VEC2")
+                scriptComponent.SetScriptValue<glm::vec2>(offset, TryDeserailize(propertyNode, "Value", glm::vec2{}));
+            else if (type == "EK_VEC3")
+                scriptComponent.SetScriptValue<glm::vec3>(offset, TryDeserailize(propertyNode, "Value", glm::vec3{}));
+            else if (type == "EK_VEC4")
+                scriptComponent.SetScriptValue<glm::vec4>(offset, TryDeserailize(propertyNode, "Value", glm::vec4{}));
+            else
+                EK_CORE_WARN("Unknown type '{0}' for script property '{1}' while deserializing script properties on entity {2}", type, name, entity.GetUUID());
 
-                EK_CORE_TRACE("Deserialized script property '{0}' of entity {1}", name, entity.GetUUID());
-            }	
+            EK_ASSERT(scriptClassMap.find(scriptComponent.scriptName) != scriptClassMap.end(), "Script '{}' not found", scriptComponent.scriptName);
+            auto& scriptClassInfo = scriptClassMap.at(scriptComponent.scriptName);
+            scriptClassInfo.reflection.members[name] = { name, type, offset };
+
+            EK_CORE_TRACE("Deserialized script property '{0}' of entity {1}", name, entity.GetUUID());
         }
 
         EK_CORE_TRACE("Deserialized script properties of entity {0}", entity.GetUUID());
-
         return true;
     }
 

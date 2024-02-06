@@ -1,5 +1,8 @@
 #pragma once
 #include <memory>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 #ifdef EK_PLATFORM_WINDOWS
 	#ifdef EK_SCRIPT_API_BUILD_DLL
@@ -13,6 +16,13 @@
 
 namespace EklipseEngine
 {
+	namespace fs = std::filesystem;
+	using Path = fs::path;
+	using String = std::string;
+
+	template <typename T>
+	using Vec = std::vector<T>;
+
 	template<typename T>
 	using Unique = std::unique_ptr<T>;
 	template<typename T, typename ... Args>

@@ -29,7 +29,7 @@ namespace Eklipse
         for (auto& classRef : classReflections)
         {
 			EK_CORE_TRACE("Class: {0}", classRef.className);
-            for (auto& memberRef : classRef.members)
+            for (auto& [memberName, memberRef] : classRef.members)
             {
 				EK_CORE_TRACE("    {0}: type={1}", memberRef.memberName, memberRef.memberType);
 			}
@@ -74,8 +74,8 @@ namespace Eklipse
                     {
                         ClassMemberReflection memberReflection{};
                         memberReflection.memberName = match[2].str();
-                        memberReflection.memberType = match[1].str();
-                        classReflection.members.push_back(memberReflection);
+                        memberReflection.memberType = match[1].str(); // TODO: check if type is one of the supported types
+                        classReflection.members[memberReflection.memberName] = memberReflection;
                     }
                 }
             }

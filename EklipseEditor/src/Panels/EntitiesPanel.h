@@ -7,9 +7,9 @@ namespace Eklipse
 	{
 	public:
 		virtual bool OnGUI(float deltaTime) override;
-		void SetContext(Ref<Scene> scene);
+		void SetContext(Scene* scene);
 
 	private:
-		Ref<Scene> m_sceneContext = nullptr;
+		Scene* m_sceneContext = nullptr;
 	};
 }

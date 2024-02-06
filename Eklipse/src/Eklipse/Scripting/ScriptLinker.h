@@ -1,18 +1,18 @@
 #pragma once
-#include "ClassReflection.h"
 #include <ScriptAPI/Reflections.h>
-
 #include <dylib.hpp>
 
 namespace Eklipse
 {
 	using ClassInfo = EklipseEngine::Reflections::ClassInfo;
+	using ClassReflection = EklipseEngine::Reflections::ClassReflection;
 	using ScriptClassMap = std::map<String, ClassInfo>;
 
 	class EK_API ScriptLinker
 	{
 	public:
 		ScriptLinker();
+		~ScriptLinker();
 
 		static ScriptLinker& Get();
 
@@ -27,7 +27,7 @@ namespace Eklipse
 		bool IsLibraryLinked() const;
 
 		const Path& GetLibraryPath() const;
-		const ScriptClassMap& GetScriptClasses() const;
+		ScriptClassMap& GetScriptClasses();
 
 	private:
 		static ScriptLinker* s_instance;

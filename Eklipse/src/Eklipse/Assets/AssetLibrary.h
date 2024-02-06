@@ -14,6 +14,9 @@ namespace Eklipse
 		virtual bool IsAssetHandleValid(AssetHandle handle) const = 0;
 		virtual bool IsAssetLoaded(AssetHandle handle) const = 0;
 
+		virtual void UnloadAssets() = 0;
+		virtual void ReloadAssets() = 0;
+
 		inline AssetMap& GetLoadedAssets() { return m_loadedAssets; }
 
 	protected:

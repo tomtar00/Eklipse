@@ -159,28 +159,35 @@ namespace Eklipse
 				}
 			
 				// script properties
-				if (scriptComp != nullptr && scriptComp->script != nullptr && scriptComp->classInfo.members.size() > 0)
+				if (scriptComp != nullptr && scriptComp->script != nullptr)
 				{
-					ImGui::Spacing();
-					ImGui::Text("Properties");
-					ImGui::Spacing();
+					auto& scriptClassMap = ScriptLinker::Get().GetScriptClasses();
+					EK_ASSERT(scriptClassMap.find(scriptComp->scriptName) != scriptClassMap.end(), "Script '{}' not found!", scriptComp->scriptName);
+					auto& classRef = scriptClassMap.at(scriptComp->scriptName).reflection;
 
-					for (auto&& [name, member] : scriptComp->classInfo.members)
+					if (classRef.members.size() > 0)
 					{
-						if (member.type == "bool")
-							ImGui::Checkbox(name.c_str(), scriptComp->GetScriptValue<bool>(member.offset));
-						else if (member.type == "int")
-							ImGui::DragInt(name.c_str(), scriptComp->GetScriptValue<int>(member.offset));
-						else if (member.type == "float")
-							ImGui::DragFloat(name.c_str(), scriptComp->GetScriptValue<float>(member.offset));
-						else if (member.type == "String")
-							ImGui::InputText(name.c_str(), scriptComp->GetScriptValue<String>(member.offset));
-						else if (member.type == "glm::vec2")
-							ImGui::DragFloat2(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(member.offset)));
-						else if (member.type == "glm::vec3")
-							ImGui::DragFloat3(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(member.offset)));
-						else if (member.type == "glm::vec4")
-							ImGui::DragFloat4(name.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(member.offset)));
+						ImGui::Spacing();
+						ImGui::Text("Properties");
+						ImGui::Spacing();
+
+						for (auto& [memberName, memberRef] : classRef.members)
+						{
+							if (memberRef.memberType == "EK_INT")
+								ImGui::DragInt(memberRef.memberName.c_str(), scriptComp->GetScriptValue<int>(memberRef.memberOffset));
+							else if (memberRef.memberType == "EK_FLOAT")
+								ImGui::DragFloat(memberRef.memberName.c_str(), scriptComp->GetScriptValue<float>(memberRef.memberOffset));
+							else if (memberRef.memberType == "EK_STR")
+								ImGui::InputText(memberRef.memberName.c_str(), scriptComp->GetScriptValue<String>(memberRef.memberOffset));
+							else if (memberRef.memberType == "EK_BOOL")
+								ImGui::Checkbox(memberRef.memberName.c_str(), scriptComp->GetScriptValue<bool>(memberRef.memberOffset));
+							else if (memberRef.memberType == "EK_VEC2")
+								ImGui::DragFloat2(memberRef.memberName.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(memberRef.memberOffset)));
+							else if (memberRef.memberType == "EK_VEC3")
+								ImGui::DragFloat3(memberRef.memberName.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(memberRef.memberOffset)));
+							else if (memberRef.memberType == "EK_VEC4")
+								ImGui::DragFloat4(memberRef.memberName.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(memberRef.memberOffset)));
+						}
 					}
 				}
 

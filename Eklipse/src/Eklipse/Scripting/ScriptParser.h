@@ -1,9 +1,11 @@
 #pragma once
-#include "ClassReflection.h"
 #include <ScriptAPI/Reflections.h>
 
 namespace Eklipse
 {
+    using ClassReflection = EklipseEngine::Reflections::ClassReflection;
+	using ClassMemberReflection = EklipseEngine::Reflections::ClassMemberReflection;
+
 	class ScriptParser
 	{
 	public:

@@ -52,7 +52,7 @@ namespace Eklipse
         };
 
         m_editorScene = CreateRef<Scene>();
-        m_entitiesPanel.SetContext(m_editorScene);
+        m_entitiesPanel.SetContext(m_editorScene.get());
         SceneManager::SetActiveScene(m_editorScene);
 
         m_scriptManager = CreateRef<ScriptManager>(&m_settings.ScriptManagerSettings);
@@ -329,11 +329,12 @@ namespace Eklipse
         if (Project::GetActive())
         {
             m_editorAssetLibrary->UnloadAssets();
-
-            if (SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING)
-            {
-                SceneManager::GetActiveScene()->OnSceneStop();
-            }
+            
+        }
+        if (quit)
+        {
+            m_editorScene.reset();
+            m_editorScene = nullptr;
         }
     }
     
@@ -369,6 +370,10 @@ namespace Eklipse
         }
         auto& config = Project::GetActive()->GetConfig();
 
+        // setup script manager
+        m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
+        m_scriptManager->Load();
+
         // init asset library
         m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
 
@@ -386,12 +391,8 @@ namespace Eklipse
 
         // get start scene
         m_editorScene = AssetManager::GetAsset<Scene>(handle);
-        m_entitiesPanel.SetContext(m_editorScene);
+        m_entitiesPanel.SetContext(m_editorScene.get());
         SceneManager::SetActiveScene(m_editorScene);
-
-        // setup script manager
-        m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
-        m_scriptManager->Load();
 
         // save project
         Project::SaveActive();
@@ -419,11 +420,12 @@ namespace Eklipse
                 EK_ERROR("Failed to deserialize asset registry!");
             }
 
+            m_scriptManager->Load();
+
             m_editorScene = AssetManager::GetAsset<Scene>(config.startSceneHandle);
             SceneManager::SetActiveScene(m_editorScene);
-            m_entitiesPanel.SetContext(m_editorScene);
+            m_entitiesPanel.SetContext(m_editorScene.get());
 
-            m_scriptManager->Load();
             m_editorAssetLibrary->StartFileWatcher();
 
             OnProjectLoaded();
@@ -528,7 +530,7 @@ namespace Eklipse
         SceneManager::SetActiveScene(sceneCopy);
         SceneManager::GetActiveScene()->OnSceneStart();
 
-        m_entitiesPanel.SetContext(sceneCopy);
+        m_entitiesPanel.SetContext(sceneCopy.get());
         ClearSelection();
     }
     void EditorLayer::OnSceneStop()
@@ -541,7 +543,7 @@ namespace Eklipse
         SceneManager::GetActiveScene()->OnSceneStop();
         SceneManager::SetActiveScene(m_editorScene);
 
-        m_entitiesPanel.SetContext(m_editorScene);
+        m_entitiesPanel.SetContext(m_editorScene.get());
         ClearSelection();
 
         // Recompile scripts if they were changed while playing
@@ -741,16 +743,16 @@ namespace Eklipse
             }
 
             ImGui::SeparatorText("Scripts");
-            for (auto&& [name, config] : ScriptLinker::Get().GetScriptClasses())
+            for (auto&& [name, classInfo] : ScriptLinker::Get().GetScriptClasses())
             {
                 if (ImGui::CollapsingHeader(name.c_str()))
                 {
                     ImGui::Spacing();
                     ImGui::Indent();
-                    ImGui::Text("Create function exists: %s", (config.create != nullptr ? "true" : "false"));
-                    for (auto&& [name, member] : config.members)
+                    ImGui::Text("Create function exists: %s", (classInfo.create != nullptr ? "true" : "false"));
+                    for (auto& [memberName, memberRef] : classInfo.reflection.members)
                     {
-                        ImGui::Text("Name: %s   Type: %s   Offset: %d", name.c_str(), member.type.c_str(), member.offset);
+                        ImGui::Text("Name: %s   Type: %s   Offset: %d", name.c_str(), memberRef.memberType.c_str(), memberRef.memberOffset);
                     }
                     ImGui::Unindent();
                 }

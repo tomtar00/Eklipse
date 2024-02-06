@@ -7,6 +7,14 @@
 #include "ScriptAPI/Components.h"
 #include "ScriptAPI/Input.h"
 
+#define EK_INT int
+#define EK_FLOAT float
+#define EK_BOOL bool
+#define EK_STR std::string
+#define EK_VEC2 glm::vec2
+#define EK_VEC3 glm::vec3
+#define EK_VEC4 glm::vec4
+
 namespace EklipseEngine
 {
 	EK_SCRIPT_API void Log(const std::string& message, ...);

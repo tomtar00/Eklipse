@@ -58,6 +58,8 @@ namespace Eklipse
         for (auto&& [handle, asset] : m_loadedAssets)
         {
             asset->Dispose();
+            asset.reset();
+            asset = nullptr;
         }
     }
     void RuntimeAssetLibrary::ReloadAssets()

@@ -10,6 +10,11 @@ namespace Eklipse
 		EK_ASSERT(!s_instance, "ScriptLinker already exists!");
 		s_instance = this;
 	}
+	ScriptLinker::~ScriptLinker()
+	{
+		s_instance = nullptr;
+		UnlinkScriptLibrary();
+	}
 
 	ScriptLinker& ScriptLinker::Get()
 	{
@@ -68,9 +73,8 @@ namespace Eklipse
 		{
 			try 
 			{
-				ClassInfo classInfo;
+				auto& classInfo = m_scriptClassMap[scriptClassName];
 				m_scriptLibrary->get_function<void(ClassInfo&)>("Get__" + scriptClassName)(classInfo);
-				m_scriptClassMap[scriptClassName] = classInfo;
 			}
 			catch (const std::exception& e) 
 			{
@@ -103,7 +107,7 @@ namespace Eklipse
 	{
 		return m_libraryPath;
 	}
-	const ScriptClassMap& ScriptLinker::GetScriptClasses() const 
+	ScriptClassMap& ScriptLinker::GetScriptClasses() 
 	{
 		return m_scriptClassMap;
 	}

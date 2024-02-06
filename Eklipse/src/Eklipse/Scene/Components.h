@@ -61,7 +61,6 @@ namespace Eklipse
 	{
 		EklipseEngine::Script* script = nullptr;
 		String scriptName;
-		EklipseEngine::Reflections::ClassInfo classInfo;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent& script) = default;

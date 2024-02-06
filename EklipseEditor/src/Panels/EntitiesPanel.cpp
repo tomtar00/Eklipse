@@ -57,7 +57,7 @@ namespace Eklipse
 		ImGui::Separator();
 		m_sceneContext->ForEachEntity([&](auto entityID)
 		{
-			Entity entity{ entityID, m_sceneContext.get() };
+			Entity entity{ entityID, m_sceneContext };
 			auto& nameComponent = entity.GetComponent<NameComponent>();
 
 			bool expand = ImGui::TreeNodeEx(nameComponent.name.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth);
@@ -92,7 +92,7 @@ namespace Eklipse
 		ImGui::End();
 		return true;
 	}
-	void EntitiesPanel::SetContext(Ref<Scene> scene)
+	void EntitiesPanel::SetContext(Scene* scene)
 	{
 		m_sceneContext = scene;
 	}

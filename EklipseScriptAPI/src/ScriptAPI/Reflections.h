@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <unordered_map>
+#include <map>
 
 #include "Script.h"
 
@@ -13,15 +13,22 @@ namespace EklipseEngine
 {
 	namespace Reflections
 	{
-		struct ClassMemberInfo
+		struct ClassMemberReflection
 		{
-			std::string type;
-			size_t offset;
+			String memberName;
+			String memberType;
+			uint32_t memberOffset;
 		};
+		struct ClassReflection
+		{
+			String className;
+			std::map<String, ClassMemberReflection> members;
+		};
+
 		struct ClassInfo
 		{
 			Script* (*create)(Ref<Eklipse::Entity> entity);
-			std::unordered_map<std::string, ClassMemberInfo> members;
+			ClassReflection reflection;
 		};
 	}
 }

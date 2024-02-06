@@ -12,14 +12,12 @@ namespace Eklipse
 		EK_PROFILE();
 
 		auto& translation = glm::translate(glm::mat4(1.0f), transform.position);
-
 		/*
 		auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		*/
 		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
-
 		auto& scale = glm::scale(glm::mat4(1.0f), transform.scale);
 
 		// TODO: Should set transformMatrix here
@@ -35,18 +33,18 @@ namespace Eklipse
 		{
 			script = info.create(CreateRef<Entity>(entity));
 			scriptName = name; 
-			classInfo = info; 
+			//classInfo = info; 
 
-			EK_CORE_TRACE("Script '{0}' created! Address: {1}", name, (int)script);
+			EK_CORE_DBG("Script '{0}' created!", name);
 		}
 		else
 		{
-			EK_ERROR("Script '{0}' does not have a create function!", name);
+			EK_CORE_ERROR("Script '{0}' does not have a create function!", name);
 		}
 	}
 	void ScriptComponent::DestroyScript()
 	{
-		EK_CORE_TRACE("Destroying script '{0}' from address: {1}", scriptName, (int)script);
+		EK_CORE_TRACE("Destroying script '{0}'", scriptName);
 
 		if (script)
 			delete script;

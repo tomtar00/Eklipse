@@ -118,12 +118,15 @@ namespace Eklipse
         {
             factoryFile << "\t" << "EK_EXPORT void Get__" << classRef.className << "(ClassInfo& info)\n";
             factoryFile << "\t" << "{\n";
-            factoryFile << "\t" << "	info.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << classRef.className << "(); script->SetEntity(entity); return script; };\n";
-            for (const auto& memberRef : classRef.members)
+            factoryFile << "\t" << "\tinfo.create = [](Ref<Eklipse::Entity> entity)->Script* { auto script = new " << classRef.className << "(); script->SetEntity(entity); return script; };\n";
+            factoryFile << "\t" << "\tinfo.reflection.className = \"" << classRef.className << "\";\n";
+            for (const auto& [memberName, memberRef] : classRef.members)
             {
-                factoryFile << "\t" << "	info.members[\"" << memberRef.memberName << "\"] = { " << "\"" << memberRef.memberType << "\", " << "offsetof(" << classRef.className << ", " << memberRef.memberName << ") };\n";
+                //String memberRefString = fmt::format("\tinfo.reflection.members.push_back({ \"{0}\", \"{1}\", offsetof({2}, {3}) });\n", memberRef.memberName, memberRef.memberType, classRef.className, memberRef.memberName);
+                //factoryFile << "\t" << "\tinfo.reflection.members.push_back({ \"" << memberRef.memberName << "\", \"" << memberRef.memberType << "\", offsetof(" << classRef.className << ", " << memberRef.memberName << ") });\n";
+                factoryFile << "\t" << "\tinfo.reflection.members[\"" << memberRef.memberName << "\"] = { \"" << memberRef.memberName << "\", \"" << memberRef.memberType << "\", offsetof(" << classRef.className << ", " << memberRef.memberName << ") };\n";
             }
-            factoryFile << "\t" << "}\n";
+            factoryFile << "\t}\n";
         }
         factoryFile << "}";
 
@@ -210,14 +213,18 @@ namespace Eklipse
         EK_CORE_INFO("Recompiling scripts...");
 
         auto& config = Project::GetActive()->GetConfig();
-        auto activeScene = SceneManager::GetActiveScene();
 
         auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
         bool hasCodeToCompile = classReflections.size() > 0;
 
-        Path scenePath = AssetManager::GetMetadata(activeScene->Handle).FilePath;
-        Scene::Save(activeScene, scenePath);
-        activeScene->DestroyAllScripts();
+        auto activeScene = SceneManager::GetActiveScene();
+        Path scenePath;
+        if (AssetManager::IsAssetHandleValid(activeScene->Handle))
+        {
+            scenePath = AssetManager::GetMetadata(activeScene->Handle).FilePath;
+            Scene::Save(activeScene, scenePath);
+            activeScene->DestroyAllScripts();
+        }
 
         Unload();
         GenerateFactoryFile(config.scriptGeneratedDirectoryPath, classReflections);
@@ -242,7 +249,10 @@ namespace Eklipse
 
             if (m_state == ScriptsState::COMPILATION_SUCCEEDED)
             {
-                activeScene->InitializeAllScripts(scenePath);
+                if (AssetManager::IsAssetHandleValid(activeScene->Handle))
+                {
+                    activeScene->InitializeAllScripts(scenePath);
+                }
                 EK_CORE_INFO("Recompilation successfull!");
             }
             else

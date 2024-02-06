@@ -12,14 +12,14 @@ namespace Eklipse
 		{
 			m_runtimeLayer = CreateRef<RuntimeLayer>();
 
-			//EklipseScriptAPI::ScriptingConfig config{};
-			//// Logging
-			//{
-			//	config.loggerConfig.name = "SCRIPT";
-			//	config.loggerConfig.pattern = "%^[%T] %n: %v%$";
-			//	config.loggerConfig.sink = GetTerminal()->GetSink();
-			//}
-			//EklipseScriptAPI::Init(config);
+			EklipseScriptAPI::ScriptingConfig config{};
+			// Logging
+			{
+				config.loggerConfig.name = "SCRIPT";
+				config.loggerConfig.pattern = "%^[%T] %n: %v%$";
+				config.loggerConfig.sink = Log::clientLogger()->sinks()[0];
+			}
+			EklipseScriptAPI::Init(config);
 
 			PushLayer(m_runtimeLayer);
 		}

@@ -16,5 +16,6 @@ namespace Eklipse
 	void SceneManager::Dispose()
     {
         s_activeScene.reset();
+		s_activeScene = nullptr;
     }
 }

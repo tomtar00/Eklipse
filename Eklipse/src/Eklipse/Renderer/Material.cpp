@@ -393,7 +393,7 @@ namespace Eklipse
             sampler.textureHandle = textureHandle;
             sampler.texture = texture;
 
-            EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, m_name, path.string());
+            EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, m_name, sampler.textureHandle);
         }
 
         return true;
