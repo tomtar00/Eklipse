@@ -65,7 +65,7 @@ namespace Eklipse
 
         virtual void Bind() const = 0;
         virtual void Unbind() const = 0;
-        virtual void Dispose() const = 0;
+        virtual void Dispose() = 0;
     };
 
     class EK_API Texture2D : public Texture

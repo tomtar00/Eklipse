@@ -348,7 +348,7 @@ namespace Eklipse
         }
         void VKTexture2D::Bind() const {}
         void VKTexture2D::Unbind() const {}
-        void VKTexture2D::Dispose() const
+        void VKTexture2D::Dispose()
         {
             vkDestroySampler(g_logicalDevice, m_sampler, nullptr);
             vkDestroyImageView(g_logicalDevice, m_imageView, nullptr);

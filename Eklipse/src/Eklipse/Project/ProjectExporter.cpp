@@ -5,6 +5,8 @@
 
 namespace Eklipse
 {
+    // TODO: This is a temporary implementation of the project exporter.
+    // Is should look for exported scenes and get only the neccessary assets instead of copying everything.
     bool CopyAssetsFromEditorRegistry(const Path& sourceAssetsDir, const Path& destinationAssetsDir, AssetRegistry& registry)
     {
         AssetRegistry runtimeRegistry;

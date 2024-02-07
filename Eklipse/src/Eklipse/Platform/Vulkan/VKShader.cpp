@@ -62,7 +62,7 @@ namespace Eklipse
 			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 		}
 		void VKShader::Unbind() const {}
-		void VKShader::Dispose() const
+		void VKShader::Dispose()
 		{
 			if (m_isValid)
 			{

@@ -29,7 +29,7 @@ namespace Eklipse
 				}
 			}
 		}
-		void VKMaterial::Dispose() const
+		void VKMaterial::Dispose()
 		{
 			vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
 		}

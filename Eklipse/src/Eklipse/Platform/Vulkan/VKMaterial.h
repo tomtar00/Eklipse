@@ -15,7 +15,7 @@ namespace Eklipse
 			VKMaterial(const Path& path, AssetHandle shaderHandle);
 
 			virtual void Bind() override;
-			virtual void Dispose() const override;
+			virtual void Dispose() override;
 			virtual void ApplyChanges() override;
 
 		private:

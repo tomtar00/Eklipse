@@ -9,253 +9,287 @@
 
 namespace Eklipse
 {
-	void DetailsPanel::Setup(String& name)
-	{
-		m_entityNameBuffer = name;
-	}
-	bool DetailsPanel::OnGUI(float deltaTime)
-	{
-		EK_PROFILE();
+    void DetailsPanel::Setup(String& name)
+    {
+        m_entityNameBuffer = name;
+    }
+    bool DetailsPanel::OnGUI(float deltaTime)
+    {
+        EK_PROFILE();
 
-		if (!GuiPanel::OnGUI(deltaTime)) return false;
+        if (!GuiPanel::OnGUI(deltaTime)) return false;
 
-		ImGui::Begin("Details");
+        ImGui::Begin("Details");
 
-		DetailsSelectionInfo& info = EditorLayer::Get().SelectionInfo;
+        DetailsSelectionInfo& info = EditorLayer::Get().SelectionInfo;
 
-		if (info.type == SelectionType::NONE)
-		{
-			ImGui::End();
-			return true;
-		}
+        if (info.type == SelectionType::NONE)
+        {
+            ImGui::End();
+            return true;
+        }
 
-		// Split logic based on type
-		if (info.type == SelectionType::ENTITY)
-		{
-			OnEntityGUI(info.entity);
-		}
-		else if (info.type == SelectionType::MATERIAL)
-		{
-			OnMaterialGUI(info.material);
-		}
+        // Split logic based on type
+        if (info.type == SelectionType::ENTITY)
+        {
+            OnEntityGUI(info.entity);
+        }
+        else if (info.type == SelectionType::MATERIAL)
+        {
+            OnMaterialGUI(info.material);
+        }
 
-		ImGui::End();
-		return true;
-	}
-	void DetailsPanel::OnEntityGUI(Entity entity)
-	{
-		// Right-click menu
-		{
-			if (ImGui::BeginPopupContextWindow())
-			{
-				if (ImGui::MenuItem("Add Mesh Component") && !entity.HasComponent<MeshComponent>())
-					entity.AddComponent<MeshComponent>();
+        ImGui::End();
+        return true;
+    }
+    void DetailsPanel::OnEntityGUI(Entity entity)
+    {
+        // Right-click menu
+        {
+            if (ImGui::BeginPopupContextWindow())
+            {
+                if (ImGui::MenuItem("Add Mesh Component") && !entity.HasComponent<MeshComponent>())
+                    entity.AddComponent<MeshComponent>();
 
-				if (ImGui::MenuItem("Add Script Component") && !entity.HasComponent<ScriptComponent>())
-					entity.AddComponent<ScriptComponent>();
+                if (ImGui::MenuItem("Add Script Component") && !entity.HasComponent<ScriptComponent>())
+                    entity.AddComponent<ScriptComponent>();
 
-				if (ImGui::MenuItem("Add Camera Component") && !entity.HasComponent<CameraComponent>())
-					entity.AddComponent<CameraComponent>();
+                if (ImGui::MenuItem("Add Camera Component") && !entity.HasComponent<CameraComponent>())
+                    entity.AddComponent<CameraComponent>();
 
-				ImGui::EndPopup();
-			}
-		}
+                ImGui::EndPopup();
+            }
+        }
 
-		// ID
-		{
-			ImGui::Text("ID: %llu", entity.GetUUID());
-		}
+#ifdef EK_DEBUG
+        // ID
+        {
+            ImGui::Text("ID: %llu", entity.GetUUID());
+        }
+#endif
 
-		// Name
-		{
-			if (!ImGui::InputText("Entity Name", &m_entityNameBuffer))
-			{
-				if (m_entityNameBuffer.size() > 0)
-				{
-					entity.GetComponent<NameComponent>().name = m_entityNameBuffer;
-				}
-			}
-		}
+        // Name
+        {
+            ImGui::DrawProperty("namecomp", "Name", [&]() {
+                auto& name = entity.GetComponent<NameComponent>().name;
+                ImGui::InputText("##EntityName", &name);
+            });
+            ImGui::Dummy({ 0.0f, 5.0f });
+        }
 
-		// Transform
-		{
-			auto& transComp = entity.GetComponent<TransformComponent>();
-			ImGui::DragFloat3("Position", glm::value_ptr(transComp.transform.position), 0.1f);
-			ImGui::DragFloat3("Rotation", glm::value_ptr(transComp.transform.rotation), 0.1f);
-			ImGui::DragFloat3("Scale", glm::value_ptr(transComp.transform.scale), 0.1f);
-			ImGui::Spacing();
-		}
+        // Transform
+        {
+            auto& transComp = entity.GetComponent<TransformComponent>();
+            ImGui::InputVec3("pos", "Position", EK_PROPERTY_WIDTH, transComp.transform.position, 0.1f, 0.0f);
+            ImGui::InputVec3("rot", "Rotation", EK_PROPERTY_WIDTH, transComp.transform.rotation, 0.1f, 0.0f);
+            ImGui::InputVec3("scal", "Scale", EK_PROPERTY_WIDTH, transComp.transform.scale, 0.1f, 1.0f);
+            ImGui::Dummy({ 0.0f, 5.0f });
+        }
 
-		// Camera
-		{
-			auto* cameraComp = entity.TryGetComponent<CameraComponent>();
-			if (cameraComp && ImGui::CollapsingHeader("Camera"))
-			{
-				ImGui::Checkbox("Is Main", &cameraComp->camera.m_isMain);
-				ImGui::SliderFloat("FOV", &cameraComp->camera.m_fov, 0.0f, 180.0f);
-				ImGui::SliderFloat("Near", &cameraComp->camera.m_nearPlane, 0.01f, 1000.0f);
-				ImGui::SliderFloat("Far", &cameraComp->camera.m_farPlane, 0.01f, 1000.0f);
-			}
-		}
+        // Camera
+        {
+            auto* cameraComp = entity.TryGetComponent<CameraComponent>();
+            if (cameraComp && ImGui::CollapsingHeader("Camera"))
+            {
+                ImGui::DrawProperty("camera_main", "Is Main", [&]() {
+                    ImGui::Checkbox("##IsMain", &cameraComp->camera.m_isMain);
+                });
+                ImGui::DrawProperty("camera_fov", "Field of view", [&]() {
+                    ImGui::SliderFloat("##FOV", &cameraComp->camera.m_fov, 0.0f, 180.0f);
+                });
+                ImGui::DrawProperty("camera_near", "Near plane", [&]() {
+                    ImGui::SliderFloat("##Near", &cameraComp->camera.m_nearPlane, 0.01f, 1000.0f);
+                });
+                ImGui::DrawProperty("camera_far", "Far plane", [&]() {
+                    ImGui::SliderFloat("##Far", &cameraComp->camera.m_farPlane, 0.01f, 1000.0f);
+                });
+            }
+        }
 
-		// Mesh
-		{
-			auto* meshComp = entity.TryGetComponent<MeshComponent>();
-			if (meshComp != nullptr && ImGui::CollapsingHeader("Mesh"))
-			{
-				ImGui::Indent();
-				if (ImGui::BeginTable("##MeshComponent", 2))
-				{
-					ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-					ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+        // Mesh
+        {
+            auto* meshComp = entity.TryGetComponent<MeshComponent>();
+            if (meshComp != nullptr && ImGui::CollapsingHeader("Mesh"))
+            {
+                if (ImGui::InputAsset(&entity.GetUUID(), "Mesh", AssetType::Mesh, meshComp->meshHandle))
+                {
+                    meshComp->mesh = AssetManager::GetAsset<Mesh>(meshComp->meshHandle).get();
+                }
 
-					ImGui::TableNextRow();
-					ImGui::TableSetColumnIndex(0);
-					ImGui::TextUnformatted("Mesh");
-					ImGui::TableSetColumnIndex(1);
-					if (ImGui::InputAsset(&entity.GetUUID(), nullptr, AssetType::Mesh, meshComp->meshHandle))
-					{
-						meshComp->mesh = AssetManager::GetAsset<Mesh>(meshComp->meshHandle).get();
-					}
+                if (ImGui::InputAsset(&entity.GetUUID(), "Material", AssetType::Material, meshComp->materialHandle))
+                {
+                    meshComp->material = AssetManager::GetAsset<Material>(meshComp->materialHandle).get();
+                }
+            }
+        }
 
-					ImGui::TableNextRow();
-					ImGui::TableSetColumnIndex(0);
-					ImGui::TextUnformatted("Material");
-					ImGui::TableSetColumnIndex(1);
-					if (ImGui::InputAsset(&entity.GetUUID(), nullptr, AssetType::Material, meshComp->materialHandle))
-					{
-						meshComp->material = AssetManager::GetAsset<Material>(meshComp->materialHandle).get();
-					}
+        // Script
+        {
+            auto* scriptComp = entity.TryGetComponent<ScriptComponent>();
+            if (scriptComp != nullptr && ImGui::CollapsingHeader("Script"))
+            {
+                // script switch combo
+                ImGui::DrawProperty("script_combo", "Script", [&]() {
+                    if (ImGui::BeginCombo("##ScriptCombo", scriptComp->scriptName.c_str()))
+                    {
+                        for (auto&& [className, classInfo] : ScriptLinker::Get().GetScriptClasses())
+                        {
+                            bool isSelected = (scriptComp->scriptName.c_str() == className);
+                            if (ImGui::Selectable(className.c_str(), isSelected))
+                            {
+                                if (scriptComp->script != nullptr)
+                                    scriptComp->DestroyScript();
+                                scriptComp->SetScript(className, classInfo, entity);
+                            }
+                            if (isSelected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+                });
 
-					ImGui::EndTable();
-				}
-				ImGui::Unindent();
-			}
-		}
+                ImGui::Dummy({ 0.0f, 3.0f });
+            
+                // script properties
+                if (scriptComp != nullptr && scriptComp->script != nullptr)
+                {
+                    auto& scriptClassMap = ScriptLinker::Get().GetScriptClasses();
+                    EK_ASSERT(scriptClassMap.find(scriptComp->scriptName) != scriptClassMap.end(), "Script '{}' not found!", scriptComp->scriptName);
+                    auto& classRef = scriptClassMap.at(scriptComp->scriptName).reflection;
 
-		// Script
-		{
-			auto* scriptComp = entity.TryGetComponent<ScriptComponent>();
-			if (scriptComp != nullptr && ImGui::CollapsingHeader("Script"))
-			{
-				ImGui::Indent();
+                    if (classRef.members.size() > 0)
+                    {
+                        int i = 0;
+                        for (auto& [memberName, memberRef] : classRef.members)
+                        {
+                            if (memberRef.memberType == "EK_INT")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::DragInt("##prop", scriptComp->GetScriptValue<int>(memberRef.memberOffset));
+                                });
+                            }
+                            else if (memberRef.memberType == "EK_FLOAT")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::DragFloat("##prop", scriptComp->GetScriptValue<float>(memberRef.memberOffset));
+                                });
+                            }
+                            else if (memberRef.memberType == "EK_STR")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::InputText("##prop", scriptComp->GetScriptValue<String>(memberRef.memberOffset));
+                                });
+                            }
+                            else if (memberRef.memberType == "EK_BOOL")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::Checkbox("##prop", scriptComp->GetScriptValue<bool>(memberRef.memberOffset));
+                                });
+                            }
+                            else if (memberRef.memberType == "EK_VEC2")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::DragFloat2("##prop", glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(memberRef.memberOffset)));
+                                });
+                            }
+                            else if (memberRef.memberType == "EK_VEC3")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::DragFloat3("##prop", glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(memberRef.memberOffset)));
+                                   });
+                            }
+                            else if (memberRef.memberType == "EK_VEC4")
+                            {
+                                ImGui::DrawProperty((void*)i++, memberRef.memberName.c_str(), [&]() {
+                                    ImGui::DragFloat4("##prop", glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(memberRef.memberOffset)));
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    void DetailsPanel::OnMaterialGUI(Material* material)
+    {
+        ImGui::Text(("Material: " + material->GetName()).c_str());
+        const char* id = material->GetName().c_str();
 
-				// script switch combo
-				if (ImGui::BeginCombo("Script##Combo", scriptComp->scriptName.c_str()))
-				{
-					for (auto&& [className, classInfo] : ScriptLinker::Get().GetScriptClasses())
-					{
-						bool isSelected = (scriptComp->scriptName.c_str() == className);
-						if (ImGui::Selectable(className.c_str(), isSelected))
-						{
-							if (scriptComp->script != nullptr)
-								scriptComp->DestroyScript();
-							scriptComp->SetScript(className, classInfo, entity);
-						}
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-			
-				// script properties
-				if (scriptComp != nullptr && scriptComp->script != nullptr)
-				{
-					auto& scriptClassMap = ScriptLinker::Get().GetScriptClasses();
-					EK_ASSERT(scriptClassMap.find(scriptComp->scriptName) != scriptClassMap.end(), "Script '{}' not found!", scriptComp->scriptName);
-					auto& classRef = scriptClassMap.at(scriptComp->scriptName).reflection;
+        if (ImGui::InputAsset(id, "Shader", AssetType::Shader, material->GetShaderHandle()))
+        {
+            material->SetShader(material->GetShaderHandle());
+        }
 
-					if (classRef.members.size() > 0)
-					{
-						ImGui::Spacing();
-						ImGui::Text("Properties");
-						ImGui::Spacing();
+        ImGui::Spacing();
 
-						for (auto& [memberName, memberRef] : classRef.members)
-						{
-							if (memberRef.memberType == "EK_INT")
-								ImGui::DragInt(memberRef.memberName.c_str(), scriptComp->GetScriptValue<int>(memberRef.memberOffset));
-							else if (memberRef.memberType == "EK_FLOAT")
-								ImGui::DragFloat(memberRef.memberName.c_str(), scriptComp->GetScriptValue<float>(memberRef.memberOffset));
-							else if (memberRef.memberType == "EK_STR")
-								ImGui::InputText(memberRef.memberName.c_str(), scriptComp->GetScriptValue<String>(memberRef.memberOffset));
-							else if (memberRef.memberType == "EK_BOOL")
-								ImGui::Checkbox(memberRef.memberName.c_str(), scriptComp->GetScriptValue<bool>(memberRef.memberOffset));
-							else if (memberRef.memberType == "EK_VEC2")
-								ImGui::DragFloat2(memberRef.memberName.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec2>(memberRef.memberOffset)));
-							else if (memberRef.memberType == "EK_VEC3")
-								ImGui::DragFloat3(memberRef.memberName.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec3>(memberRef.memberOffset)));
-							else if (memberRef.memberType == "EK_VEC4")
-								ImGui::DragFloat4(memberRef.memberName.c_str(), glm::value_ptr(*scriptComp->GetScriptValue<glm::vec4>(memberRef.memberOffset)));
-						}
-					}
-				}
-
-				ImGui::Unindent();
-			}
-		}
-	}
-	void DetailsPanel::OnMaterialGUI(Material* material)
-	{
-		ImGui::Text(("Material: " + material->GetName()).c_str());
-		const char* id = material->GetName().c_str();
-
-		if (ImGui::InputAsset(id, "Shader", AssetType::Shader, material->GetShaderHandle()))
-		{
-			material->SetShader(material->GetShaderHandle());
-		}
-
-		ImGui::Spacing();
-
-		uint16_t i = 0;
-		for (auto&& [textureName, sampler] : material->GetSamplers())
-		{
-			if (ImGui::InputAsset(id+(i++), textureName.c_str(), AssetType::Texture2D, sampler.textureHandle))
-			{
-				EK_CORE_TRACE("Texture path changed to: {0}", sampler.texturePath.string());
-			}
-		}
-		for (auto&& [name, pushConstant] : material->GetPushConstants())
-		{
-			ImGui::Spacing();
-			ImGui::Text("%s", name.c_str());
-			for (auto&& [valueName, value] : pushConstant.dataPointers)
-			{
-				if (value.type == ShaderDataType::BOOL)
-					ImGui::Checkbox(valueName.c_str(), (bool*)value.data);
-				else if (value.type == ShaderDataType::FLOAT)
-					ImGui::DragFloat(valueName.c_str(), (float*)value.data);
-				else if (value.type == ShaderDataType::FLOAT2)
-					ImGui::DragFloat2(valueName.c_str(), (float*)value.data);
-				else if (value.type == ShaderDataType::FLOAT3)
-					ImGui::DragFloat3(valueName.c_str(), (float*)value.data);
-				else if (value.type == ShaderDataType::FLOAT4)
-					ImGui::DragFloat4(valueName.c_str(), (float*)value.data);
-				else if (value.type == ShaderDataType::INT)
-					ImGui::DragInt(valueName.c_str(), (int*)value.data);
-				else if (value.type == ShaderDataType::INT2)
-					ImGui::DragInt2(valueName.c_str(), (int*)value.data);
-				else if (value.type == ShaderDataType::INT3)
-					ImGui::DragInt3(valueName.c_str(), (int*)value.data);
-				else if (value.type == ShaderDataType::INT4)
-					ImGui::DragInt4(valueName.c_str(), (int*)value.data);
-			}
-		}
-
-		if (ImGui::Button("Apply"))
-		{
-			bool allValid = true;
-			for (auto&& [textureName, sampler] : material->GetSamplers())
-			{
-				allValid = AssetManager::IsAssetHandleValid(sampler.textureHandle);
-				if (!allValid) 
-				{
-					break;
-				}
-			}
-
-			if (allValid)
-				material->ApplyChanges();
-		}
-	}
+        uint16_t i = 0;
+        for (auto&& [textureName, sampler] : material->GetSamplers())
+        {
+            if (ImGui::InputAsset(id+(i++), textureName.c_str(), AssetType::Texture2D, sampler.textureHandle))
+            {
+                material->ApplyChanges();
+            }
+        }
+        for (auto&& [name, pushConstant] : material->GetPushConstants())
+        {
+            ImGui::Spacing();
+            for (auto&& [valueName, value] : pushConstant.dataPointers)
+            {
+                if (value.type == ShaderDataType::BOOL)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::Checkbox("##check", (bool*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::FLOAT)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragFloat("##check", (float*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::FLOAT2)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragFloat2("##check", (float*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::FLOAT3)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragFloat3("##check", (float*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::FLOAT4)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragFloat4("##check", (float*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::INT)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragInt("##check", (int*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::INT2)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragInt2("##check", (int*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::INT3)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragInt3("##check", (int*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::INT4)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragInt4("##check", (int*)value.data);
+                    });
+                }
+            }
+        }
+    }
 }

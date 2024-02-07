@@ -26,6 +26,6 @@ namespace Eklipse {
 		AssetHandle Handle;
 
 		virtual AssetType GetType() const = 0;
-		virtual void Dispose() const = 0;
+		virtual void Dispose() = 0;
 	};
 }

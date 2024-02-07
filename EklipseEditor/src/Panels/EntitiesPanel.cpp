@@ -58,9 +58,10 @@ namespace Eklipse
 		m_sceneContext->ForEachEntity([&](auto entityID)
 		{
 			Entity entity{ entityID, m_sceneContext };
-			auto& nameComponent = entity.GetComponent<NameComponent>();
+			auto& name = entity.GetName();
 
-			bool expand = ImGui::TreeNodeEx(nameComponent.name.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth);
+			ImGuiTreeNodeFlags flags = (EditorLayer::Get().SelectionInfo.entity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
+			bool expand = ImGui::TreeNodeEx((void*)(uint64_t)entityID, flags, name.c_str());
 			
 			if (ImGui::IsItemClicked())
 			{
@@ -68,7 +69,6 @@ namespace Eklipse
 				info.type = SelectionType::ENTITY;
 				info.entity = entity;
 				EditorLayer::Get().SelectionInfo = info;
-				EditorLayer::Get().GetDetailsPanel().Setup(nameComponent.name);
 			}
 
 			if (ImGui::BeginPopupContextItem())

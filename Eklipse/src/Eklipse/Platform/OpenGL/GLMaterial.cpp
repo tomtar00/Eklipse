@@ -58,7 +58,7 @@ namespace Eklipse
 				}
 			}
 		}
-		void GLMaterial::Dispose() const
+		void GLMaterial::Dispose()
 		{	
 		}
 	}

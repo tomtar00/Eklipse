@@ -81,7 +81,7 @@ namespace Eklipse
         }
 
         ImGui::NewLine();
-        ImGui::Separator();
+        //ImGui::Separator();
 
         static float padding = 32.0f;
         static float thumbnailSize = 64.0f;

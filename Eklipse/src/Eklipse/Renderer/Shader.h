@@ -107,7 +107,7 @@ namespace Eklipse
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		virtual void Dispose() const = 0;
+		virtual void Dispose() = 0;
 
 	protected:
 		void Reflect(const StageSpirvMap& shaderData, const String& shaderName);

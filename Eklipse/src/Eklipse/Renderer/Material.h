@@ -63,7 +63,7 @@ namespace Eklipse
         static AssetType GetStaticType() { return AssetType::Material; }
         virtual AssetType GetType() const override { return GetStaticType(); }
 
-        virtual void Dispose() const = 0;
+        virtual void Dispose() = 0;
 
     protected:
         String m_name;

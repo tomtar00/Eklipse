@@ -92,7 +92,7 @@ namespace Eklipse
 		return CreateRef<Mesh>(data);
 	}
 
-	void Mesh::Dispose() const
+	void Mesh::Dispose()
 	{
 		EK_CORE_TRACE("Disposing mesh with handle: {0}", Handle);
 	    m_vertexArray->Dispose();

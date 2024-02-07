@@ -644,7 +644,7 @@ namespace Eklipse
         return true;
     }
 
-    void Scene::Dispose() const
+    void Scene::Dispose()
     {
     }
 }

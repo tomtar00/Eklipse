@@ -46,8 +46,10 @@ namespace Eklipse
 			m_scene->GetRegistry().remove<T>(m_entityHandle);
 		}
 		
-		inline bool IsNull() const { return m_entityHandle == entt::null; }
-		inline void MarkNull() { m_entityHandle = entt::null; }
+		bool IsNull() const;
+		void MarkNull();
+
+		bool operator==(const Entity& other) const;
 	
 	private:
 		entt::entity m_entityHandle{ entt::null };

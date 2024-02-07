@@ -3,11 +3,11 @@
 
 namespace Eklipse
 {
-	const float REFRESH_INTERVAL_SECONDS = 0.5f;
+	const float REFRESH_INTERVAL_SECONDS = 0.1f;
 
 	Stats::Stats() : fps(0), frameTime(0), drawCalls(0), numVertices(0), m_frameAcc(0), m_timeAcc(0)
 	{
-		frameTimes.resize(30);
+		frameTimes.resize(50);
 	}
 
 	Stats& Stats::Get()

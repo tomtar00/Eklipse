@@ -437,6 +437,15 @@ namespace Eklipse
 
         SaveScene();
         Project::SaveActive();
+
+        // TODO: needs refactor (materials do not save their constants automatically)
+        for (auto& [handle, metadata] : m_editorAssetLibrary->GetAssetRegistry())
+        {
+            if (metadata.Type == AssetType::Material)
+            {
+                AssetManager::GetAsset<Material>(handle)->ApplyChanges();
+            }
+        }
     }
     void EditorLayer::SaveProjectAs()
     {

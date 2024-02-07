@@ -82,7 +82,7 @@ namespace Eklipse
         {
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        void GLTexture2D::Dispose() const
+        void GLTexture2D::Dispose()
         {
             glDeleteTextures(1, &m_id);
         }

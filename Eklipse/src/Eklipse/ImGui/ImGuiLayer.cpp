@@ -26,10 +26,13 @@ namespace Eklipse
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
 
-        float fontSize = 16.0f;
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/onest.ttf", fontSize);
-
         ImGui::StyleColorsDark();
+        SetupColors();
+
+        float fontSize = 16.0f;
+        io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Bold.ttf", fontSize);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Regular.ttf", fontSize);
+
 
         EK_CORE_TRACE("{0} imgui layer attached", typeid(*this).name());
     }
@@ -87,6 +90,9 @@ namespace Eklipse
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
+            ImGui::GetStyle().WindowMinSize.x = 350.0f;
+            ImGui::GetStyle().WindowMinSize.y = 250.0f;
+
             ImGuiID dockspace_id = ImGui::GetID("DockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 
@@ -141,6 +147,38 @@ namespace Eklipse
     void ImGuiLayer::SetConfig(GuiLayerConfigInfo configInfo)
     {
         m_config = configInfo;
+    }
+    void ImGuiLayer::SetupColors()
+    {
+        auto& colors = ImGui::GetStyle().Colors;
+        colors[ImGuiCol_WindowBg] = EK_COLOR_WINDOW_BG;
+
+        // Headers
+        colors[ImGuiCol_Header] = EK_COLOR_HEADER;
+        colors[ImGuiCol_HeaderHovered] = EK_COLOR_HEADER_HOVERED;
+        colors[ImGuiCol_HeaderActive] = EK_COLOR_HEADER_ACTIVE;
+
+        // Buttons
+        colors[ImGuiCol_Button] = EK_COLOR_BUTTON;
+        colors[ImGuiCol_ButtonHovered] = EK_COLOR_BUTTON_HOVERED;
+        colors[ImGuiCol_ButtonActive] = EK_COLOR_BUTTON_ACTIVE;
+
+        // Frame BG
+        colors[ImGuiCol_FrameBg] = EK_COLOR_FRAME_BG;
+        colors[ImGuiCol_FrameBgHovered] = EK_COLOR_FRAME_BG_HOVERED;
+        colors[ImGuiCol_FrameBgActive] = EK_COLOR_FRAME_BG_ACTIVE;
+
+        // Tabs
+        colors[ImGuiCol_Tab] = EK_COLOR_TAB;
+        colors[ImGuiCol_TabHovered] = EK_COLOR_TAB_HOVERED;
+        colors[ImGuiCol_TabActive] = EK_COLOR_TAB_ACTIVE;
+        colors[ImGuiCol_TabUnfocused] = EK_COLOR_TAB_UNFOCUSED;
+        colors[ImGuiCol_TabUnfocusedActive] = EK_COLOR_TAB_UNFOCUSED_ACTIVE;
+
+        // Title
+        colors[ImGuiCol_TitleBg] = EK_COLOR_TITLE_BG;
+        colors[ImGuiCol_TitleBgActive] = EK_COLOR_TITLE_BG_ACTIVE;
+        colors[ImGuiCol_TitleBgCollapsed] = EK_COLOR_TITLE_BG_COLLAPSED;
     }
     Ref<ImGuiLayer> ImGuiLayer::Create(const GuiLayerConfigInfo& configInfo)
     {

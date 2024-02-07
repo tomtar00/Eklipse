@@ -15,7 +15,7 @@ namespace Eklipse
 
 			virtual void Bind() const override;
 			virtual void Unbind() const override;
-			virtual void Dispose() const override;
+			virtual void Dispose() override;
 
 		protected:
 			virtual const String GetCacheDirectoryPath() override;

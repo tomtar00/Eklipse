@@ -72,7 +72,7 @@ namespace Eklipse
 		inline void ForEachEntity(Func& func) { m_registry.each(func); }
 
 		// Asset
-		virtual void Dispose() const override;
+		virtual void Dispose() override;
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		virtual AssetType GetType() const override { return GetStaticType(); }
 

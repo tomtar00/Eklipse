@@ -15,14 +15,19 @@ namespace Eklipse
 
 		auto& stats = Stats::Get();
 
-		ImGui::PlotLines("##Frametime", stats.frameTimes.data(), stats.frameTimes.size());
-		ImGui::Text("Frame time: %f ms", stats.frameTime * 1000);
-		ImGui::Text("FPS: %f", stats.fps);
-
-		ImGui::Separator();
-
-		ImGui::Text("Draw calls: %d", stats.drawCalls);
-		ImGui::Text("Total vertices: %d", stats.numVertices);
+		ImGui::DrawProperty("frame_time", "Frame time", [&]() {
+			ImGui::PlotLines("##Frametime", stats.frameTimes.data(), stats.frameTimes.size());
+			ImGui::Text("%f ms", stats.frameTime * 1000);
+		});
+		ImGui::DrawProperty("fps", "FPS", [&]() {
+			ImGui::Text("%f", stats.fps);
+		});
+		ImGui::DrawProperty("draw_calls", "Draw calls", [&]() {
+			ImGui::Text("%d", stats.drawCalls);
+		});
+		ImGui::DrawProperty("total_vert", "Total vertices", [&]() {
+			ImGui::Text("%d", stats.numVertices);
+		});
 
 		ImGui::End();
 

@@ -60,7 +60,7 @@ namespace Eklipse
 
 			glUseProgram(0);
 		}
-		void GLShader::Dispose() const
+		void GLShader::Dispose()
 		{
 			if (m_isValid)
 				glDeleteProgram(m_id);
