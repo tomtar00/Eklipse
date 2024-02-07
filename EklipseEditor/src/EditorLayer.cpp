@@ -458,7 +458,7 @@ namespace Eklipse
         {
             m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.configuration);
         }
-        if (!ProjectExporter::Export(Project::GetActive(), exportSettings))
+        if (!ProjectExporter::Export(m_editorAssetLibrary, Project::GetActive(), exportSettings))
         {
             EK_ERROR("Failed to export project!");
         }

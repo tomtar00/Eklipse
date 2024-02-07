@@ -8,10 +8,10 @@
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Renderer/Material.h>
 
-#define EK_REGISTRY_EXTENSION ".ekreg"
-
 namespace Eklipse
 {
+    
+
     EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) 
         : m_shaderReloadPending(false), m_assetDirectory(assetDirectory)
     {
@@ -197,7 +197,7 @@ namespace Eklipse
         EK_CORE_DBG("Asset library validated!");
     }
     
-    void EditorAssetLibrary::SerializeAssetRegistry()
+    bool EditorAssetLibrary::SerializeAssetRegistry(const AssetRegistry& registry, const Path& filepath)
     {
         EK_CORE_TRACE("Serializing asset registry...");
 
@@ -207,7 +207,7 @@ namespace Eklipse
             out << YAML::Key << "AssetRegistry" << YAML::Value;
 
             out << YAML::BeginSeq;
-            for (const auto& [handle, metadata] : m_assetRegistry)
+            for (const auto& [handle, metadata] : registry)
             {
                 out << YAML::BeginMap;
                 out << YAML::Key << "Handle" << YAML::Value << handle;
@@ -219,24 +219,24 @@ namespace Eklipse
             out << YAML::EndMap;
         }
 
-        std::ofstream fout(m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION)));
+        std::ofstream fout(filepath);
         fout << out.c_str();
 
         EK_CORE_DBG("Asset registry serialized!");
+        return true;
     }
-    bool EditorAssetLibrary::DeserializeAssetRegistry()
+    bool EditorAssetLibrary::DeserializeAssetRegistry(AssetRegistry& registry, const Path& filepath)
     {
         EK_CORE_TRACE("Deserializing asset registry...");
 
-        auto path = (m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION))).string();
         YAML::Node data;
         try
         {
-            data = YAML::LoadFile(path);
+            data = YAML::LoadFile(filepath.string());
         }
         catch (YAML::ParserException e)
         {
-            EK_CORE_ERROR("Failed to load project file '{0}'. {1}", path, e.what());
+            EK_CORE_ERROR("Failed to load project file '{0}'. {1}", filepath.string(), e.what());
             return false;
         }
 
@@ -247,13 +247,21 @@ namespace Eklipse
         for (const auto& node : rootNode)
         {
             AssetHandle handle = TryDeserailize<AssetHandle>(node, "Handle", -1);
-            auto& metadata = m_assetRegistry[handle];
+            auto& metadata = registry[handle];
             metadata.FilePath = TryDeserailize<String>(node, "FilePath", "");
             metadata.Type = Asset::TypeFromString(TryDeserailize<String>(node, "Type", ""));
         }
 
         EK_CORE_DBG("Asset registry deserialized!");
         return true;
+    }
+    bool EditorAssetLibrary::SerializeAssetRegistry()
+    {
+        return SerializeAssetRegistry(m_assetRegistry, m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION)));
+    }
+    bool EditorAssetLibrary::DeserializeAssetRegistry()
+    {
+        return DeserializeAssetRegistry(m_assetRegistry, m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION)));
     }
 
     void EditorAssetLibrary::StartFileWatcher()

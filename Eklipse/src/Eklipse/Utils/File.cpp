@@ -124,6 +124,12 @@ namespace Eklipse
         return path1 == path2;
     }
 
+    bool FileUtilities::IsSubPath(const Path& path, const Path& basePath)
+    {
+        auto rel = fs::relative(path, basePath);
+        return !rel.empty() && rel.native()[0] != '.';
+    }
+
     String FileUtilities::ReadFileFromPath(const Path& filePath)
     {
         String buffer;

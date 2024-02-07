@@ -9,6 +9,8 @@
 #define EK_SCENE_EXTENSION ".eksc"
 #define EK_SHADER_EXTENSION ".glsl"
 
+#define EK_REGISTRY_EXTENSION ".ekreg"
+
 namespace Eklipse 
 {
     using AssetRegistry = std::map<AssetHandle, AssetMetadata>;
@@ -35,7 +37,9 @@ namespace Eklipse
         AssetHandle GetHandleFromAssetPath(const Path& path, bool reqExists = true) const;
         void Validate();
 
-        void SerializeAssetRegistry();
+        static bool SerializeAssetRegistry(const AssetRegistry& registry, const Path& filepath);
+        static bool DeserializeAssetRegistry(AssetRegistry& registry, const Path& filepath);
+        bool SerializeAssetRegistry();
         bool DeserializeAssetRegistry();
 
         void StartFileWatcher();

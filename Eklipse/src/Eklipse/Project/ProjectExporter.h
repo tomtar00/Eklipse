@@ -1,5 +1,6 @@
 #pragma once
 #include "Project.h"
+#include <Eklipse/Assets/EditorAssetLibrary.h>
 
 namespace Eklipse
 {
@@ -12,6 +13,6 @@ namespace Eklipse
 	static class EK_API ProjectExporter
 	{
 	public:
-		static bool Export(const Ref<Project> project, const ProjectExportSettings& settings);
+		static bool Export(const Ref<EditorAssetLibrary> assetLibrary, const Ref<Project> project, const ProjectExportSettings& settings);
 	};
 }

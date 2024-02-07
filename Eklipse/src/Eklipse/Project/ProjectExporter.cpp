@@ -5,7 +5,48 @@
 
 namespace Eklipse
 {
-    bool ProjectExporter::Export(const Ref<Project> project, const ProjectExportSettings& settings)
+    bool CopyAssetsFromEditorRegistry(const Path& sourceAssetsDir, const Path& destinationAssetsDir, AssetRegistry& registry)
+    {
+        AssetRegistry runtimeRegistry;
+        fs::create_directories(destinationAssetsDir);
+        for (const auto& [handle, matadata] : registry)
+        {
+            AssetMetadata runtimeMetadata = matadata;
+            if (matadata.FilePath.is_absolute())
+            {
+                runtimeMetadata.FilePath = fs::relative(matadata.FilePath, sourceAssetsDir.parent_path());
+                Path destinationPath = destinationAssetsDir.parent_path() / runtimeMetadata.FilePath;
+                fs::create_directories(destinationPath.parent_path());
+
+                std::error_code ec;
+                fs::copy_file(matadata.FilePath, destinationPath, fs::copy_options::overwrite_existing, ec);
+                if (ec)
+                {
+                    EK_CORE_WARN("Failed to copy file '{0}' to '{1}'! {2}", matadata.FilePath.string(), destinationPath.string(), ec.message());
+                    continue;
+                }
+            }
+            else
+            {
+                Path destinationPath = destinationAssetsDir.parent_path() / matadata.FilePath;
+                fs::create_directories(destinationPath.parent_path());
+
+                std::error_code ec;
+                fs::copy_file(matadata.FilePath, destinationPath, fs::copy_options::overwrite_existing, ec);
+                if (ec)
+                {
+                    EK_CORE_WARN("Failed to copy file '{0}' to '{1}'! {2}", matadata.FilePath.string(), destinationPath.string(), ec.message());
+                    continue;
+                }
+            }
+
+            runtimeRegistry[handle] = runtimeMetadata;
+        }
+
+        return EditorAssetLibrary::SerializeAssetRegistry(runtimeRegistry, destinationAssetsDir / ("assets" + String(EK_REGISTRY_EXTENSION)));
+    }
+
+    bool ProjectExporter::Export(const Ref<EditorAssetLibrary> assetLibrary, const Ref<Project> project, const ProjectExportSettings& settings)
     {
         EK_ASSERT(project, "Project is null!");
 
@@ -26,20 +67,12 @@ namespace Eklipse
         String exportConfig = settings.configuration;
 
         // Copy assets
-        Path assetsDir = config.assetsDirectoryPath;
-        Path destinationAssetsDir = destinationDir / "Assets";
-        fs::create_directories(destinationAssetsDir);
-        for (const auto& entry : fs::recursive_directory_iterator(assetsDir))
+        runtimeConfig.assetsDirectoryPath = destinationDir / "Assets";
+        if (!CopyAssetsFromEditorRegistry(config.assetsDirectoryPath, runtimeConfig.assetsDirectoryPath, assetLibrary->GetAssetRegistry()))
         {
-            if (entry.is_regular_file())
-            {
-                Path relativePath = fs::relative(entry.path(), assetsDir);
-                Path destinationPath = destinationAssetsDir / relativePath;
-                fs::create_directories(destinationPath.parent_path());
-                fs::copy_file(entry.path(), destinationPath, fs::copy_options::overwrite_existing);
-            }
+            EK_CORE_ERROR("Failed to copy assets!");
+            return false;
         }
-        runtimeConfig.assetsDirectoryPath = destinationAssetsDir;
 
         // Copy the scripting library
         Path scriptLibraryPath = config.scriptBuildDirectoryPath / exportConfig / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
@@ -85,7 +118,7 @@ namespace Eklipse
         fs::copy_file(executablePath, destinationExecutablePath, fs::copy_options::overwrite_existing);
         runtimeConfig.executablePath = destinationExecutablePath;
 
-        runtimeConfig.startScenePath = destinationAssetsDir / fs::relative(config.startScenePath, config.assetsDirectoryPath);
+        runtimeConfig.startScenePath = runtimeConfig.assetsDirectoryPath / fs::relative(config.startScenePath, config.assetsDirectoryPath);
         runtimeConfig.startSceneHandle = config.startSceneHandle;
 
         // Generate config.yaml file
