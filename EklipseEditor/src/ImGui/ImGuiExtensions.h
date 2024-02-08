@@ -28,9 +28,12 @@ namespace ImGui
         ImGui::NextColumn();
 
         if (fullWidth)
-            ImGui::PushItemWidth(-1);
+            ImGui::PushItemWidth(-FLT_MIN);
 
         function();
+
+        if (fullWidth)
+            ImGui::PopItemWidth();
 
         ImGui::Columns(1);
         ImGui::PopID();

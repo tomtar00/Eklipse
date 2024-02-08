@@ -44,6 +44,8 @@ namespace Eklipse
 	{
 		const char* Command;
 		const char* Description;
+		const char* Usage;
+		Vec<String> RequiredArgs;
 		std::function<void(const ParsedCommand&)> Callback;
 	};
 

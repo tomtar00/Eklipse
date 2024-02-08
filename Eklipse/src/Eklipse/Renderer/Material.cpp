@@ -96,6 +96,11 @@ namespace Eklipse
             dst = nullptr;
             return;
         }
+        if (dst == nullptr)
+        {
+            EK_CORE_WARN("Failed to deserialize data, destination is null");
+            return;
+        }
 
         T data = node.as<T>();
         std::memcpy(dst, &data, sizeof(T));

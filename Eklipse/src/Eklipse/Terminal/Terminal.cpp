@@ -48,6 +48,7 @@ namespace Eklipse
 
 		AddCommand({
 			"help", "Display all available commands",
+			"", {},
 			[this](const ParsedCommand& cmd) 
 				{ 
 					std::stringstream ss;
@@ -61,6 +62,7 @@ namespace Eklipse
 			});
 		AddCommand({ 
 			"clear", "Clear the terminal window", 
+			"", {},
 			[this](const ParsedCommand& cmd) { Clear(); } 
 		});
 	}
@@ -84,6 +86,15 @@ namespace Eklipse
 			{
 				if (cmd.Command == parsedCommand.Command)
 				{
+					// check if the command has required arguments
+					for (auto& arg : cmd.RequiredArgs)
+                    {
+                        if (parsedCommand.Args.find(arg) == parsedCommand.Args.end())
+                        {
+                            EK_CORE_ERROR("Command '{0}' requires argument '{1}'.\nUsage:\n{2}", parsedCommand.Command, arg, cmd.Usage);
+                            return;
+                        }
+                    }
 					cmd.Callback(parsedCommand);
 					return;
 				}

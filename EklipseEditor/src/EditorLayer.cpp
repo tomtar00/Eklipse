@@ -72,6 +72,7 @@ namespace Eklipse
         EklipseScriptAPI::Init(config);
 
         AddDebugDrawInfo();
+        AddTeminalCommands();
 
         DeserializeSettings();
         EK_TRACE("Editor layer attached");
@@ -163,7 +164,7 @@ namespace Eklipse
     void EditorLayer::OnGUI(float deltaTime)
     {
         static bool openNewProjectPopup = false;
-        static bool openExportProjectPopup = false;
+        static bool openExportProjectPopup = false;    
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -798,6 +799,39 @@ namespace Eklipse
         SelectionInfo.entity.MarkNull();
     }
     
+    void EditorLayer::AddTeminalCommands()
+    {
+        auto& terminal = m_terminalPanel.GetTerminal();
+
+        terminal.AddCommand({
+            "theme", "Set editor theme",
+            "theme -style=<dark|darkgrey|darkblue|light>", {"style"},
+            [&](const ParsedCommand& cmd)
+            {
+                if (cmd.Args.at("style") == "dark")
+                {
+                    GUI->SetupColorTheme(ColorTheme::Dark);
+                }
+                else if (cmd.Args.at("style") == "darkgrey")
+                {
+                    GUI->SetupColorTheme(ColorTheme::DarkGrey);
+                }
+                else if (cmd.Args.at("style") == "darkblue")
+                {
+                    GUI->SetupColorTheme(ColorTheme::DarkBlue);
+                }
+                else if (cmd.Args.at("style") == "light")
+                {
+                    GUI->SetupColorTheme(ColorTheme::Light);
+                }
+                else
+                {
+                    EK_INFO("Invalid theme name!");
+                }
+            }
+        });
+    }
+
     // === Default Assets ===
     AssetHandle EditorLayer::GetDefaultCubeHandle() const
     {

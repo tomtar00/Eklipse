@@ -22,11 +22,21 @@ namespace Eklipse
     {
         m_folderIcon = GuiIcon::Create("Assets/Icons/folder.png");
         m_fileIcon = GuiIcon::Create("Assets/Icons/file.png");
+        m_materialIcon = GuiIcon::Create("Assets/Icons/material.png");
+        m_shaderIcon = GuiIcon::Create("Assets/Icons/shader.png");
+        m_sceneIcon = GuiIcon::Create("Assets/Icons/scene.png");
+        m_textureIcon = GuiIcon::Create("Assets/Icons/texture.png");
+        m_meshIcon = GuiIcon::Create("Assets/Icons/mesh.png");
     }
     void FilesPanel::UnloadResources()
     {
         m_folderIcon->Dispose();
         m_fileIcon->Dispose();
+        m_materialIcon->Dispose();
+        m_shaderIcon->Dispose();
+        m_sceneIcon->Dispose();
+        m_textureIcon->Dispose();
+        m_meshIcon->Dispose();
     }
     void FilesPanel::OnContextChanged()
     {
@@ -99,7 +109,7 @@ namespace Eklipse
             String filename = path.filename().string();
 
             ImGui::PushID(filename.c_str());
-            Ref<GuiIcon> icon = directoryEntry.is_directory() ? m_folderIcon : m_fileIcon;
+            Ref<GuiIcon> icon = GetIcon(path);
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             ImGui::ImageButton((ImTextureID)icon->GetID(), { thumbnailSize, thumbnailSize });
 
@@ -316,5 +326,30 @@ namespace Eklipse
             // the editor asset library will import the shader automatically
         }
         return false;
+    }
+    Ref<GuiIcon> FilesPanel::GetIcon(const Path& path) const
+    {
+        if (!fs::is_directory(path))
+        {
+            String extension = path.extension().string();
+            AssetType type = EditorAssetLibrary::GetAssetTypeFromFileExtension(extension);
+
+            if (type == AssetType::Material)
+                return m_materialIcon;
+            if (type == AssetType::Shader)
+                return m_shaderIcon;
+            if (type == AssetType::Scene)
+                return m_sceneIcon;
+            if (type == AssetType::Texture2D)
+                return m_textureIcon;
+            if (type == AssetType::Mesh)
+                return m_meshIcon;
+            
+            return m_fileIcon;
+        }
+        else
+        {
+            return m_folderIcon;
+        }
     }
 }

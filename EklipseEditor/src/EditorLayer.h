@@ -86,6 +86,7 @@ namespace Eklipse
 
 		// === GUI ===
 		void AddDebugDrawInfo();
+		void AddTeminalCommands();
 
 		// === Selection ===
 		void ClearSelection();

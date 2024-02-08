@@ -9,6 +9,7 @@
 #include <Eklipse/Renderer/Renderer.h>
 
 #define GLFW_INCLUDE_VULKAN
+
 #define PROPAGATE_GLFW_EVENT(x) ((WindowData*)glfwGetWindowUserPointer(window))->EventCallback(x)
 
 namespace Eklipse
@@ -116,6 +117,7 @@ namespace Eklipse
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
+		//glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
 		m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title, nullptr, nullptr);
 		glfwSetWindowTitle(m_window, m_data.title);
@@ -125,7 +127,7 @@ namespace Eklipse
 			glfwMakeContextCurrent(m_window);
 			glfwSwapInterval(0);
 		}
-		
+
 		glfwSetWindowUserPointer(m_window, &m_data);
 
 		glfwSetErrorCallback(GlfwErrorCallback);

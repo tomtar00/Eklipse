@@ -6,30 +6,6 @@
 #include <Eklipse/Assets/AssetLibrary.h>
 #include <Eklipse/Renderer/Framebuffer.h>
 
-#define EK_COLOR_WINDOW_BG ImVec4(0.09f, 0.09f, 0.09f, 1.00f)
-
-#define EK_COLOR_HEADER ImVec4(0.20f, 0.20f, 0.20f, 1.00f)
-#define EK_COLOR_HEADER_HOVERED ImVec4(0.30f, 0.30f, 0.30f, 1.00f)
-#define EK_COLOR_HEADER_ACTIVE ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-
-#define EK_COLOR_BUTTON ImVec4(0.20f, 0.20f, 0.20f, 1.00f)
-#define EK_COLOR_BUTTON_HOVERED ImVec4(0.30f, 0.30f, 0.30f, 1.00f)
-#define EK_COLOR_BUTTON_ACTIVE ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-
-#define EK_COLOR_FRAME_BG ImVec4(0.20f, 0.20f, 0.20f, 1.00f)
-#define EK_COLOR_FRAME_BG_HOVERED ImVec4(0.30f, 0.30f, 0.30f, 1.00f)
-#define EK_COLOR_FRAME_BG_ACTIVE ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-
-#define EK_COLOR_TAB ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-#define EK_COLOR_TAB_HOVERED ImVec4(0.30f, 0.30f, 0.30f, 1.00f)
-#define EK_COLOR_TAB_ACTIVE ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-#define EK_COLOR_TAB_UNFOCUSED ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-#define EK_COLOR_TAB_UNFOCUSED_ACTIVE ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-
-#define EK_COLOR_TITLE_BG ImVec4(0.20f, 0.20f, 0.20f, 1.00f)
-#define EK_COLOR_TITLE_BG_ACTIVE ImVec4(0.12f, 0.12f, 0.12f, 1.00f)
-#define EK_COLOR_TITLE_BG_COLLAPSED ImVec4(0.20f, 0.20f, 0.20f, 1.00f)
-
 namespace Eklipse
 {
     class EK_API GuiIcon
@@ -57,6 +33,13 @@ namespace Eklipse
         Dir_Opposite	= BIT(1),
         Dir_Stack		= BIT(2),
         Dir_Rest		= BIT(3)
+    };
+    enum class ColorTheme
+    {
+        Light,
+        Dark,
+        DarkGrey,
+        DarkBlue,
     };
 
     struct EK_API DockLayoutInfo
@@ -104,7 +87,7 @@ namespace Eklipse
         GuiLayerConfigInfo GetConfig();
         void SetConfig(GuiLayerConfigInfo configInfo);
 
-        void SetupColors();
+        void SetupColorTheme(ColorTheme theme);
     
         static Ref<ImGuiLayer> Create(const GuiLayerConfigInfo& configInfo);
 

@@ -286,7 +286,6 @@ namespace Eklipse
                     const auto& memberType = compiler.get_type(bufferType.member_types[memberIndex]);
                     size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
                     uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
-                    uint32_t memberBinding = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationBinding);
                     ShaderDataType type = SpirvTypeToDataType(memberType);
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
