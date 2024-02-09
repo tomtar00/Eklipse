@@ -53,7 +53,6 @@ namespace Eklipse
         bool Serialize(const Path& path);
         bool Deserialize(const Path& path);
 
-        const String& GetName() const;
         const Ref<Shader> GetShader() const;
         AssetHandle& GetShaderHandle();
         const PushConstantMap& GetPushConstants() const;
@@ -66,7 +65,6 @@ namespace Eklipse
         virtual void Dispose() = 0;
 
     protected:
-        String m_name;
         PushConstantMap m_pushConstants{};
         Sampler2DMap m_samplers{};
 
@@ -79,12 +77,12 @@ namespace Eklipse
     {
         EK_PROFILE();
 
-        EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "({0}) Push constant '{1}' not found", m_name, constantName);
+        EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "({0}) Push constant '{1}' not found", Name, constantName);
         auto& pushConstant = m_pushConstants.at(constantName);
-        EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "({0}) Push constant '{1}' member '{2}' not found", m_name, constantName, memberName);
+        EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "({0}) Push constant '{1}' member '{2}' not found", Name, constantName, memberName);
 
         auto& dataPointer = pushConstant.dataPointers.at(memberName);
-        EK_ASSERT(dataPointer.size == size, "({0}) Push constant '{1}' member '{2}' size mismatch. Required = {3} Given = {4}", m_name, constantName, memberName, dataPointer.size, size);
+        EK_ASSERT(dataPointer.size == size, "({0}) Push constant '{1}' member '{2}' size mismatch. Required = {3} Given = {4}", Name, constantName, memberName, dataPointer.size, size);
 
         std::memcpy(dataPointer.data, data, size);
     }

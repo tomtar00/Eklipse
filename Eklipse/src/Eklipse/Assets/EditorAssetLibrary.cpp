@@ -49,7 +49,7 @@ namespace Eklipse
         }
         return asset;
     }
-    const AssetMetadata& EditorAssetLibrary::GetMetadata(AssetHandle handle) const
+    AssetMetadata& EditorAssetLibrary::GetMetadata(AssetHandle handle)
     {
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_assetRegistry.at(handle);
@@ -250,6 +250,11 @@ namespace Eklipse
             auto& metadata = registry[handle];
             metadata.FilePath = TryDeserailize<String>(node, "FilePath", "");
             metadata.Type = Asset::TypeFromString(TryDeserailize<String>(node, "Type", ""));
+
+            if (!FileUtilities::IsPathValid(metadata.FilePath))
+            {
+                EK_CORE_WARN("There no asset at path '{0}'", metadata.FilePath.string());
+            }
         }
 
         EK_CORE_DBG("Asset registry deserialized!");
@@ -330,6 +335,33 @@ namespace Eklipse
                         EK_CORE_TRACE("Shader at path '{0}' with handle '{1}' is not in the asset registry! Import this shader first.", pathString, shaderHandle);
                     }
                 }
+            }
+            break;
+        case filewatch::Event::renamed_old:
+            EK_CORE_TRACE("Asset renamed_old: {0}", path);
+            {
+                Application::Get().SubmitToMainThread([&, absolutePath]()
+                {
+                    m_renamedAssetHandle = GetHandleFromAssetPath(absolutePath);
+                });
+            }
+            break;
+        case filewatch::Event::renamed_new:
+            EK_CORE_TRACE("Asset renamed_new: {0}", path);
+            {
+                Application::Get().SubmitToMainThread([&, absolutePath]()
+                {
+                    if (IsAssetHandleValid(m_renamedAssetHandle))
+                    {
+                        Ref<Asset> asset = GetAsset(m_renamedAssetHandle);
+                        if (asset)
+                        {
+                            asset->Name = absolutePath.filename().string();
+                            GetMetadata(m_renamedAssetHandle).FilePath = absolutePath;
+                            SerializeAssetRegistry();
+                        }
+                    }
+                });
             }
             break;
         default:

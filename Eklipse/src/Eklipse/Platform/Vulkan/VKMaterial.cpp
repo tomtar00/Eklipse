@@ -51,7 +51,7 @@ namespace Eklipse
 		void VKMaterial::CreateDescriptorSets()
 		{
 			EK_PROFILE();
-			EK_CORE_TRACE("Creating descriptor sets for material {0}", m_name);
+			EK_CORE_TRACE("Creating descriptor sets for material {0}", Name);
 			//if (!requiresDescriptorSets) return;
 
 			Vec<VkDescriptorSetLayout> layouts(g_maxFramesInFlight, m_vkShader->GetDescriptorSetLayout());
@@ -91,7 +91,7 @@ namespace Eklipse
 						descriptorWrite.pBufferInfo = bufferInfo;
 
 						descriptorWrites.push_back(descriptorWrite);
-						EK_CORE_TRACE("Binding uniform buffer '{0}' to descriptor set {1} at binding {2} for material {3}", ubo.name, i, ubo.binding, m_name);
+						EK_CORE_TRACE("Binding uniform buffer '{0}' to descriptor set {1} at binding {2} for material {3}", ubo.name, i, ubo.binding, Name);
 					}
 				}
 
@@ -115,7 +115,7 @@ namespace Eklipse
 					descriptorWrite.pImageInfo = imageInfo;
 
 					descriptorWrites.push_back(descriptorWrite);
-					EK_CORE_TRACE("Binding sampler '{0}' to descriptor set {1} at binding {2} for material {3} ({4})", samplerName, i, sampler.binding, m_name, sampler.textureHandle);
+					EK_CORE_TRACE("Binding sampler '{0}' to descriptor set {1} at binding {2} for material {3} ({4})", samplerName, i, sampler.binding, Name, sampler.textureHandle);
 				}
 
 				vkUpdateDescriptorSets(g_logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
@@ -126,7 +126,7 @@ namespace Eklipse
 					delete write.pImageInfo;
 				}
 			}
-			EK_CORE_DBG("Created descriptor sets for material {0}", m_name);
+			EK_CORE_DBG("Created descriptor sets for material {0}", Name);
 		}
 	}
 }

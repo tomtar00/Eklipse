@@ -100,7 +100,6 @@ namespace Eklipse
 		StageSourceMap Shader::Setup(const Path& shaderPath);
 		bool Recompile(const Path& shaderPath);
 
-		const String& GetName() const;
 		const StageReflectionMap& GetReflections() const;
 		const ShaderReflection& GetVertexReflection();
 		const ShaderReflection& GetFragmentReflection();
@@ -122,7 +121,6 @@ namespace Eklipse
 		virtual const String GetCacheDirectoryPath() = 0;
 
 	protected:
-		String m_name;
 		bool m_isValid;
 
 		StageReflectionMap m_reflections;

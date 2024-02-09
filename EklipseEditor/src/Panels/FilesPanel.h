@@ -33,7 +33,5 @@ namespace Eklipse
         Ref<GuiIcon> m_shaderIcon;
         Ref<GuiIcon> m_textureIcon;
         Ref<GuiIcon> m_sceneIcon;
-
-        //std::map<Path, AssetHandle> m_pathHandleMap;
     };
 }

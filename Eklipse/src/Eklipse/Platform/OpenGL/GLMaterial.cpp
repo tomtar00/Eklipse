@@ -23,7 +23,7 @@ namespace Eklipse
 					{
 						String constantName = pushConstant.name + "." + member.name;
 						GLint location = glGetUniformLocation(m_glShader->GetID(), constantName.c_str());
-						EK_ASSERT(location != -1, "Uniform {0} not found in shader '{1}' or the variable is not used", constantName, m_shader->GetName());
+						EK_ASSERT(location != -1, "Uniform {0} not found in shader '{1}' or the variable is not used", constantName, m_shader->Name);
 						if (location == -1) continue;
 
 						void* data = m_pushConstants.at(pushConstant.name).dataPointers.at(member.name).data;

@@ -64,7 +64,6 @@ namespace Eklipse
 		Camera* GetMainCamera() { return m_mainCamera; }
 		Transform* GetMainCameraTransform() { return m_mainCameraTransform; }
 		entt::registry& GetRegistry() { return m_registry; }
-		const String& GetName() const { return m_name; }
 		SceneState GetState() const { return m_state; }
 
 		// Helpers
@@ -77,7 +76,6 @@ namespace Eklipse
 		virtual AssetType GetType() const override { return GetStaticType(); }
 
 	private:
-		String m_name;
 		SceneState m_state;
 
 		entt::registry m_registry;

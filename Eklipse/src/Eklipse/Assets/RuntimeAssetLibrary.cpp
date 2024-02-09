@@ -38,7 +38,7 @@ namespace Eklipse
         }
         return asset;
     }
-    const AssetMetadata& RuntimeAssetLibrary::GetMetadata(AssetHandle handle) const
+    AssetMetadata& RuntimeAssetLibrary::GetMetadata(AssetHandle handle)
     {
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_assetRegistry.at(handle);

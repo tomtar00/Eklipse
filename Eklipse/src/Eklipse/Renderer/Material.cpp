@@ -58,13 +58,13 @@ namespace Eklipse
 
     Material::Material(const Path& path, AssetHandle shaderHandle)
     {
-        m_name = path.stem().string();
+        Name = path.stem().string();
 
         if (FileUtilities::IsPathValid(path))
         {
             if (!Deserialize(path))
             {
-                EK_CORE_ERROR("Failed to deserialize material '{0}'", m_name);
+                EK_CORE_ERROR("Failed to deserialize material '{0}'", Name);
             }
         }
         else
@@ -72,7 +72,7 @@ namespace Eklipse
             SetShader(shaderHandle);
             if (!Serialize(path))
             {
-                EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
+                EK_CORE_ERROR("Failed to serialize material '{0}'", Name);
             }
         }
     }
@@ -114,26 +114,26 @@ namespace Eklipse
     void Material::ApplyChanges()
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Applying changes to material '{0}'", m_name);
+        EK_CORE_TRACE("Applying changes to material '{0}'", Name);
 
         auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
         if (!Serialize(materialPath))
         {
-            EK_CORE_ERROR("Failed to serialize material '{0}'", m_name);
+            EK_CORE_ERROR("Failed to serialize material '{0}'", Name);
             return;
         }
         if (!Deserialize(materialPath))
         {
-            EK_CORE_ERROR("Failed to deserialize material '{0}'", m_name);
+            EK_CORE_ERROR("Failed to deserialize material '{0}'", Name);
         }
 
-        EK_CORE_DBG("Applied changes to material '{0}'", m_name);
+        EK_CORE_DBG("Applied changes to material '{0}'", Name);
     }
 
     void Material::SetShader(AssetHandle shaderHandle)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", m_name, shaderHandle);
+        EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", Name, shaderHandle);
 
         EK_ASSERT(AssetManager::IsAssetHandleValid(shaderHandle), "Shader handle is not valid");
         if (m_shader && m_shader->Handle == shaderHandle)
@@ -168,12 +168,12 @@ namespace Eklipse
             }
         }
 
-        EK_CORE_DBG("Set shader for material '{0}' to '{1}'", m_name, m_shader->GetName());
+        EK_CORE_DBG("Set shader for material '{0}' to '{1}'", Name, m_shader->Name);
     }
     void Material::OnShaderReloaded()
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Material::OnShaderReloaded for material '{0}'", m_name);
+        EK_CORE_TRACE("Material::OnShaderReloaded for material '{0}'", Name);
 
         // Applying new shader constants
         for (auto&& [stage, reflection] : m_shader->GetReflections())
@@ -241,16 +241,16 @@ namespace Eklipse
             }
         }
 
-        EK_CORE_DBG("Material::OnShaderReloaded for material '{0}'", m_name);
+        EK_CORE_DBG("Material::OnShaderReloaded for material '{0}'", Name);
     }
     bool Material::Serialize(const Path& path)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Serializing material '{0}' to '{1}'", m_name, path.string());
+        EK_CORE_TRACE("Serializing material '{0}' to '{1}'", Name, path.string());
 
         YAML::Emitter out;
         out << YAML::BeginMap;
-        out << YAML::Key << "Name" << YAML::Value << m_name;
+        out << YAML::Key << "Name" << YAML::Value << Name;
         out << YAML::Key << "Shader" << YAML::Value << m_shader->Handle;
 
         {
@@ -299,13 +299,13 @@ namespace Eklipse
         std::ofstream fout(path);
         fout << out.c_str();
 
-        EK_CORE_DBG("Serialized material '{0}' to '{1}'", m_name, path.string());
+        EK_CORE_DBG("Serialized material '{0}' to '{1}'", Name, path.string());
         return true;
     }
     bool Material::Deserialize(const Path& path)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Deserializing material '{0}' from '{1}'", m_name, path.string());
+        EK_CORE_TRACE("Deserializing material '{0}' from '{1}'", Name, path.string());
 
         YAML::Node yaml;
         try
@@ -324,7 +324,7 @@ namespace Eklipse
             return false;
         }
 
-        m_name = yaml["Name"].as<String>();
+        Name = yaml["Name"].as<String>();
 
         if (!yaml["Shader"])
         {
@@ -391,23 +391,19 @@ namespace Eklipse
             auto texture = AssetManager::GetAsset<Texture2D>(textureHandle);
             if (texture == nullptr)
             {
-                EK_CORE_TRACE("Sampler '{0}' in material '{1}' failed to load texture {2}", samplerName, m_name, textureHandle);
+                EK_CORE_TRACE("Sampler '{0}' in material '{1}' failed to load texture {2}", samplerName, Name, textureHandle);
                 continue;
             }
 
             sampler.textureHandle = textureHandle;
             sampler.texture = texture;
 
-            EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, m_name, sampler.textureHandle);
+            EK_CORE_TRACE("Sampler '{0}' in material '{1}' loaded texture '{2}'", samplerName, Name, sampler.textureHandle);
         }
 
         return true;
     }
 
-    const String& Material::GetName() const
-    {
-        return m_name;
-    }
     const Ref<Shader> Material::GetShader() const
     {
         return m_shader;

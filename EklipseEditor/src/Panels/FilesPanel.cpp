@@ -42,11 +42,6 @@ namespace Eklipse
     {
         m_workingDirPath = Project::GetActive()->GetConfig().assetsDirectoryPath;
         m_currentPath = m_workingDirPath;
-
-        /*for (auto& [handle, metadata] : EditorLayer::Get().GetAssetLibrary()->GetAssetRegistry())
-        {
-            m_pathHandleMap[metadata.FilePath] = handle;
-        }*/
     }
 
     bool FilesPanel::OnGUI(float deltaTime)
@@ -91,10 +86,10 @@ namespace Eklipse
         }
 
         ImGui::NewLine();
-        //ImGui::Separator();
 
         static float padding = 32.0f;
         static float thumbnailSize = 64.0f;
+        static Path renamedPath;
         float cellSize = thumbnailSize + padding;
 
         float panelWidth = ImGui::GetContentRegionAvail().x;
@@ -127,6 +122,10 @@ namespace Eklipse
                 if (ImGui::Selectable("Copy Path"))
                 {
                     ImGui::SetClipboardText((m_currentPath / filename).string().c_str());
+                }
+                if (ImGui::Selectable("Rename"))
+                {
+                    renamedPath = path;
                 }
                 ImGui::EndPopup();
             }
@@ -166,7 +165,24 @@ namespace Eklipse
                 }
             }
 
-            ImGui::Text(filename.c_str());
+            if (renamedPath == path)
+            {
+                // if esc then clear renamedPath
+                if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+                {
+                    renamedPath.clear();
+                }
+
+                ImGui::SetKeyboardFocusHere();
+                if (ImGui::InputText("##Rename", &filename, ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    fs::rename(path, m_currentPath / filename);
+                    renamedPath.clear();
+                }
+            }
+            else
+                ImGui::Text(filename.c_str());
+
             ImGui::NextColumn();
             ImGui::PopID();
         }

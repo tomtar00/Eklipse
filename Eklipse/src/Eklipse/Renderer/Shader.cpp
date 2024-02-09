@@ -122,7 +122,7 @@ namespace Eklipse
     Shader::Shader(const Path& filePath, const AssetHandle handle) : m_isValid(false)
     {
         Handle = handle;
-        m_name = filePath.stem().string();
+        Name = filePath.stem().string();
     }
     Ref<Shader> Shader::Create(const Path& filePath, const AssetHandle handle)
     {
@@ -138,20 +138,20 @@ namespace Eklipse
     StageSourceMap Shader::Setup(const Path& shaderPath)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Setting up shader '{0}'", m_name);
+        EK_CORE_TRACE("Setting up shader '{0}'", Name);
 
         CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
 
         String source = FileUtilities::ReadFileFromPath(shaderPath);
-        m_name = shaderPath.stem().string();
+        Name = shaderPath.stem().string();
 
-        EK_CORE_DBG("Set up shader '{0}'", m_name);
+        EK_CORE_DBG("Set up shader '{0}'", Name);
         return PreProcess(source);
     }
     bool Shader::Recompile(const Path& shaderPath)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Recompiling shader '{0}'", m_name);
+        EK_CORE_TRACE("Recompiling shader '{0}'", Name);
 
         Dispose();
         m_isValid = Compile(shaderPath, true);
@@ -174,15 +174,11 @@ namespace Eklipse
             }
         }
 
-        EK_CORE_DBG("Recompiled shader '{0}'. Success: {1}", m_name, m_isValid);
+        EK_CORE_DBG("Recompiled shader '{0}'. Success: {1}", Name, m_isValid);
 
         return m_isValid;
     }
 
-    const String& Shader::GetName() const
-    {
-        return m_name;
-    }
     const StageReflectionMap& Shader::GetReflections() const
     {
         return m_reflections;
@@ -315,7 +311,7 @@ namespace Eklipse
     bool Shader::CompileOrGetVulkanBinaries(const Path& shaderPath, const StageSourceMap& shaderSources, bool forceCompile)
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Compiling vulkan binaries for shader '{0}'", m_name);
+        EK_CORE_TRACE("Compiling vulkan binaries for shader '{0}'", Name);
 
         bool success = true;
         shaderc::Compiler compiler;
@@ -333,7 +329,7 @@ namespace Eklipse
         shaderData.clear();
         for (auto&& [stage, source] : shaderSources)
         {
-            Path cachedPath = cacheDirectory / (m_name + VKShaderStageCachedVulkanFileExtension(stage));
+            Path cachedPath = cacheDirectory / (Name + VKShaderStageCachedVulkanFileExtension(stage));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (!forceCompile && in.is_open())
@@ -382,15 +378,15 @@ namespace Eklipse
 
         if (success)
         {
-            Reflect(m_vulkanSPIRV, m_name);
-            EK_CORE_DBG("Compiled vulkan binaries for shader '{0}'", m_name);
+            Reflect(m_vulkanSPIRV, Name);
+            EK_CORE_DBG("Compiled vulkan binaries for shader '{0}'", Name);
         }
         return success;
     }
     StageSourceMap Shader::PreProcess(const String& source) const
     {
         EK_PROFILE();
-        EK_CORE_TRACE("Preprocessing shader source in shader '{0}'", m_name);
+        EK_CORE_TRACE("Preprocessing shader source in shader '{0}'", Name);
 
         std::unordered_map<ShaderStage, String> shaderSources;
 
@@ -412,7 +408,7 @@ namespace Eklipse
             shaderSources[StringToShaderStage(type)] = (pos == String::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
         }
 
-        EK_CORE_DBG("Preprocessed shader source in shader '{0}'", m_name);
+        EK_CORE_DBG("Preprocessed shader source in shader '{0}'", Name);
 
         return shaderSources;
     }

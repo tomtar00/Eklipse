@@ -22,7 +22,7 @@ namespace Eklipse
         ~EditorAssetLibrary();
 
         virtual Ref<Asset> GetAsset(AssetHandle handle) override;
-        virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
+        virtual AssetMetadata& GetMetadata(AssetHandle handle) override;
         virtual bool IsAssetHandleValid(AssetHandle handle) const override;
         virtual bool IsAssetLoaded(AssetHandle handle) const override;
 
@@ -54,6 +54,8 @@ namespace Eklipse
         Path m_assetDirectory;
 
         Unique<filewatch::FileWatch<String>> m_fileWatcher;
+
         bool m_shaderReloadPending;
+        AssetHandle m_renamedAssetHandle;
     };
 }

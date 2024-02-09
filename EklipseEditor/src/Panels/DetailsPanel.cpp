@@ -216,8 +216,8 @@ namespace Eklipse
     }
     void DetailsPanel::OnMaterialGUI(Material* material)
     {
-        ImGui::Text(("Material: " + material->GetName()).c_str());
-        const char* id = material->GetName().c_str();
+        ImGui::Text(("Material: " + material->Name).c_str());
+        const char* id = material->Name.c_str();
 
         if (ImGui::InputAsset(id, "Shader", AssetType::Shader, material->GetShaderHandle()))
         {
@@ -299,7 +299,7 @@ namespace Eklipse
     void DetailsPanel::OnShaderGUI(Shader* shader)
     {
         ImGui::DrawProperty("shader_name", "Name", [&]() {
-            ImGui::Text(shader->GetName().c_str());
+            ImGui::Text(shader->Name.c_str());
         });
 
         ImGui::Spacing();

@@ -73,7 +73,7 @@ namespace Eklipse
 		bool GLShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
 			EK_PROFILE();
-			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", m_name);
+			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", Name);
 
 			auto shaderSources = Setup(shaderPath);
 			bool success = true;
@@ -85,19 +85,19 @@ namespace Eklipse
 				if (success)
 				{
 					CreateProgram();
-					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", m_name, timer.ElapsedTimeMs());
+					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, timer.ElapsedTimeMs());
 				}
 				else EK_CORE_ERROR("Failed to compile shader {0}", Handle);
 			}
 
-			EK_CORE_DBG("Compiled OpenGL shader '{0}'", m_name);
+			EK_CORE_DBG("Compiled OpenGL shader '{0}'", Name);
 			return success;
 		}
 
 		bool GLShader::CompileOrGetOpenGLBinaries(const Path& shaderPath, bool forceCompile)
 		{
 			EK_PROFILE();
-			EK_CORE_TRACE("Compiling or getting binaries for OpenGL shader '{0}'", m_name);
+			EK_CORE_TRACE("Compiling or getting binaries for OpenGL shader '{0}'", Name);
 
 			auto& shaderData = m_openGLSPIRV;
 
@@ -113,7 +113,7 @@ namespace Eklipse
 			m_openGLSourceCode.clear();
 			for (auto&& [stage, spirv] : m_vulkanSPIRV)
 			{
-				Path cachedPath = cacheDirectory / (m_name + GLShaderStageCachedOpenGLFileExtension(stage));
+				Path cachedPath = cacheDirectory / (Name + GLShaderStageCachedOpenGLFileExtension(stage));
 
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (!forceCompile && in.is_open())
@@ -147,7 +147,7 @@ namespace Eklipse
 					m_openGLSourceCode[stage] = glslCompiler.compile();
 					auto& source = m_openGLSourceCode[stage];
 
-					//EK_CORE_TRACE("OpenGL shader '{0}' - stage={1} source code:\n{2}", m_name, ShaderStageToString(stage), source);
+					//EK_CORE_TRACE("OpenGL shader '{0}' - stage={1} source code:\n{2}", Name, ShaderStageToString(stage), source);
 
 					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)ShaderStageToShaderC(stage), shaderPath.string().c_str(), options);
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -175,13 +175,13 @@ namespace Eklipse
 					}
 				}
 			}
-			EK_CORE_DBG("Compiled or got binaries for OpenGL shader '{0}'", m_name);
+			EK_CORE_DBG("Compiled or got binaries for OpenGL shader '{0}'", Name);
 			return success;
 		}
 		void GLShader::CreateProgram()
 		{
 			EK_PROFILE();
-			EK_CORE_TRACE("Creating OpenGL shader program '{0}'", m_name);
+			EK_CORE_TRACE("Creating OpenGL shader program '{0}'", Name);
 
 			GLuint program = glCreateProgram();
 
@@ -231,7 +231,7 @@ namespace Eklipse
 
 			m_id = program;
 
-			EK_CORE_DBG("Created OpenGL shader program '{0}' with id {1}", m_name, m_id);
+			EK_CORE_DBG("Created OpenGL shader program '{0}' with id {1}", Name, m_id);
 		}
 	}
 }

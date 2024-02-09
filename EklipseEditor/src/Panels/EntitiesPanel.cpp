@@ -52,8 +52,8 @@ namespace Eklipse
 			ImGui::EndPopup();
 		}
 
-		ImGui::Text("Scene: %s", m_sceneContext->GetName().c_str());
-		EK_CORE_DBG("Scene: {}", m_sceneContext->GetName());
+		ImGui::Text("Scene: %s", m_sceneContext->Name.c_str());
+		EK_CORE_DBG("Scene: {}", m_sceneContext->Name);
 		ImGui::Separator();
 		m_sceneContext->ForEachEntity([&](auto entityID)
 		{
