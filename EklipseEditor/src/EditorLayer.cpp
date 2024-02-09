@@ -371,12 +371,12 @@ namespace Eklipse
         }
         auto& config = Project::GetActive()->GetConfig();
 
+        // init asset library
+        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
+
         // setup script manager
         m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
         m_scriptManager->Load();
-
-        // init asset library
-        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
 
         // import start scene
         AssetHandle handle = m_editorAssetLibrary->ImportAsset(config.startScenePath);
@@ -422,6 +422,14 @@ namespace Eklipse
             }
 
             m_scriptManager->Load();
+
+            // get default assets
+            m_cubeHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Meshes/cube.obj");
+            m_sphereHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Meshes/sphere.obj");
+            m_shader3dHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Shaders/3D.glsl");
+            m_shader2dHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Shaders/2D.glsl");
+            m_material3dHandle = m_editorAssetLibrary->GetHandleFromAssetPath(config.assetsDirectoryPath / "Materials/3D.ekmt");
+            m_material2dHandle = m_editorAssetLibrary->GetHandleFromAssetPath(config.assetsDirectoryPath / "Materials/2D.ekmt");
 
             m_editorScene = AssetManager::GetAsset<Scene>(config.startSceneHandle);
             SceneManager::SetActiveScene(m_editorScene);

@@ -42,6 +42,7 @@ namespace Eklipse
 	{
 		String name;
 		size_t size;
+		uint32_t offset;
 		Vec<ShaderUniformMember> members;
 	};
 
@@ -59,12 +60,14 @@ namespace Eklipse
 		uint32_t location;
 		size_t size;
 		size_t offset;
+		ShaderDataType type;
 	};
 	struct ShaderOutput
 	{
 		String name;
 		uint32_t location;
 		size_t size;
+		ShaderDataType type;
 	};
 	
 	// Reflection
@@ -78,9 +81,10 @@ namespace Eklipse
 		uint32_t maxLocation = 0;
 	};
 
-	ShaderStage StringToShaderStage(const String& stage);
-	String ShaderStageToString(ShaderStage stage);
-	uint32_t ShaderStageToShaderC(const ShaderStage stage);
+	EK_API ShaderStage StringToShaderStage(const String& stage);
+	EK_API String ShaderStageToString(ShaderStage stage);
+	EK_API uint32_t ShaderStageToShaderC(const ShaderStage stage);
+	EK_API String ShaderDataTypeToString(ShaderDataType type);
 
 	using StageReflectionMap = std::map<ShaderStage, ShaderReflection>;
 	using StageSourceMap = std::unordered_map<ShaderStage, String>;

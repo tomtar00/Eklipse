@@ -38,6 +38,10 @@ namespace Eklipse
         {
             OnMaterialGUI(info.material);
         }
+        else if (info.type == SelectionType::SHADER)
+        {
+            OnShaderGUI(info.shader);
+        }
 
         ImGui::End();
         return true;
@@ -262,7 +266,7 @@ namespace Eklipse
                 else if (value.type == ShaderDataType::FLOAT4)
                 {
                     ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
-                        ImGui::DragFloat4("##check", (float*)value.data);
+                        ImGui::ColorEdit4("##check", (float*)value.data);
                     });
                 }
                 else if (value.type == ShaderDataType::INT)
@@ -290,6 +294,75 @@ namespace Eklipse
                     });
                 }
             }
+        }
+    }
+    void DetailsPanel::OnShaderGUI(Shader* shader)
+    {
+        ImGui::DrawProperty("shader_name", "Name", [&]() {
+            ImGui::Text(shader->GetName().c_str());
+        });
+
+        ImGui::Spacing();
+
+        auto& reflections = shader->GetReflections();
+        for (auto& [stage, reflection] : reflections)
+        {
+            if (ImGui::CollapsingHeader(ShaderStageToString(stage).c_str()))
+            {
+                if (reflection.inputs.size() > 0)
+                    ImGui::SeparatorText("Input");
+                for (auto& input : reflection.inputs)
+                {
+                    ImGui::DrawProperty((void*)input.offset, input.name.c_str(), [&]() {
+                        ImGui::Text(ShaderDataTypeToString(input.type).c_str());
+                    });
+                }
+                ImGui::Spacing();
+
+                if (reflection.outputs.size() > 0)
+                    ImGui::SeparatorText("Output");
+                for (auto& output : reflection.outputs)
+                {
+                    ImGui::DrawProperty((void*)output.name.c_str(), output.name.c_str(), [&]() {
+                        ImGui::Text(ShaderDataTypeToString(output.type).c_str());
+                    });
+                }
+                ImGui::Spacing();
+
+                if (reflection.uniformBuffers.size() > 0)
+                    ImGui::SeparatorText("Uniform");
+                for (auto& uniform : reflection.uniformBuffers)
+                {
+                    for (auto& member : uniform.members)
+                    {
+                        ImGui::DrawProperty((void*)member.offset, member.name.c_str(), [&]() {
+                            ImGui::Text(ShaderDataTypeToString(member.type).c_str());
+                        });
+                    }
+                }
+                ImGui::Spacing();
+
+                if (reflection.pushConstants.size() > 0)
+                    ImGui::SeparatorText("Push Constant");
+                for (auto& pushConstant : reflection.pushConstants)
+                {
+                    for (auto& member : pushConstant.members)
+                    {
+                        ImGui::DrawProperty((void*)member.offset, member.name.c_str(), [&]() {
+                            ImGui::Text(ShaderDataTypeToString(member.type).c_str());
+                        });
+                    }
+                }
+            }
+            ImGui::Spacing();
+        }
+
+        ImGui::Spacing();
+
+        if (ImGui::Button("Recompile"))
+        {
+            Path shaderPath = AssetManager::GetMetadata(shader->Handle).FilePath;
+            shader->Recompile(shaderPath);
         }
     }
 }

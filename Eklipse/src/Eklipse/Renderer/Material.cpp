@@ -98,7 +98,7 @@ namespace Eklipse
         }
         if (dst == nullptr)
         {
-            EK_CORE_WARN("Failed to deserialize data, destination is null");
+            EK_CORE_WARN("Failed to set material data, destination is null. This my indicate that the material file was corrupted.");
             return;
         }
 

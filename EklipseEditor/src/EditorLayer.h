@@ -24,13 +24,15 @@ namespace Eklipse
 	{
 		NONE = 0,
 		ENTITY,
-		MATERIAL
+		MATERIAL,
+		SHADER
 	};
 	struct DetailsSelectionInfo
 	{
 		SelectionType type;
 		Entity entity;
 		Material* material;
+		Shader* shader;
 	};
 
 	class EditorLayer : public Layer

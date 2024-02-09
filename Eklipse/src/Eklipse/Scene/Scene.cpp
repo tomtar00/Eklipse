@@ -307,10 +307,12 @@ namespace Eklipse
     }
     void Scene::DestroyEntity(Entity entity)
     {
-        EK_CORE_TRACE("Destroying entity with ID = {0}, name = {1}", entity.GetUUID(), entity.GetName());
-        m_entityMap.erase(entity.GetUUID());
+        String name = entity.GetName();
+        UUID uuid = entity.GetUUID();
+        EK_CORE_TRACE("Destroying entity with ID = {0}, name = {1}", uuid, name);
+        m_entityMap.erase(uuid);
         m_registry.destroy(entity.GetHandle());
-        EK_CORE_DBG("Entity with ID = {0}, name = {1} destroyed", entity.GetUUID(), entity.GetName());
+        EK_CORE_DBG("Entity with ID = {0}, name = {1} destroyed", uuid, name);
     }
 
     // Serialization

@@ -141,13 +141,28 @@ namespace Eklipse
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && path.has_extension())
             {
-                if (EditorAssetLibrary::GetAssetTypeFromFileExtension(path.extension().string()) == AssetType::Material)
+                AssetType type = EditorAssetLibrary::GetAssetTypeFromFileExtension(path.extension().string());
+                if (type == AssetType::Material)
                 {
                     AssetHandle materialHandle = EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(m_currentPath / path);
-                    DetailsSelectionInfo info{};
-                    info.type = SelectionType::MATERIAL;
-                    info.material = AssetManager::GetAsset<Material>(materialHandle).get();
-                    EditorLayer::Get().SelectionInfo = info;
+                    if (AssetManager::IsAssetHandleValid(materialHandle))
+                    {
+                        DetailsSelectionInfo info{};
+                        info.type = SelectionType::MATERIAL;
+                        info.material = AssetManager::GetAsset<Material>(materialHandle).get();
+                        EditorLayer::Get().SelectionInfo = info;
+                    }
+                }
+                else if (type == AssetType::Shader)
+                {
+                    AssetHandle shaderHandle = EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(m_currentPath / path);
+                    if (AssetManager::IsAssetHandleValid(shaderHandle))
+                    {
+                        DetailsSelectionInfo info{};
+                        info.type = SelectionType::SHADER;
+                        info.shader = AssetManager::GetAsset<Shader>(shaderHandle).get();
+                        EditorLayer::Get().SelectionInfo = info;
+                    }
                 }
             }
 

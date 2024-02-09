@@ -65,7 +65,7 @@ namespace Eklipse
         EK_ASSERT(false, "Unkown SPIR-V type! Type: {0}", (uint32_t)type.basetype);
         return ShaderDataType::NONE;
     }
-    static String DataTypeToString(ShaderDataType type)
+    String ShaderDataTypeToString(ShaderDataType type)
     {
         switch (type)
         {
@@ -204,6 +204,7 @@ namespace Eklipse
     {
         EK_PROFILE();
         EK_CORE_DBG("Shader::Reflect - {0}", shaderName);
+        uint32_t push_const_offset = 0;
         for (auto&& [stage, shaderData] : shaderStagesData)
         {
             EK_CORE_TRACE("Stage: {0}", ShaderStageToString(stage));
@@ -217,31 +218,33 @@ namespace Eklipse
             {
                 auto& resource = resources.stage_inputs[inputIndex];
                 const auto& name = compiler.get_name(resource.id);
-                const auto& type = compiler.get_type(resource.base_type_id);
+                const auto& inputType = compiler.get_type(resource.base_type_id);
                 uint32_t location = compiler.get_decoration(resource.id, spv::DecorationLocation);
                 if (location > reflection.maxLocation)
                     reflection.maxLocation = location;
-                size_t size = GetSizeOfSpirvType(type, name);
+                size_t size = GetSizeOfSpirvType(inputType, name);
+                ShaderDataType type = SpirvTypeToDataType(inputType);
                 EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tLocation: {0}", location);
                 EK_CORE_TRACE("\tSize: {0}", size);
                 EK_CORE_TRACE("\tOffset: {0}", offset);
-                reflection.inputs.push_back({ name, location, size, offset });
+                reflection.inputs.push_back({ name, location, size, offset, type });
                 offset += size;
             }
             EK_CORE_TRACE("Outputs:");
             for (const auto& resource : resources.stage_outputs)
             {
                 const auto& name = compiler.get_name(resource.id);
-                const auto& type = compiler.get_type(resource.base_type_id);
+                const auto& outputType = compiler.get_type(resource.base_type_id);
                 uint32_t location = compiler.get_decoration(resource.id, spv::DecorationLocation);
                 if (location > reflection.maxLocation)
                     reflection.maxLocation = location;
-                size_t size = GetSizeOfSpirvType(type, name);
+                size_t size = GetSizeOfSpirvType(outputType, name);
+                ShaderDataType type = SpirvTypeToDataType(outputType);
                 EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tLocation: {0}", location);
                 EK_CORE_TRACE("\tSize: {0}", size);
-                reflection.outputs.push_back({ name, location, size });
+                reflection.outputs.push_back({ name, location, size, type });
             }
             EK_CORE_TRACE("Uniform buffers:");
             for (const auto& resource : resources.uniform_buffers)
@@ -264,7 +267,7 @@ namespace Eklipse
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
-                    EK_CORE_TRACE("\t\tType: {0}", DataTypeToString(type));
+                    EK_CORE_TRACE("\t\tType: {0}", ShaderDataTypeToString(type));
                     uniformBuffer.members.push_back({ name, memberSize, memberOffset, type });
                 }
                 reflection.uniformBuffers.push_back(uniformBuffer);
@@ -279,7 +282,9 @@ namespace Eklipse
                 size_t bufferSize = compiler.get_declared_struct_size(bufferType);
                 EK_CORE_TRACE("\tName: {0}", name);
                 EK_CORE_TRACE("\tSize: {0}", bufferSize);
-                ShaderPushConstant pushConstant = { name, bufferSize };
+                EK_CORE_TRACE("\tOffset: {0}", push_const_offset);
+                ShaderPushConstant pushConstant = { name, bufferSize, push_const_offset };
+                push_const_offset += bufferSize;
                 for (size_t memberIndex = 0; memberIndex < bufferType.member_types.size(); ++memberIndex)
                 {
                     const auto& name = compiler.get_member_name(bufferType.self, memberIndex);
@@ -290,7 +295,7 @@ namespace Eklipse
                     EK_CORE_TRACE("\t\tName: {0}", name);
                     EK_CORE_TRACE("\t\tSize: {0}", memberSize);
                     EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
-                    EK_CORE_TRACE("\t\tType: {0}", DataTypeToString(type));
+                    EK_CORE_TRACE("\t\tType: {0}", ShaderDataTypeToString(type));
                     pushConstant.members.push_back({ name, memberSize, memberOffset, type });
                 }
                 reflection.pushConstants.push_back(pushConstant);

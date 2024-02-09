@@ -102,7 +102,7 @@ namespace Eklipse
 #endif
 
             glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
-            meshComponent.material->SetConstant("pConstants", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
+            meshComponent.material->SetConstant("uVertConst", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
             RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
         }
 

@@ -13,6 +13,7 @@ namespace Eklipse
 		virtual bool OnGUI(float deltaTime) override;
 		void OnEntityGUI(Entity entity);
 		void OnMaterialGUI(Material* material);
+		void OnShaderGUI(Shader* shader);
 
 	private:
 		String m_entityNameBuffer;

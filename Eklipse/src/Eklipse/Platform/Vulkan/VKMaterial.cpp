@@ -24,8 +24,14 @@ namespace Eklipse
 			{
 				for (auto& pushConstant : reflection.pushConstants)
 				{
-					vkCmdPushConstants(g_currentCommandBuffer, m_vkShader->GetPipelineLayout(), 
-						VKShaderStageFromInternalStage(stage), 0, pushConstant.size, m_pushConstants.at(pushConstant.name).pushConstantData.get());
+					vkCmdPushConstants(
+						g_currentCommandBuffer, 
+						m_vkShader->GetPipelineLayout(), 
+						VKShaderStageFromInternalStage(stage), 
+						pushConstant.offset, 
+						pushConstant.size, 
+						m_pushConstants.at(pushConstant.name).pushConstantData.get()
+					);
 				}
 			}
 		}

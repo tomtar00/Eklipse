@@ -134,13 +134,14 @@ namespace Eklipse
 
 				m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
 
+				// Create push constant ranges
 				Vec<VkPushConstantRange> pushConstantRanges;
 				for (auto&& [stage, reflection] : m_reflections)
 				{
 					for (auto& pushConstant : reflection.pushConstants)
 					{
 						VkPushConstantRange range{};
-						range.offset = 0;
+						range.offset = pushConstant.offset;
 						range.size = pushConstant.size;
 						range.stageFlags = VKShaderStageFromInternalStage(stage);
 
