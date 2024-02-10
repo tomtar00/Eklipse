@@ -29,25 +29,22 @@ namespace Eklipse
         static float heightRatio = -1.0f;
         ImVec2 localPos, localSize, globalPos, globalSize;
 
-        if (Profiler::IsProfilingCurrentFrame())
+        heightRatio = -1.0f;
+        for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
         {
-            heightRatio = -1.0f;
-            for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
+            float height = 0.0f;
+            for (size_t nodeIdx = 0; nodeIdx < framesData[frameIdx].ProfileNodes.size(); nodeIdx++)
             {
-                float height = 0.0f;
-                for (size_t nodeIdx = 0; nodeIdx < framesData[frameIdx].ProfileNodes.size(); nodeIdx++)
-                {
-                    height += framesData[frameIdx].ProfileNodes[nodeIdx].execTimeMs;
-                }
-                if (height > 0.0f)
-                {
-                    float ratio = (graphSize.y - spacingY * framesData[frameIdx].ProfileNodes.size()) / height;
-                    if (heightRatio < 0.0f || ratio < heightRatio)
-                    {
-                        heightRatio = ratio;
-                    }
-                }    
+                height += framesData[frameIdx].ProfileNodes[nodeIdx].execTimeMs;
             }
+            if (height > 0.0f)
+            {
+                float ratio = (graphSize.y - spacingY * framesData[frameIdx].ProfileNodes.size()) / height;
+                if (heightRatio < 0.0f || ratio < heightRatio)
+                {
+                    heightRatio = ratio;
+                }
+            }    
         }
 
         for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
@@ -103,35 +100,33 @@ namespace Eklipse
     }
     static void DrawTable(float indent, Vec<ProfilerNode>& data, bool ascending, int columnIndex, uint32_t i)
     {
-        if (Profiler::IsProfilingCurrentFrame())
+        
+        if (columnIndex == 1)
         {
-            if (columnIndex == 1)
-            {
-                std::sort(data.begin(), data.end(),
-                    [ascending](ProfilerNode const& a, ProfilerNode const& b)
-                    {
-                        return ascending ? a.threadId < b.threadId : a.threadId > b.threadId;
-                    }
-                );
-            }
-            else if (columnIndex == 2)
-            {
-                std::sort(data.begin(), data.end(),
-                    [ascending](ProfilerNode const& a, ProfilerNode const& b)
-                    {
-                        return ascending ? a.numCalls < b.numCalls : a.numCalls > b.numCalls;
-                    }
-                );
-            }
-            else if (columnIndex == 3)
-            {
-                std::sort(data.begin(), data.end(),
-                    [ascending](ProfilerNode const& a, ProfilerNode const& b)
-                    { 
-                        return ascending ? a.execTimeMs < b.execTimeMs : a.execTimeMs > b.execTimeMs;
-                    }
-                );
-            } 
+            std::sort(data.begin(), data.end(),
+                [ascending](ProfilerNode const& a, ProfilerNode const& b)
+                {
+                    return ascending ? a.threadId < b.threadId : a.threadId > b.threadId;
+                }
+            );
+        }
+        else if (columnIndex == 2)
+        {
+            std::sort(data.begin(), data.end(),
+                [ascending](ProfilerNode const& a, ProfilerNode const& b)
+                {
+                    return ascending ? a.numCalls < b.numCalls : a.numCalls > b.numCalls;
+                }
+            );
+        }
+        else if (columnIndex == 3)
+        {
+            std::sort(data.begin(), data.end(),
+                [ascending](ProfilerNode const& a, ProfilerNode const& b)
+                { 
+                    return ascending ? a.execTimeMs < b.execTimeMs : a.execTimeMs > b.execTimeMs;
+                }
+            );
         }
 
         auto it = data.begin();
@@ -188,12 +183,13 @@ namespace Eklipse
 
         ImGui::Begin("Profiler");
 
-        static Vec<ProfilerNode> data{};
-        static Vec<ProfilerFrameData> framesData{};
-        if (Profiler::IsProfilingCurrentFrame())
+        if (ImGui::Checkbox("Enabled", &Profiler::Enabled))
         {
-            data = Profiler::GetLastFrameData().ProfileNodes;
-            framesData = Profiler::GetData();
+            if (!Profiler::Enabled)
+            {
+                Profiler::Clear();
+                Profiler::Init();
+            }
         }
 
         ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -203,7 +199,7 @@ namespace Eklipse
         static float graphHeight = 200.0f;
         DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetLastFrameData().ProfileNodes, Profiler::GetData());
 
-        ImGui::SetCursorPos({ 8.0f, graphHeight + 35.0f });
+        ImGui::SetCursorPos({ 8.0f, graphHeight + 65.0f });
         if (ImGui::BeginTable("Profiler", 4, ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableSetupColumn("Method", ImGuiTableColumnFlags_WidthStretch, 4.0f);
@@ -221,7 +217,7 @@ namespace Eklipse
             }
 
             static uint32_t i = 0;
-            DrawTable(0.0f, data, m_ascendingSort, m_columnIndex, i);
+            DrawTable(0.0f, Profiler::GetLastFrameData().ProfileNodes, m_ascendingSort, m_columnIndex, i);
 
             ImGui::EndTable();
         }

@@ -262,6 +262,7 @@ namespace Eklipse
             {
                 bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
                 bool isPaused = SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED;
+                Profiler::Running = isPlaying;
 
                 if (ImGui::BeginMenu("File"))
                 {

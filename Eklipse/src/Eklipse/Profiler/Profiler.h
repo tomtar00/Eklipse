@@ -1,7 +1,6 @@
 #pragma once
 
-#define MAX_PROFILED_FRAMES 100.0f
-#define SAMPLE_TIME_INTERVAL 0.5f
+#define MAX_PROFILED_FRAMES 200
 
 namespace Eklipse
 {
@@ -49,6 +48,8 @@ namespace Eklipse
 
     class EK_API Profiler
     {
+        friend class ProfilerTimer;
+
     public:
         static void Init();
 
@@ -56,18 +57,18 @@ namespace Eklipse
         static void End();
         static void Submit(float deltaTime);
 
-        static bool IsProfilingCurrentFrame();
         static Vec<ProfilerFrameData>& GetData();
         static ProfilerFrameData& GetLastFrameData();
         static void Clear();
 
         static ProfilerFrameData FrameData;
 
+        static bool Enabled;
+        static bool Running;
     private:
-        static Vec<ProfilerFrameData> m_frameData;
-        static ProfilerTimer m_timer;
-        static float m_timeAcc;
-        static bool m_allowProfiling;
+
+        static Vec<ProfilerFrameData> s_frameData;
+        static ProfilerTimer s_timer;
     };
 }
 
