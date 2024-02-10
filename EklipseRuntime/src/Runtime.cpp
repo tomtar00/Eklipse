@@ -1,3 +1,6 @@
+#define EK_PROFILE_NAME(name)	
+#define EK_PROFILE()			
+
 #include <Eklipse.h>
 #include <Eklipse/Core/EntryPoint.h>
 #include "RuntimeLayer.h"

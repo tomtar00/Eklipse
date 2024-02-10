@@ -10,16 +10,28 @@
 #include <Panels/FilesPanel.h>
 
 #include <ImGui/ImGuiExtensions.h>
+#include <ImGui/Theme.h>
 
 namespace Eklipse
 {
+	using ProjectHandle = UUID;
+	struct ProjectMetadata
+	{
+		Path path;
+		uint64_t lastAccessTime;
+	};
 	struct EditorSettings
 	{
-		String theme = "dark";
+		// === Preferences ===
+		Theme theme;
 		Path projectsPath;
+
+		// === Project Registry ===
+		std::unordered_map<ProjectHandle, ProjectMetadata> projectRegistry;
 
 		ScriptManagerSettings ScriptManagerSettings;
 	};
+	
 	enum class SelectionType
 	{
 		NONE = 0,
@@ -53,6 +65,8 @@ namespace Eklipse
 		// === Project ===
 		bool NewProject(const Path& path, const String& name);
 		void OpenProject();
+		void OpenProject(ProjectHandle handle);
+		void OpenProject(const Path& path);
 		void SaveProject();
 		void SaveProjectAs();
 		void SaveScene();
@@ -120,6 +134,7 @@ namespace Eklipse
 
 		bool m_canControlEditorCamera = false;
 		bool m_guiEnabled;
+		bool m_isWindowMaximized;
 		EntitiesPanel	m_entitiesPanel;
 		DetailsPanel	m_detailsPanel;
 		ViewPanel		m_viewPanel;

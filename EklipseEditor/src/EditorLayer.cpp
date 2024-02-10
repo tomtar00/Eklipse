@@ -51,6 +51,8 @@ namespace Eklipse
             &m_terminalPanel
         };
 
+        m_isWindowMaximized = false;
+
         m_editorScene = CreateRef<Scene>();
         m_entitiesPanel.SetContext(m_editorScene.get());
         SceneManager::SetActiveScene(m_editorScene);
@@ -166,125 +168,216 @@ namespace Eklipse
         static bool openNewProjectPopup = false;
         static bool openExportProjectPopup = false;    
 
-        if (ImGui::BeginMainMenuBar())
+        if (!Project::GetActive())
         {
-            bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
-            bool isPaused = SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED;
+            static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 
-            if (ImGui::BeginMenu("File"))
+            const ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->WorkPos);
+            ImGui::SetNextWindowSize(viewport->WorkSize);
+            if (!openNewProjectPopup)
+                ImGui::SetNextWindowFocus();
+            if (ImGui::Begin("Select project", nullptr, flags))
             {
-                if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N", false, !isPlaying))
+                if (ImGui::Button("New Project"))
                 {
                     openNewProjectPopup = true;
                 }
-                if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O", false, !isPlaying))
+                ImGui::SameLine();
+                if (ImGui::Button("Open Project"))
                 {
-                    OpenProject(); // TODO: save and load created projects list and show it in modal/window
+                    OpenProject();
                 }
-                if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S", false, !isPlaying))
+
+                ImGui::Separator();
+
+                ImGui::Text("Recent Projects");
+                float width = ImGui::GetWindowContentRegionWidth();
+                ProjectHandle toRemove = 0;
+                for (auto& [handle, metadata] : m_settings.projectRegistry)
                 {
-                    SaveProject();
+                    ImGui::PushID(handle);
+                    if (ImGui::Button(metadata.path.stem().string().c_str(), { width-80, 30 }))
+                    {
+                        OpenProject(handle);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Remove", { 80, 30 }))
+                    {
+                        toRemove = handle;
+                    }
+                    ImGui::PopID();
                 }
-                if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S", false, !isPlaying))
+                if (toRemove != 0)
                 {
-                    SaveProjectAs();
+                    m_settings.projectRegistry.erase(toRemove);
                 }
-                if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr, false, !isPlaying))
-                {
-                    SaveScene();
-                }
-                if (ImGui::MenuItemEx("Export", nullptr, nullptr, false, !isPlaying))
-                {
-                    openExportProjectPopup = true;
-                }
-                if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
-                {
-                    Application::Get().Close();
-                }
-                ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Scene"))
+            ImGui::End();
+
+            if (openNewProjectPopup)
             {
-                if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, !isPlaying))
+                ImGui::SetNextWindowPos(viewport->WorkPos);
+                ImGui::SetNextWindowSize(viewport->WorkSize);
+                ImGui::SetNextWindowFocus();
+
+                if (ImGui::Begin("Create New Project", nullptr, flags))
                 {
-                    OnScenePlay();
+                    static String projectName;
+                    static Path projectsLocation = m_settings.projectsPath;
+                    ImGui::DrawProperty("prjName", "Project Name", [&]() {
+                        ImGui::InputText("##Project Name", &projectName);
+                    });
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    if (ImGui::CollapsingHeader("Advanced"))
+                    {
+                        ImGui::InputDirPath("prjlocation", "Projects Location", projectsLocation);
+                    }
+
+                    ImGui::Spacing();
+
+                    if (ImGui::Button("Create") && NewProject(projectsLocation / projectName, projectName))
+                    {
+                        openNewProjectPopup = false;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel"))
+                    {
+                        openNewProjectPopup = false;
+                    }
+
                 }
-                if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, !isPlaying))
+                ImGui::End();
+            }
+        }
+        else 
+        {
+            GUI->DrawDockspace();
+
+            if (ImGui::BeginMainMenuBar())
+            {
+                bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
+                bool isPaused = SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED;
+
+                if (ImGui::BeginMenu("File"))
                 {
-                    OnScenePause();
+                    if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N", false, !isPlaying))
+                    {
+                        openNewProjectPopup = true;
+                    }
+                    if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O", false, !isPlaying))
+                    {
+                        OpenProject(); // TODO: save and load created projects list and show it in modal/window
+                    }
+                    if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S", false, !isPlaying))
+                    {
+                        SaveProject();
+                    }
+                    if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S", false, !isPlaying))
+                    {
+                        SaveProjectAs();
+                    }
+                    if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr, false, !isPlaying))
+                    {
+                        SaveScene();
+                    }
+                    if (ImGui::MenuItemEx("Export", nullptr, nullptr, false, !isPlaying))
+                    {
+                        openExportProjectPopup = true;
+                    }
+                    if (ImGui::MenuItemEx("Exit", nullptr, nullptr))
+                    {
+                        Application::Get().Close();
+                    }
+                    ImGui::EndMenu();
                 }
-                if (ImGui::MenuItemEx("Resume", nullptr, "Ctrl+Shift+R", false, isPaused))
+                if (ImGui::BeginMenu("Scene"))
                 {
-                    OnSceneResume();
+                    if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, !isPlaying))
+                    {
+                        OnScenePlay();
+                    }
+                    if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, !isPlaying))
+                    {
+                        OnScenePause();
+                    }
+                    if (ImGui::MenuItemEx("Resume", nullptr, "Ctrl+Shift+R", false, isPaused))
+                    {
+                        OnSceneResume();
+                    }
+                    if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q", false, isPaused || isPlaying))
+                    {
+                        OnSceneStop();
+                    }
+                    ImGui::EndMenu();
                 }
-                if (ImGui::MenuItemEx("Stop", nullptr, "Ctrl+Q", false, isPaused || isPlaying))
-                {
-                    OnSceneStop();
-                }
-                ImGui::EndMenu();
+
+                ImGui::EndMainMenuBar();
             }
 
-            ImGui::EndMainMenuBar();
-        }
-
-        // === NEW PROJECT POPUP ===
-        if (openNewProjectPopup)
-        {
-            ImGui::OpenPopup("Create New Project");
-            openNewProjectPopup = false;
-            ImGui::SetNextWindowSize({ 500, 150 });
-        }
-        if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_NoResize))
-        {
-            static String projectName;
-            static Path projectsLocation = m_settings.projectsPath;
-            ImGui::Text("Project Name");
-            ImGui::SameLine();
-            ImGui::InputText("##Project Name", &projectName);
-            if (ImGui::CollapsingHeader("Advanced"))
+            // === EXPORT PROJECT POPUP ===
+            if (openExportProjectPopup)
             {
-                ImGui::InputDirPath("prjlocation", "Projects Location", projectsLocation);
+                ImGui::OpenPopup("Export Project");
+                openExportProjectPopup = false;
+                ImGui::SetNextWindowSize({ 500, 150 });
+            }
+            if (ImGui::BeginPopupModal("Export Project", nullptr, ImGuiWindowFlags_NoResize))
+            {
+                static ProjectExportSettings exportSettings{};
+                ImGui::InputDirPath("exportpath", "Export path", exportSettings.path);
+                static int configurationIndex = 0;
+                if (ImGui::Combo("Configuration", &configurationIndex, "Debug\0Release\0Dist\0"))
+                {
+                    exportSettings.configuration = configurationIndex == 0 ? "Debug" : configurationIndex == 1 ? "Release" : "Dist";
+                }
+                if (ImGui::Button("Export"))
+                {
+                    ExportProject(exportSettings);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
             }
 
-            if (ImGui::Button("Create") && NewProject(projectsLocation / projectName, projectName))
+            // === NEW PROJECT POPUP ===
+            if (openNewProjectPopup)
             {
-                ImGui::CloseCurrentPopup();
+                ImGui::OpenPopup("Create New Project");
+                openNewProjectPopup = false;
+                ImGui::SetNextWindowSize({ 500, 150 });
             }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
+            if (ImGui::BeginPopupModal("Create New Project", nullptr, ImGuiWindowFlags_NoResize))
             {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
+                static String projectName;
+                static Path projectsLocation = m_settings.projectsPath;
+                ImGui::Text("Project Name");
+                ImGui::SameLine();
+                ImGui::InputText("##Project Name", &projectName);
+                if (ImGui::CollapsingHeader("Advanced"))
+                {
+                    ImGui::InputDirPath("prjlocation", "Projects Location", projectsLocation);
+                }
 
-        // === EXPORT PROJECT POPUP ===
-        if (openExportProjectPopup)
-        {
-            ImGui::OpenPopup("Export Project");
-            openExportProjectPopup = false;
-            ImGui::SetNextWindowSize({ 500, 150 });
-        }
-        if (ImGui::BeginPopupModal("Export Project", nullptr, ImGuiWindowFlags_NoResize))
-        {
-            static ProjectExportSettings exportSettings{};
-            ImGui::InputDirPath("exportpath", "Export path", exportSettings.path);
-            static int configurationIndex = 0;
-            if (ImGui::Combo("Configuration", &configurationIndex, "Debug\0Release\0Dist\0"))
-            {
-                exportSettings.configuration = configurationIndex == 0 ? "Debug" : configurationIndex == 1 ? "Release" : "Dist";
+                if (ImGui::Button("Create") && NewProject(projectsLocation / projectName, projectName))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
             }
-            if (ImGui::Button("Export"))
-            {
-                ExportProject(exportSettings);
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
         }
     }
     
@@ -307,6 +400,11 @@ namespace Eklipse
         Application::Get().PushOverlay(GUI);
         GUI->Init();
 
+        if (m_isWindowMaximized)
+            Application::Get().GetWindow()->Maximize();
+
+        SetTheme(m_settings.theme);
+
         m_filesPanel.LoadResources();
         if (m_editorAssetLibrary)
         {
@@ -326,6 +424,8 @@ namespace Eklipse
         ClearSelection();
 
         m_filesPanel.UnloadResources();
+
+        m_isWindowMaximized = Application::Get().GetWindow()->IsMaximized();
 
         if (Project::GetActive())
         {
@@ -379,8 +479,8 @@ namespace Eklipse
         m_scriptManager->Load();
 
         // import start scene
-        AssetHandle handle = m_editorAssetLibrary->ImportAsset(config.startScenePath);
-        config.startSceneHandle = handle;
+        AssetHandle sceneHandle = m_editorAssetLibrary->ImportAsset(config.startScenePath);
+        config.startSceneHandle = sceneHandle;
 
         // import default assets
         m_cubeHandle = m_editorAssetLibrary->ImportAsset("Assets/Meshes/cube.obj");
@@ -391,7 +491,7 @@ namespace Eklipse
         m_material2dHandle = m_editorAssetLibrary->ImportDefaultMaterial(config.assetsDirectoryPath / "Materials/2D.ekmt", m_shader2dHandle);
 
         // get start scene
-        m_editorScene = AssetManager::GetAsset<Scene>(handle);
+        m_editorScene = AssetManager::GetAsset<Scene>(sceneHandle);
         m_entitiesPanel.SetContext(m_editorScene.get());
         SceneManager::SetActiveScene(m_editorScene);
 
@@ -399,45 +499,81 @@ namespace Eklipse
         Project::SaveActive();
         m_editorAssetLibrary->StartFileWatcher();
 
+        // add to project registry
+        ProjectHandle projectHandle;
+        ProjectMetadata metadata;
+        metadata.path = dirPath / (name + String(EK_PROJECT_EXTENSION));
+        metadata.lastAccessTime = Timer::Now().time_since_epoch().count();
+        m_settings.projectRegistry[projectHandle] = metadata;
+
         OnProjectLoaded();
 
         EK_INFO("Project created successfully!");
         return true;
+    }
+    void EditorLayer::OpenProject(const Path& path)
+    {
+        EK_INFO("Opening project at path '{}'", path.string());
+        OnProjectUnload();
+
+        auto project = Project::Load(path);
+        auto& config = project->GetConfig();
+
+        m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
+        if (!m_editorAssetLibrary->DeserializeAssetRegistry())
+        {
+            EK_ERROR("Failed to deserialize asset registry!");
+        }
+
+        m_scriptManager->Load();
+
+        // get default assets
+        m_cubeHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Meshes/cube.obj");
+        m_sphereHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Meshes/sphere.obj");
+        m_shader3dHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Shaders/3D.glsl");
+        m_shader2dHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Shaders/2D.glsl");
+        m_material3dHandle = m_editorAssetLibrary->GetHandleFromAssetPath(config.assetsDirectoryPath / "Materials/3D.ekmt");
+        m_material2dHandle = m_editorAssetLibrary->GetHandleFromAssetPath(config.assetsDirectoryPath / "Materials/2D.ekmt");
+
+        m_editorScene = AssetManager::GetAsset<Scene>(config.startSceneHandle);
+        SceneManager::SetActiveScene(m_editorScene);
+        m_entitiesPanel.SetContext(m_editorScene.get());
+
+        m_editorAssetLibrary->StartFileWatcher();
+
+        OnProjectLoaded();
+    }
+    void EditorLayer::OpenProject(ProjectHandle handle)
+    {
+        Path projectPath = m_settings.projectRegistry[handle].path;
+        OpenProject(projectPath);
     }
     void EditorLayer::OpenProject()
     {
         auto& result = FileUtilities::OpenFileDialog(Vec<String>{ EK_PROJECT_EXTENSION });
         if (result.type == FileDialogResultType::SUCCESS)
         {
-            EK_INFO("Opening project at path '{}'", result.path.string());
-            OnProjectUnload();
-
-            auto project = Project::Load(result.path);
-            auto& config = project->GetConfig();
-
-            m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
-            if (!m_editorAssetLibrary->DeserializeAssetRegistry())
+            // search if this project is already in registry
+            bool found = false;
+            for (auto& [handle, metadata] : m_settings.projectRegistry)
             {
-                EK_ERROR("Failed to deserialize asset registry!");
+                if (metadata.path == result.path)
+                {
+                    metadata.lastAccessTime = Timer::Now().time_since_epoch().count();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                ProjectHandle projectHandle;
+                ProjectMetadata metadata;
+                metadata.path = result.path;
+                metadata.lastAccessTime = Timer::Now().time_since_epoch().count();
+                m_settings.projectRegistry[projectHandle] = metadata;
             }
 
-            m_scriptManager->Load();
-
-            // get default assets
-            m_cubeHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Meshes/cube.obj");
-            m_sphereHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Meshes/sphere.obj");
-            m_shader3dHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Shaders/3D.glsl");
-            m_shader2dHandle = m_editorAssetLibrary->GetHandleFromAssetPath("Assets/Shaders/2D.glsl");
-            m_material3dHandle = m_editorAssetLibrary->GetHandleFromAssetPath(config.assetsDirectoryPath / "Materials/3D.ekmt");
-            m_material2dHandle = m_editorAssetLibrary->GetHandleFromAssetPath(config.assetsDirectoryPath / "Materials/2D.ekmt");
-
-            m_editorScene = AssetManager::GetAsset<Scene>(config.startSceneHandle);
-            SceneManager::SetActiveScene(m_editorScene);
-            m_entitiesPanel.SetContext(m_editorScene.get());
-
-            m_editorAssetLibrary->StartFileWatcher();
-
-            OnProjectLoaded();
+            OpenProject(result.path);
         }
     }
     void EditorLayer::SaveProject()
@@ -491,7 +627,7 @@ namespace Eklipse
         out << YAML::Key << "Preferences" << YAML::Value;
         {
             out << YAML::BeginMap;
-            out << YAML::Key << "Theme" << YAML::Value << m_settings.theme;
+            out << YAML::Key << "Theme" << YAML::Value << ThemeToString(m_settings.theme);
             out << YAML::Key << "ProjectsPath" << YAML::Value << m_settings.projectsPath;
             out << YAML::EndMap;
         }
@@ -501,6 +637,20 @@ namespace Eklipse
             out << YAML::BeginMap;
             out << YAML::Key << "MsBuildPath" << YAML::Value << m_settings.ScriptManagerSettings.MsBuildPath;
             out << YAML::EndMap;
+        }
+
+        out << YAML::Key << "ProjectRegistry" << YAML::Value;
+        {
+            out << YAML::BeginSeq;
+            for (auto& [handle, metadata] : m_settings.projectRegistry)
+            {
+                out << YAML::BeginMap;
+                out << YAML::Key << "Handle" << YAML::Value << handle;
+                out << YAML::Key << "Path" << YAML::Value << metadata.path;
+                out << YAML::Key << "LastAccessTime" << YAML::Value << metadata.lastAccessTime;
+                out << YAML::EndMap;
+            }
+            out << YAML::EndSeq;
         }
 
         out << YAML::EndMap;
@@ -523,16 +673,44 @@ namespace Eklipse
         }
 
         auto preferencesNode = data["Preferences"];
-        if (!preferencesNode)
-            return false;
-
-        TryDeserailize<String>(preferencesNode, "Theme", &m_settings.theme);
-        TryDeserailize<Path>(preferencesNode, "ProjectsPath", &m_settings.projectsPath);
+        if (preferencesNode)
+        {
+            m_settings.theme = StringToTheme(TryDeserailize<String>(preferencesNode, "Theme", "Unknown"));
+            TryDeserailize<Path>(preferencesNode, "ProjectsPath", &m_settings.projectsPath);
+        }
+        else
+        {
+            EK_WARN("Failed to deserialize 'Preferences' node!");
+        }
 
         auto& scriptModuleNode = data["ScriptManager"];
         if (scriptModuleNode)
         {
             TryDeserailize<Path>(scriptModuleNode, "MsBuildPath", &m_settings.ScriptManagerSettings.MsBuildPath);
+        }
+        else
+        {
+            EK_WARN("Failed to deserialize 'ScriptManager' node!");
+        }
+
+        auto& projectRegistryNode = data["ProjectRegistry"];
+        if (projectRegistryNode)
+        {
+            for (auto& projectNode : projectRegistryNode)
+            {
+                ProjectHandle handle = projectNode["Handle"].as<ProjectHandle>();
+                Path path = projectNode["Path"].as<Path>();
+                uint64_t lastAccessTime = projectNode["LastAccessTime"].as<uint64_t>();
+
+                ProjectMetadata metadata;
+                metadata.path = path;
+                metadata.lastAccessTime = lastAccessTime;
+                m_settings.projectRegistry[handle] = metadata;
+            }
+        }
+        else
+        {
+            EK_WARN("Failed to deserialize 'ProjectRegistry' node!");
         }
     }
     
@@ -606,6 +784,9 @@ namespace Eklipse
         ClearSelection();
         m_filesPanel.OnContextChanged();
         m_editorScene->ApplyAllComponents();
+
+        Application::Get().GetWindow()->Maximize();
+        m_isWindowMaximized = true;
     }
     
     // === Getters ===
@@ -818,19 +999,23 @@ namespace Eklipse
             {
                 if (cmd.Args.at("style") == "dark")
                 {
-                    GUI->SetupColorTheme(ColorTheme::Dark);
+                    SetTheme(Theme::Dark);
+                    m_settings.theme = Theme::Dark;
                 }
                 else if (cmd.Args.at("style") == "darkgrey")
                 {
-                    GUI->SetupColorTheme(ColorTheme::DarkGrey);
+                    SetTheme(Theme::DarkGrey);
+                    m_settings.theme = Theme::DarkGrey;
                 }
                 else if (cmd.Args.at("style") == "darkblue")
                 {
-                    GUI->SetupColorTheme(ColorTheme::DarkBlue);
+                    SetTheme(Theme::DarkBlue);
+                    m_settings.theme = Theme::DarkBlue;
                 }
                 else if (cmd.Args.at("style") == "light")
                 {
-                    GUI->SetupColorTheme(ColorTheme::Light);
+                    SetTheme(Theme::Light);
+                    m_settings.theme = Theme::Light;
                 }
                 else
                 {

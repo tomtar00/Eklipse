@@ -19,6 +19,8 @@ namespace Eklipse
 		virtual void SwapBuffers() override;
 		virtual void WaitEvents() override;
 		virtual void SetTitle(const char* title) override;
+		virtual void Maximize() override;
+		virtual bool IsMaximized() override;
 
 	private:
 		inline static bool s_glfwInitialized = false;

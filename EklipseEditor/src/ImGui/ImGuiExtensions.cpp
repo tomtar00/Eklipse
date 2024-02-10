@@ -161,6 +161,7 @@ void ImGui::InputVec3(const void* id, const char* label, float labelWidth, glm::
 {
     DrawProperty(id, label, [&]() {
 
+        auto& style = ImGui::GetStyle();
         auto boldFont = ImGui::GetIO().Fonts->Fonts[0];
         ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 
@@ -171,13 +172,14 @@ void ImGui::InputVec3(const void* id, const char* label, float labelWidth, glm::
         ImGui::PushStyleColor(ImGuiCol_Button, EK_COLOR_LIGHT_RED);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, EK_COLOR_RED);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, EK_COLOR_DARK_RED);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
         ImGui::PushFont(boldFont);
         if (ImGui::Button("X", buttonSize))
         {
             vec.x = resetValue;
         }
         ImGui::PopFont();
-        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(4);
 
         ImGui::SameLine();
         ImGui::DragFloat("##X", &vec.x, speed);
@@ -189,13 +191,14 @@ void ImGui::InputVec3(const void* id, const char* label, float labelWidth, glm::
         ImGui::PushStyleColor(ImGuiCol_Button, EK_COLOR_LIGHT_GREEN);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, EK_COLOR_GREEN);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, EK_COLOR_DARK_GREEN);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
         ImGui::PushFont(boldFont);
         if (ImGui::Button("Y", buttonSize))
         {
             vec.y = resetValue;
         }
         ImGui::PopFont();
-        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(4);
 
         ImGui::SameLine();
         ImGui::DragFloat("##Y", &vec.y, speed);
@@ -207,13 +210,14 @@ void ImGui::InputVec3(const void* id, const char* label, float labelWidth, glm::
         ImGui::PushStyleColor(ImGuiCol_Button, EK_COLOR_LIGHT_BLUE);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, EK_COLOR_BLUE);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, EK_COLOR_DARK_BLUE);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
         ImGui::PushFont(boldFont);
         if (ImGui::Button("Z", buttonSize))
         {
             vec.z = resetValue;
         }
         ImGui::PopFont();
-        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(4);
 
         ImGui::SameLine();
         ImGui::DragFloat("##Z", &vec.z, speed);

@@ -32,7 +32,6 @@ namespace Eklipse
 			EK_PROFILE();
 
 			editorLayer->GUI->Begin();
-			editorLayer->GUI->DrawDockspace();
 		}
 		void OnPostGUI(float deltaTime) override
 		{
@@ -50,8 +49,8 @@ Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication()
 {
 	Eklipse::ApplicationInfo info{};
 	info.appName = "Eklipse Editor";
-	info.windowWidth = 1600;
-	info.windowHeight = 900;
+	info.windowWidth = 600;
+	info.windowHeight = 400;
 
 	return Eklipse::CreateRef<Eklipse::EklipseEditor>(info);
 }

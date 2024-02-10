@@ -177,7 +177,19 @@ namespace Eklipse
 	}
 	void WindowsWindow::SetTitle(const char* title)
 	{
+		EK_CORE_TRACE("Setting window title to '{0}'", title);
 		glfwSetWindowTitle(m_window, title);
+		EK_CORE_DBG("Window title set to '{0}'", title);
+	}
+	void WindowsWindow::Maximize()
+	{
+		EK_CORE_TRACE("Maximizing window");
+        glfwMaximizeWindow(m_window);
+		EK_CORE_DBG("Window maximized");
+	}
+	bool WindowsWindow::IsMaximized()
+	{
+	       return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED);
 	}
 	GLFWwindow* WindowsWindow::GetGlfwWindow()
 	{

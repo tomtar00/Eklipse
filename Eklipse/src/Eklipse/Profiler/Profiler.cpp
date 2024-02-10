@@ -50,6 +50,10 @@ namespace Eklipse
 	{
 		return m_frameData.back();
 	}
+	void Profiler::Clear()
+	{
+	    m_frameData.clear();
+	}
 	//////////////////////////////////////////////
 
 	// TIMER /////////////////////////////////////

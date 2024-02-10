@@ -29,19 +29,11 @@ namespace Eklipse
 
     enum ImGuiNodeDirType
     {
-        Dir_Same		= BIT(0),
-        Dir_Opposite	= BIT(1),
-        Dir_Stack		= BIT(2),
-        Dir_Rest		= BIT(3)
+        Dir_Same = BIT(0),
+        Dir_Opposite = BIT(1),
+        Dir_Stack = BIT(2),
+        Dir_Rest = BIT(3)
     };
-    enum class ColorTheme
-    {
-        Light,
-        Dark,
-        DarkGrey,
-        DarkBlue,
-    };
-
     struct EK_API DockLayoutInfo
     {
         char* name;
@@ -87,8 +79,6 @@ namespace Eklipse
         GuiLayerConfigInfo GetConfig();
         void SetConfig(GuiLayerConfigInfo configInfo);
 
-        void SetupColorTheme(ColorTheme theme);
-    
         static Ref<ImGuiLayer> Create(const GuiLayerConfigInfo& configInfo);
 
         inline bool IsEnabled() const { return *m_config.enabled; }

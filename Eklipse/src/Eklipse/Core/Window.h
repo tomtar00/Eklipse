@@ -31,6 +31,8 @@ namespace Eklipse
 		virtual void SwapBuffers() = 0;
 		virtual void WaitEvents() = 0;
 		virtual void SetTitle(const char* title) = 0;
+		virtual void Maximize() = 0;
+		virtual bool IsMaximized() = 0;
 
 		// platform dependent
 		inline virtual GLFWwindow* GetGlfwWindow() { return nullptr; };

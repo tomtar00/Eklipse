@@ -20,7 +20,13 @@ namespace Eklipse
 
 			ImGui::SeparatorText("Preferences");
 			ImGui::DrawProperty("theme", "Theme", [&]() {
-                ImGui::InputText("##Theme", &EditorLayer::Get().GetSettings().theme);
+				static const char* themes[]{ "Light","Dark","DarkGrey","DarkBlue" };
+				int theme = (int)EditorLayer::Get().GetSettings().theme;
+				if (ImGui::Combo("##MSAA", &theme, themes, IM_ARRAYSIZE(themes)))
+				{
+					EditorLayer::Get().GetSettings().theme = (Theme)theme;
+					SetTheme(EditorLayer::Get().GetSettings().theme);
+				}
             });
 			ImGui::InputDirPath("Project", "Projects Path", EditorLayer::Get().GetSettings().projectsPath);
 		}
