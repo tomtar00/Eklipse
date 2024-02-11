@@ -10,7 +10,7 @@
 
 namespace Eklipse
 {
-    EditorLayer::EditorLayer() : m_guiEnabled(true)
+    EditorLayer::EditorLayer() : m_guiEnabled(true), m_isWindowMaximized(false), m_canControlEditorCamera(true)
     {
         EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
         s_instance = this;
@@ -53,6 +53,7 @@ namespace Eklipse
 
         m_isWindowMaximized = false;
 
+        m_editorState = EditorState::EDIT;
         m_editorScene = CreateRef<Scene>();
         m_entitiesPanel.SetContext(m_editorScene.get());
         SceneManager::SetActiveScene(m_editorScene);
@@ -146,15 +147,13 @@ namespace Eklipse
         // == DRAW ===========================
         Renderer::BeginRenderPass(m_viewportFramebuffer.get());
 
-        bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
-
-        if (isPlaying)
+        if (m_editorState == EditorState::PLAY)
             SceneManager::GetActiveScene()->OnSceneUpdate(deltaTime);
 
-        if (isPlaying)
-            Renderer::RenderScene(SceneManager::GetActiveScene());
-        else
+        if (m_editorState == EditorState::EDIT)
             Renderer::RenderScene(SceneManager::GetActiveScene(), m_editorCamera, m_editorCameraTransform);
+        else
+            Renderer::RenderScene(SceneManager::GetActiveScene());
 
         Renderer::EndRenderPass(m_viewportFramebuffer.get());
 
@@ -166,7 +165,13 @@ namespace Eklipse
     void EditorLayer::OnGUI(float deltaTime)
     {
         static bool openNewProjectPopup = false;
-        static bool openExportProjectPopup = false;    
+        static bool openExportProjectPopup = false;
+        
+        if (m_pauseRequested)
+        {
+            m_pauseRequested = false;
+            OnScenePause();
+        }
 
         if (!Project::GetActive())
         {
@@ -260,33 +265,33 @@ namespace Eklipse
 
             if (ImGui::BeginMainMenuBar())
             {
-                bool isPlaying = SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
-                bool isPaused = SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED;
-                Profiler::Running = isPlaying;
+                bool isPlaying = m_editorState == EditorState::PLAY;
+                bool isPaused = m_editorState == EditorState::PAUSE;
+                bool isEditing = m_editorState == EditorState::EDIT;
 
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N", false, !isPlaying))
+                    if (ImGui::MenuItemEx("New Project", nullptr, "Ctrl+N", false, isEditing))
                     {
                         openNewProjectPopup = true;
                     }
-                    if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O", false, !isPlaying))
+                    if (ImGui::MenuItemEx("Open Project", nullptr, "Ctrl+O", false, isEditing))
                     {
                         OpenProject(); // TODO: save and load created projects list and show it in modal/window
                     }
-                    if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S", false, !isPlaying))
+                    if (ImGui::MenuItemEx("Save Project", nullptr, "Ctrl+S", false, isEditing))
                     {
                         SaveProject();
                     }
-                    if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S", false, !isPlaying))
+                    if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S", false, isEditing))
                     {
                         SaveProjectAs();
                     }
-                    if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr, false, !isPlaying))
+                    if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr, false, isEditing))
                     {
                         SaveScene();
                     }
-                    if (ImGui::MenuItemEx("Export", nullptr, nullptr, false, !isPlaying))
+                    if (ImGui::MenuItemEx("Export", nullptr, nullptr, false, isEditing))
                     {
                         openExportProjectPopup = true;
                     }
@@ -298,13 +303,13 @@ namespace Eklipse
                 }
                 if (ImGui::BeginMenu("Scene"))
                 {
-                    if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, !isPlaying))
+                    if (ImGui::MenuItemEx("Play", nullptr, "Ctrl+P", false, isEditing))
                     {
                         OnScenePlay();
                     }
-                    if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, !isPlaying))
+                    if (ImGui::MenuItemEx("Pause", nullptr, "Ctrl+Shift+P", false, isPlaying))
                     {
-                        OnScenePause();
+                        RequestPause();
                     }
                     if (ImGui::MenuItemEx("Resume", nullptr, "Ctrl+Shift+R", false, isPaused))
                     {
@@ -718,8 +723,10 @@ namespace Eklipse
     // === Scene Events ===
     void EditorLayer::OnScenePlay()
     {
-        if (SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING)
+        if (m_editorState == EditorState::PLAY)
             return;
+
+        m_editorState = EditorState::PLAY;
 
         m_canControlEditorCamera = false;
 
@@ -729,11 +736,15 @@ namespace Eklipse
 
         m_entitiesPanel.SetContext(sceneCopy.get());
         ClearSelection();
+
+        m_profilerPanel.OnPlay();
     }
     void EditorLayer::OnSceneStop()
     {
-        if (SceneManager::GetActiveScene()->GetState() == SceneState::NONE)
+        if (m_editorState == EditorState::EDIT)
             return;
+
+        m_editorState = EditorState::EDIT;
 
         m_canControlEditorCamera = true;
 
@@ -751,22 +762,36 @@ namespace Eklipse
                 m_scriptManager->RecompileAll();
             }
         }
+
+        m_profilerPanel.OnStop();
     }
     void EditorLayer::OnScenePause()
     {
-        if (SceneManager::GetActiveScene()->GetState() == SceneState::PAUSED)
+        if (m_editorState != EditorState::PLAY)
             return;
+
+        m_editorState = EditorState::PAUSE;
 
         SceneManager::GetActiveScene()->OnScenePause();
         m_canControlEditorCamera = false;
+
+        m_profilerPanel.OnPause();
     }
     void EditorLayer::OnSceneResume()
     {
-        if (SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING)
+        if (m_editorState != EditorState::PAUSE)
             return;
+
+        m_editorState = EditorState::PLAY;
 
         SceneManager::GetActiveScene()->OnSceneResume();
         m_canControlEditorCamera = false;
+
+        m_profilerPanel.OnResume();
+    }
+    void EditorLayer::RequestPause()
+    {
+        m_pauseRequested = true;
     }
     
     // === Project Events ===
@@ -819,9 +844,9 @@ namespace Eklipse
     {
         return m_editorCamera;
     }
-    bool EditorLayer::IsPlaying() const
+    const EditorState EditorLayer::GetEditorState() const
     {
-        return SceneManager::GetActiveScene()->GetState() == SceneState::RUNNING;
+        return m_editorState;
     }
     const Ref<EditorAssetLibrary> EditorLayer::GetAssetLibrary() const
     {

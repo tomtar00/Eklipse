@@ -66,7 +66,7 @@ namespace Eklipse
         EK_CORE_TRACE("ScriptManager::OnSourceWatchEvent: {0}", path);
         SetState(ScriptsState::NEEDS_RECOMPILATION);
 
-        if (SceneManager::GetActiveScene()->GetState() != SceneState::RUNNING)
+        //if (SceneManager::GetActiveScene()->GetState() != SceneState::RUNNING)
             Application::Get().SubmitToWindowFocus(CAPTURE_FN(RecompileAll));
     }
 

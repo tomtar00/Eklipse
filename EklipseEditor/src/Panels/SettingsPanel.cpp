@@ -52,7 +52,7 @@ namespace Eklipse
 					}
 				});
 
-				if (!EditorLayer::Get().IsPlaying()) // TODO: fix (Play > Change API > Stop > CRASH)
+				if (EditorLayer::Get().GetEditorState() == EditorState::EDIT) // TODO: fix (Play > Change API > Stop > CRASH)
 				{
 					ImGui::DrawProperty("graphics_api", "Graphics API", [&]() {
 						static const char* APIs[]{ "Vulkan", "OpenGL" };

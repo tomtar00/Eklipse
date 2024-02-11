@@ -47,6 +47,13 @@ namespace Eklipse
 		Shader* shader;
 	};
 
+	enum class EditorState
+	{
+        EDIT = 0,
+        PLAY,
+        PAUSE
+    };
+
 	class EditorLayer : public Layer
 	{
 	public:
@@ -81,6 +88,7 @@ namespace Eklipse
 		void OnSceneStop();
 		void OnScenePause();
 		void OnSceneResume();
+		void RequestPause();
 
 		// === Project Events ===
 		void OnProjectLoaded();
@@ -95,7 +103,7 @@ namespace Eklipse
 		const ViewPanel& GetViewPanel();
 		const Camera& GetEditorCamera();
 		const Ref<EditorAssetLibrary> GetAssetLibrary() const;
-		bool IsPlaying() const;
+		const EditorState GetEditorState() const;
 
 		// === Setters ===
 		void SetCanControlEditorCamera(bool canControl);
@@ -123,6 +131,7 @@ namespace Eklipse
 		inline static EditorLayer* s_instance = nullptr;
 		GuiLayerConfigInfo m_guiLayerCreateInfo{};
 
+		EditorState m_editorState;
 		EditorSettings m_settings;
 		Camera m_editorCamera;
 		Transform m_editorCameraTransform;
@@ -133,6 +142,7 @@ namespace Eklipse
 		Ref<EditorAssetLibrary> m_editorAssetLibrary;
 
 		bool m_canControlEditorCamera = false;
+		bool m_pauseRequested = false;
 		bool m_guiEnabled;
 		bool m_isWindowMaximized;
 		EntitiesPanel	m_entitiesPanel;

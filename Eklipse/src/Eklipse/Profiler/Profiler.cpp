@@ -47,17 +47,26 @@ namespace Eklipse
     }
 
     // TIMER /////////////////////////////////////
-    static void AddNode(ProfilerNode& dst, const ProfilerNode& src)
-    {
-        // TODO: fix adding two nodes that have different number of children
+    //static void AddNode(ProfilerNode& dst, const ProfilerNode& src)
+    //{
+    //    // TODO: fix adding two nodes that have different number of children
 
-        dst.numCalls += src.numCalls;
-        dst.execTimeMs += src.execTimeMs;
-        for (size_t i = 0; i < dst.ChildNodes.size(); i++)
+    //    dst.numCalls += src.numCalls;
+    //    dst.execTimeMs += src.execTimeMs;
+    //    for (size_t i = 0; i < dst.ChildNodes.size(); i++)
+    //    {
+    //        AddNode(dst.ChildNodes[i], src.ChildNodes[i]);
+    //    }
+    //}
+    /*static ProfilerNode* GetChildNodeBySiganture(ProfilerNode& node, uint32_t signature)
+    {
+        for (size_t i = 0; i < node.ChildNodes.size(); i++)
         {
-            AddNode(dst.ChildNodes[i], src.ChildNodes[i]);
+            if (node.ChildNodes[i].signature == signature)
+                return &node.ChildNodes[i];
         }
-    }
+        return nullptr;
+    }*/
 
     ProfilerTimer::ProfilerTimer(char* name) : m_name(name), m_parentTimer(nullptr), m_saveData(true)
     {
@@ -101,7 +110,7 @@ namespace Eklipse
         }
         else
         {
-            /*auto signatureNode = m_parentTimer->GetChildNodeBySiganture(m_node.signature);
+            /*auto signatureNode = GetChildNodeBySiganture(m_parentTimer, m_node.signature);
             if (signatureNode != nullptr)
             {
                 AddNode(*signatureNode, m_node);
@@ -114,14 +123,5 @@ namespace Eklipse
     void ProfilerTimer::AddChildNode(const ProfilerNode& node)
     {
         m_node.ChildNodes.push_back(node);
-    }
-    ProfilerNode* ProfilerTimer::GetChildNodeBySiganture(uint32_t signature)
-    {
-        for (size_t i = 0; i < m_node.ChildNodes.size(); i++)
-        {
-            if (m_node.ChildNodes[i].signature == signature)
-                return &m_node.ChildNodes[i];
-        }
-        return nullptr;
     }
 }

@@ -6,6 +6,8 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #define NOMINMAX
 
 #include <iostream>

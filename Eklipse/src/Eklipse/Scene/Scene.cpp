@@ -77,7 +77,6 @@ namespace Eklipse
             scriptComponent.script->OnCreate();
         });
 
-        m_state = SceneState::RUNNING;
         EK_CORE_DBG("Scene '{0}' started", Name);
     }
     void Scene::OnSceneUpdate(float deltaTime)
@@ -100,20 +99,19 @@ namespace Eklipse
     void Scene::OnScenePause()
     {
         EK_CORE_TRACE("Pausing scene '{0}'", Name);
-        m_state = SceneState::PAUSED;
+
         EK_CORE_DBG("Scene '{0}' paused", Name);
     }
     void Scene::OnSceneResume()
     {
         EK_CORE_TRACE("Resuming scene '{0}'", Name);
-        m_state = SceneState::RUNNING;
+
         EK_CORE_DBG("Scene '{0}' resumed", Name);
     }
     void Scene::OnSceneStop()
     {
         EK_CORE_TRACE("Stoping scene '{0}'", Name);
         DestroyAllScripts();
-        m_state = SceneState::NONE;
         EK_CORE_DBG("Scene '{0}' stoped", Name);
     }
 

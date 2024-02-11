@@ -1,6 +1,8 @@
 #include <precompiled.h>
 #include "Theme.h"
+#include "Colors.h"
 #include <imgui.h>
+#include <ImGuizmo.h>
 
 namespace Eklipse
 {
@@ -144,6 +146,37 @@ namespace Eklipse
             style.Colors[ImGuiCol_TabActive] = ImVec4(0.27f, 0.32f, 0.38f, 1.00f);
             style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.20f, 0.25f, 0.30f, 1.00f);
             style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.33f, 0.41f, 0.49f, 1.00f);
+        }
+
+        // ImGuizmo
+        {
+            auto& gizmoStyle = ImGuizmo::GetStyle();
+
+            gizmoStyle.TranslationLineThickness = 4.0f;
+            gizmoStyle.TranslationLineArrowSize = 8.0f;
+            gizmoStyle.RotationLineThickness = 4.0f;
+            gizmoStyle.RotationOuterLineThickness = 4.0f;
+            gizmoStyle.ScaleLineThickness = 4.0f;
+            gizmoStyle.ScaleLineCircleSize = 8.0f;
+            gizmoStyle.HatchedAxisLineThickness = 8.0f;
+            gizmoStyle.CenterCircleSize = 5.0f;
+
+            gizmoStyle.Colors[ImGuizmo::DIRECTION_X] = EK_COLOR_RED;
+            gizmoStyle.Colors[ImGuizmo::DIRECTION_Y] = EK_COLOR_GREEN;
+            gizmoStyle.Colors[ImGuizmo::DIRECTION_Z] = EK_COLOR_BLUE;
+            gizmoStyle.Colors[ImGuizmo::PLANE_X] = EK_COLOR_RED;
+            gizmoStyle.Colors[ImGuizmo::PLANE_Y] = EK_COLOR_GREEN;
+            gizmoStyle.Colors[ImGuizmo::PLANE_Z] = EK_COLOR_BLUE;
+
+            gizmoStyle.Colors[ImGuizmo::SELECTION] = ImVec4(1.000f, 0.500f, 0.062f, 0.541f);
+            gizmoStyle.Colors[ImGuizmo::INACTIVE] = ImVec4(0.600f, 0.600f, 0.600f, 0.600f);
+            gizmoStyle.Colors[ImGuizmo::TRANSLATION_LINE] = ImVec4(0.666f, 0.666f, 0.666f, 0.666f);
+            gizmoStyle.Colors[ImGuizmo::SCALE_LINE] = ImVec4(0.250f, 0.250f, 0.250f, 1.000f);
+            gizmoStyle.Colors[ImGuizmo::ROTATION_USING_BORDER] = ImVec4(1.000f, 0.500f, 0.062f, 1.000f);
+            gizmoStyle.Colors[ImGuizmo::ROTATION_USING_FILL] = ImVec4(1.000f, 0.500f, 0.062f, 0.500f);
+            gizmoStyle.Colors[ImGuizmo::HATCHED_AXIS_LINES] = ImVec4(0.000f, 0.000f, 0.000f, 0.500f);
+            gizmoStyle.Colors[ImGuizmo::TEXT] = ImVec4(1.000f, 1.000f, 1.000f, 1.000f);
+            gizmoStyle.Colors[ImGuizmo::TEXT_SHADOW] = ImVec4(0.000f, 0.000f, 0.000f, 1.000f);
         }
     }
 }

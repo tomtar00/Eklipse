@@ -7,8 +7,14 @@ namespace Eklipse
 	{
 	public:
 		virtual bool OnGUI(float deltaTime) override;
+
+		void OnPlay();
+		void OnStop();
+		void OnPause();
+		void OnResume();
+
 	private:
 		bool m_ascendingSort = false;
-		uint32_t m_columnIndex = -1;
+		int32_t m_columnIndex = -1;
 	};
 }

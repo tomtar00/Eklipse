@@ -30,7 +30,6 @@ namespace Eklipse
         void Start(char* name, bool saveData);
         void Stop();
         void AddChildNode(const ProfilerNode& node);
-        ProfilerNode* GetChildNodeBySiganture(uint32_t signature);
 
         inline float GetTimeMs() const { return m_deltaMs; }
         inline char* GetName() { return m_name; }

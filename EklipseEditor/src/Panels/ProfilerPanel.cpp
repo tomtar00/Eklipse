@@ -1,23 +1,24 @@
 #include "ProfilerPanel.h"
+#include <EditorLayer.h>
 
 namespace Eklipse
 {
+    static int SelectedFrameIdx = -1;
+
     static ImColor GetColorByIndex(size_t index)
     {
         switch (index)
         {
-            case 0: return ImColor(255, 128, 0);   // orange
-            case 1: return ImColor(128, 255, 0);   // lime
-            case 2: return ImColor(0, 255, 255);   // cyan
-            case 3: return ImColor(128, 0, 255);   // purple
-            case 4: return ImColor(0, 64, 255);    // blue
+            case 0: return ImColor(255, 180, 80);   // orange
+            case 1: return ImColor(180, 255, 80);   // lime
+            case 2: return ImColor(80, 255, 255);   // cyan
+            case 3: return ImColor(180, 80, 255);   // purple
+            case 4: return ImColor(90, 180, 255);   // blue
             default: return 0xFFFFFFFF;
         }
     }
     static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, Vec<ProfilerNode>& lastestFrame, Vec<ProfilerFrameData>& framesData)
     {
-        drawList->AddRectFilled(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }, 0x55555555);
-
         const size_t labelCount = lastestFrame.size();
         Vec<ImVec2> lastFrameGlobalPositions;
         Vec<float> lastFrameHeights;
@@ -25,10 +26,28 @@ namespace Eklipse
         float spacingX = barWidth / 2.0f;
         float spacingY = 5.0f;
 
+        drawList->AddRectFilled(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }, 0x55555555);
+        if (ImGui::IsMouseHoveringRect(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }))
+        {
+            ImVec2 mouseLocalPos = ImGui::GetMousePos() - graphPos;
+            int frameIdx = (int)(mouseLocalPos.x / barWidth);
+
+            ImGui::BeginTooltip();
+            ImGui::Text("Frame: %d", frameIdx);
+            ImGui::EndTooltip();
+
+            if (ImGui::IsMouseDown(0) && frameIdx >= 0 && frameIdx < MAX_PROFILED_FRAMES)
+            {
+                EditorLayer::Get().RequestPause();
+                SelectedFrameIdx = frameIdx;
+            }
+        }
+
         float height = 0.0f, lastHeight = 0.0f;
         static float heightRatio = -1.0f;
         ImVec2 localPos, localSize, globalPos, globalSize;
 
+        // Calculate the height ratio
         heightRatio = -1.0f;
         for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
         {
@@ -47,6 +66,7 @@ namespace Eklipse
             }    
         }
 
+        // Draw the graph
         for (uint32_t frameIdx = 0; frameIdx < MAX_PROFILED_FRAMES; frameIdx++)
         {
             lastHeight = 0.0f;
@@ -71,8 +91,17 @@ namespace Eklipse
                     lastFrameHeights.push_back(height);
                 }
             }
+
         }
 
+        // Draw selected frame
+        if (SelectedFrameIdx >= 0 && SelectedFrameIdx < MAX_PROFILED_FRAMES)
+        {
+            float x = SelectedFrameIdx * barWidth + spacingX;
+            drawList->AddRectFilled({ graphPos.x + x, graphPos.y }, { graphPos.x + x + barWidth - spacingX, graphPos.y + graphSize.y }, 0x55FF0000);
+        }
+
+        // Draw the labels
         height = 20;
         spacingX = 20;
         ImVec2 lastNodeGlobalPos;
@@ -195,7 +224,7 @@ namespace Eklipse
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         auto size = ImGui::GetContentRegionAvail();
         auto pos = ImGui::GetCursorScreenPos();
-        static float labelWidth = 150.0f;
+        static float labelWidth = 80.0f;
         static float graphHeight = 200.0f;
         DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetLastFrameData().ProfileNodes, Profiler::GetData());
 
@@ -217,12 +246,39 @@ namespace Eklipse
             }
 
             static uint32_t i = 0;
-            DrawTable(0.0f, Profiler::GetLastFrameData().ProfileNodes, m_ascendingSort, m_columnIndex, i);
+            if (SelectedFrameIdx >= 0 && SelectedFrameIdx < MAX_PROFILED_FRAMES)
+            {
+                DrawTable(0.0f, Profiler::GetData()[SelectedFrameIdx].ProfileNodes, m_ascendingSort, m_columnIndex, i);
+            }
+            else
+            {
+                DrawTable(0.0f, Profiler::GetLastFrameData().ProfileNodes, m_ascendingSort, m_columnIndex, i);
+            }
 
             ImGui::EndTable();
         }
-        ImGui::End();
 
+        ImGui::End();
         return true;
+    }
+    void ProfilerPanel::OnPlay()
+    {
+        SelectedFrameIdx = -1;
+        Profiler::Running = true;
+    }
+    void ProfilerPanel::OnStop()
+    {
+        SelectedFrameIdx = -1;
+        Profiler::Running = false;
+    }
+    void ProfilerPanel::OnPause()
+    {
+        SelectedFrameIdx = -1;
+        Profiler::Running = false;
+    }
+    void ProfilerPanel::OnResume()
+    {
+        SelectedFrameIdx = -1;
+        Profiler::Running = true;
     }
 }

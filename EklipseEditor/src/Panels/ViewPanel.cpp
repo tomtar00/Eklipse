@@ -14,7 +14,7 @@ namespace Eklipse
 
 		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
-		if (!EditorLayer::Get().IsPlaying())
+		if (EditorLayer::Get().GetEditorState() == EditorState::EDIT)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		else
 		{
@@ -36,7 +36,7 @@ namespace Eklipse
 		EditorLayer::Get().GUI->DrawViewport(EditorLayer::Get().GetViewportFramebuffer(), m_viewportSize.x, m_viewportSize.y);
 		m_aspectRatio = m_viewportSize.x / m_viewportSize.y;
 
-		if (!EditorLayer::Get().IsPlaying())
+		if (EditorLayer::Get().GetEditorState() == EditorState::EDIT)
 		{
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(m_viewportPosition.x, m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y);
@@ -94,7 +94,7 @@ namespace Eklipse
 		}
 
 		ImGui::End();
-		if (!EditorLayer::Get().IsPlaying())
+		if (EditorLayer::Get().GetEditorState() == EditorState::EDIT)
 			ImGui::PopStyleVar();
 		else
 		{

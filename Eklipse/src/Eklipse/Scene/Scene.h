@@ -13,13 +13,6 @@ namespace Eklipse
 {
 	class Entity;
 
-	enum class SceneState
-	{
-		NONE	= BIT(1),
-		RUNNING = BIT(2),
-		PAUSED	= BIT(3),
-	};
-
 	class EK_API Scene : public Asset
 	{
 	public:
@@ -64,7 +57,6 @@ namespace Eklipse
 		Camera* GetMainCamera() { return m_mainCamera; }
 		Transform* GetMainCameraTransform() { return m_mainCameraTransform; }
 		entt::registry& GetRegistry() { return m_registry; }
-		SceneState GetState() const { return m_state; }
 
 		// Helpers
 		template<typename Func>
@@ -76,8 +68,6 @@ namespace Eklipse
 		virtual AssetType GetType() const override { return GetStaticType(); }
 
 	private:
-		SceneState m_state;
-
 		entt::registry m_registry;
 		std::unordered_map<UUID, entt::entity> m_entityMap;
 
