@@ -647,6 +647,7 @@ namespace Eklipse
             out << YAML::BeginMap;
             out << YAML::Key << "Theme" << YAML::Value << ThemeToString(m_settings.theme);
             out << YAML::Key << "ProjectsPath" << YAML::Value << m_settings.projectsPath;
+            out << YAML::Key << "ProfilerEnabled" << YAML::Value << Profiler::Enabled;
             out << YAML::EndMap;
         }
 
@@ -697,6 +698,7 @@ namespace Eklipse
         {
             m_settings.theme = StringToTheme(TryDeserailize<String>(preferencesNode, "Theme", "Unknown"));
             TryDeserailize<Path>(preferencesNode, "ProjectsPath", &m_settings.projectsPath);
+            TryDeserailize<bool>(preferencesNode, "ProfilerEnabled", &Profiler::Enabled);
         }
         else
         {
