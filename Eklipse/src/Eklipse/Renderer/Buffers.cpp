@@ -9,11 +9,13 @@ namespace Eklipse
 {
     BufferLayout::BufferLayout(std::initializer_list<BufferElement> elements) : m_elements(elements)
     {
+        EK_CORE_PROFILE();
         CalculateOffsetAndStride();
     }
 
     void BufferLayout::CalculateOffsetAndStride()
     {
+        EK_CORE_PROFILE();
         size_t offset = 0;
         m_stride = 0;
         for (auto& element : m_elements)
@@ -25,6 +27,7 @@ namespace Eklipse
     }
     uint32_t BufferElement::GetComponentCount() const
     {
+        EK_CORE_PROFILE();
         switch (type)
         {
             case ShaderDataType::FLOAT:   return 1;
@@ -46,6 +49,7 @@ namespace Eklipse
 
     Ref<VertexBuffer> VertexBuffer::Create(const Vec<float>& vertices)
     {
+        EK_CORE_PROFILE();
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
@@ -58,6 +62,7 @@ namespace Eklipse
 
     Ref<IndexBuffer> IndexBuffer::Create(const Vec<uint32_t>& indices)
     {
+        EK_CORE_PROFILE();
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
@@ -70,6 +75,7 @@ namespace Eklipse
 
     Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
     {
+        EK_CORE_PROFILE();
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {

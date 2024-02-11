@@ -75,7 +75,7 @@ namespace Eklipse
     template <typename T>
     inline void Material::SetConstant(const String& constantName, const String& memberName, const T* data, size_t size)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
 
         EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "({0}) Push constant '{1}' not found", Name, constantName);
         auto& pushConstant = m_pushConstants.at(constantName);

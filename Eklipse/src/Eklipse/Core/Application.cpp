@@ -76,16 +76,20 @@ namespace Eklipse
     // === Frame Management ===
     void Application::BeginFrame(float* deltaTime)
     {
+        EK_PROFILE_NAME("BeginFrame");
         m_timer.Record();
         *deltaTime = m_timer.DeltaTime();
 
         ExecuteMainThreadQueue();
     }
-    void Application::Submit(float deltaTime)
+    void Application::EndFrame(float deltaTime)
     {
-        Input::Reset();
-        m_window->Update(deltaTime);
-        Stats::Get().Update(deltaTime);
+        {
+            EK_PROFILE_NAME("EndFrame");
+            Input::Reset();
+            m_window->Update(deltaTime);
+            Stats::Get().Update(deltaTime);
+        }
         EK_PROFILE_END_FRAME(deltaTime);
     }
 
@@ -100,6 +104,7 @@ namespace Eklipse
     // === Setters ===
     void Application::SetAPI(ApiType api)
     {
+        EK_CORE_PROFILE();
         if (Renderer::GetAPI() == api)
         {
             EK_CORE_WARN("API already set to {0}", APITypeToString(api));
@@ -116,7 +121,7 @@ namespace Eklipse
     // === Event Handling ===
     void Application::OnEventReceived(Event& event)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
 
         //EK_CORE_TRACE(event.ToString());
 
@@ -137,10 +142,12 @@ namespace Eklipse
     }
     void Application::OnWindowClose(WindowCloseEvent& event)
     {
+        EK_CORE_PROFILE();
         Close();
     }
     void Application::OnWindowResized(WindowResizeEvent& event)
     {
+        EK_CORE_PROFILE();
         m_appInfo.windowWidth = event.GetWidth();
         m_appInfo.windowHeight = event.GetHeight();
 
@@ -156,6 +163,7 @@ namespace Eklipse
     }
     void Application::OnWindowFocus(WindowFocusEvent& event)
     {
+        EK_CORE_PROFILE();
         std::scoped_lock<std::mutex> lock(m_mainThreadWindowForcusQueueMutex);
 
         for (auto& func : m_mainThreadWindowFocusQueue)
@@ -165,10 +173,12 @@ namespace Eklipse
     }
     void Application::OnMouseMove(MouseMovedEvent& event)
     {
+        EK_CORE_PROFILE();
         Input::m_mousePosition = { event.GetX(), event.GetY() };
     }
     void Application::OnMouseScroll(MouseScrolledEvent& event)
     {
+        EK_CORE_PROFILE();
         Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
     }
 
@@ -209,7 +219,7 @@ namespace Eklipse
                 }
             }
 
-            Application::Submit(deltaTime);
+            Application::EndFrame(deltaTime);
         }
 
         EK_CORE_TRACE("========== Closing Eklipse Engine ==========");
@@ -225,24 +235,29 @@ namespace Eklipse
     // === Layer Management ===
     void Application::PushLayer(Ref<Layer> layer)
     {
+        EK_CORE_PROFILE();
         m_layerStack.PushLayer(layer);
     }
     void Application::PushOverlay(Ref<Layer> overlay)
     {
+        EK_CORE_PROFILE();
         m_layerStack.PushOverlay(overlay);
     }
     void Application::PopLayer(Ref<Layer> layer)
     {
+        EK_CORE_PROFILE();
         m_layerStack.PopLayer(layer);
     }
     void Application::PopOverlay(Ref<Layer> overlay)
     {
+        EK_CORE_PROFILE();
         m_layerStack.PopOverlay(overlay);
     }
 
     // === Fucntion Queues ===
     void Application::SubmitToMainThread(const std::function<void()>& function)
     {
+        EK_CORE_PROFILE();
         std::scoped_lock<std::mutex> lock(m_mainThreadQueueMutex);
 
         m_mainThreadQueue.emplace_back(function);
@@ -258,6 +273,7 @@ namespace Eklipse
     }
     void Application::SubmitToWindowFocus(const std::function<void()>& function)
     {
+        EK_CORE_PROFILE();
         m_mainThreadWindowFocusQueue.emplace_back(function);
     }
 }

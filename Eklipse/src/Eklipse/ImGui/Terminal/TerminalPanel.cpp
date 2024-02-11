@@ -34,6 +34,7 @@ namespace Eklipse
 
     bool TerminalPanel::OnGUI(float deltaTime)
     {
+        EK_PROFILE();
         ImGui::Begin("Terminal");
         if (!m_terminal.GetSink())
         {

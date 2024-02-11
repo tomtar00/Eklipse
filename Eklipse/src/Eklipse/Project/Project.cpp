@@ -16,6 +16,7 @@ namespace Eklipse
 
 	static void ReplaceAll(String& str, const String& from, const String& to)
 	{
+		EK_CORE_PROFILE();
 		size_t pos = str.find(from);
 		do
 		{
@@ -26,6 +27,7 @@ namespace Eklipse
 	}
 	static bool GenerateLuaScript(const String& template_path, const String& output_path, const ScriptConfig& config)
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Generating premake5.lua at path '{0}'", output_path);
 
 		std::ifstream template_file(template_path);
@@ -59,6 +61,7 @@ namespace Eklipse
 
 	Ref<Project> Project::New()
 	{
+		EK_CORE_PROFILE();
 		if (s_activeProject)
 		{
 			EK_CORE_WARN("Active project already exists!");
@@ -68,6 +71,7 @@ namespace Eklipse
 	}
 	Ref<Project> Project::Load(const Path& projectFilePath)
 	{
+		EK_CORE_PROFILE();
 		Ref<Project> project = Project::New();
 
 		ProjectSerializer serializer(project);
@@ -85,6 +89,7 @@ namespace Eklipse
 	
 	bool Project::SetupActive(const String& name, const Path& projectDirectory)
 	{
+		EK_CORE_PROFILE();
 		s_activeProject->m_projectDirectory = projectDirectory;
 		auto& config = s_activeProject->GetConfig();
 
@@ -138,6 +143,7 @@ namespace Eklipse
 	}
 	bool Project::SaveActive()
 	{
+		EK_CORE_PROFILE();
 		return Save(
 			s_activeProject,
 			s_activeProject->m_projectDirectory / (s_activeProject->m_config.name + EK_PROJECT_EXTENSION)
@@ -145,6 +151,7 @@ namespace Eklipse
 	}
 	bool Project::Save(Ref<Project> project, const Path& projectFilePath)
 	{
+		EK_CORE_PROFILE();
 		ProjectSerializer serializer(project);
 		if (serializer.Serialize(projectFilePath))
 		{
@@ -157,6 +164,7 @@ namespace Eklipse
 	}
 	bool Project::Exists(const Path& projectDirPath)
 	{
+		EK_CORE_PROFILE();
 		if (!fs::exists(projectDirPath))
         {
             return false;

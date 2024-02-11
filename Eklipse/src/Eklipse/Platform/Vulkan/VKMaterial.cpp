@@ -10,13 +10,14 @@ namespace Eklipse
 	{
 		VKMaterial::VKMaterial(const Path& path, AssetHandle shaderHandle) : Material(path, shaderHandle)
 		{
+			EK_CORE_PROFILE();
 			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
 			CreateDescriptorSets();
 		}
 
 		void VKMaterial::Bind()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			Material::Bind();
 			vkCmdBindDescriptorSets(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkShader->GetPipelineLayout(), 0, 1, &m_descriptorSets[g_currentFrame], 0, nullptr);
 
@@ -37,11 +38,12 @@ namespace Eklipse
 		}
 		void VKMaterial::Dispose()
 		{
+			EK_CORE_PROFILE();
 			vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
 		}
 		void VKMaterial::ApplyChanges()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			Material::ApplyChanges();
 			vkDeviceWaitIdle(g_logicalDevice);
 			Dispose();
@@ -50,7 +52,7 @@ namespace Eklipse
 		
 		void VKMaterial::CreateDescriptorSets()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Creating descriptor sets for material {0}", Name);
 			//if (!requiresDescriptorSets) return;
 

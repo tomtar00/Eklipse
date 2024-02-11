@@ -81,6 +81,7 @@ namespace Eklipse
 
 		VkDescriptorSetLayout CreateDescriptorSetLayout(Vec<VkDescriptorSetLayoutBinding> bindings)
 		{
+			EK_CORE_PROFILE();
 			VkDescriptorSetLayoutCreateInfo layoutInfo{};
 			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -94,6 +95,7 @@ namespace Eklipse
 		}
 		VkDescriptorPool CreateDescriptorPool(Vec<VkDescriptorPoolSize> poolSizes, int maxSets, VkDescriptorPoolCreateFlags flags)
 		{
+			EK_CORE_PROFILE();
 			VkDescriptorPoolCreateInfo poolInfo{};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			poolInfo.flags = flags;

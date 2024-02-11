@@ -28,6 +28,7 @@ namespace Eklipse
 	}
 	float Timer::ElapsedTimeMs()
 	{
+		EK_CORE_PROFILE();
 		auto endTime = std::chrono::high_resolution_clock::now();
 		return std::chrono::duration_cast<std::chrono::microseconds>(endTime - m_startTime).count() / 1000.0f;
 	}

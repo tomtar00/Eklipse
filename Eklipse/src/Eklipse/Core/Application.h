@@ -38,7 +38,7 @@ namespace Eklipse
 
 		// === Frame Management ===
 		void BeginFrame(float* deltaTime);
-		void Submit(float deltaTime);
+		void EndFrame(float deltaTime);
 
 		// === Getters ===
 		static Application& Get();

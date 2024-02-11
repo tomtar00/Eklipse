@@ -14,6 +14,7 @@ namespace Eklipse
 {
     static String DataTypeToString(ShaderDataType type)
     {
+        EK_CORE_PROFILE();
         switch (type)
         {
             case ShaderDataType::FLOAT:   return "float";
@@ -34,10 +35,12 @@ namespace Eklipse
     
     PushConstant::PushConstant(const PushConstant& other)
     {
+        EK_CORE_PROFILE();
         Copy(other);
     }
     PushConstant& PushConstant::operator=(const PushConstant& other)
     {
+        EK_CORE_PROFILE();
         if (this != &other)
         {
             this->Copy(other);
@@ -46,6 +49,7 @@ namespace Eklipse
     }
     void PushConstant::Copy(const PushConstant& other)
     {
+        EK_CORE_PROFILE();
         dataPointers = other.dataPointers;
         pushConstantSize = other.pushConstantSize;
 
@@ -58,6 +62,7 @@ namespace Eklipse
 
     Material::Material(const Path& path, AssetHandle shaderHandle)
     {
+        EK_CORE_PROFILE();
         Name = path.stem().string();
 
         if (FileUtilities::IsPathValid(path))
@@ -78,6 +83,7 @@ namespace Eklipse
     }
     Ref<Material> Material::Create(const Path& path, AssetHandle shaderHandle)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderHandle);
@@ -90,6 +96,7 @@ namespace Eklipse
     template<typename T>
     static void SetData(void* dst, YAML::Node& node)
     {
+        EK_CORE_PROFILE();
         if (!node) 
         {
             EK_CORE_WARN("Failed to deserialize data, node '{0}' is null", node.Tag());
@@ -108,12 +115,12 @@ namespace Eklipse
 
     void Material::Bind()
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         m_shader->Bind();
     }
     void Material::ApplyChanges()
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Applying changes to material '{0}'", Name);
 
         auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
@@ -132,7 +139,7 @@ namespace Eklipse
 
     void Material::SetShader(AssetHandle shaderHandle)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", Name, shaderHandle);
 
         EK_ASSERT(AssetManager::IsAssetHandleValid(shaderHandle), "Shader handle is not valid");
@@ -172,7 +179,7 @@ namespace Eklipse
     }
     void Material::OnShaderReloaded()
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Material::OnShaderReloaded for material '{0}'", Name);
 
         // Applying new shader constants
@@ -245,7 +252,7 @@ namespace Eklipse
     }
     bool Material::Serialize(const Path& path)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Serializing material '{0}' to '{1}'", Name, path.string());
 
         YAML::Emitter out;
@@ -304,7 +311,7 @@ namespace Eklipse
     }
     bool Material::Deserialize(const Path& path)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Deserializing material '{0}' from '{1}'", Name, path.string());
 
         YAML::Node yaml;

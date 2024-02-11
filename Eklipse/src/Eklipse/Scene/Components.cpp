@@ -9,7 +9,7 @@ namespace Eklipse
 {
 	glm::mat4 TransformComponent::GetTransformMatrix() const
 	{
-		EK_PROFILE();
+		EK_CORE_PROFILE();
 
 		auto& translation = glm::translate(glm::mat4(1.0f), transform.position);
 		/*
@@ -27,6 +27,7 @@ namespace Eklipse
 
 	void ScriptComponent::SetScript(const String& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity)
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Creating script '{0}'", name);
 
 		if (info.create != nullptr)
@@ -44,6 +45,7 @@ namespace Eklipse
 	}
 	void ScriptComponent::DestroyScript()
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Destroying script '{0}'", scriptName);
 
 		if (script)

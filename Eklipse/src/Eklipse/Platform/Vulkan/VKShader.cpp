@@ -19,6 +19,7 @@ namespace Eklipse
 	{
 		VkShaderStageFlagBits VKShaderStageFromInternalStage(const ShaderStage stage)
 		{
+			EK_CORE_PROFILE();
 			if (stage == ShaderStage::VERTEX)   return VK_SHADER_STAGE_VERTEX_BIT;
 			if (stage == ShaderStage::FRAGMENT) return VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -27,6 +28,7 @@ namespace Eklipse
 		}
 		VkFormat VertexInputSizeToVKFormat(const size_t size)
 		{
+			EK_CORE_PROFILE();
 			switch (size)
 			{
 				case sizeof(float):		return VK_FORMAT_R32_SFLOAT;
@@ -40,6 +42,7 @@ namespace Eklipse
 
 		VKShader::VKShader(const Path& filePath, const AssetHandle handle) : Shader(filePath, handle)
 		{		
+			EK_CORE_PROFILE();
 			m_isValid = Compile(filePath);
 		}
 
@@ -54,7 +57,7 @@ namespace Eklipse
 
 		void VKShader::Bind() const 
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 
 #if EK_DEBUG
 			if (m_isValid)
@@ -78,12 +81,13 @@ namespace Eklipse
 		}
 		bool VKShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
+			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", Name);
 
 			auto shaderSources = Setup(shaderPath);
 			bool success = true;
 
-			Timer timer;
+			Timer _timer;
 			success = success && CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
 			if (success)
 			{
@@ -185,7 +189,7 @@ namespace Eklipse
 				vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
 				vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
 
-				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, timer.ElapsedTimeMs());
+				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, _timer.ElapsedTimeMs());
 			}
 			else EK_CORE_ERROR("Shader {0} compilation failed", Handle);
 			

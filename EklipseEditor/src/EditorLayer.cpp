@@ -283,11 +283,7 @@ namespace Eklipse
                     {
                         SaveProject();
                     }
-                    if (ImGui::MenuItemEx("Save Project As", nullptr, "Ctrl+Shift+S", false, isEditing))
-                    {
-                        SaveProjectAs();
-                    }
-                    if (ImGui::MenuItemEx("Save Scene", nullptr, nullptr, false, isEditing))
+                    if (ImGui::MenuItemEx("Save Scene", nullptr, "Ctrl+Shift+S", false, isEditing))
                     {
                         SaveScene();
                     }
@@ -390,6 +386,8 @@ namespace Eklipse
     // === API Events ===
     void EditorLayer::OnAPIHasInitialized(ApiType api)
     {
+        EK_PROFILE();
+
         // Create off-screen framebuffer (for scene view)
         {
             FramebufferInfo fbInfo{};
@@ -423,6 +421,8 @@ namespace Eklipse
     }
     void EditorLayer::OnShutdownAPI(bool quit)
     {
+        EK_PROFILE();
+
         Application::Get().PopOverlay(GUI);
         GUI->Shutdown();
         GUI.reset();
@@ -448,6 +448,8 @@ namespace Eklipse
     // === Project ===
     bool EditorLayer::NewProject(const Path& dirPath, const String& name)
     {
+        EK_PROFILE();
+
         if (dirPath.empty()) {
             EK_ERROR("Project directory path is empty!"); 
             return false;
@@ -519,6 +521,8 @@ namespace Eklipse
     }
     void EditorLayer::OpenProject(const Path& path)
     {
+        EK_PROFILE();
+
         EK_INFO("Opening project at path '{}'", path.string());
         OnProjectUnload();
 
@@ -551,11 +555,15 @@ namespace Eklipse
     }
     void EditorLayer::OpenProject(ProjectHandle handle)
     {
+        EK_PROFILE();
+
         Path projectPath = m_settings.projectRegistry[handle].path;
         OpenProject(projectPath);
     }
     void EditorLayer::OpenProject()
     {
+        EK_PROFILE();
+
         auto& result = FileUtilities::OpenFileDialog(Vec<String>{ EK_PROJECT_EXTENSION });
         if (result.type == FileDialogResultType::SUCCESS)
         {
@@ -584,6 +592,8 @@ namespace Eklipse
     }
     void EditorLayer::SaveProject()
     {
+        EK_PROFILE();
+
         if (!Project::GetActive()) return;
 
         SaveScene();
@@ -598,12 +608,10 @@ namespace Eklipse
             }
         }
     }
-    void EditorLayer::SaveProjectAs()
-    {
-        EK_WARN("'SaveProjectAs' not implemented!");
-    }
     void EditorLayer::SaveScene()
     {
+        EK_PROFILE();
+
         if (!Project::GetActive()) return;
 
         auto& filePath = m_editorAssetLibrary->GetMetadata(m_editorScene->Handle).FilePath;
@@ -611,6 +619,8 @@ namespace Eklipse
     }
     void EditorLayer::ExportProject(const ProjectExportSettings& exportSettings)
     {
+        EK_PROFILE();
+
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         SaveProject();
@@ -627,6 +637,8 @@ namespace Eklipse
     // === Settings ===
     bool EditorLayer::SerializeSettings() const
     {
+        EK_PROFILE();
+
         YAML::Emitter out;
         out << YAML::BeginMap;
 
@@ -668,6 +680,8 @@ namespace Eklipse
     }
     bool EditorLayer::DeserializeSettings()
     {
+        EK_PROFILE();
+
         YAML::Node data;
         try
         {
@@ -723,6 +737,8 @@ namespace Eklipse
     // === Scene Events ===
     void EditorLayer::OnScenePlay()
     {
+        EK_PROFILE();
+
         if (m_editorState == EditorState::PLAY)
             return;
 
@@ -741,6 +757,8 @@ namespace Eklipse
     }
     void EditorLayer::OnSceneStop()
     {
+        EK_PROFILE();
+
         if (m_editorState == EditorState::EDIT)
             return;
 
@@ -767,6 +785,8 @@ namespace Eklipse
     }
     void EditorLayer::OnScenePause()
     {
+        EK_PROFILE();
+
         if (m_editorState != EditorState::PLAY)
             return;
 
@@ -779,6 +799,8 @@ namespace Eklipse
     }
     void EditorLayer::OnSceneResume()
     {
+        EK_PROFILE();
+
         if (m_editorState != EditorState::PAUSE)
             return;
 
@@ -797,6 +819,8 @@ namespace Eklipse
     // === Project Events ===
     void EditorLayer::OnProjectUnload()
     {
+        EK_PROFILE();
+
         if (m_editorAssetLibrary)
         {
             m_editorAssetLibrary->UnloadAssets();
@@ -805,6 +829,8 @@ namespace Eklipse
     }
     void EditorLayer::OnProjectLoaded()
     {
+        EK_PROFILE();
+
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         ClearSelection();

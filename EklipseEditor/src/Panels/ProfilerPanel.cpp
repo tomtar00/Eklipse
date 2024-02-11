@@ -17,9 +17,9 @@ namespace Eklipse
             default: return 0xFFFFFFFF;
         }
     }
-    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, Vec<ProfilerNode>& lastestFrame, Vec<ProfilerFrameData>& framesData)
+    static void DrawGraph(ImDrawList* drawList, ImVec2 graphPos, ImVec2 graphSize, float labelWidth, Vec<ProfilerFrameData>& framesData)
     {
-        const size_t labelCount = lastestFrame.size();
+        const size_t labelCount = framesData.back().ProfileNodes.size();
         Vec<ImVec2> lastFrameGlobalPositions;
         Vec<float> lastFrameHeights;
         float barWidth = graphSize.x / MAX_PROFILED_FRAMES;
@@ -106,14 +106,14 @@ namespace Eklipse
         spacingX = 20;
         ImVec2 lastNodeGlobalPos;
         ImVec2 p1, p2;
-        for (size_t nodeIdx = 0; nodeIdx < lastestFrame.size(); nodeIdx++)
+        for (size_t nodeIdx = 0; nodeIdx < framesData.back().ProfileNodes.size(); nodeIdx++)
         {
             ImColor color = GetColorByIndex(nodeIdx);
             lastNodeGlobalPos = lastFrameGlobalPositions[nodeIdx];
 
             localPos = { spacingX, graphSize.y - height * (nodeIdx+1) };
             globalPos = { graphPos.x + graphSize.x + localPos.x, graphPos.y + localPos.y };
-            drawList->AddText(globalPos, color, lastestFrame[nodeIdx].name);
+            drawList->AddText(globalPos, color, framesData.back().ProfileNodes[nodeIdx].name);
 
             if (lastFrameHeights[nodeIdx] >= 0.2f)
             {
@@ -160,8 +160,10 @@ namespace Eklipse
 
         auto it = data.begin();
         if (indent > 0.0f) ImGui::Indent(indent);
+        int j = 0;
         while (it != data.end())
         {
+            ImGui::PushID(j++);
             ImGui::TableNextRow();
 
             ImGui::TableNextColumn();
@@ -174,7 +176,7 @@ namespace Eklipse
             {
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
                 expanded = ImGui::CollapsingHeader(it->name, ImGuiTreeNodeFlags_FramePadding);
-                ImGui::PopStyleVar(1);
+                ImGui::PopStyleVar();
             }
             else 
             {
@@ -199,6 +201,7 @@ namespace Eklipse
                 DrawTable(indent + 10.0f, it->ChildNodes, ascending, columnIndex, i);
             }
 
+            ImGui::PopID();
             ++it;
         }
         if (indent > 0.0f) ImGui::Unindent(indent);
@@ -226,7 +229,7 @@ namespace Eklipse
         auto pos = ImGui::GetCursorScreenPos();
         static float labelWidth = 80.0f;
         static float graphHeight = 200.0f;
-        DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetLastFrameData().ProfileNodes, Profiler::GetData());
+        DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetData());
 
         ImGui::SetCursorPos({ 8.0f, graphHeight + 65.0f });
         if (ImGui::BeginTable("Profiler", 4, ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
@@ -252,7 +255,7 @@ namespace Eklipse
             }
             else
             {
-                DrawTable(0.0f, Profiler::GetLastFrameData().ProfileNodes, m_ascendingSort, m_columnIndex, i);
+                DrawTable(0.0f, Profiler::GetData().back().ProfileNodes, m_ascendingSort, m_columnIndex, i);
             }
 
             ImGui::EndTable();

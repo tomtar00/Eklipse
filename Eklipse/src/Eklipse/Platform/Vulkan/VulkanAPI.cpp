@@ -87,6 +87,7 @@ namespace Eklipse
 
         bool VulkanAPI::Init()
         {
+            EK_CORE_PROFILE();
             if (m_initialized)
             {
                 EK_CORE_WARN("VulkanAPI already initialized!");
@@ -156,6 +157,7 @@ namespace Eklipse
         }
         void VulkanAPI::Shutdown()
         {
+            EK_CORE_PROFILE();
             if (!m_initialized)
             {
                 EK_CORE_WARN("VulkanAPI has already shut down!");
@@ -237,11 +239,13 @@ namespace Eklipse
         }
         void VulkanAPI::WaitDeviceIdle()
         {
+            EK_CORE_PROFILE();
             vkDeviceWaitIdle(g_logicalDevice);
         }
 
         void VulkanAPI::BeginFrame()
         {
+            EK_CORE_PROFILE();
             vkWaitForFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
             VkResult result = vkAcquireNextImageKHR(
                 g_logicalDevice, g_swapChain, UINT64_MAX, 
@@ -252,6 +256,7 @@ namespace Eklipse
         }
         void VulkanAPI::Submit()
         {
+            EK_CORE_PROFILE();
             std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
             std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
             std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
@@ -293,26 +298,31 @@ namespace Eklipse
 
         void VulkanAPI::BeginDefaultRenderPass()
         {
+            EK_CORE_PROFILE();
             m_defaultFramebuffer->Bind();
         }
         void VulkanAPI::EndDefaultRenderPass()
         {
+            EK_CORE_PROFILE();
             m_defaultFramebuffer->Unbind();
         }
 
         void VulkanAPI::OnWindowResize(uint32_t width, uint32_t height)
         {
+            EK_CORE_PROFILE();
             m_defaultFramebuffer->Resize(width, height);
         }
 
         void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
         {
+            EK_CORE_PROFILE();
             uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
             vkCmdDrawIndexed(g_currentCommandBuffer, numIndices, 1, 0, 0, 0);
         }
 
         void VulkanAPI::CreateInstance()
         {
+            EK_CORE_PROFILE();
             VkApplicationInfo appInfo{};
             appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
             appInfo.pApplicationName = "Eklipse App";
@@ -345,6 +355,7 @@ namespace Eklipse
         }
         void VulkanAPI::CreateAllocator()
         {
+            EK_CORE_PROFILE();
             VmaAllocatorCreateInfo allocatorCreateInfo = {};
             VmaVulkanFunctions func = {};
             func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
@@ -359,6 +370,7 @@ namespace Eklipse
         }
         void VulkanAPI::CreateSurface()
         {
+            EK_CORE_PROFILE();
 #ifdef EK_PLATFORM_WINDOWS
             GLFWwindow* window = Application::Get().GetWindow()->GetGlfwWindow();
             bool success = glfwCreateWindowSurface(g_instance, window, nullptr, &g_surface) == VK_SUCCESS;
@@ -369,6 +381,7 @@ namespace Eklipse
         }
         void VulkanAPI::CreateDefaultFramebuffer()
         {
+            EK_CORE_PROFILE();
             FramebufferInfo framebufferInfo{};
             framebufferInfo.isDefaultFramebuffer = true;
             framebufferInfo.width = Application::Get().GetInfo().windowWidth;
@@ -381,6 +394,7 @@ namespace Eklipse
         }
         void VulkanAPI::CreateSyncObjects()
         {
+            EK_CORE_PROFILE();
             m_imageAvailableSemaphores.resize(g_maxFramesInFlight);
             m_renderFinishedSemaphores.resize(g_maxFramesInFlight);
             m_renderInFlightFences.resize(g_maxFramesInFlight);
@@ -414,6 +428,7 @@ namespace Eklipse
         
         Vec<const char*> VulkanAPI::GetRequiredExtensions() const
         {
+            EK_CORE_PROFILE();
 #ifdef EK_PLATFORM_WINDOWS
             uint32_t glfwExtensionCount = 0;
             const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);

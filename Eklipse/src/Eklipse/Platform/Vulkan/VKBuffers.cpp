@@ -15,6 +15,7 @@ namespace Eklipse
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
 			VkBuffer& buffer, VmaAllocation& allocation, VmaAllocationCreateFlags vmaFlags = 0)
 		{
+			EK_CORE_PROFILE();
 			VkBufferCreateInfo bufferInfo{};
 			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			bufferInfo.size = size;
@@ -30,6 +31,7 @@ namespace Eklipse
 		}
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 		{
+			EK_CORE_PROFILE();
 			VkCommandBuffer commandBuffer = BeginSingleCommands();
 
 			VkBufferCopy copyRegion{};
@@ -45,6 +47,7 @@ namespace Eklipse
 
 		VKVertexBuffer::VKVertexBuffer(const Vec<float>& vertices)
 		{
+			EK_CORE_PROFILE();
 			m_count = vertices.size();
 			size_t size = sizeof(float) * vertices.size();
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -55,20 +58,24 @@ namespace Eklipse
 		}
 		void VKVertexBuffer::SetData(const void* data, uint32_t size)
 		{
+			EK_CORE_PROFILE();
 			VKStagingBuffer stagingBuffer(data, size);
 			CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
 		}
 		void VKVertexBuffer::Bind() const
 		{
+			EK_CORE_PROFILE();
 			VkDeviceSize offsets = { 0 };
 			vkCmdBindVertexBuffers(g_currentCommandBuffer, 0, 1, &m_buffer, &offsets);
 		}
 		void VKVertexBuffer::Unbind() const
 		{
+			EK_CORE_PROFILE();
 			vmaUnmapMemory(g_allocator, m_allocation);
 		}
 		void VKVertexBuffer::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
 
@@ -78,6 +85,7 @@ namespace Eklipse
 
 		VKIndexBuffer::VKIndexBuffer(const Vec<uint32_t>& indices)
 		{
+			EK_CORE_PROFILE();
 			m_count = indices.size();
 			size_t size = sizeof(indices[0]) * m_count;
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -88,14 +96,17 @@ namespace Eklipse
 		}
 		void VKIndexBuffer::Bind() const
 		{
+			EK_CORE_PROFILE();
 			vkCmdBindIndexBuffer(g_currentCommandBuffer, m_buffer, 0, VK_INDEX_TYPE_UINT32);
 		}
 		void VKIndexBuffer::Unbind() const
 		{
+			EK_CORE_PROFILE();
 			vmaUnmapMemory(g_allocator, m_allocation);
 		}
 		void VKIndexBuffer::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
 		size_t VKIndexBuffer::GetCount() const
@@ -109,6 +120,7 @@ namespace Eklipse
 
 		VKUniformBuffer::VKUniformBuffer(uint32_t size, uint32_t binding)
 		{
+			EK_CORE_PROFILE();
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				m_buffer, m_allocation, VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
@@ -150,6 +162,7 @@ namespace Eklipse
 		}
 		void VKUniformBuffer::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			vmaUnmapMemory(g_allocator, m_allocation);
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 
@@ -158,7 +171,7 @@ namespace Eklipse
 		}
 		void VKUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset = 0)
 		{
-			
+			EK_CORE_PROFILE();
 			VmaAllocationInfo allocInfo;
 			vmaGetAllocationInfo(g_allocator, m_allocation, &allocInfo);
 			memcpy(allocInfo.pMappedData, data, size);
@@ -182,6 +195,7 @@ namespace Eklipse
 
 		VKStagingBuffer::VKStagingBuffer(const void* data, size_t size)
 		{
+			EK_CORE_PROFILE();
 			CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				m_buffer, m_allocation, VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
@@ -193,6 +207,7 @@ namespace Eklipse
 		}
 		VKStagingBuffer::~VKStagingBuffer()
 		{
+			EK_CORE_PROFILE();
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
 
@@ -202,6 +217,7 @@ namespace Eklipse
 
 		void VKStorageBuffer::Setup(VKStagingBuffer& stagingBuffer, VkDeviceSize bufferSize)
 		{
+			EK_CORE_PROFILE();
 			CreateBuffer(bufferSize,
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_allocation);
@@ -210,6 +226,7 @@ namespace Eklipse
 		}
 		void VKStorageBuffer::Dispose()
 		{
+			EK_CORE_PROFILE();
 			vmaDestroyBuffer(g_allocator, m_buffer, m_allocation);
 		}
 	}

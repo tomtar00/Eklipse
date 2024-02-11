@@ -23,6 +23,7 @@ namespace Eklipse
 
 	bool ScriptLinker::LinkScriptLibrary(const Path& libraryPath)
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Loading script library: '{0}'", libraryPath.string());
 
 		try
@@ -41,6 +42,7 @@ namespace Eklipse
 	}
 	bool ScriptLinker::UnlinkScriptLibrary()
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Unlinking script library: '{0}'", m_libraryPath.string());
 
 		try
@@ -62,10 +64,12 @@ namespace Eklipse
 	
 	void ScriptLinker::ClearScriptClasses()
 	{
+		EK_CORE_PROFILE();
 		m_scriptClassMap.clear();
 	}
 	void ScriptLinker::FetchScriptClasses(Vec<String> scriptClassNames)
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Fetching script classes...");
 		EK_ASSERT(m_scriptLibrary, "Script library is not loaded!");
 
@@ -86,6 +90,7 @@ namespace Eklipse
 	}
 	void ScriptLinker::FetchScriptClasses(Vec<ClassReflection> scriptClassReflections)
 	{
+		EK_CORE_PROFILE();
 		Vec<String> scriptClassNames;
 		for (const auto& scriptClassReflection : scriptClassReflections)
 		{

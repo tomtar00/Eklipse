@@ -7,6 +7,7 @@ namespace Eklipse
 	{
 		static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
 		{
+			EK_CORE_PROFILE();
 			switch (type)
 			{
 				case ShaderDataType::FLOAT:    return GL_FLOAT;
@@ -28,22 +29,27 @@ namespace Eklipse
 
 		GLVertexArray::GLVertexArray() : m_id(0), m_vertexBufferIdx(0)
 		{
+			EK_CORE_PROFILE();
 			glGenVertexArrays(1, &m_id);
 		}
 		void GLVertexArray::Bind() const
 		{
+			EK_CORE_PROFILE();
 			glBindVertexArray(m_id);
 		}
 		void GLVertexArray::Unbind() const
 		{
+			EK_CORE_PROFILE();
 			glBindVertexArray(0);
 		}
 		void GLVertexArray::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			glDeleteVertexArrays(1, &m_id);
 		}
 		void GLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		{
+			EK_CORE_PROFILE();
 			EK_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 			glBindVertexArray(m_id);
@@ -120,6 +126,7 @@ namespace Eklipse
 		}
 		void GLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 		{
+			EK_CORE_PROFILE();
 			glBindVertexArray(m_id);
 			indexBuffer->Bind();
 

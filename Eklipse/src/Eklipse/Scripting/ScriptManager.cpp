@@ -16,6 +16,7 @@ namespace Eklipse
 
     void ScriptManager::Load()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Loading ScriptModule...");
 
         EK_ASSERT(Project::GetActive(), "Project is null!");
@@ -39,12 +40,14 @@ namespace Eklipse
     }
     void ScriptManager::Unload()
     {
+        EK_CORE_PROFILE();
         StopWatchingSource();
         m_scriptLinker->UnlinkScriptLibrary();
     }
 
     void ScriptManager::StartWatchingSource()
     {
+        EK_CORE_PROFILE();
         String sourcePath = Project::GetActive()->GetConfig().scriptsSourceDirectoryPath.string();
         EK_CORE_DBG("ScriptManager::StartWatchingSource: {0}", sourcePath);
 
@@ -52,6 +55,7 @@ namespace Eklipse
     }
     void ScriptManager::StopWatchingSource()
     {
+        EK_CORE_PROFILE();
         m_sourceWatcher.reset();
     }
     void ScriptManager::OnSourceWatchEvent(const String& path, filewatch::Event change_type)
@@ -72,6 +76,7 @@ namespace Eklipse
 
     bool ScriptManager::GenerateFactoryFile(const Path& targetDirectoryPath, const Vec<ClassReflection>& classReflections)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Generating script factory file at path: {0}", targetDirectoryPath.string());
 
         if (!fs::exists(targetDirectoryPath))
@@ -134,6 +139,7 @@ namespace Eklipse
     }
     void ScriptManager::RunPremake(const Path& premakeDirPath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_DBG("Running premake5.lua at path '{}'", premakeDirPath.string());
 
         auto premakeLuaFilePath = premakeDirPath / "premake5.lua";
@@ -155,6 +161,7 @@ namespace Eklipse
     }
     void ScriptManager::CompileScripts(const Path& sourceDirectoryPath, const String& configuration)
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(fs::exists(sourceDirectoryPath), "Source directory does not exist!");
         EK_CORE_TRACE("Compiling scripts...");
 
@@ -196,6 +203,7 @@ namespace Eklipse
     }
     void ScriptManager::SetState(ScriptsState state)
     {
+        EK_CORE_PROFILE();
         m_state = state;
         switch (m_state)
         {
@@ -210,6 +218,7 @@ namespace Eklipse
     }
     void ScriptManager::RecompileAll()
     {
+        EK_CORE_PROFILE();
         EK_CORE_INFO("Recompiling scripts...");
 
         auto& config = Project::GetActive()->GetConfig();

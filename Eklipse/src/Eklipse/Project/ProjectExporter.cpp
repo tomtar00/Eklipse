@@ -9,6 +9,7 @@ namespace Eklipse
     // Is should look for exported scenes and get only the neccessary assets instead of copying everything.
     bool CopyAssetsFromEditorRegistry(const Path& sourceAssetsDir, const Path& destinationAssetsDir, AssetRegistry& registry)
     {
+        EK_CORE_PROFILE();
         AssetRegistry runtimeRegistry;
         fs::create_directories(destinationAssetsDir);
         for (const auto& [handle, matadata] : registry)
@@ -50,6 +51,7 @@ namespace Eklipse
 
     bool ProjectExporter::Export(const Ref<EditorAssetLibrary> assetLibrary, const Ref<Project> project, const ProjectExportSettings& settings)
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(project, "Project is null!");
 
         auto& config = project->GetConfig();

@@ -21,6 +21,7 @@ namespace Eklipse
         VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount, 
             VkFormat& imageFormat, VkExtent2D& extent, Vec<VkImage>& images)
         {
+            EK_CORE_PROFILE();
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(g_physicalDevice);
             VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats, imageFormat);
             VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -87,6 +88,7 @@ namespace Eklipse
             VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling,
             VkImageUsageFlags usage)
         {
+            EK_CORE_PROFILE();
             allocations.resize(numImages);
             images.resize(numImages);
             for (int i = 0; i < numImages; i++)
@@ -97,6 +99,7 @@ namespace Eklipse
         }
         void CreateImageViews(Vec<VkImageView>& imageViews, Vec<VkImage>& images, VkFormat format)
         {
+            EK_CORE_PROFILE();
             imageViews.resize(images.size());
             for (size_t i = 0; i < images.size(); i++)
             {
@@ -105,6 +108,7 @@ namespace Eklipse
         }
         void CreateSamplers(Vec<VkSampler>& samplers, int numSamplers)
         {
+            EK_CORE_PROFILE();
             samplers.resize(numSamplers);
             for (int i = 0; i < numSamplers; i++)
             {
@@ -113,6 +117,7 @@ namespace Eklipse
         }
         void CreateFrameBuffers(Vec<VkFramebuffer>& framebuffers, Vec<VkImageView>& imageViews, VkRenderPass renderPass, VkExtent2D extent, bool attachOnlyView = false)
         {
+            EK_CORE_PROFILE();
             framebuffers.resize(imageViews.size());
             for (size_t i = 0; i < imageViews.size(); i++)
             {
@@ -162,6 +167,7 @@ namespace Eklipse
 
         void DestroyImages(Vec<VkImage>& images, Vec<VmaAllocation>& allocations)
         {
+            EK_CORE_PROFILE();
             int i = 0;
             for (auto image : images)
             {
@@ -170,6 +176,7 @@ namespace Eklipse
         }
         void DestroyImageViews(Vec<VkImageView>& imageViews)
         {
+            EK_CORE_PROFILE();
             for (auto imageView : imageViews)
             {
                 vkDestroyImageView(g_logicalDevice, imageView, nullptr);
@@ -177,6 +184,7 @@ namespace Eklipse
         }
         void DestroySamplers(Vec<VkSampler>& samplers)
         {
+            EK_CORE_PROFILE();
             for (auto sampler : samplers)
             {
                 vkDestroySampler(g_logicalDevice, sampler, nullptr);
@@ -184,6 +192,7 @@ namespace Eklipse
         }
         void DestroyFrameBuffers(Vec<VkFramebuffer>& buffers)
         {
+            EK_CORE_PROFILE();
             for (auto framebuffer : buffers)
             {
                 vkDestroyFramebuffer(g_logicalDevice, framebuffer, nullptr);

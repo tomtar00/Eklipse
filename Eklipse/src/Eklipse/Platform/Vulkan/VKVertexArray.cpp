@@ -11,6 +11,7 @@ namespace Eklipse
 		}
 		void VKVertexArray::Bind() const
 		{
+			EK_CORE_PROFILE();
 			for (auto& vertexBuffer : m_vertexBuffers)
 				vertexBuffer->Bind();
 			m_indexBuffer->Bind();
@@ -20,12 +21,14 @@ namespace Eklipse
 		}
 		void VKVertexArray::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			for (auto& vertexBuffer : m_vertexBuffers)
 				vertexBuffer->Dispose();
 			m_indexBuffer->Dispose();
 		}
 		void VKVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		{
+			EK_CORE_PROFILE();
 			EK_ASSERT(vertexBuffer->GetBufferLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 			uint32_t vertexElementsCounter = 0;

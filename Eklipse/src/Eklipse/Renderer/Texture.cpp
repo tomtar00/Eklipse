@@ -12,6 +12,7 @@ namespace Eklipse
 {
     int FormatToChannels(ImageFormat format)
     {
+        EK_CORE_PROFILE();
         if (format == ImageFormat::R8)          return 1;
         else if (format == ImageFormat::RGB8)   return 3;
         else if (format == ImageFormat::RGBA8)  return 4;
@@ -19,6 +20,7 @@ namespace Eklipse
     }
     ImageFormat ChannelsToFormat(int channels)
     {
+        EK_CORE_PROFILE();
         if (channels == 1)      return ImageFormat::R8;
         else if (channels == 3) return ImageFormat::RGB8;
         else if (channels == 4) return ImageFormat::RGBA8;
@@ -26,6 +28,7 @@ namespace Eklipse
     }
     bool LoadTextureFromFile(const Path& path, TextureData& outData)
     {
+        EK_CORE_PROFILE();
         String pathStr = path.string();
         EK_CORE_TRACE("Loading texture from location: {0}", pathStr);
 
@@ -73,6 +76,7 @@ namespace Eklipse
 
     Ref<Texture2D> Texture2D::Create(const Path& path, const AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path, handle);
@@ -83,6 +87,7 @@ namespace Eklipse
     }
     Ref<Texture2D> Texture2D::Create(const TextureInfo& textureInfo)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureInfo);
@@ -93,6 +98,7 @@ namespace Eklipse
     }
     Ref<Texture2D> Texture2D::Create(const TextureData& textureData)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureData);

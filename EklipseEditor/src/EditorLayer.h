@@ -75,7 +75,6 @@ namespace Eklipse
 		void OpenProject(ProjectHandle handle);
 		void OpenProject(const Path& path);
 		void SaveProject();
-		void SaveProjectAs();
 		void SaveScene();
 		void ExportProject(const ProjectExportSettings& exportSettings);
 		

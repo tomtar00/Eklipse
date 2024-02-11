@@ -15,6 +15,7 @@ namespace Eklipse
 	{
 		static GLenum GLShaderStageFromInternalStage(const ShaderStage stage)
 		{
+			EK_CORE_PROFILE();
 			switch (stage)
 			{
 				case ShaderStage::VERTEX:   return GL_VERTEX_SHADER;
@@ -25,6 +26,7 @@ namespace Eklipse
 		}
 		static const char* GLShaderStageCachedOpenGLFileExtension(const ShaderStage stage)
 		{
+			EK_CORE_PROFILE();
 			switch (stage)
 			{
 				case ShaderStage::VERTEX:    return ".cached_opengl.vert";
@@ -37,6 +39,7 @@ namespace Eklipse
 		GLShader::GLShader(const Path& filePath, const AssetHandle handle) 
 			: m_id(0), Shader(filePath, handle)
 		{
+			EK_CORE_PROFILE();
 			m_isValid = Compile(filePath);
 		}
 
@@ -47,7 +50,7 @@ namespace Eklipse
 
 		void GLShader::Bind() const
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 
 #ifdef EK_DEBUG
 			if (m_isValid)
@@ -56,7 +59,7 @@ namespace Eklipse
 		}
 		void GLShader::Unbind() const
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 
 			glUseProgram(0);
 		}
@@ -72,7 +75,7 @@ namespace Eklipse
 		}
 		bool GLShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", Name);
 
 			auto shaderSources = Setup(shaderPath);
@@ -96,7 +99,7 @@ namespace Eklipse
 
 		bool GLShader::CompileOrGetOpenGLBinaries(const Path& shaderPath, bool forceCompile)
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Compiling or getting binaries for OpenGL shader '{0}'", Name);
 
 			auto& shaderData = m_openGLSPIRV;
@@ -180,7 +183,7 @@ namespace Eklipse
 		}
 		void GLShader::CreateProgram()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Creating OpenGL shader program '{0}'", Name);
 
 			GLuint program = glCreateProgram();

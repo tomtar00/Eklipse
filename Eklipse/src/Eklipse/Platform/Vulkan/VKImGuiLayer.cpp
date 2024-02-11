@@ -37,11 +37,13 @@ namespace Eklipse
         VkImGuiLayer::VkImGuiLayer(const GuiLayerConfigInfo& configInfo) :
             m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(configInfo)
         {
+            EK_CORE_PROFILE();
             m_glfwWindow = Eklipse::Application::Get().GetWindow()->GetGlfwWindow();
             EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in VK ImGui Layer!");
         }
         void VkImGuiLayer::Init()
         {
+            EK_CORE_PROFILE();
             if (s_initialized) return;
             s_initialized = true;
 
@@ -114,17 +116,20 @@ namespace Eklipse
         }
         void VkImGuiLayer::NewFrame()
         {
+            EK_CORE_PROFILE();
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplGlfw_NewFrame();
         }
         void VkImGuiLayer::Render()
         {
+            EK_CORE_PROFILE();
             if (!(*m_config.enabled)) return;
 
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_currentCommandBuffer);
         }
         void VkImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
         {
+            EK_CORE_PROFILE();
             if (m_imageDescrSets.size() <= 0) // TODO: What if we want to draw multiple viewports?
             {
                 SetupDescriptorSets(framebuffer);
@@ -142,6 +147,7 @@ namespace Eklipse
         }
         void VkImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
         {
+            EK_CORE_PROFILE();
             if (m_imageDescrSets.size() <= 0) // TODO: What if we want to draw multiple viewports?
             {
                 SetupDescriptorSets(framebuffer);
@@ -160,6 +166,7 @@ namespace Eklipse
         }
         void VkImGuiLayer::SetupDescriptorSets(Framebuffer* framebuffer)
         {
+            EK_CORE_PROFILE();
             VKFramebuffer* vkFramebuffer = static_cast<VKFramebuffer*>(framebuffer);
             m_imageDescrSets.resize(g_swapChainImageCount);
             for (int i = 0; i < g_swapChainImageCount; ++i)
@@ -204,6 +211,7 @@ namespace Eklipse
 
         VKImGuiIcon::VKImGuiIcon(const Path& texturePath)
         {
+            EK_CORE_PROFILE();
             m_texture = CreateRef<VKTexture2D>(texturePath);
             m_descriptorSet = ImGui_ImplVulkan_AddTexture(m_texture->GetSampler(), m_texture->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
@@ -213,6 +221,7 @@ namespace Eklipse
         }
         void VKImGuiIcon::Dispose()
         {
+            EK_CORE_PROFILE();
             m_texture->Dispose();
         }
 }

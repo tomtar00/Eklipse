@@ -14,6 +14,7 @@ namespace Eklipse
 
 		VkImageAspectFlagBits ConvertToVKAspect(ImageAspect aspect)
 		{
+			EK_CORE_PROFILE();
 			switch (aspect)
 			{
 				case ImageAspect::COLOR:			return VK_IMAGE_ASPECT_COLOR_BIT;
@@ -26,6 +27,7 @@ namespace Eklipse
 		}
 		VkImageUsageFlagBits ConvertToVKUsage(uint32_t internalUsage)
 		{
+			EK_CORE_PROFILE();
 			uint32_t usageFlag = 0;
 			if (internalUsage & ImageUsage::SAMPLED)			usageFlag |= VK_IMAGE_USAGE_SAMPLED_BIT;
 			if (internalUsage & ImageUsage::COLOR_ATTACHMENT)	usageFlag |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -38,6 +40,7 @@ namespace Eklipse
 		}
 		VkImageLayout ConvertToVKLayout(ImageLayout layout)
 		{
+			EK_CORE_PROFILE();
 			switch (layout)
 			{
 				case ImageLayout::COLOR_OPTIMAL:		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -50,6 +53,7 @@ namespace Eklipse
 		}
 		ImageFormat ConvertFromVKFormat(VkFormat format)
 		{
+			EK_CORE_PROFILE();
 			switch (format)
 			{
                 case VK_FORMAT_R8_SRGB:				return ImageFormat::R8;
@@ -65,6 +69,7 @@ namespace Eklipse
 		}
 		VkFormat ConvertToVKFormat(ImageFormat format)
 		{
+			EK_CORE_PROFILE();
 			switch (format)
 			{
 				case ImageFormat::R8:				return VK_FORMAT_R8_SRGB;
@@ -81,6 +86,7 @@ namespace Eklipse
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const Vec<VkSurfaceFormatKHR>& availableFormats, VkFormat desiredFormat)
 		{
+			EK_CORE_PROFILE();
 			for (const auto& availableFormat : availableFormats)
 			{
 				if (availableFormat.format == desiredFormat /*&& availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR*/)
@@ -93,6 +99,7 @@ namespace Eklipse
 		}
 		VkPresentModeKHR ChooseSwapPresentMode(const Vec<VkPresentModeKHR>& availablePresentModes)
 		{
+			EK_CORE_PROFILE();
 			for (const auto& availablePresentMode : availablePresentModes)
 			{
 				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
@@ -105,6 +112,7 @@ namespace Eklipse
 		}
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int frameWidth, int frameHeight)
 		{
+			EK_CORE_PROFILE();
 			if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 			{
 				return capabilities.currentExtent;
@@ -125,6 +133,7 @@ namespace Eklipse
 		}
 		VkShaderModule CreateShaderModule(const Vec<uint32_t>& code)
 		{
+			EK_CORE_PROFILE();
 			VkShaderModuleCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			createInfo.codeSize = code.size() * sizeof(uint32_t);
@@ -138,6 +147,7 @@ namespace Eklipse
 		}
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device)
 		{
+			EK_CORE_PROFILE();
 			SwapChainSupportDetails details;
 
 			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, g_surface, &details.capabilities);
@@ -162,6 +172,7 @@ namespace Eklipse
 		}
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device)
 		{
+			EK_CORE_PROFILE();
 			QueueFamilyIndices indices{};
 
 			uint32_t queueFamilyCount = 0;
@@ -195,6 +206,7 @@ namespace Eklipse
 		}
 		VkSampleCountFlagBits GetMaxUsableSampleCount()
 		{
+			EK_CORE_PROFILE();
 			VkPhysicalDeviceProperties physicalDeviceProperties;
 			vkGetPhysicalDeviceProperties(g_physicalDevice, &physicalDeviceProperties);
 
@@ -210,6 +222,7 @@ namespace Eklipse
 		}
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 		{
+			EK_CORE_PROFILE();
 			for (uint32_t i = 0; i < g_physicalDeviceMemoryProps.memoryTypeCount; i++)
 			{
 				if ((typeFilter & (1 << i)) && (g_physicalDeviceMemoryProps.memoryTypes[i].propertyFlags & properties) == properties)
@@ -222,6 +235,7 @@ namespace Eklipse
 		}
 		VkFormat FindSupportedFormat(const Vec<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 		{
+			EK_CORE_PROFILE();
 			for (VkFormat format : candidates)
 			{
 				VkFormatProperties props;
@@ -239,6 +253,7 @@ namespace Eklipse
 		}
 		VkFormat FindDepthFormat()
 		{
+			EK_CORE_PROFILE();
 			return FindSupportedFormat(
 				{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
 				VK_IMAGE_TILING_OPTIMAL,

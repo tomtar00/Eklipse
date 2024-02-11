@@ -86,18 +86,22 @@ namespace Eklipse
 
     bool FileUtilities::IsPathFile(const Path& path)
     {
+        EK_CORE_PROFILE();
         return fs::is_regular_file(path);
     }
     bool FileUtilities::IsPathDirectory(const Path& path)
     {
+        EK_CORE_PROFILE();
         return fs::is_directory(path);
     }
     bool FileUtilities::IsPathValid(const Path& path)
     {
+        EK_CORE_PROFILE();
         return !path.empty() && fs::exists(path);
     }
     bool FileUtilities::IsPathValid(const Path& path, const Vec<String>& extensions)
     {
+        EK_CORE_PROFILE();
         bool hasExtension = false;
         for (const auto& extension : extensions)
         {
@@ -111,6 +115,7 @@ namespace Eklipse
     }
     bool FileUtilities::ArePathsEqualAndExists(const Path& path1, const Path& path2)
     {
+        EK_CORE_PROFILE();
         std::error_code ec;
         bool eq = fs::equivalent(path1, path2, ec);
         if (ec)
@@ -121,17 +126,20 @@ namespace Eklipse
     }
     bool FileUtilities::ArePathsEqual(const Path& path1, const Path& path2)
     {
+        EK_CORE_PROFILE();
         return path1 == path2;
     }
 
     bool FileUtilities::IsSubPath(const Path& path, const Path& basePath)
     {
+        EK_CORE_PROFILE();
         auto rel = fs::relative(path, basePath);
         return !rel.empty() && rel.native()[0] != '.';
     }
 
     String FileUtilities::ReadFileFromPath(const Path& filePath)
     {
+        EK_CORE_PROFILE();
         String buffer;
         std::ifstream file(filePath, std::ios::in | std::ios::binary);
         EK_ASSERT(file.is_open(), "Failed to open file at '{0}'", filePath.string());
@@ -149,6 +157,7 @@ namespace Eklipse
     }
     String FileUtilities::AppendExtensionIfNotPresent(const String& name, const String& extension)
     {
+        EK_CORE_PROFILE();
         if (name.size() < extension.size() || name.substr(name.size() - extension.size()) != extension)
         {
             return name + extension;
@@ -156,6 +165,7 @@ namespace Eklipse
     }
     String FileUtilities::AppendExtensionIfNotPresent(const Path& path, const String& extension)
     {
+        EK_CORE_PROFILE();
         if (path.extension() != extension)
         {
             return path.string() + extension;
@@ -164,6 +174,7 @@ namespace Eklipse
 
     FileDialogResult FileUtilities::OpenFileDialog(const Vec<String>& extensions, const Path& path)
     {
+        EK_CORE_PROFILE();
         String exts = "";
         for (const auto& extension : extensions)
         {
@@ -196,19 +207,23 @@ namespace Eklipse
     }
     FileDialogResult FileUtilities::OpenFileDialog(const Vec<String>& extensions)
     {
+        EK_CORE_PROFILE();
         return OpenFileDialog(extensions, {});
     }
     FileDialogResult FileUtilities::OpenFileDialog(const Path& path)
     {
+        EK_CORE_PROFILE();
         return OpenFileDialog({}, path);
     }
     FileDialogResult FileUtilities::OpenFileDialog()
     {
+        EK_CORE_PROFILE();
         return OpenFileDialog({}, {});
     }
 
     FileDialogResult FileUtilities::OpenDirDialog(const Path& path)
     {
+        EK_CORE_PROFILE();
         nfdchar_t* outPath = nullptr;
         nfdresult_t result = NFD_PickFolder(path.string().c_str(), &outPath);
 
@@ -234,6 +249,7 @@ namespace Eklipse
     }
     FileDialogResult FileUtilities::OpenDirDialog()
     {
+        EK_CORE_PROFILE();
         return OpenDirDialog({});
     }
 }

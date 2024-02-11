@@ -16,11 +16,13 @@ namespace Eklipse
 {
     static void CreateCacheDirectoryIfNeeded(const String& cacheDirectory)
     {
+        EK_CORE_PROFILE();
         if (!fs::exists(cacheDirectory))
             fs::create_directories(cacheDirectory);
     }
     static const char* VKShaderStageCachedVulkanFileExtension(const ShaderStage stage)
     {
+        EK_CORE_PROFILE();
         switch (stage)
         {
         case ShaderStage::VERTEX:    return ".cached_vulkan.vert";
@@ -31,6 +33,7 @@ namespace Eklipse
     }
     static size_t GetSizeOfSpirvType(const spirv_cross::SPIRType type, const String& name)
     {
+        EK_CORE_PROFILE();
         switch (type.basetype)
         {
         case spirv_cross::SPIRType::Float: return type.vecsize * sizeof(float);
@@ -42,6 +45,7 @@ namespace Eklipse
     }
     static ShaderDataType SpirvTypeToDataType(const spirv_cross::SPIRType type)
     {
+        EK_CORE_PROFILE();
         if (type.basetype == spirv_cross::SPIRType::Image && type.image.dim == spv::Dim2D) return ShaderDataType::SAMPLER2D;
         if (type.columns == 3 && type.vecsize == 3) return ShaderDataType::MAT3;
         if (type.columns == 4 && type.vecsize == 4) return ShaderDataType::MAT4;
@@ -67,6 +71,7 @@ namespace Eklipse
     }
     String ShaderDataTypeToString(ShaderDataType type)
     {
+        EK_CORE_PROFILE();
         switch (type)
         {
         case ShaderDataType::NONE:     return "none";
@@ -89,6 +94,7 @@ namespace Eklipse
 
     ShaderStage StringToShaderStage(const String& stage)
     {
+        EK_CORE_PROFILE();
         if (stage == "vertex")   return ShaderStage::VERTEX;
         if (stage == "fragment") return ShaderStage::FRAGMENT;
         if (stage == "compute")  return ShaderStage::COMPUTE;
@@ -98,6 +104,7 @@ namespace Eklipse
     }
     String ShaderStageToString(ShaderStage stage)
     {
+        EK_CORE_PROFILE();
         switch (stage)
         {
         case ShaderStage::VERTEX:   return "vertex";
@@ -109,6 +116,7 @@ namespace Eklipse
     }
     uint32_t ShaderStageToShaderC(const ShaderStage stage)
     {
+        EK_CORE_PROFILE();
         switch (stage)
         {
         case ShaderStage::VERTEX:   return shaderc_glsl_vertex_shader;
@@ -121,11 +129,13 @@ namespace Eklipse
 
     Shader::Shader(const Path& filePath, const AssetHandle handle) : m_isValid(false)
     {
+        EK_CORE_PROFILE();
         Handle = handle;
         Name = filePath.stem().string();
     }
     Ref<Shader> Shader::Create(const Path& filePath, const AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
         case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
@@ -137,7 +147,7 @@ namespace Eklipse
 
     StageSourceMap Shader::Setup(const Path& shaderPath)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Setting up shader '{0}'", Name);
 
         CreateCacheDirectoryIfNeeded(GetCacheDirectoryPath());
@@ -150,7 +160,7 @@ namespace Eklipse
     }
     bool Shader::Recompile(const Path& shaderPath)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Recompiling shader '{0}'", Name);
 
         Dispose();
@@ -198,7 +208,7 @@ namespace Eklipse
 
     void Shader::Reflect(const StageSpirvMap& shaderStagesData, const String& shaderName)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_DBG("Shader::Reflect - {0}", shaderName);
         uint32_t push_const_offset = 0;
         for (auto&& [stage, shaderData] : shaderStagesData)
@@ -310,7 +320,7 @@ namespace Eklipse
     }
     bool Shader::CompileOrGetVulkanBinaries(const Path& shaderPath, const StageSourceMap& shaderSources, bool forceCompile)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Compiling vulkan binaries for shader '{0}'", Name);
 
         bool success = true;
@@ -385,7 +395,7 @@ namespace Eklipse
     }
     StageSourceMap Shader::PreProcess(const String& source) const
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Preprocessing shader source in shader '{0}'", Name);
 
         std::unordered_map<ShaderStage, String> shaderSources;

@@ -12,6 +12,7 @@ namespace Eklipse
     {
         static VkFormat ConvertToSupportedTextureVKFormat(ImageFormat format)
         {
+            EK_CORE_PROFILE();
             VkFormat vkFormat = ConvertToVKFormat(format);
             VkFormatProperties props;
             vkGetPhysicalDeviceFormatProperties(g_physicalDevice, vkFormat, &props);
@@ -25,6 +26,7 @@ namespace Eklipse
 
         VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
         {
+            EK_CORE_PROFILE();
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = image;
@@ -45,6 +47,7 @@ namespace Eklipse
         }
         VkSampler CreateSampler(float mipLevels)
         {
+            EK_CORE_PROFILE();
             VkSamplerCreateInfo samplerInfo{};
             samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
             samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -73,6 +76,7 @@ namespace Eklipse
         }
         VkImage CreateImage(VmaAllocation& allocation, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage)
         {
+            EK_CORE_PROFILE();
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -102,6 +106,7 @@ namespace Eklipse
         
         void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
         {
+            EK_CORE_PROFILE();
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = oldLayout;
@@ -163,6 +168,7 @@ namespace Eklipse
         }
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
         {
+            EK_CORE_PROFILE();
             VkCommandBuffer commandBuffer = BeginSingleCommands();
 
             VkBufferImageCopy region{};
@@ -191,6 +197,7 @@ namespace Eklipse
         }
         void GenerateMipMaps(VkImage image, uint32_t mipLevels, uint32_t width, uint32_t height)
         {
+            EK_CORE_PROFILE();
             if (mipLevels < 2) return;
 
             VkFormatProperties formatProperties;
@@ -282,6 +289,7 @@ namespace Eklipse
 
         VKTexture2D::VKTexture2D(const Path& path, const AssetHandle handle) : Texture2D(path, handle)
         {
+            EK_CORE_PROFILE();
             TextureData textureData{};
             if (LoadTextureFromFile(path, textureData))
             {
@@ -292,11 +300,13 @@ namespace Eklipse
         }
         VKTexture2D::VKTexture2D(const TextureInfo& textureInfo) : Texture2D(textureInfo)
         {
+            EK_CORE_PROFILE();
             m_textureInfo = textureInfo;
             Init(m_textureInfo);
         }
         VKTexture2D::VKTexture2D(const TextureData& textureData) : Texture2D(textureData)
         {
+            EK_CORE_PROFILE();
             m_textureInfo = textureData.info;
             Init(m_textureInfo);
             SetData(textureData.data, textureData.size);
@@ -304,6 +314,7 @@ namespace Eklipse
 
         void VKTexture2D::Init(const TextureInfo& textureInfo)
         {
+            EK_CORE_PROFILE();
             VkFormat format = ConvertToSupportedTextureVKFormat(textureInfo.imageFormat);
             EK_ASSERT(format != VK_FORMAT_UNDEFINED, "Texture format not supported!");
             m_textureInfo.imageFormat = ConvertFromVKFormat(format);
@@ -325,6 +336,7 @@ namespace Eklipse
         }
         void VKTexture2D::SetData(void* data, uint32_t size)
         {
+            EK_CORE_PROFILE();
             uint32_t singlePixelSize = FormatToChannels(m_textureInfo.imageFormat);
             uint32_t dataSize = m_textureInfo.width * m_textureInfo.height * singlePixelSize;
             EK_ASSERT(size == dataSize, "Data is not equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
@@ -350,6 +362,7 @@ namespace Eklipse
         void VKTexture2D::Unbind() const {}
         void VKTexture2D::Dispose()
         {
+            EK_CORE_PROFILE();
             vkDestroySampler(g_logicalDevice, m_sampler, nullptr);
             vkDestroyImageView(g_logicalDevice, m_imageView, nullptr);
             vmaDestroyImage(g_allocator, m_image, m_allocation);

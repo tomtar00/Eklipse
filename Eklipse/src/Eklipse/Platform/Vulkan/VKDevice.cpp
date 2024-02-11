@@ -19,6 +19,7 @@ namespace Eklipse
 
 		void CreateLogicalDevice()
 		{      
+            EK_CORE_PROFILE();
             Vec<VkDeviceQueueCreateInfo> queueCreateInfos;
             std::set<uint32_t> uniqueQueueFamilies = 
             {
@@ -70,6 +71,7 @@ namespace Eklipse
 		}
 		void PickPhysicalDevice()
 		{
+            EK_CORE_PROFILE();
 			VkResult res;
 
 			uint32_t gpuCount;

@@ -11,12 +11,14 @@ namespace Eklipse
 
 	void LayerStack::PushLayer(Ref<Layer> layer)
 	{
+		EK_CORE_PROFILE();
 		layer->OnAttach();
 		m_layers.emplace(m_layers.begin() + m_lastLayerIndex, layer);
 		m_lastLayerIndex++;
 	}
 	void LayerStack::PopLayer(Ref<Layer> layer)
 	{
+		EK_CORE_PROFILE();
 		auto it = std::find(m_layers.begin(), m_layers.begin() + m_lastLayerIndex, layer);
 		if (it != m_layers.begin() + m_lastLayerIndex)
 		{
@@ -28,28 +30,14 @@ namespace Eklipse
 
 	void LayerStack::PushOverlay(Ref<Layer> overlay)
 	{
+		EK_CORE_PROFILE();
 		overlay->OnAttach();
 		m_layers.emplace_back(overlay);
 	}
 
 	void LayerStack::PopOverlay(Ref<Layer> overlay)
 	{
-		/*auto it = std::find(m_layers.begin() + m_lastLayerIndex, m_layers.end(), overlay);
-		if (it != m_layers.end())
-		{
-			overlay->OnDetach();
-			m_layers.erase(it);
-		}*/
-
-		/*for (auto it = m_layers.begin(); it != m_layers.end(); it++)
-		{
-			if (*it == overlay)
-			{
-				overlay->OnDetach();
-				m_layers.erase(it);
-				break;
-			}
-		}*/
+		EK_CORE_PROFILE();
 
 		uint32_t index = 0;
 		for (auto& layer : *this)
@@ -66,6 +54,7 @@ namespace Eklipse
 
 	void LayerStack::Shutdown()
 	{
+		EK_CORE_PROFILE();
 		for (auto& layer : *this)
 		{
 			layer->OnDetach();

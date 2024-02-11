@@ -9,7 +9,7 @@ namespace Eklipse
 {
     void Camera::UpdateViewProjectionMatrix(Transform& transform, float aspectRatio)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
 
         // Projection
         m_projectionMatrix = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);

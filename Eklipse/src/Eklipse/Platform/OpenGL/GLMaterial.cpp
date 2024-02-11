@@ -8,11 +8,12 @@ namespace Eklipse
 	{
 		GLMaterial::GLMaterial(const Path& path, AssetHandle shaderHandle) : Material(path, shaderHandle)
 		{
+			EK_CORE_PROFILE();
 			m_glShader = std::static_pointer_cast<GLShader>(m_shader);
 		}
 		void GLMaterial::Bind()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 			Material::Bind();
 
 			for (auto&& [stage, reflection] : m_shader->GetReflections())

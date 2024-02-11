@@ -23,6 +23,7 @@ namespace Eklipse
             const char* message,
             const void* userParam)
         {
+            EK_CORE_PROFILE();
             switch (severity)
             {
                 case GL_DEBUG_SEVERITY_HIGH:         EK_CORE_ERROR(message); return;
@@ -44,6 +45,7 @@ namespace Eklipse
         }
         bool OpenGLAPI::Init()
         {
+            EK_CORE_PROFILE();
             if (m_initialized)
             {
                 EK_CORE_WARN("OpenGL API already initialized!");
@@ -85,6 +87,7 @@ namespace Eklipse
         }
         void OpenGLAPI::Shutdown()
         {
+            EK_CORE_PROFILE();
             if (!m_initialized)
             {
                 EK_CORE_WARN("OpenGL API has already shut down!");
@@ -102,7 +105,7 @@ namespace Eklipse
         }
         void OpenGLAPI::BeginFrame()
         {
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             uint32_t width = Application::Get().GetInfo().windowWidth;
             uint32_t height = Application::Get().GetInfo().windowHeight;
@@ -112,7 +115,7 @@ namespace Eklipse
         }
         void OpenGLAPI::Submit()
         {
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             Application::Get().GetWindow()->SwapBuffers();
         }
@@ -127,7 +130,7 @@ namespace Eklipse
         }
         void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)
         {	
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
             glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);

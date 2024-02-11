@@ -5,6 +5,7 @@ namespace Eklipse
 {
     Vec<ClassReflection> ScriptParser::ParseDirectory(const Path& directoryPath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Parsing directory: {0}", directoryPath.string());
 
         Vec<ClassReflection> classReflections;
@@ -42,6 +43,7 @@ namespace Eklipse
     }
     bool ScriptParser::ParseFile(const Path& filePath, Vec<ClassReflection>& outClassReflections)
 	{
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Parsing file: {0}", filePath.string());
 
         std::ifstream file(filePath);

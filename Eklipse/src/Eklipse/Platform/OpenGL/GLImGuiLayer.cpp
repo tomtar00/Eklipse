@@ -22,6 +22,7 @@ namespace Eklipse
         }
         void GLImGuiLayer::Init()
         {
+            EK_CORE_PROFILE();
             if (s_initialized) return;
             s_initialized = true;
 
@@ -30,6 +31,7 @@ namespace Eklipse
         }
         void GLImGuiLayer::Shutdown()
         {
+            EK_CORE_PROFILE();
             if (!s_initialized) return;
             s_initialized = false;
 
@@ -39,17 +41,20 @@ namespace Eklipse
         }
         void GLImGuiLayer::NewFrame()
         {
+            EK_CORE_PROFILE();
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
         }
         void GLImGuiLayer::Render()
         {
+            EK_CORE_PROFILE();
             if (!(*m_config.enabled)) return;
 
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
         void GLImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
         {
+            EK_CORE_PROFILE();
             if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
             {
                 ResizeViewport(framebuffer, width, height);
@@ -60,6 +65,7 @@ namespace Eklipse
         }
         void GLImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
         {
+            EK_CORE_PROFILE();
             if (width > 0 && height > 0)
                 framebuffer->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
         }
@@ -68,14 +74,17 @@ namespace Eklipse
 
         GLImGuiIcon::GLImGuiIcon(const Path& texturePath)
         {
+            EK_CORE_PROFILE();
             m_texture = CreateRef<GLTexture2D>(texturePath);
         }
         void* GLImGuiIcon::GetID()
         {
+            EK_CORE_PROFILE();
             return (void*)m_texture->GetID();
         }
         void GLImGuiIcon::Dispose()
         {
+            EK_CORE_PROFILE();
             m_texture->Dispose();
         }
     }

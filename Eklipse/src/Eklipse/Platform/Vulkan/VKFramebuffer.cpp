@@ -12,6 +12,7 @@ namespace Eklipse
         VKFramebuffer::VKFramebuffer(const FramebufferInfo& framebufferInfo) 
             : Framebuffer(framebufferInfo), m_framebufferInfo(framebufferInfo)
         {
+            EK_CORE_PROFILE();
             if (framebufferInfo.isDefaultFramebuffer)
             {
                 EK_ASSERT(g_VKDefaultFramebuffer == nullptr, "Default framebuffer already exists!");
@@ -29,7 +30,7 @@ namespace Eklipse
 
         void VKFramebuffer::DestroyFramebuffers()
         {
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             vkDeviceWaitIdle(g_logicalDevice);
             vkDestroyRenderPass(g_logicalDevice, m_renderPass, nullptr);
@@ -74,7 +75,7 @@ namespace Eklipse
         }
         void VKFramebuffer::Build()
         {	
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             m_framebuffers.resize(g_swapChainImageCount);
             m_framebufferAttachments.resize(g_swapChainImageCount);
@@ -197,7 +198,7 @@ namespace Eklipse
         }
         void VKFramebuffer::Bind()
         {
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             g_currentCommandBuffer = m_commandBuffers[g_currentFrame];
             vkResetCommandBuffer(g_currentCommandBuffer, 0);
@@ -244,7 +245,7 @@ namespace Eklipse
         }
         void VKFramebuffer::Unbind()
         {
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             vkCmdEndRenderPass(g_currentCommandBuffer);
             VkResult res = vkEndCommandBuffer(g_currentCommandBuffer);
@@ -254,6 +255,7 @@ namespace Eklipse
         }
         void VKFramebuffer::Resize(uint32_t width, uint32_t height)
         {
+            EK_CORE_PROFILE();
             m_imageIndex = 0;
 
             Framebuffer::Resize(width, height);
@@ -268,13 +270,14 @@ namespace Eklipse
         }
         void VKFramebuffer::Dispose()
         {
+            EK_CORE_PROFILE();
             DestroyFramebuffers();
             FreeCommandBuffers(m_commandBuffers, g_commandPool);
         }
 
         VkRenderPass VKFramebuffer::CreateRenderPass()
         {
-            EK_PROFILE();
+            EK_CORE_PROFILE();
 
             size_t size = m_framebufferInfo.colorAttachmentInfos.size();
             bool hasDepthAttachment = m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED;

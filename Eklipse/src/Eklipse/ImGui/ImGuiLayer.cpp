@@ -16,6 +16,7 @@ namespace Eklipse
 
     void ImGuiLayer::OnAttach()
     {
+        EK_CORE_PROFILE();
         IMGUI_CHECKVERSION();
         EK_ASSERT(CTX != nullptr, "ImGui context is null. Set ImGuiLayer::CTX to ImGui::CreateContext().");
         ImGui::SetCurrentContext(CTX);
@@ -37,10 +38,12 @@ namespace Eklipse
     }
     void ImGuiLayer::OnDetach()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("{0} imgui layer detached", typeid(*this).name());
     }
     void ImGuiLayer::OnGUI(float deltaTime)
     {
+        EK_CORE_PROFILE();
         for (auto& panel : m_config.panels)
         {
             panel->OnGUI(deltaTime);
@@ -48,6 +51,7 @@ namespace Eklipse
     }
     void ImGuiLayer::Shutdown()
     {
+        EK_CORE_PROFILE();
         ImGui::DestroyContext(CTX);
         ImGui::SetCurrentContext(CTX = nullptr);
 
@@ -55,16 +59,19 @@ namespace Eklipse
     }
     void ImGuiLayer::Begin()
     {
+        EK_CORE_PROFILE();
         NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
     }
     void ImGuiLayer::End()
     {
+        EK_CORE_PROFILE();
         ImGui::Render();
     }
     void ImGuiLayer::DrawDockspace()
     {
+        EK_CORE_PROFILE();
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
         if (m_config.menuBarEnabled) window_flags |= ImGuiWindowFlags_MenuBar;
@@ -149,6 +156,7 @@ namespace Eklipse
     }
     Ref<ImGuiLayer> ImGuiLayer::Create(const GuiLayerConfigInfo& configInfo)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VkImGuiLayer>(configInfo);
@@ -159,6 +167,7 @@ namespace Eklipse
     }
     Ref<GuiIcon> GuiIcon::Create(const Path& texturePath)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(texturePath);

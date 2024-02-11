@@ -14,12 +14,14 @@
 
 namespace Eklipse
 {
-	void GlfwErrorCallback(int error, const char* description)
+	static void GlfwErrorCallback(int error, const char* description)
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
-	void GlfwWindowSizeCallback(GLFWwindow* window, int width, int height)
+	static void GlfwWindowSizeCallback(GLFWwindow* window, int width, int height)
 	{
+		EK_CORE_PROFILE();
 		WindowResizeEvent event(width, height);
 		PROPAGATE_GLFW_EVENT(event);
 	}
@@ -30,13 +32,15 @@ namespace Eklipse
 		((WindowData*)glfwGetWindowUserPointer(window))->framebufferResized = true;
 		PROPAGATE_GLFW_EVENT(event);
 	}*/
-	void GlfwWindowCloseCallback(GLFWwindow* window)
+	static void GlfwWindowCloseCallback(GLFWwindow* window)
 	{
+		EK_CORE_PROFILE();
 		WindowCloseEvent event;
 		PROPAGATE_GLFW_EVENT(event);
 	}
-	void GlfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	static void GlfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
+		EK_CORE_PROFILE();
 		switch (action)
 		{
 			case GLFW_PRESS:
@@ -59,8 +63,9 @@ namespace Eklipse
 			}
 		}
 	}
-	void GlfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+	static void GlfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 	{
+		EK_CORE_PROFILE();
 		switch (action)
 		{
 			case GLFW_PRESS:
@@ -77,18 +82,21 @@ namespace Eklipse
 			}
 		}
 	}
-	void GlfwScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+	static void GlfwScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 	{
+		EK_CORE_PROFILE();
 		MouseScrolledEvent event(xOffset, yOffset);
 		PROPAGATE_GLFW_EVENT(event);
 	}
-	void GlfwCursorPosCallback(GLFWwindow* window, double xPos, double yPos)
+	static void GlfwCursorPosCallback(GLFWwindow* window, double xPos, double yPos)
 	{
+		EK_CORE_PROFILE();
 		MouseMovedEvent event(xPos, yPos);
 		PROPAGATE_GLFW_EVENT(event);
 	}
-	void GlfwWindowFocusCallback(GLFWwindow* window, int focused)
+	static void GlfwWindowFocusCallback(GLFWwindow* window, int focused)
 	{
+		EK_CORE_PROFILE();
 		if (focused)
 		{
 			WindowFocusEvent event;
@@ -103,6 +111,7 @@ namespace Eklipse
 
 	WindowsWindow::WindowsWindow(WindowData& data) : Window(data)
 	{
+		EK_CORE_PROFILE();
 		if (!s_glfwInitialized)
 		{
 			s_glfwInitialized = glfwInit();
@@ -145,10 +154,12 @@ namespace Eklipse
 
 	WindowsWindow::~WindowsWindow() 
 	{
+		EK_CORE_PROFILE();
 		Shutdown();
 	}
 	void WindowsWindow::Shutdown()
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_DBG("Window shutdown");
 		glfwDestroyWindow(m_window);
 		glfwTerminate();
@@ -163,33 +174,37 @@ namespace Eklipse
 	}
 	void WindowsWindow::SetWindowHint(int hint, int value)
 	{
+		EK_CORE_PROFILE();
 		glfwWindowHint(hint, value);
 	}
 	void WindowsWindow::SwapBuffers()
 	{
-		EK_PROFILE();
+		EK_CORE_PROFILE();
 
 		glfwSwapBuffers(m_window);
 	}
 	void WindowsWindow::WaitEvents()
 	{
+		EK_CORE_PROFILE();
 		glfwWaitEvents();
 	}
 	void WindowsWindow::SetTitle(const char* title)
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Setting window title to '{0}'", title);
 		glfwSetWindowTitle(m_window, title);
 		EK_CORE_DBG("Window title set to '{0}'", title);
 	}
 	void WindowsWindow::Maximize()
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Maximizing window");
         glfwMaximizeWindow(m_window);
 		EK_CORE_DBG("Window maximized");
 	}
 	bool WindowsWindow::IsMaximized()
 	{
-	       return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED);
+	    return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED);
 	}
 	GLFWwindow* WindowsWindow::GetGlfwWindow()
 	{

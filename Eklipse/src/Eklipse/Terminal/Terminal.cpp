@@ -5,6 +5,7 @@ namespace Eklipse
 {
 	static ParsedCommand ParseCommand(const String& command)
 	{
+		EK_CORE_PROFILE();
 		std::istringstream iss(command);
 		String token;
 
@@ -37,6 +38,7 @@ namespace Eklipse
 
 	Terminal::Terminal()
 	{
+		EK_CORE_PROFILE();
 		m_sink = CreateRef<TerminalSink<std::mutex>>();
 		m_historyIndex = 0;
 
@@ -69,10 +71,12 @@ namespace Eklipse
 
 	void Terminal::AddCommand(const TerminalCommand& command)
 	{
+		EK_CORE_PROFILE();
 		m_commands.push_back(command);
 	}
 	void Terminal::ExcecuteCommand(const String& command)
 	{
+		EK_CORE_PROFILE();
 		ParsedCommand parsedCommand = ParseCommand(command);
 
 		m_history.push_back(command);
@@ -110,11 +114,13 @@ namespace Eklipse
 	}
 	void Terminal::Clear()
 	{
+		EK_CORE_PROFILE();
 		m_sink->m_buffer.clear();
 	}
 
 	void Terminal::HistoryUp()
 	{
+		EK_CORE_PROFILE();
 		if (m_history.size() == 0)
 			return;
 
@@ -126,6 +132,7 @@ namespace Eklipse
 	}
 	void Terminal::HistoryDown()
 	{
+		EK_CORE_PROFILE();
 		if (m_history.size() == 0)
 			return;
 
@@ -159,6 +166,7 @@ namespace Eklipse
 
 	void Terminal::SetLevel(spdlog::level::level_enum level, const char* name)
 	{
+		EK_CORE_PROFILE();
 		Clear(); 
 		m_level = level; m_levelString = name; 
 		spdlog::set_level(level);

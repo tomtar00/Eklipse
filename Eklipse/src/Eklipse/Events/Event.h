@@ -49,6 +49,7 @@ namespace Eklipse
 		template<typename T, typename F>
 		bool Dispatch(const F& func)
 		{
+			EK_CORE_PROFILE();
 			if (m_event.Handled) return false;
 
 			if (m_event.GetEventType() == T::GetStaticType())

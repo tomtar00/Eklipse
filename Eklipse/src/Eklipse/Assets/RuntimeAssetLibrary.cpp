@@ -14,8 +14,10 @@ namespace Eklipse
 
         DeserializeAssetRegistry();
     }
+
     Ref<Asset> RuntimeAssetLibrary::GetAsset(AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Getting asset with handle: {0}", handle);
 
         if (!IsAssetHandleValid(handle))
@@ -40,21 +42,25 @@ namespace Eklipse
     }
     AssetMetadata& RuntimeAssetLibrary::GetMetadata(AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_assetRegistry.at(handle);
     }
     bool RuntimeAssetLibrary::IsAssetHandleValid(AssetHandle handle) const
     {
+        EK_CORE_PROFILE();
         return handle != 0 && m_assetRegistry.find(handle) != m_assetRegistry.end();
     }
     bool RuntimeAssetLibrary::IsAssetLoaded(AssetHandle handle) const
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
 
     void RuntimeAssetLibrary::UnloadAssets()
     {
+        EK_CORE_PROFILE();
         for (auto&& [handle, asset] : m_loadedAssets)
         {
             asset->Dispose();
@@ -64,6 +70,7 @@ namespace Eklipse
     }
     void RuntimeAssetLibrary::ReloadAssets()
     {
+        EK_CORE_PROFILE();
         Vec<AssetHandle> handlesToLoad;
         for (auto&& [handle, asset] : m_loadedAssets)
         {
@@ -79,6 +86,7 @@ namespace Eklipse
 
     bool RuntimeAssetLibrary::DeserializeAssetRegistry()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Deserializing asset registry...");
 
         auto path = (m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION))).string();

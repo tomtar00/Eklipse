@@ -40,6 +40,7 @@ namespace Eklipse
 
     bool Renderer::Init()
     {
+        EK_CORE_PROFILE();
         RenderCommand::API.reset();
         RenderCommand::API = GraphicsAPI::Create();
         return RenderCommand::API->Init();
@@ -56,6 +57,7 @@ namespace Eklipse
 
     void Renderer::Shutdown()
     {
+        EK_CORE_PROFILE();
         for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
         {
             uniformBuffer->Dispose();
@@ -110,6 +112,7 @@ namespace Eklipse
     }
     void Renderer::RenderScene(Ref<Scene> scene)
     {
+        EK_PROFILE();
         auto camera = scene->GetMainCamera();
         auto cameraTransform = scene->GetMainCameraTransform();
 
@@ -151,10 +154,12 @@ namespace Eklipse
     // Events
     void Renderer::OnWindowResize(uint32_t width, uint32_t height)
     {
+        EK_CORE_PROFILE();
         RenderCommand::API->OnWindowResize(width, height);
     }
     void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
     {
+        EK_CORE_PROFILE();
         if (s_settings.GetMsaaSamples() == numSamples) return;
         s_settings.MsaaSamplesIndex = numSamples >> 1;
 
@@ -169,6 +174,7 @@ namespace Eklipse
     }
     void Renderer::OnVsyncChanged(bool enabled)
     {
+        EK_CORE_PROFILE();
         if (s_settings.Vsync) return;
         s_settings.Vsync = enabled;
 
@@ -198,6 +204,7 @@ namespace Eklipse
     // Uniform buffers
     Ref<UniformBuffer> Renderer::CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding)
     {
+        EK_CORE_PROFILE();
         if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
         {
             return s_uniformBufferCache[uniformBufferName];
@@ -210,6 +217,7 @@ namespace Eklipse
     }
     Ref<UniformBuffer> Renderer::GetUniformBuffer(const String& uniformBufferName)
     {
+        EK_CORE_PROFILE();
         if (s_uniformBufferCache.find(uniformBufferName) != s_uniformBufferCache.end())
         {
             return s_uniformBufferCache[uniformBufferName];
@@ -222,6 +230,7 @@ namespace Eklipse
     // Settings
     void Renderer::SerializeRendererSettings(YAML::Emitter& out)
     {
+        EK_CORE_PROFILE();
         out << YAML::Key << "RendererSettings" << YAML::Value;
         {
             out << YAML::BeginMap;
@@ -232,6 +241,7 @@ namespace Eklipse
     }
     void Renderer::DeserializeRendererSettings(const YAML::Node& data)
     {
+        EK_CORE_PROFILE();
         s_settings.Vsync = TryDeserailize<bool>(data, "Vsync", false);
         OnVsyncChanged(s_settings.Vsync);
 

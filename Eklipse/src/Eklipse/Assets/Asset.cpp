@@ -5,6 +5,8 @@ namespace Eklipse
 {
 	const String Asset::TypeToString(AssetType type)
 	{
+		EK_CORE_PROFILE();
+
 		if (type == AssetType::None)			return "None";
 		else if (type == AssetType::Scene)		return "Scene";
 		else if (type == AssetType::Texture2D)	return "Texture2D";
@@ -15,6 +17,8 @@ namespace Eklipse
 	}
 	AssetType Asset::TypeFromString(const String& assetType)
 	{
+		EK_CORE_PROFILE();
+
 		if (assetType == "None")			return AssetType::None;
 		else if (assetType == "Scene")		return AssetType::Scene;
 		else if (assetType == "Texture2D")	return AssetType::Texture2D;

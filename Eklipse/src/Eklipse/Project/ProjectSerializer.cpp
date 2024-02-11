@@ -19,6 +19,7 @@ namespace Eklipse
 
 	bool ProjectSerializer::Serialize(const Path& filepath)
 	{
+		EK_CORE_PROFILE();
 		EK_ASSERT(m_project, "Project is null!");
 		const auto& config = m_project->GetConfig();
 
@@ -56,6 +57,7 @@ namespace Eklipse
 	}
 	bool ProjectSerializer::Deserialize(const Path& filepath)
 	{
+		EK_CORE_PROFILE();
 		EK_ASSERT(m_project, "Project is null!");
 		auto& config = m_project->GetConfig();
 
@@ -101,6 +103,7 @@ namespace Eklipse
 
 	bool ProjectSerializer::SerializeRuntimeConfig(const RuntimeConfig& runtimeConfig, const Path& filepath)
 	{
+		EK_CORE_PROFILE();
 		auto& runtimeDir = filepath.parent_path();
 		if (runtimeDir.empty())
 			runtimeDir = fs::current_path();
@@ -130,6 +133,7 @@ namespace Eklipse
 	}
 	bool ProjectSerializer::DeserializeRuntimeConfig(RuntimeConfig& runtimeConfig, const Path& filepath)
 	{
+		EK_CORE_PROFILE();
 		YAML::Node data;
 		try
 		{

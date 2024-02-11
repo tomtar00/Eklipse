@@ -11,18 +11,21 @@ namespace Eklipse
 
 	bool Input::IsKeyDown(KeyCode key)
 	{
+		EK_CORE_PROFILE();
 		auto* window = Application::Get().GetWindow()->GetGlfwWindow();
 		auto state = glfwGetKey(window, static_cast<int32_t>(key));
 		return state == GLFW_PRESS;
 	}
 	bool Input::IsMouseButtonDown(MouseCode button)
 	{
+		EK_CORE_PROFILE();
 		auto* window = Application::Get().GetWindow()->GetGlfwWindow();
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS;
 	}
 	glm::vec2 Input::GetMousePosition()
 	{
+		EK_CORE_PROFILE();
 		auto* window = Application::Get().GetWindow()->GetGlfwWindow();
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);

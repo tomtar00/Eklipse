@@ -18,6 +18,7 @@ namespace Eklipse
 
     Ref<Framebuffer> Eklipse::Framebuffer::Create(const FramebufferInfo& framebufferInfo)
     {
+        EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
             case ApiType::Vulkan: return CreateRef<Vulkan::VKFramebuffer>(framebufferInfo);
@@ -29,6 +30,7 @@ namespace Eklipse
 
     void Framebuffer::Resize(uint32_t width, uint32_t height)
     {
+        EK_CORE_PROFILE();
         m_aspectRatio = (float)width / (float)height;
     }
     const float Framebuffer::GetAspectRatio() const

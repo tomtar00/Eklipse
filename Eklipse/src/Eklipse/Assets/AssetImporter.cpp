@@ -11,22 +11,27 @@ namespace Eklipse
 {
     static Ref<Scene> ImportScene(AssetHandle handle, const AssetMetadata& metadata)
     {
+        EK_CORE_PROFILE();
 		return Scene::Load(metadata.FilePath, handle);
 	}
 	static Ref<Texture2D> ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)
 	{
+        EK_CORE_PROFILE();
 		return Texture2D::Create(metadata.FilePath, handle);
 	}
     static Ref<Mesh> ImportMesh(AssetHandle handle, const AssetMetadata& metadata)
     {
+        EK_CORE_PROFILE();
         return Mesh::Create(metadata.FilePath, handle);
     }
     static Ref<Shader> ImportShader(AssetHandle handle, const AssetMetadata& metadata)
     {
+        EK_CORE_PROFILE();
 		return Shader::Create(metadata.FilePath, handle);
 	}
     static Ref<Material> ImportMaterial(AssetHandle handle, const AssetMetadata& metadata)
     {
+        EK_CORE_PROFILE();
 		auto mat = Material::Create(metadata.FilePath, 0);
         mat->Handle = handle;
         return mat;
@@ -44,6 +49,7 @@ namespace Eklipse
 
     Ref<Asset> AssetImporter::ImportAsset(AssetHandle handle, const AssetMetadata& metadata)
     {
+        EK_CORE_PROFILE();
         if (s_assetImportFunctions.find(metadata.Type) == s_assetImportFunctions.end())
         {
             EK_CORE_ERROR("No import function available for asset type: {}", Asset::TypeToString(metadata.Type));

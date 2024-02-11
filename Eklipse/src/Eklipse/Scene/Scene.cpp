@@ -11,6 +11,7 @@ namespace Eklipse
     template<typename... Component>
     static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
     {
+        EK_CORE_PROFILE();
         ([&]()
         {
             auto view = src.view<Component>();
@@ -27,12 +28,14 @@ namespace Eklipse
     template<typename... Component>
     static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
     {
+        EK_CORE_PROFILE();
         CopyComponent<Component...>(dst, src, enttMap);
     }
 
     template<typename... Component>
     static void CopyComponentIfExists(Entity dst, Entity src)
     {
+        EK_CORE_PROFILE();
         ([&]()
         {
             if (src.HasComponent<Component>())
@@ -43,12 +46,14 @@ namespace Eklipse
     template<typename... Component>
     static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
     {
+        EK_CORE_PROFILE();
         CopyComponentIfExists<Component...>(dst, src);
     }
 
     Scene::Scene() { Name = "Default"; }
     Scene::~Scene()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Begin scene '{0}' destruction", Name);
 
         OnSceneStop();
@@ -59,6 +64,7 @@ namespace Eklipse
     // Scene Events
     void Scene::OnSceneStart()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Starting scene '{0}'", Name);
 
         // set main camera
@@ -81,7 +87,7 @@ namespace Eklipse
     }
     void Scene::OnSceneUpdate(float deltaTime)
     {
-        EK_PROFILE();
+        EK_CORE_PROFILE();
 
         try
         {
@@ -98,18 +104,21 @@ namespace Eklipse
     }
     void Scene::OnScenePause()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Pausing scene '{0}'", Name);
 
         EK_CORE_DBG("Scene '{0}' paused", Name);
     }
     void Scene::OnSceneResume()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Resuming scene '{0}'", Name);
 
         EK_CORE_DBG("Scene '{0}' resumed", Name);
     }
     void Scene::OnSceneStop()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Stoping scene '{0}'", Name);
         DestroyAllScripts();
         EK_CORE_DBG("Scene '{0}' stoped", Name);
@@ -118,6 +127,7 @@ namespace Eklipse
     // Scene
     Ref<Scene> Scene::Copy(Scene* other)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Copying scene '{0}'", other->Name);
 
         Ref<Scene> newScene = Scene::New(other->Name);
@@ -193,12 +203,14 @@ namespace Eklipse
     }
     Ref<Scene> Scene::New(const String& name)
     {
+        EK_CORE_PROFILE();
         auto& scene = CreateRef<Scene>();
         scene->Name = name;
         return scene;
     }
     Ref<Scene> Scene::Load(const Path& filePath, const AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Loading scene from '{0}'", filePath.string());
 
         Ref<Scene> scene = Scene::New("");
@@ -216,6 +228,7 @@ namespace Eklipse
     }
     void Scene::Save(Ref<Scene> scene, const Path& filePath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Saving scene '{0}'", scene->Name);
         if (!scene->Serialize(filePath))
         {
@@ -227,6 +240,7 @@ namespace Eklipse
     // Scripts
     void Scene::DestroyAllScripts()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Destroying all scripts on scene '{0}'", Name);
         m_registry.view<ScriptComponent>().each([&](auto entityID, auto& scriptComponent)
         {
@@ -236,6 +250,7 @@ namespace Eklipse
     }
     void Scene::InitializeAllScripts(const Path& filePath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Initializing all scripts on scene '{0}'", Name);
         const ScriptClassMap& scriptClasseMap = ScriptLinker::Get().GetScriptClasses();
 
@@ -264,6 +279,7 @@ namespace Eklipse
     // Components
     void Scene::ApplyAllComponents()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Applying all components on scene '{0}'", Name);
         m_registry.view<MeshComponent>().each([&](auto entityID, auto& meshComponent)
         {
@@ -279,10 +295,12 @@ namespace Eklipse
     // Entity
     Entity Scene::CreateEntity(const String& name)
     {
+        EK_CORE_PROFILE();
         return CreateEntity(UUID(), name);
     }
     Entity Scene::CreateEntity(UUID uuid, const String& name)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Creating entity with ID = {0}, name = {1}", uuid, name);
         Entity entity = { m_registry.create(), this };
         entity.AddComponent<IDComponent>(uuid);
@@ -296,6 +314,7 @@ namespace Eklipse
     }
     Entity Scene::GetEntity(UUID uuid)
     {
+        EK_CORE_PROFILE();
         auto it = m_entityMap.find(uuid);
         if (it != m_entityMap.end())
             return { it->second, this };
@@ -305,6 +324,7 @@ namespace Eklipse
     }
     void Scene::DestroyEntity(Entity entity)
     {
+        EK_CORE_PROFILE();
         String name = entity.GetName();
         UUID uuid = entity.GetUUID();
         EK_CORE_TRACE("Destroying entity with ID = {0}, name = {1}", uuid, name);
@@ -316,6 +336,7 @@ namespace Eklipse
     // Serialization
     bool Scene::Serialize(const Path& filePath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Serializing scene '{0}'...", Name);
 
         YAML::Emitter out;
@@ -338,6 +359,7 @@ namespace Eklipse
     }
     bool Scene::SerializeEntity(Entity entity, YAML::Emitter& out)
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(entity.HasComponent<IDComponent>(), "Tried to serialize entity with no ID!");
 
         out << YAML::BeginMap;
@@ -461,6 +483,7 @@ namespace Eklipse
     }
     bool Scene::Deserialize(const Path& filePath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Deserializing scene...");
 
         YAML::Node data;
@@ -496,6 +519,7 @@ namespace Eklipse
     }
     bool Scene::DeserializeEntity(YAML::Node& entityNode)
     {
+        EK_CORE_PROFILE();
         uint64_t uuid;
         TryDeserailize<uint64_t>(entityNode, "Entity", &uuid);
 
@@ -568,6 +592,7 @@ namespace Eklipse
     }
     bool Scene::DeserializeEveryScriptProperties(const Path& filePath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Deserializing all script properties of scene '{0}'...", Name);
 
         YAML::Node data;
@@ -606,6 +631,7 @@ namespace Eklipse
     }
     bool Scene::DeserializeScriptProperties(Entity entity, YAML::Node& propertiesNode)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Deserializing script properties of entity {0}", entity.GetUUID());
 
         auto& scriptClassMap = ScriptLinker::Get().GetScriptClasses();

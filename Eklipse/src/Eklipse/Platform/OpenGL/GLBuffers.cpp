@@ -13,6 +13,7 @@ namespace Eklipse
 
 		GLVertexBuffer::GLVertexBuffer(const Vec<float>& vertices) : m_id(0)
 		{
+			EK_CORE_PROFILE();
 			m_count = vertices.size();
 			glCreateBuffers(1, &m_id);
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
@@ -20,23 +21,28 @@ namespace Eklipse
 		}
 		GLVertexBuffer::~GLVertexBuffer()
 		{
+			EK_CORE_PROFILE();
 			Dispose();
 		}
 		void GLVertexBuffer::SetData(const void* data, uint32_t size)
 		{
+			EK_CORE_PROFILE();
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 		}
 		void GLVertexBuffer::Bind() const
 		{
+			EK_CORE_PROFILE();
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
 		}
 		void GLVertexBuffer::Unbind() const
 		{
+			EK_CORE_PROFILE();
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 		void GLVertexBuffer::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			glDeleteBuffers(1, &m_id);
 		}
 
@@ -46,6 +52,7 @@ namespace Eklipse
 
 		GLIndexBuffer::GLIndexBuffer(const Vec<uint32_t>& indices) : m_id(0)
 		{
+			EK_CORE_PROFILE();
 			m_count = indices.size();
 			glCreateBuffers(1, &m_id);
 			glBindBuffer(GL_ARRAY_BUFFER, m_id);
@@ -53,18 +60,22 @@ namespace Eklipse
 		}
 		GLIndexBuffer::~GLIndexBuffer()
 		{
+			EK_CORE_PROFILE();
 			Dispose();
 		}
 		void GLIndexBuffer::Bind() const
 		{
+			EK_CORE_PROFILE();
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
 		}
 		void GLIndexBuffer::Unbind() const
 		{
+			EK_CORE_PROFILE();
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 		void GLIndexBuffer::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			glDeleteBuffers(1, &m_id);
 		}
 
@@ -79,20 +90,24 @@ namespace Eklipse
 
 		GLUniformBuffer::GLUniformBuffer(uint32_t size, uint32_t binding) : m_id(0)
 		{
+			EK_CORE_PROFILE();
 			glCreateBuffers(1, &m_id);
 			glNamedBufferData(m_id, size, nullptr, GL_DYNAMIC_DRAW);
 			glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_id);
 		}
 		GLUniformBuffer::~GLUniformBuffer()
 		{
+			EK_CORE_PROFILE();
 			Dispose();
 		}
 		void GLUniformBuffer::Dispose() const
 		{
+			EK_CORE_PROFILE();
 			glDeleteBuffers(1, &m_id);
 		}
 		void GLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 		{
+			EK_CORE_PROFILE();
 			glNamedBufferSubData(m_id, offset, size, data);
 		}
 		void* GLUniformBuffer::GetBuffer() const

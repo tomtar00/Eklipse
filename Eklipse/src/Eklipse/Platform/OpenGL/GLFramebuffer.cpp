@@ -9,6 +9,7 @@ namespace Eklipse
 		GLFramebuffer::GLFramebuffer(const FramebufferInfo& framebufferInfo) 
 			: Framebuffer(framebufferInfo), m_id(0), m_framebufferInfo(framebufferInfo)
 		{
+			EK_CORE_PROFILE();
 			m_aspectRatio = (float)framebufferInfo.width / (float)framebufferInfo.height;
 
 			if (framebufferInfo.isDefaultFramebuffer)
@@ -35,7 +36,7 @@ namespace Eklipse
 
 		void GLFramebuffer::Build()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 
 			glGenFramebuffers(1, &m_id);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
@@ -112,7 +113,7 @@ namespace Eklipse
 		}
 		void GLFramebuffer::Bind()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
@@ -128,13 +129,14 @@ namespace Eklipse
 		}
 		void GLFramebuffer::Unbind()
 		{
-			EK_PROFILE();
+			EK_CORE_PROFILE();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			g_currentFramebuffer = nullptr;
 		}
 		void GLFramebuffer::Resize(uint32_t width, uint32_t height)
 		{
+			EK_CORE_PROFILE();
 			Framebuffer::Resize(width, height);
 
 			// destroy
@@ -147,6 +149,7 @@ namespace Eklipse
 		}
 		void GLFramebuffer::Dispose()
 		{
+			EK_CORE_PROFILE();
 			glDeleteFramebuffers(1, &m_id);
 			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
 

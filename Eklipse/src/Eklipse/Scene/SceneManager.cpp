@@ -15,6 +15,7 @@ namespace Eklipse
 	}
 	void SceneManager::Dispose()
     {
+		EK_CORE_PROFILE();
         s_activeScene.reset();
 		s_activeScene = nullptr;
     }

@@ -27,6 +27,7 @@ namespace Eklipse
 
     Ref<Asset> EditorAssetLibrary::GetAsset(AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Getting asset with handle: {0}", handle);
 
         if (!IsAssetHandleValid(handle))
@@ -51,20 +52,24 @@ namespace Eklipse
     }
     AssetMetadata& EditorAssetLibrary::GetMetadata(AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_assetRegistry.at(handle);
     }
     bool EditorAssetLibrary::IsAssetHandleValid(AssetHandle handle) const
     {
+        EK_CORE_PROFILE();
         return handle != 0 && m_assetRegistry.find(handle) != m_assetRegistry.end();
     }
     bool EditorAssetLibrary::IsAssetLoaded(AssetHandle handle) const
     {
+        EK_CORE_PROFILE();
         EK_ASSERT(IsAssetHandleValid(handle), "Invalid asset handle! ({})", handle);
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
     void EditorAssetLibrary::UnloadAssets()
     {
+        EK_CORE_PROFILE();
         for (auto&& [handle, asset] : m_loadedAssets)
         {
             asset->Dispose();
@@ -74,6 +79,7 @@ namespace Eklipse
     }
     void EditorAssetLibrary::ReloadAssets()
     {
+        EK_CORE_PROFILE();
         Vec<AssetHandle> handlesToLoad;
         for (auto&& [handle, asset] : m_loadedAssets)
         {
@@ -97,6 +103,7 @@ namespace Eklipse
     }
     AssetHandle EditorAssetLibrary::ImportAsset(const Path& filepath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Importing asset: {0}", filepath.string());
 
         AssetHandle handle;
@@ -122,6 +129,7 @@ namespace Eklipse
     }
     AssetHandle EditorAssetLibrary::ImportDefaultMaterial(const Path& filepath, AssetHandle shaderHandle)
     {
+        EK_CORE_PROFILE();
         AssetHandle handle;
         AssetMetadata metadata;
         metadata.FilePath = filepath;
@@ -139,6 +147,7 @@ namespace Eklipse
     }
     void EditorAssetLibrary::RemoveAsset(AssetHandle handle)
     {
+        EK_CORE_PROFILE();
         if (IsAssetHandleValid(handle))
         {
             EK_CORE_TRACE("Removing asset with handle: {0}", handle);
@@ -163,6 +172,7 @@ namespace Eklipse
     }
     AssetHandle EditorAssetLibrary::GetHandleFromAssetPath(const Path& path, bool reqExists) const
     {
+        EK_CORE_PROFILE();
         for (auto&& [handle, metadata] : m_assetRegistry)
         {
             if (reqExists && FileUtilities::ArePathsEqualAndExists(metadata.FilePath, path))
@@ -176,6 +186,7 @@ namespace Eklipse
     }
     void EditorAssetLibrary::Validate()
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Validating asset library...");
 
         bool hasInvalidAssets = false;
@@ -199,6 +210,7 @@ namespace Eklipse
     
     bool EditorAssetLibrary::SerializeAssetRegistry(const AssetRegistry& registry, const Path& filepath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Serializing asset registry...");
 
         YAML::Emitter out;
@@ -227,6 +239,7 @@ namespace Eklipse
     }
     bool EditorAssetLibrary::DeserializeAssetRegistry(AssetRegistry& registry, const Path& filepath)
     {
+        EK_CORE_PROFILE();
         EK_CORE_TRACE("Deserializing asset registry...");
 
         YAML::Node data;
@@ -262,10 +275,12 @@ namespace Eklipse
     }
     bool EditorAssetLibrary::SerializeAssetRegistry()
     {
+        EK_CORE_PROFILE();
         return SerializeAssetRegistry(m_assetRegistry, m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION)));
     }
     bool EditorAssetLibrary::DeserializeAssetRegistry()
     {
+        EK_CORE_PROFILE();
         return DeserializeAssetRegistry(m_assetRegistry, m_assetDirectory / ("assets" + String(EK_REGISTRY_EXTENSION)));
     }
 
@@ -372,6 +387,8 @@ namespace Eklipse
 
     AssetType EditorAssetLibrary::GetAssetTypeFromFileExtension(const String& extension)
     {
+        EK_CORE_PROFILE();
+
         if (extension == EK_SCENE_EXTENSION)    return AssetType::Scene;
         if (extension == EK_MATERIAL_EXTENSION) return AssetType::Material;
         if (extension == EK_SHADER_EXTENSION)   return AssetType::Shader;
@@ -386,6 +403,8 @@ namespace Eklipse
     }
     Vec<String> EditorAssetLibrary::GetAssetFileExtensions(AssetType type)
     {
+        EK_CORE_PROFILE();
+
         if (type == AssetType::Scene)    return { EK_SCENE_EXTENSION };
         if (type == AssetType::Material) return { EK_MATERIAL_EXTENSION };
         if (type == AssetType::Shader)   return { EK_SHADER_EXTENSION };

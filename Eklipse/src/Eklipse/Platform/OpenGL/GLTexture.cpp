@@ -9,6 +9,7 @@ namespace Eklipse
     {
         static GLenum ConvertToGLFormat(ImageFormat format)
         {
+            EK_CORE_PROFILE();
             switch (format)
             {
                 case ImageFormat::RGB8:  return GL_RGB;
@@ -19,6 +20,7 @@ namespace Eklipse
         }
         static GLenum ConvertToInternalGLFormat(ImageFormat format)
         {
+            EK_CORE_PROFILE();
             switch (format)
             {
                 case ImageFormat::RGB8:  return GL_RGB8;
@@ -30,6 +32,7 @@ namespace Eklipse
 
         GLTexture2D::GLTexture2D(const Path& path, const AssetHandle handle) : Texture2D(path, handle)
         {
+            EK_CORE_PROFILE();
             TextureData textureData{};
             if (LoadTextureFromFile(path, textureData))
             {
@@ -40,11 +43,13 @@ namespace Eklipse
         }
         GLTexture2D::GLTexture2D(const TextureInfo& textureInfo) : Texture2D(textureInfo)
         {
+            EK_CORE_PROFILE();
             m_textureInfo = textureInfo;
             Init(m_textureInfo);
         }
         GLTexture2D::GLTexture2D(const TextureData& textureData) : Texture2D(textureData)
         {
+            EK_CORE_PROFILE();
             m_textureInfo = textureData.info;
             Init(m_textureInfo);
             SetData(textureData.data, textureData.size);
@@ -52,6 +57,7 @@ namespace Eklipse
 
         void GLTexture2D::Init(const TextureInfo& textureInfo)
         {
+            EK_CORE_PROFILE();
             m_format = ConvertToGLFormat(textureInfo.imageFormat);
             m_internalFormat = ConvertToInternalGLFormat(textureInfo.imageFormat);
 
@@ -68,6 +74,7 @@ namespace Eklipse
         }
         void GLTexture2D::SetData(void* data, uint32_t size)
         {
+            EK_CORE_PROFILE();
             uint32_t singlePixelSize = FormatToChannels(m_textureInfo.imageFormat);
             uint32_t dataSize = m_textureInfo.width * m_textureInfo.height * singlePixelSize;
             EK_ASSERT((size == dataSize), "Data is not equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
@@ -76,14 +83,17 @@ namespace Eklipse
         }
         void GLTexture2D::Bind() const
         {
+            EK_CORE_PROFILE();
             glBindTexture(GL_TEXTURE_2D, m_id);
         }
         void GLTexture2D::Unbind() const
         {
+            EK_CORE_PROFILE();
             glBindTexture(GL_TEXTURE_2D, 0);
         }
         void GLTexture2D::Dispose()
         {
+            EK_CORE_PROFILE();
             glDeleteTextures(1, &m_id);
         }
     }

@@ -9,6 +9,7 @@ namespace Eklipse
 {
     Ref<VertexArray> Eklipse::VertexArray::Create()
     {
+        EK_CORE_PROFILE();
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {

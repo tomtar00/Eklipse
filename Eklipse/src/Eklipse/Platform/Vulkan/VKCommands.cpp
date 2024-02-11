@@ -14,6 +14,7 @@ namespace Eklipse
 
 		VkCommandPool CreateCommandPool(int queueFamilyIndex, VkCommandPoolCreateFlagBits flags)
 		{
+			EK_CORE_PROFILE();
 			VkCommandPoolCreateInfo poolInfo{};
 			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			poolInfo.flags = flags;
@@ -27,6 +28,7 @@ namespace Eklipse
 		}
 		void CreateCommandBuffers(Vec<VkCommandBuffer>& buffers, int numBuffers, VkCommandPool pool)
 		{
+			EK_CORE_PROFILE();
 			buffers.resize(numBuffers);
 
 			VkCommandBufferAllocateInfo allocInfo{};
@@ -41,6 +43,7 @@ namespace Eklipse
 
 		void FreeCommandBuffers(Vec<VkCommandBuffer>& buffers, VkCommandPool pool)
 		{
+			EK_CORE_PROFILE();
 			for (int i = 0; i < buffers.size(); i++)
 			{
 				vkFreeCommandBuffers(g_logicalDevice, pool, 1, &buffers[i]);
@@ -49,6 +52,7 @@ namespace Eklipse
 
 		void BeginRenderPass(VkRenderPass renderPass, VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent)
 		{
+			EK_CORE_PROFILE();
 			vkResetCommandBuffer(commandBuffer, 0);
 
 			VkCommandBufferBeginInfo beginInfo{};
@@ -91,12 +95,14 @@ namespace Eklipse
 		}
 		void EndRenderPass(VkCommandBuffer commandBuffer)
 		{
+			EK_CORE_PROFILE();
 			vkCmdEndRenderPass(commandBuffer);
 			VkResult res = vkEndCommandBuffer(commandBuffer);
 			HANDLE_VK_RESULT(res, "END COMMAND BUFFER");
 		}
 		void RecordComputeCommandBuffer()
 		{
+			EK_CORE_PROFILE();
 			VkResult res;
 			//vkResetCommandBuffer(g_computeCommandBuffers[g_currentFrame], 0);
 
@@ -120,6 +126,7 @@ namespace Eklipse
 		
 		VkCommandBuffer BeginSingleCommands()
 		{
+			EK_CORE_PROFILE();
 			VkCommandBufferAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -138,6 +145,7 @@ namespace Eklipse
 		}
 		void EndSingleCommands(VkCommandBuffer commandBuffer)
 		{
+			EK_CORE_PROFILE();
 			vkEndCommandBuffer(commandBuffer);
 
 			VkSubmitInfo submitInfo{};

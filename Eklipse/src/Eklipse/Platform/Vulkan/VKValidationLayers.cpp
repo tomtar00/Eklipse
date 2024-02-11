@@ -18,6 +18,7 @@ namespace Eklipse
 
 		void SetupValidationLayers()
 		{
+			EK_CORE_PROFILE();
 			if (!g_validationLayersEnabled) return;
 
 			CheckValidationLayersSupport();
@@ -44,6 +45,7 @@ namespace Eklipse
 		}
 		void CheckValidationLayersSupport()
 		{
+			EK_CORE_PROFILE();
 			if (!g_validationLayersEnabled) return;
 
 			uint32_t layerCount;
@@ -75,6 +77,7 @@ namespace Eklipse
 		}
 		void PopulateInstanceCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo, VkInstanceCreateInfo* createInfo)
 		{
+			EK_CORE_PROFILE();
 			createInfo->enabledLayerCount = static_cast<uint32_t>(g_validationLayers.size());
 			createInfo->ppEnabledLayerNames = g_validationLayers.data();
 			debugCreateInfo.flags = 0;
@@ -87,6 +90,7 @@ namespace Eklipse
 		}
 		VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 		{
+			EK_CORE_PROFILE();
 			switch (messageSeverity)
 			{
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
@@ -114,6 +118,7 @@ namespace Eklipse
 		}
 		void DestroyValidationLayers()
 		{
+			EK_CORE_PROFILE();
 			if (!g_validationLayersEnabled) return;
 
 			auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(g_instance, "vkDestroyDebugUtilsMessengerEXT");

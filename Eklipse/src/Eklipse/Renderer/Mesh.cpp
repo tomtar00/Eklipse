@@ -8,7 +8,7 @@ namespace Eklipse
 {
 	static Ref<VertexArray> LoadOBJ(const Path& filePath)
 	{
-		EK_PROFILE();
+		EK_CORE_PROFILE();
 		tinyobj::attrib_t attrib;
 		Vec<tinyobj::shape_t> shapes;
 		Vec<tinyobj::material_t> materials;
@@ -62,6 +62,7 @@ namespace Eklipse
 
 	Mesh::Mesh(const Path& filePath, const AssetHandle handle)
 	{
+		EK_CORE_PROFILE();
 		Handle = handle;
 		String extension = filePath.extension().string();
 		if (extension == ".obj")
@@ -75,6 +76,7 @@ namespace Eklipse
 	}
 	Mesh::Mesh(const MeshData& data)
 	{
+		EK_CORE_PROFILE();
 		m_vertexArray = VertexArray::Create();
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(data.vertices);
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(data.indices);
@@ -85,15 +87,18 @@ namespace Eklipse
 	}
 	Ref<Mesh> Mesh::Create(const Path& filePath, const AssetHandle handle)
 	{
+		EK_CORE_PROFILE();
 		return CreateRef<Mesh>(filePath, handle);
 	}
 	Ref<Mesh> Mesh::Create(const MeshData& data)
 	{
+		EK_CORE_PROFILE();
 		return CreateRef<Mesh>(data);
 	}
 
 	void Mesh::Dispose()
 	{
+		EK_CORE_PROFILE();
 		EK_CORE_TRACE("Disposing mesh with handle: {0}", Handle);
 	    m_vertexArray->Dispose();
 		EK_CORE_DBG("Mesh disposed with handle: {0}", Handle);

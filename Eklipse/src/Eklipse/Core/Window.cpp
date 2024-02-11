@@ -12,6 +12,7 @@ namespace Eklipse
     }
     Ref<Window> Window::Create(WindowData& data)
     {
+        EK_CORE_PROFILE();
 #ifdef EK_PLATFORM_WINDOWS
         return CreateRef<WindowsWindow>(data);
 #else

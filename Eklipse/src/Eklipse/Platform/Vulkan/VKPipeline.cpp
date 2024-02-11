@@ -25,6 +25,7 @@ namespace Eklipse
             Vec<VkVertexInputBindingDescription> bindingDesc,
             Vec<VkVertexInputAttributeDescription> attribteDesc)
         {
+            EK_CORE_PROFILE();
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDesc.size());
@@ -130,6 +131,7 @@ namespace Eklipse
         }
         VkPipelineLayout CreatePipelineLayout(Vec<VkDescriptorSetLayout> descSetLayouts, Vec<VkPushConstantRange> pushConstantRanges)
         {
+            EK_CORE_PROFILE();
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descSetLayouts.size());
@@ -145,6 +147,7 @@ namespace Eklipse
         }
         VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout* descSetLayout)
         {
+            EK_CORE_PROFILE();
             /*auto& computeShaderCode = Eklipse::ReadFileFromPath(shaderRelPath);
             VkShaderModule computeShaderModule = CreateShaderModule(computeShaderCode);
             VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
@@ -179,6 +182,7 @@ namespace Eklipse
         }
         VkRenderPass CreateRenderPass()
         {
+            EK_CORE_PROFILE();
             VkSampleCountFlagBits msaaSamples = (VkSampleCountFlagBits)Renderer::GetSettings().GetMsaaSamples();
             bool msaaEnabled = msaaSamples != VK_SAMPLE_COUNT_1_BIT;
 
@@ -270,6 +274,7 @@ namespace Eklipse
         }
         VkRenderPass CreateViewportRenderPass()
         {
+            EK_CORE_PROFILE();
             std::array<VkAttachmentDescription, 2> attachments = {};
             // Color attachment
             attachments[0].format = g_swapChainImageFormat;
@@ -341,6 +346,7 @@ namespace Eklipse
         }
         VkRenderPass CreateImGuiRenderPass()
         {
+            EK_CORE_PROFILE();
             VkAttachmentDescription attachment = {};
             attachment.format = g_swapChainImageFormat;
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
