@@ -257,16 +257,16 @@ namespace Eklipse
         void VulkanAPI::Submit()
         {
             EK_CORE_PROFILE();
-            std::array<VkSemaphore, 1> waitSemaphores = { /*m_computeFinishedSemaphores[m_currentFrameInFlightIndex],*/ m_imageAvailableSemaphores[g_currentFrame] };
-            std::array<VkPipelineStageFlags, 1> waitStages = { /*VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+            std::array<VkSemaphore, 1> waitSemaphores = { m_imageAvailableSemaphores[g_currentFrame] };
+            std::array<VkPipelineStageFlags, 1> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
             std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
             Vec<VkCommandBuffer> commandBuffers{};
 
-            commandBuffers.push_back(m_defaultFramebuffer->GetCommandBuffer(g_currentFrame));
             for (auto& framebuffer : g_VKOffScreenFramebuffers)
             {
                 commandBuffers.push_back(framebuffer->GetCommandBuffer(g_currentFrame));
             }
+            commandBuffers.push_back(m_defaultFramebuffer->GetCommandBuffer(g_currentFrame));
 
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

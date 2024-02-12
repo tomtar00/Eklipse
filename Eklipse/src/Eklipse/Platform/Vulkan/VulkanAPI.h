@@ -40,8 +40,9 @@ namespace Eklipse
 			Ref<VKFramebuffer> m_defaultFramebuffer;
 
 			Vec<VkSemaphore> m_imageAvailableSemaphores{};
-			Vec<VkSemaphore> m_renderFinishedSemaphores{};
+
 			Vec<VkFence> m_renderInFlightFences{};
+			Vec<VkSemaphore> m_renderFinishedSemaphores{};
 
 			Vec<VkFence> m_computeInFlightFences{};
 			Vec<VkSemaphore> m_computeFinishedSemaphores{};

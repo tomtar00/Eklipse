@@ -256,7 +256,6 @@ namespace Eklipse
         void VKFramebuffer::Resize(uint32_t width, uint32_t height)
         {
             EK_CORE_PROFILE();
-            m_imageIndex = 0;
 
             Framebuffer::Resize(width, height);
 
