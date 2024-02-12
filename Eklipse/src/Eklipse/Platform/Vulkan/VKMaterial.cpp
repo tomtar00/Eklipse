@@ -49,6 +49,13 @@ namespace Eklipse
 			Dispose();
 			CreateDescriptorSets();
 		}
+
+		void VKMaterial::SetShader(AssetHandle shaderHandle)
+		{
+			EK_CORE_PROFILE();
+            Material::SetShader(shaderHandle);
+            m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
+		}
 		
 		void VKMaterial::CreateDescriptorSets()
 		{

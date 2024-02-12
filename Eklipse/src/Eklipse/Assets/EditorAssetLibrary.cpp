@@ -10,8 +10,6 @@
 
 namespace Eklipse
 {
-    
-
     EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) 
         : m_shaderReloadPending(false), m_assetDirectory(assetDirectory)
     {
@@ -358,6 +356,7 @@ namespace Eklipse
                 Application::Get().SubmitToMainThread([&, absolutePath]()
                 {
                     m_renamedAssetHandle = GetHandleFromAssetPath(absolutePath);
+                    // TODO: what if the path is directory?
                 });
             }
             break;
@@ -371,7 +370,7 @@ namespace Eklipse
                         Ref<Asset> asset = GetAsset(m_renamedAssetHandle);
                         if (asset)
                         {
-                            asset->Name = absolutePath.filename().string();
+                            asset->Name = absolutePath.stem().string();
                             GetMetadata(m_renamedAssetHandle).FilePath = absolutePath;
                             SerializeAssetRegistry();
                         }

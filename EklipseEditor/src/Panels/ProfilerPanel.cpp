@@ -27,7 +27,7 @@ namespace Eklipse
         float spacingY = 5.0f;
 
         drawList->AddRectFilled(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }, 0x55555555);
-        if (ImGui::IsMouseHoveringRect(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }))
+        if (ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(graphPos, { graphPos.x + graphSize.x, graphPos.y + graphSize.y }))
         {
             ImVec2 mouseLocalPos = ImGui::GetMousePos() - graphPos;
             int frameIdx = (int)(mouseLocalPos.x / barWidth);
@@ -224,41 +224,44 @@ namespace Eklipse
             }
         }
 
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        auto size = ImGui::GetContentRegionAvail();
-        auto pos = ImGui::GetCursorScreenPos();
-        static float labelWidth = 80.0f;
-        static float graphHeight = 200.0f;
-        DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetData());
-
-        ImGui::SetCursorPos({ 8.0f, graphHeight + 65.0f });
-        if (ImGui::BeginTable("Profiler", 4, ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        if (Profiler::Enabled)
         {
-            ImGui::TableSetupColumn("Method", ImGuiTableColumnFlags_WidthStretch, 4.0f);
-            ImGui::TableSetupColumn("Thread", ImGuiTableColumnFlags_WidthStretch, 1.0f);
-            ImGui::TableSetupColumn("Calls", ImGuiTableColumnFlags_WidthStretch, 1.0f);
-            ImGui::TableSetupColumn("Time (ms)", ImGuiTableColumnFlags_WidthStretch, 1.0f);
-            ImGui::TableHeadersRow();
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+            auto size = ImGui::GetContentRegionAvail();
+            auto pos = ImGui::GetCursorScreenPos();
+            static float labelWidth = 80.0f;
+            static float graphHeight = 200.0f;
+            DrawGraph(drawList, pos, { size.x - labelWidth, graphHeight }, labelWidth, Profiler::GetData());
 
-            auto sortSpec = ImGui::TableGetSortSpecs();
-            if (sortSpec != nullptr && sortSpec->SpecsDirty)
+            ImGui::SetCursorPos({ 8.0f, graphHeight + 65.0f });
+            if (ImGui::BeginTable("Profiler", 4, ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
-                m_columnIndex = sortSpec->Specs->ColumnIndex;
-                m_ascendingSort = sortSpec->Specs->SortDirection == ImGuiSortDirection_Ascending;
-                sortSpec->SpecsDirty = false;
-            }
+                ImGui::TableSetupColumn("Method", ImGuiTableColumnFlags_WidthStretch, 4.0f);
+                ImGui::TableSetupColumn("Thread", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+                ImGui::TableSetupColumn("Calls", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+                ImGui::TableSetupColumn("Time (ms)", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+                ImGui::TableHeadersRow();
 
-            static uint32_t i = 0;
-            if (SelectedFrameIdx >= 0 && SelectedFrameIdx < MAX_PROFILED_FRAMES)
-            {
-                DrawTable(0.0f, Profiler::GetData()[SelectedFrameIdx].ProfileNodes, m_ascendingSort, m_columnIndex, i);
-            }
-            else
-            {
-                DrawTable(0.0f, Profiler::GetData().back().ProfileNodes, m_ascendingSort, m_columnIndex, i);
-            }
+                auto sortSpec = ImGui::TableGetSortSpecs();
+                if (sortSpec != nullptr && sortSpec->SpecsDirty)
+                {
+                    m_columnIndex = sortSpec->Specs->ColumnIndex;
+                    m_ascendingSort = sortSpec->Specs->SortDirection == ImGuiSortDirection_Ascending;
+                    sortSpec->SpecsDirty = false;
+                }
 
-            ImGui::EndTable();
+                static uint32_t i = 0;
+                if (SelectedFrameIdx >= 0 && SelectedFrameIdx < MAX_PROFILED_FRAMES)
+                {
+                    DrawTable(0.0f, Profiler::GetData()[SelectedFrameIdx].ProfileNodes, m_ascendingSort, m_columnIndex, i);
+                }
+                else
+                {
+                    DrawTable(0.0f, Profiler::GetData().back().ProfileNodes, m_ascendingSort, m_columnIndex, i);
+                }
+
+                ImGui::EndTable();
+            }
         }
 
         ImGui::End();

@@ -18,6 +18,8 @@ namespace Eklipse
 			virtual void Dispose() override;
 			virtual void ApplyChanges() override;
 
+			virtual void SetShader(AssetHandle shaderHandle) override;
+
 		private:
 			void CreateDescriptorSets();
 

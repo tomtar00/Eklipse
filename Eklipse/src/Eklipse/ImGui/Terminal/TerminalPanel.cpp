@@ -55,6 +55,7 @@ namespace Eklipse
 
         ImGui::SameLine();
 
+        ImGui::PushItemWidth(100.0f);
         if (ImGui::BeginCombo("Level", m_terminal.GetLevelString().c_str()))
 		{
             static Vec<spdlog::level::level_enum> levels = { spdlog::level::trace, spdlog::level::debug, spdlog::level::info, spdlog::level::warn, spdlog::level::err, spdlog::level::critical, spdlog::level::off };
@@ -68,6 +69,7 @@ namespace Eklipse
 			}
 			ImGui::EndCombo();
 		}
+        ImGui::PopItemWidth();
 
         const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + 22;
         if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))

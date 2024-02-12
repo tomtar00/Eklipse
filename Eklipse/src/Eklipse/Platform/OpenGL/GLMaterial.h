@@ -14,6 +14,8 @@ namespace Eklipse
 			virtual void Bind() override;
 			virtual void Dispose() override;
 
+			virtual void SetShader(AssetHandle shaderHandle) override;
+
 		private:
 			Ref<GLShader> m_glShader;
 		};

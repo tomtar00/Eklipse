@@ -43,7 +43,7 @@ namespace Eklipse
 			ImGuizmo::DrawGrid(viewMatrix, projMatrix, glm::value_ptr(glm::mat4(1.0f)), 10.0f);
 
 			ImGui::SetCursorPos({ 0, 30.0f });
-			ImGui::Indent(2.0f);
+			ImGui::Indent(5.0f);
 			static int operation = 0;
 			if (ImGui::RadioButton("Translate [Q]", &operation, 0) || (Input::IsKeyDown(KeyCode::Q) && viewportHovered))
 			{
@@ -72,7 +72,7 @@ namespace Eklipse
 				m_gizmoMode = ImGuizmo::LOCAL;
 				mode = 1;
 			}
-			ImGui::Unindent(2.0f);
+			ImGui::Unindent(5.0f);
 
 			// Gizmos
 			if (EditorLayer::Get().SelectionInfo.type == SelectionType::ENTITY)

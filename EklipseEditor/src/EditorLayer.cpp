@@ -32,8 +32,8 @@ namespace Eklipse
             { "Settings",	ImGuiDir_Down,	Dir_Same,		0.60f },
             { "Stats",		ImGuiDir_Down,	Dir_Same,		0.50f },
             { "Details",	ImGuiDir_Right,	Dir_Opposite,	0.25f },
-            { "Profiler",	ImGuiDir_Down,	Dir_Opposite,	0.30f },
-            { "Files",		ImGuiDir_Down,	Dir_Stack,		1.00f },
+            { "Files",		ImGuiDir_Down,	Dir_Opposite,	0.30f },
+            { "Profiler",	ImGuiDir_Down,	Dir_Stack,	    0.30f },
             { "Terminal",	ImGuiDir_Right,	Dir_Same,		0.50f },
             { "View",		ImGuiDir_Up,	Dir_Rest,		0.50f },
             { "Debug",		ImGuiDir_Down,	Dir_Stack,		0.50f }

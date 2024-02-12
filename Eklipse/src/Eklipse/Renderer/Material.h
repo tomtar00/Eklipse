@@ -48,7 +48,8 @@ namespace Eklipse
         virtual void Bind();
         virtual void ApplyChanges();
 
-        void SetShader(AssetHandle shaderHandle);
+        virtual void SetShader(AssetHandle shaderHandle);
+        
         void OnShaderReloaded();
         bool Serialize(const Path& path);
         bool Deserialize(const Path& path);

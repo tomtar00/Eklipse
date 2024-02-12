@@ -5,7 +5,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <Eklipse/Assets/Asset.h>
 
-#define EK_PROPERTY_WIDTH 100.0f
+#define EK_PROPERTY_WIDTH 150.0f
 
 namespace ImGui
 {
@@ -23,12 +23,17 @@ namespace ImGui
     {
         ImGui::PushID(id);
         ImGui::Columns(2);
-        ImGui::SetColumnWidth(0, EK_PROPERTY_WIDTH);
+
+        float labelWidth = ImGui::CalcTextSize(label).x + 20.0f;
+        ImGui::SetColumnWidth(0, std::max(EK_PROPERTY_WIDTH, labelWidth));
         ImGui::Text(label);
         ImGui::NextColumn();
 
         if (fullWidth)
-            ImGui::PushItemWidth(-FLT_MIN);
+        {
+            float width = ImGui::GetContentRegionAvail().x;
+            ImGui::PushItemWidth(width);
+        }
 
         function();
 

@@ -30,7 +30,7 @@ namespace Eklipse
 						void* data = m_pushConstants.at(pushConstant.name).dataPointers.at(member.name).data;
 						switch (member.type)
 						{
-							//case DataType::BOOL:	glUniform1iv(location, 1, (int*)data);						break;
+							//case DataType::BOOL:			glUniform1iv(location, 1, (int*)data);						break;
 							case ShaderDataType::INT:		glUniform1iv(location, 1, (int*)data);						break;
 							case ShaderDataType::INT2:		glUniform2iv(location, 1, (int*)data);						break;
 							case ShaderDataType::INT3:		glUniform3iv(location, 1, (int*)data);						break;
@@ -61,6 +61,12 @@ namespace Eklipse
 		}
 		void GLMaterial::Dispose()
 		{	
+		}
+		void GLMaterial::SetShader(AssetHandle shaderHandle)
+		{
+			EK_CORE_PROFILE();
+            Material::SetShader(shaderHandle);
+            m_glShader = std::static_pointer_cast<GLShader>(m_shader);
 		}
 	}
 }

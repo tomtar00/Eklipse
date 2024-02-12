@@ -123,9 +123,13 @@ namespace Eklipse
                 {
                     ImGui::SetClipboardText((m_currentPath / filename).string().c_str());
                 }
-                if (ImGui::Selectable("Rename"))
+                if (!FileUtilities::IsPathDirectory(path) && ImGui::Selectable("Rename"))
                 {
                     renamedPath = path;
+                }
+                if (!FileUtilities::IsPathDirectory(path) && ImGui::Selectable("Delete"))
+                {
+                    fs::remove(path);
                 }
                 ImGui::EndPopup();
             }
@@ -191,20 +195,22 @@ namespace Eklipse
         //ImGui::SliderFloat("Thumbnail Size", &thumbnailSize, 16, 128);
 
         // Right click menu
-        static char* popupName = nullptr;
+        static bool openCreateFolderPopup = false;
+        static bool openCreateShaderPopup = false;
+        static bool openCreateMaterialPopup = false;
         if (ImGui::BeginPopupContextWindow("Create", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight))
         {
             if (ImGui::MenuItem("Create Folder"))
             {
-                popupName = "Create New Folder";
+                openCreateFolderPopup = true;
             }
             if (ImGui::MenuItem("Create Shader"))
             {
-                popupName = "Create New Shader";
+                openCreateShaderPopup = true;
             }
             if (ImGui::MenuItem("Create Material"))
             {
-                popupName = "Create New Material";
+                openCreateMaterialPopup = true;
             }
             if (ImGui::MenuItem("Import Asset"))
             {
@@ -216,18 +222,20 @@ namespace Eklipse
 
         // Popups creation
         {
-            if (popupName != nullptr)
-            {
-                ImGui::OpenPopup(popupName);
-                popupName = nullptr;
-            }
-
             // create folder
-            if (ImGui::BeginPopupModal("Create New Folder", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            if (openCreateFolderPopup)
+            {
+                ImGui::OpenPopup("Create New Folder");
+                openCreateFolderPopup = false;
+                ImGui::SetNextWindowSize({500, 100});
+            }
+            if (ImGui::BeginPopupModal("Create New Folder", nullptr, ImGuiWindowFlags_NoResize))
             {
                 static String folderName = "NewFolder";
 
-                ImGui::InputText("Folder Name", &folderName);
+                ImGui::DrawProperty("folder_name", "Folder Name", [&]() {
+                    ImGui::InputText("##folderName", &folderName);
+                });
 
                 if (ImGui::Button("Create") && !folderName.empty())
                 {
@@ -242,12 +250,21 @@ namespace Eklipse
                 ImGui::EndPopup();
             }
 
-            if (ImGui::BeginPopupModal("Create New Shader", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            // create shader
+            if (openCreateShaderPopup)
+            {
+                ImGui::OpenPopup("Create New Shader");
+                openCreateShaderPopup = false;
+                ImGui::SetNextWindowSize({ 500, 150 });
+            }
+            if (ImGui::BeginPopupModal("Create New Shader", nullptr, ImGuiWindowFlags_NoResize))
             {
                 static String shaderName = "NewShader";
                 static int templateOption = true;
 
-                ImGui::InputText("Shader Name", &shaderName);
+                ImGui::DrawProperty("shader_name", "Shader Name", [&]() {
+                    ImGui::InputText("##shaderName", &shaderName);
+                });
                 ImGui::RadioButton("3D", &templateOption, 0);
                 ImGui::SameLine();
                 ImGui::RadioButton("2D", &templateOption, 1);
@@ -264,14 +281,21 @@ namespace Eklipse
                 ImGui::EndPopup();
             }
 
-            if (ImGui::BeginPopupModal("Create New Material", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            // create material
+            if (openCreateMaterialPopup)
+            {
+                ImGui::OpenPopup("Create New Material");
+                openCreateMaterialPopup = false;
+                ImGui::SetNextWindowSize({ 500, 150 });
+            }
+            if (ImGui::BeginPopupModal("Create New Material", nullptr, ImGuiWindowFlags_NoResize))
             {
                 static String materialName = "NewMaterial";
                 static AssetHandle shaderHandle = 0;
 
-                ImGui::TextUnformatted("Material Name");
-                ImGui::SameLine();
-                ImGui::InputText("##materialName", &materialName);
+                ImGui::DrawProperty("material_name", "Material Name", [&]() {
+                    ImGui::InputText("##materialName", &materialName);
+                });                
                 ImGui::InputAsset("##shaderid", "Shader", AssetType::Shader, shaderHandle);
 
                 if (ImGui::Button("Create") && CreateMaterial(materialName, shaderHandle))

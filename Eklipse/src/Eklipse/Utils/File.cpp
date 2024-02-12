@@ -84,6 +84,16 @@ namespace Eklipse
  //       return IsValid() && hasExtension;
  //   }
 
+    static String PlatformString(const Path& path)
+    {
+#ifdef EK_PLATFORM_WINDOWS
+        std::string generic_string = path.string();
+        std::replace(generic_string.begin(), generic_string.end(), '/', '\\');
+        return generic_string;
+#endif
+        return path.string();
+    }
+
     bool FileUtilities::IsPathFile(const Path& path)
     {
         EK_CORE_PROFILE();
@@ -183,7 +193,8 @@ namespace Eklipse
         }
 
         nfdchar_t* outPath = nullptr;
-        nfdresult_t result = NFD_OpenDialog(exts.empty() ? nullptr : exts.c_str(), path.string().c_str(), &outPath);
+        String pathStr = PlatformString(path);
+        nfdresult_t result = NFD_OpenDialog(exts.empty() ? nullptr : exts.c_str(), pathStr.c_str(), &outPath);
 
         FileDialogResult res{};
         if (result == NFD_CANCEL)
@@ -193,7 +204,7 @@ namespace Eklipse
         }
         else if (result == NFD_OKAY)
         {
-            res.path = String(outPath);
+            res.path = Path(outPath);
             res.type = FileDialogResultType::SUCCESS;
         }
         else
@@ -225,7 +236,8 @@ namespace Eklipse
     {
         EK_CORE_PROFILE();
         nfdchar_t* outPath = nullptr;
-        nfdresult_t result = NFD_PickFolder(path.string().c_str(), &outPath);
+        String pathStr = PlatformString(path);
+        nfdresult_t result = NFD_PickFolder(pathStr.c_str(), &outPath);
 
         FileDialogResult res{};
         if (result == NFD_CANCEL)
@@ -235,7 +247,7 @@ namespace Eklipse
         }
         else if (result == NFD_OKAY)
         {
-            res.path = String(outPath);
+            res.path = Path(outPath);
             res.type = FileDialogResultType::SUCCESS;
         }
         else

@@ -68,7 +68,9 @@ namespace Eklipse
 #ifdef EK_DEBUG
         // ID
         {
-            ImGui::Text("ID: %llu", entity.GetUUID());
+            ImGui::DrawProperty("id", "ID", [&]() {
+                ImGui::Text("%llu", entity.GetUUID());
+            });
         }
 #endif
 
