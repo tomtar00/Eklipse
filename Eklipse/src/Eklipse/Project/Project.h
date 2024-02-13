@@ -16,7 +16,6 @@ namespace Eklipse
 	struct ProjectConfig
 	{
 		String name;
-		String configuration;
 		Path projectDir;
 
 		// assets

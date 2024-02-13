@@ -83,6 +83,7 @@ namespace Eklipse
 
 #define EK_PROFILE_NAME(name)	Eklipse::ProfilerTimer timer(name)
 #define EK_PROFILE()			EK_PROFILE_NAME(EK_FUNC_SIG)
+#define EK_PROFILE_END_FRAME()	Eklipse::Profiler::Submit(deltaTime)
 
 #ifdef EK_DEBUG
     #define EK_CORE_PROFILE_NAME(name)	Eklipse::ProfilerTimer timer(name)
@@ -90,14 +91,10 @@ namespace Eklipse
 
     #define EK_PROFILE_BEGIN(name)	Eklipse::Profiler::Begin(name)
     #define EK_PROFILE_END()		Eklipse::Profiler::End()
-
-    #define EK_PROFILE_END_FRAME()	Eklipse::Profiler::Submit(deltaTime)
 #else
     #define EK_CORE_PROFILE_NAME(name)
-    #define EK_CORE_PROFILE()	
+    #define EK_CORE_PROFILE()
 
     #define EK_PROFILE_BEGIN(name)
     #define EK_PROFILE_END()
-
-    #define EK_PROFILE_END_FRAME()
 #endif

@@ -31,3 +31,8 @@ void EklipseEngine::LogError(const std::string& message, ...)
 
     //va_end(args);
 }
+
+void EklipseEngine::SetCursorMode(CursorMode mode)
+{
+    return Eklipse::Application::Get().GetWindow()->SetCursorMode((Eklipse::CursorMode)(int)mode);
+}

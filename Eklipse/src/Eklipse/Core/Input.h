@@ -165,8 +165,7 @@ namespace Eklipse
 		static bool IsKeyDown(KeyCode key);
 		static bool IsMouseButtonDown(MouseCode button);
 		static glm::vec2 GetMousePosition();
-		static float GetMouseDeltaX();
-		static float GetMouseDeltaY();
+		static glm::vec2 GetMouseDelta();
 		static float GetScrollValue();
 		static bool IsScrollingUp();
 		static bool IsScrollingDown();
@@ -175,6 +174,7 @@ namespace Eklipse
 		static void Reset();
 
 	private:
+		static glm::vec2 m_lastMousePosition;
 		static glm::vec2 m_mousePosition;
 		static glm::vec2 m_mouseScrollDelta;
 	};

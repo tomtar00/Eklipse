@@ -46,8 +46,6 @@ project "EklipseEditor"
 
 	defines
 	{
-		"EK_ENABLE_ASSERTS",
-
         "_CRT_SECURE_NO_WARNINGS",
         "YAML_CPP_STATIC_DEFINE",
 		"SPDLOG_COMPILED_LIB"
@@ -68,16 +66,30 @@ project "EklipseEditor"
 		}
 
 	filter "configurations:Debug"
-		defines "EK_DEBUG"
 		runtime "Debug"
 		symbols "On"
 
+        defines
+	    {
+            "EK_DEBUG",
+		    "EK_ENABLE_ASSERTS"
+	    }
+
 	filter "configurations:Release"
-		defines "EK_RELEASE"
 		runtime "Release"
 		optimize "On"
 
+        defines
+	    {
+            "EK_RELEASE",
+		    "EK_ENABLE_ASSERTS"
+	    }
+
 	filter "configurations:Dist"
-		defines "EK_DIST"
 		runtime "Release"
 		optimize "On"
+
+        defines 
+        {
+            "EK_DIST"
+        }

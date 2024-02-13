@@ -16,13 +16,9 @@ namespace EklipseEngine
 	{
 		return Eklipse::Input::GetMousePosition();
 	}
-	float Input::GetMouseDeltaX()
+	glm::vec2 Input::GetMouseDelta()
 	{
-		return Eklipse::Input::GetMouseDeltaX();
-	}
-	float Input::GetMouseDeltaY()
-	{
-		return Eklipse::Input::GetMouseDeltaY();
+		return Eklipse::Input::GetMouseDelta();
 	}
 	float Input::GetScrollValue()
 	{

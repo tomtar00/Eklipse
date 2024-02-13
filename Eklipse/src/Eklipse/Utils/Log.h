@@ -61,15 +61,15 @@ namespace Eklipse
 #elif EK_DIST
 	#define EK_CORE_TRACE(...)
 	#define EK_CORE_DBG(...)
-	#define EK_CORE_INFO(...)
-	#define EK_CORE_WARN(...)
-	#define EK_CORE_ERROR(...)
-	#define EK_CORE_CRITICAL(...)
+	#define EK_CORE_INFO(...)        SPDLOG_LOGGER_INFO(Eklipse::Log::coreLogger(), __VA_ARGS__)
+	#define EK_CORE_WARN(...)		 SPDLOG_LOGGER_WARN(Eklipse::Log::coreLogger(), __VA_ARGS__)
+	#define EK_CORE_ERROR(...)		 SPDLOG_LOGGER_ERROR(Eklipse::Log::coreLogger(), __VA_ARGS__)
+	#define EK_CORE_CRITICAL(...)	 SPDLOG_LOGGER_CRITICAL(Eklipse::Log::coreLogger(), __VA_ARGS__)
 	
 	#define EK_TRACE(...)	
 	#define EK_DBG(...)
-	#define EK_INFO(...)
-	#define EK_WARN(...)
-	#define EK_ERROR(...)
-	#define EK_CRITICAL(...)
+	#define EK_INFO(...)		SPDLOG_LOGGER_INFO(Eklipse::Log::clientLogger(), __VA_ARGS__)
+	#define EK_WARN(...)		SPDLOG_LOGGER_WARN(Eklipse::Log::clientLogger(), __VA_ARGS__)
+	#define EK_ERROR(...)		SPDLOG_LOGGER_ERROR(Eklipse::Log::clientLogger(), __VA_ARGS__)
+	#define EK_CRITICAL(...)	SPDLOG_LOGGER_CRITICAL(Eklipse::Log::clientLogger(), __VA_ARGS__)
 #endif

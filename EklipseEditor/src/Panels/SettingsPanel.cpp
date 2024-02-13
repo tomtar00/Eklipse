@@ -29,6 +29,12 @@ namespace Eklipse
 				}
             });
 			ImGui::InputDirPath("Project", "Projects Path", EditorLayer::Get().GetSettings().projectsPath);
+			ImGui::DrawProperty("camera_rotation_speed", "Camera Rotation Speed", [&]() {
+                ImGui::InputFloat("##CameraRotationSpeed", &EditorLayer::Get().GetSettings().editorCameraRotationSpeed);
+            });
+			ImGui::DrawProperty("camera_drag_speed", "Camera Drag Speed", [&]() {
+                ImGui::InputFloat("##CameraDragSpeed", &EditorLayer::Get().GetSettings().editorCameraDragSpeed);
+            });
 		}
 
 		if (Project::GetActive())

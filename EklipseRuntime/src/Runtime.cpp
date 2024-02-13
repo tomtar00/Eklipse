@@ -1,5 +1,6 @@
 #define EK_PROFILE_NAME(name)	
-#define EK_PROFILE()			
+#define EK_PROFILE()	
+#define EK_PROFILE_END_FRAME()
 
 #include <Eklipse.h>
 #include <Eklipse/Core/EntryPoint.h>

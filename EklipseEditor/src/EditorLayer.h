@@ -25,6 +25,8 @@ namespace Eklipse
 		// === Preferences ===
 		Theme theme;
 		Path projectsPath;
+		float editorCameraRotationSpeed = 50.0f;
+		float editorCameraDragSpeed = 3.0f;
 
 		// === Project Registry ===
 		std::unordered_map<ProjectHandle, ProjectMetadata> projectRegistry;

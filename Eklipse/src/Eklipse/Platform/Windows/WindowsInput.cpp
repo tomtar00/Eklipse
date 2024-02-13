@@ -6,6 +6,7 @@
 
 namespace Eklipse
 {
+	glm::vec2 Input::m_lastMousePosition = { 0.0f, 0.0f };
 	glm::vec2 Input::m_mousePosition = { 0.0f, 0.0f };
 	glm::vec2 Input::m_mouseScrollDelta = { 0.0f, 0.0f };
 
@@ -25,19 +26,17 @@ namespace Eklipse
 	}
 	glm::vec2 Input::GetMousePosition()
 	{
-		EK_CORE_PROFILE();
+		/*EK_CORE_PROFILE();
 		auto* window = Application::Get().GetWindow()->GetGlfwWindow();
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		return { (float)xpos, (float)ypos };
+		return { (float)xpos, (float)ypos };*/
+
+		return m_mousePosition;
 	}
-	float Input::GetMouseDeltaX()
+	glm::vec2 Input::GetMouseDelta()
 	{
-		return m_mousePosition.x - GetMousePosition().x;
-	}
-	float Input::GetMouseDeltaY()
-	{
-		return m_mousePosition.y - GetMousePosition().y;
+		return GetMousePosition() - m_lastMousePosition;
 	}
 	float Input::GetScrollValue()
 	{
@@ -53,6 +52,7 @@ namespace Eklipse
 	}
 	void Input::Reset()
 	{
-		m_mouseScrollDelta = { 0.f, 0.f };
+		m_mouseScrollDelta = { 0.0f, 0.0f };
+		m_lastMousePosition = m_mousePosition;
 	}
 }

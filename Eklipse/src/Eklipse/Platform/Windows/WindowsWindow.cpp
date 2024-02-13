@@ -180,7 +180,6 @@ namespace Eklipse
 	void WindowsWindow::SwapBuffers()
 	{
 		EK_CORE_PROFILE();
-
 		glfwSwapBuffers(m_window);
 	}
 	void WindowsWindow::WaitEvents()
@@ -205,6 +204,28 @@ namespace Eklipse
 	bool WindowsWindow::IsMaximized()
 	{
 	    return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED);
+	}
+	void WindowsWindow::SetCursorMode(CursorMode mode)
+	{
+		EK_CORE_PROFILE();
+        switch (mode)
+        {
+            case CursorMode::Normal:
+            {
+                glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                break;
+            }
+            case CursorMode::Hidden:
+            {
+                glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                break;
+            }
+            case CursorMode::Disabled:
+            {
+                glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                break;
+            }
+        }
 	}
 	GLFWwindow* WindowsWindow::GetGlfwWindow()
 	{

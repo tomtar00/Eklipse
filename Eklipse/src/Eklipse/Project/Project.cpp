@@ -101,7 +101,6 @@ namespace Eklipse
 		String defaultSceneName = "Untitled";
 
 		config.name = name;
-		config.configuration = "Debug";
 		config.projectDir = projectDirectory;
 
 		config.assetsDirectoryPath = config.projectDir / "Assets";

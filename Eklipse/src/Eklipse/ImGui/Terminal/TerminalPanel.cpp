@@ -58,8 +58,16 @@ namespace Eklipse
         ImGui::PushItemWidth(100.0f);
         if (ImGui::BeginCombo("Level", m_terminal.GetLevelString().c_str()))
 		{
+#ifdef EK_DEBUG
             static Vec<spdlog::level::level_enum> levels = { spdlog::level::trace, spdlog::level::debug, spdlog::level::info, spdlog::level::warn, spdlog::level::err, spdlog::level::critical, spdlog::level::off };
             static Vec<const char*> levelStrings = { "Trace", "Debug", "Info", "Warn", "Error", "Critical", "Off"};
+#elif EK_RELEASE
+            static Vec<spdlog::level::level_enum> levels = { spdlog::level::debug, spdlog::level::info, spdlog::level::warn, spdlog::level::err, spdlog::level::critical, spdlog::level::off };
+            static Vec<const char*> levelStrings = { "Debug", "Info", "Warn", "Error", "Critical", "Off"};
+#elif EK_DIST
+            static Vec<spdlog::level::level_enum> levels = { spdlog::level::info, spdlog::level::warn, spdlog::level::err, spdlog::level::critical, spdlog::level::off };
+            static Vec<const char*> levelStrings = { "Info", "Warn", "Error", "Critical", "Off" };
+#endif
 			for (int i = 0; i < levels.size(); i++)
 			{
 				if (ImGui::Selectable(levelStrings[i], m_terminal.GetLevel() == levels[i]))

@@ -21,6 +21,7 @@ namespace Eklipse
 		virtual void SetTitle(const char* title) override;
 		virtual void Maximize() override;
 		virtual bool IsMaximized() override;
+		virtual void SetCursorMode(CursorMode mode) override;
 
 	private:
 		inline static bool s_glfwInitialized = false;

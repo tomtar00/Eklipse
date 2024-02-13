@@ -20,4 +20,12 @@ namespace EklipseEngine
 	EK_SCRIPT_API void Log(const std::string& message, ...);
 	EK_SCRIPT_API void LogWarn(const std::string& message, ...);
 	EK_SCRIPT_API void LogError(const std::string& message, ...);
+
+	enum class CursorMode
+	{
+        Normal = 0,
+        Hidden = 1,
+        Disabled = 2
+    };
+	EK_SCRIPT_API void SetCursorMode(CursorMode mode);
 }

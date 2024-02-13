@@ -66,11 +66,11 @@ namespace Eklipse
             EK_ASSERT(g_VKDefaultFramebuffer != nullptr, "Default framebuffer is null!");
             ImGui_ImplVulkan_Init(&init_info, g_VKDefaultFramebuffer->GetRenderPass());
 
-            auto cmd = BeginSingleCommands();
-            ImGui_ImplVulkan_CreateFontsTexture(cmd);
-            EndSingleCommands(cmd);
+            //auto cmd = BeginSingleCommands();
+            ImGui_ImplVulkan_CreateFontsTexture();
+            //EndSingleCommands(cmd);
 
-            ImGui_ImplVulkan_DestroyFontUploadObjects();
+            //ImGui_ImplVulkan_DestroyFontUploadObjects();
         }
         void VkImGuiLayer::Shutdown()
         {

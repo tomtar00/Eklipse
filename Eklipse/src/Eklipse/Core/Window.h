@@ -12,6 +12,12 @@ namespace Eklipse
 
 		std::function<void(Event&)> EventCallback;
 	};
+	enum class CursorMode
+    {
+        Normal,
+        Hidden,
+        Disabled
+    };
 
 	class EK_API Window
 	{
@@ -33,6 +39,7 @@ namespace Eklipse
 		virtual void SetTitle(const char* title) = 0;
 		virtual void Maximize() = 0;
 		virtual bool IsMaximized() = 0;
+		virtual void SetCursorMode(CursorMode mode) = 0;
 
 		// platform dependent
 		inline virtual GLFWwindow* GetGlfwWindow() { return nullptr; };

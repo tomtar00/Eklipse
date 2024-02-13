@@ -115,21 +115,23 @@ namespace Eklipse
             }
             else if (Input::IsMouseButtonDown(Button1))
             {
-                float mouseXDelta = -Input::GetMouseDeltaX();
-                float mouseYDelta = Input::GetMouseDeltaY();
+                glm::vec2 mouseDelta = Input::GetMouseDelta();
+                float mouseXDelta = mouseDelta.x;
+                float mouseYDelta = -mouseDelta.y;
 
-                pitch -= mouseYDelta * deltaTime * 100.f;
+                pitch -= mouseYDelta * deltaTime * m_settings.editorCameraRotationSpeed;
                 pitch = glm::clamp(pitch, -89.0f, 89.0f);
-                yaw -= mouseXDelta * deltaTime * 100.f;
+                yaw -= mouseXDelta * deltaTime * m_settings.editorCameraRotationSpeed;
             }
             else if (Input::IsMouseButtonDown(Button2))
             {
-                float mouseXDelta = Input::GetMouseDeltaX();
-                float mouseYDelta = -Input::GetMouseDeltaY();
+                glm::vec2 mouseDelta = Input::GetMouseDelta();
+                float mouseXDelta = -mouseDelta.x;
+                float mouseYDelta = mouseDelta.y;
 
                 glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
                 glm::vec3 cameraRight = glm::normalize(glm::cross(cameraDir, cameraUp));
-                targetPosition += (mouseXDelta * cameraRight + mouseYDelta * cameraUp) * deltaTime * 5.f;
+                targetPosition += (mouseXDelta * cameraRight + mouseYDelta * cameraUp) * deltaTime * m_settings.editorCameraDragSpeed;
             }
 
             glm::vec3 cameraPosition{};
@@ -143,6 +145,15 @@ namespace Eklipse
             m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));
         }
         // ===================================
+
+        // == Input ==========================
+        if (m_editorState == EditorState::PLAY)
+        {
+            if (Input::IsKeyDown(Escape))
+            {
+                Application::Get().GetWindow()->SetCursorMode(CursorMode::Normal);
+            }
+        }
 
         // == DRAW ===========================
         Renderer::BeginRenderPass(m_viewportFramebuffer.get());
@@ -197,7 +208,7 @@ namespace Eklipse
                 ImGui::Separator();
 
                 ImGui::Text("Recent Projects");
-                float width = ImGui::GetWindowContentRegionWidth();
+                float width = ImGui::GetContentRegionAvail().x;
                 ProjectHandle toRemove = 0;
                 for (auto& [handle, metadata] : m_settings.projectRegistry)
                 {
@@ -624,7 +635,7 @@ namespace Eklipse
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         SaveProject();
-        if (Project::GetActive()->GetConfig().configuration != exportSettings.configuration && ScriptLinker::Get().HasAnyScriptClasses())
+        if (EK_CURRENT_CONFIG != exportSettings.configuration && ScriptLinker::Get().HasAnyScriptClasses())
         {
             m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.configuration);
         }
@@ -648,6 +659,8 @@ namespace Eklipse
             out << YAML::Key << "Theme" << YAML::Value << ThemeToString(m_settings.theme);
             out << YAML::Key << "ProjectsPath" << YAML::Value << m_settings.projectsPath;
             out << YAML::Key << "ProfilerEnabled" << YAML::Value << Profiler::Enabled;
+            out << YAML::Key << "EditorCameraRotationSpeed" << YAML::Value << m_settings.editorCameraRotationSpeed;
+            out << YAML::Key << "EditorCameraDragSpeed" << YAML::Value << m_settings.editorCameraDragSpeed;
             out << YAML::EndMap;
         }
 
@@ -699,6 +712,8 @@ namespace Eklipse
             m_settings.theme = StringToTheme(TryDeserailize<String>(preferencesNode, "Theme", "Unknown"));
             TryDeserailize<Path>(preferencesNode, "ProjectsPath", &m_settings.projectsPath);
             TryDeserailize<bool>(preferencesNode, "ProfilerEnabled", &Profiler::Enabled);
+            TryDeserailize<float>(preferencesNode, "EditorCameraRotationSpeed", &m_settings.editorCameraRotationSpeed);
+            TryDeserailize<float>(preferencesNode, "EditorCameraDragSpeed", &m_settings.editorCameraDragSpeed);
         }
         else
         {
@@ -745,7 +760,6 @@ namespace Eklipse
             return;
 
         m_editorState = EditorState::PLAY;
-
         m_canControlEditorCamera = false;
 
         auto sceneCopy = Scene::Copy(m_editorScene.get());
@@ -783,6 +797,8 @@ namespace Eklipse
             }
         }
 
+        Application::Get().GetWindow()->SetCursorMode(CursorMode::Normal);
+
         m_profilerPanel.OnStop();
     }
     void EditorLayer::OnScenePause()
@@ -796,6 +812,8 @@ namespace Eklipse
 
         SceneManager::GetActiveScene()->OnScenePause();
         m_canControlEditorCamera = false;
+
+        Application::Get().GetWindow()->SetCursorMode(CursorMode::Normal);
 
         m_profilerPanel.OnPause();
     }
@@ -929,12 +947,6 @@ namespace Eklipse
                 ImGui::TextUnformatted("Name");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(config.name.c_str());
-
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImGui::TextUnformatted("Configuration");
-                ImGui::TableSetColumnIndex(1);
-                ImGui::TextUnformatted(config.configuration.c_str());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);

@@ -24,7 +24,7 @@ namespace Eklipse
 
         SetState(ScriptsState::NONE);
 
-        auto& libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+        auto& libraryPath = config.scriptBuildDirectoryPath / EK_CURRENT_CONFIG / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
         if (fs::exists(libraryPath) && m_scriptLinker->LinkScriptLibrary(libraryPath))
         {
             auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
@@ -168,7 +168,7 @@ namespace Eklipse
         String configuration_ = configuration;
         if (configuration_.empty() || (configuration_ != "Debug" && configuration_ != "Release" && configuration_ != "Dist"))
         {
-            configuration_ = Project::GetActive()->GetConfig().configuration;
+            configuration_ = EK_CURRENT_CONFIG;
             EK_CORE_WARN("Invalid configuration: {0}. Using default configuration: {1}", configuration, configuration_);
         }
 
@@ -241,9 +241,9 @@ namespace Eklipse
         if (hasCodeToCompile)
         {
             RunPremake(config.scriptPremakeDirectoryPath);
-            CompileScripts(config.scriptsSourceDirectoryPath, config.configuration);
+            CompileScripts(config.scriptsSourceDirectoryPath, EK_CURRENT_CONFIG);
 
-            auto& libraryPath = config.scriptBuildDirectoryPath / config.configuration / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+            auto& libraryPath = config.scriptBuildDirectoryPath / EK_CURRENT_CONFIG / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
             if (FileUtilities::IsPathValid(libraryPath))
             {
                 if (m_scriptLinker->LinkScriptLibrary(libraryPath))

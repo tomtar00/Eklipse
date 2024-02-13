@@ -179,6 +179,7 @@ namespace Eklipse
     void Application::OnMouseScroll(MouseScrolledEvent& event)
     {
         EK_CORE_PROFILE();
+        Input::m_lastMousePosition = Input::m_mousePosition;
         Input::m_mouseScrollDelta = { event.GetXOffset(), event.GetYOffset() };
     }
 

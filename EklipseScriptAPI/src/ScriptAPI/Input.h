@@ -159,8 +159,7 @@ namespace EklipseEngine
 		static bool IsKeyDown(KeyCode key);
 		static bool IsMouseButtonDown(MouseCode button);
 		static glm::vec2 GetMousePosition();
-		static float GetMouseDeltaX();
-		static float GetMouseDeltaY();
+		static glm::vec2 GetMouseDelta();
 		static float GetScrollValue();
 		static bool IsScrollingUp();
 		static bool IsScrollingDown();

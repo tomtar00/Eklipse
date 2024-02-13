@@ -41,15 +41,6 @@ project "EklipseScriptAPI"
 		"spdlog",
 	}
 
-    postbuildcommands
-	{
-		"{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
-		"{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
-
-		"{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
-        "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
-    }
-
     defines
     {
         "EK_SCRIPT_API_BUILD_DLL",
@@ -67,34 +58,57 @@ project "EklipseScriptAPI"
 		}
 
 	filter "configurations:Debug"
-		defines "EK_DEBUG"
 		runtime "Debug"
 		symbols "On"
 
+        defines
+	    {
+            "EK_DEBUG",
+		    "EK_ENABLE_ASSERTS"
+	    }
         postbuildcommands
         {
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Debug",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Debug",
+            "{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
+		    "{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Debug/EklipseScriptAPI.lib",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Debug/EklipseScriptAPI.dll",
         }
 
 	filter "configurations:Release"
-		defines "EK_RELEASE"
 		runtime "Release"
 		optimize "On"
 
+        defines
+	    {
+            "EK_RELEASE",
+		    "EK_ENABLE_ASSERTS"
+	    }
         postbuildcommands
         {
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Release",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Release",
-        }
+            "{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
+		    "{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseScriptAPI.lib",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseScriptAPI.dll",
+        }   
 
 	filter "configurations:Dist"
-		defines "EK_DIST"
 		runtime "Release"
 		optimize "On"
 
+        defines 
+        {
+            "EK_DIST"
+        }
         postbuildcommands
         {
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Dist",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Dist",
+            "{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
+		    "{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Dist/EklipseScriptAPI.lib",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Dist/EklipseScriptAPI.dll",
         }

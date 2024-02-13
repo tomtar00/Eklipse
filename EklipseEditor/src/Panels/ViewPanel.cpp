@@ -14,13 +14,30 @@ namespace Eklipse
 
 		if (!GuiPanel::OnGUI(deltaTime)) return false;
 
+		static bool isViewportFocused = false;
+
 		if (EditorLayer::Get().GetEditorState() == EditorState::EDIT)
+		{
+			isViewportFocused = false;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		else
+		}
+		else if (EditorLayer::Get().GetEditorState() == EditorState::PLAY)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1, 1 });
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1);
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.0f, 1.0f, 0, 1.0f });
+			if (!isViewportFocused)
+            {
+                isViewportFocused = true;
+                ImGui::SetNextWindowFocus();
+            }
+		}
+		else if (EditorLayer::Get().GetEditorState() == EditorState::PAUSE)
+		{
+			isViewportFocused = false;
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 1, 1 });
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1);
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 1.0f, 0.5f, 0, 1.0f });
 		}
 		ImGui::Begin("View");
 		auto& camera = EditorLayer::Get().GetEditorCamera();

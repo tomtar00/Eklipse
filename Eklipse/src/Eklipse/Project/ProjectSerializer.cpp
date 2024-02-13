@@ -30,7 +30,6 @@ namespace Eklipse
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "Name" << YAML::Value << config.name;
-				out << YAML::Key << "Configuration" << YAML::Value << config.configuration;
 
 				out << YAML::Key << "AssetsDirectory" << YAML::Value << abs_to_rel(config.assetsDirectoryPath);
 				out << YAML::Key << "StartScene" << YAML::Value << abs_to_rel(config.startScenePath);
@@ -77,7 +76,6 @@ namespace Eklipse
 			return false;
 
 		TryDeserailize<String>(projectNode, "Name", &config.name);
-		TryDeserailize<String>(projectNode, "Configuration", &config.configuration);
 
 		config.projectDir						= filepath.parent_path();
 

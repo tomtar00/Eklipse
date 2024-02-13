@@ -19,8 +19,6 @@ project "Eklipse"
 
 	defines
 	{
-		"EK_ENABLE_ASSERTS",
-
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE",
@@ -71,12 +69,6 @@ project "Eklipse"
 		"nfd"
 	}
 
-	postbuildcommands
-	{
-		"{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/",
-        "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/"
-	}
-
 	filter "system:windows"
 		systemversion "latest"
 
@@ -87,49 +79,63 @@ project "Eklipse"
 		}
 
 	filter "configurations:Debug"
-		defines "EK_DEBUG"
 		runtime "Debug"
 		symbols "On"
 
+        defines
+	    {
+            "EK_DEBUG",
+		    "EK_ENABLE_ASSERTS"
+	    }
 		links
 		{
 			"%{Lib.SPIRV_Cross_debug}",
 			"%{Lib.SPIRV_Cross_GLSL_debug}"
 		}
-
 		postbuildcommands
         {
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime",
 		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Debug",
         }
-
+        
 	filter "configurations:Release"
-		defines "EK_RELEASE"
 		runtime "Release"
 		optimize "On"
 
+        defines
+	    {
+            "EK_RELEASE",
+		    "EK_ENABLE_ASSERTS"
+	    }
 		links
 		{
 			"%{Lib.SPIRV_Cross_release}",
 			"%{Lib.SPIRV_Cross_GLSL_release}"
 		}
-
 		postbuildcommands
         {
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime",
 		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Release",
         }
 
 	filter "configurations:Dist"
-		defines "EK_DIST"
 		runtime "Release"
 		optimize "On"
 
+        defines 
+        {
+            "EK_DIST"
+        }
 		links
 		{
 			"%{Lib.SPIRV_Cross_release}",
 			"%{Lib.SPIRV_Cross_GLSL_release}",
 		}
-
 		postbuildcommands
         {
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime",
 		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Dist",
         }

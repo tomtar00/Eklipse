@@ -92,7 +92,7 @@ namespace Eklipse
                     g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
                 if (g_swapChainImageFormat != desiredFormat)
                 {
-                    EK_CORE_WARN("Desired format not supported by swap chain! Using {0} instead", (int)g_swapChainImageFormat);
+                    EK_CORE_DBG("Desired format not supported by swap chain! Using {0} instead", (int)g_swapChainImageFormat);
                 }
                 CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 
