@@ -64,7 +64,7 @@ namespace Eklipse
     // Scene Events
     void Scene::OnSceneStart()
     {
-        EK_CORE_PROFILE();
+        EK_PROFILE();
         EK_CORE_TRACE("Starting scene '{0}'", Name);
 
         // set main camera
@@ -87,7 +87,7 @@ namespace Eklipse
     }
     void Scene::OnSceneUpdate(float deltaTime)
     {
-        EK_CORE_PROFILE();
+        EK_PROFILE();
 
         try
         {

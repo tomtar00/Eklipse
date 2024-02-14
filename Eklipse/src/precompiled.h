@@ -34,16 +34,6 @@
 #include <limits>
 #include <mutex>
 
-#ifdef EK_DEBUG
-    #define EK_CURRENT_CONFIG "Debug"
-#elif EK_RELEASE
-    #define EK_CURRENT_CONFIG "Release"
-#elif EK_DIST
-    #define EK_CURRENT_CONFIG "Dist"
-#else 
-    #error "No configuration specified!"
-#endif
-
 #include <Eklipse/Core/Core.h>
 #include <Eklipse/Utils/Log.h>
 #include <Eklipse/Utils/Stats.h>

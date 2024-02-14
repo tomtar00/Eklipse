@@ -80,7 +80,7 @@ project "__PRJ_NAME__"
             }
     end
 
-    configs = { "Debug", "Release", "Dist" }
+    configs = { "Debug", "Developement", "Release" }
     for _, config in ipairs(configs) do
         for system, ext in pairs(extensions) do
             filter { "system:" .. system, "configurations:" .. config }

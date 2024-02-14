@@ -11,14 +11,14 @@
 
 namespace Eklipse
 {
-	struct IDComponent
+	struct EK_API IDComponent
 	{
 		UUID ID;
 
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
 	};
-	struct NameComponent
+	struct EK_API NameComponent
 	{
 		String name;
 
@@ -26,18 +26,21 @@ namespace Eklipse
 		NameComponent(const NameComponent& name) = default;
 		NameComponent(const String& name) : name(name) {}
 	};
-	struct TransformComponent
+	struct EK_API TransformComponent
 	{
 		Transform transform;
 		glm::mat4 transformMatrix;
 
 		glm::mat4 GetTransformMatrix() const;
+		glm::vec3 GetForward() const;
+		glm::vec3 GetRight() const;
+		glm::vec3 GetUp() const;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& transform) = default;
 		TransformComponent(const Transform& transform) : transform(transform), transformMatrix(glm::mat4(1.0f)) {}
 	};
-	struct MeshComponent
+	struct EK_API MeshComponent
 	{
 		Mesh* mesh;
 		Material* material;
@@ -49,7 +52,7 @@ namespace Eklipse
 		MeshComponent(const MeshComponent& mesh) = default;
 		MeshComponent(Mesh* mesh, Material* material) : mesh(mesh), material(material) {}
 	};
-	struct CameraComponent
+	struct EK_API CameraComponent
 	{
 		Camera camera;
 

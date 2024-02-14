@@ -23,6 +23,21 @@ namespace Eklipse
 		// TODO: Should set transformMatrix here
 		return translation * rotation * scale;
 	}
+	glm::vec3 TransformComponent::GetForward() const
+	{
+		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
+		return -glm::vec3(rotation[2]);
+	}
+	glm::vec3 TransformComponent::GetRight() const
+	{
+		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
+		return glm::vec3(rotation[0]);
+	}
+	glm::vec3 TransformComponent::GetUp() const
+	{
+		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
+        return glm::vec3(rotation[1]);
+	}
 
 
 	void ScriptComponent::SetScript(const String& name, const EklipseEngine::Reflections::ClassInfo& info, Entity entity)

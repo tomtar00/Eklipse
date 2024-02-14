@@ -14,6 +14,10 @@ namespace EklipseEngine
         glm::vec3& Transform::TransformImpl::GetRotation();
         glm::vec3& Transform::TransformImpl::GetScale();
 
+        glm::vec3 GetForward();
+        glm::vec3 GetRight();
+        glm::vec3 GetUp();
+
         void SetPosition(glm::vec3& position);
         void SetRotation(glm::vec3& rotation);
         void SetScale(glm::vec3& scale);

@@ -94,9 +94,10 @@ project "Eklipse"
 		}
 		postbuildcommands
         {
-            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor",
-            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime",
-		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Debug",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/Eklipse.dll",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/Eklipse.dll",
+
+		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Debug/Eklipse.dll",
         }
         
 	filter "configurations:Release"
@@ -115,9 +116,10 @@ project "Eklipse"
 		}
 		postbuildcommands
         {
-            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor",
-            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime",
-		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Release",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/Eklipse.dll",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/Eklipse.dll",
+
+		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Developement/Eklipse.dll",
         }
 
 	filter "configurations:Dist"
@@ -135,7 +137,8 @@ project "Eklipse"
 		}
 		postbuildcommands
         {
-            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor",
-            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime",
-		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Dist",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/Eklipse.dll",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/Eklipse.dll",
+
+		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Release/Eklipse.dll",
         }

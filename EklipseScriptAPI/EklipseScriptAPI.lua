@@ -70,8 +70,10 @@ project "EklipseScriptAPI"
         {
             "{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
 		    "{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
+
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor/EklipseScriptAPI.dll",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime/EklipseScriptAPI.dll",
+
             "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Debug/EklipseScriptAPI.lib",
 		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Debug/EklipseScriptAPI.dll",
         }
@@ -89,10 +91,12 @@ project "EklipseScriptAPI"
         {
             "{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
 		    "{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseScriptAPI.lib",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseScriptAPI.dll",
+
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor/EklipseScriptAPI.dll",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime/EklipseScriptAPI.dll",
+
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Developement/EklipseScriptAPI.lib",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Developement/EklipseScriptAPI.dll",
         }   
 
 	filter "configurations:Dist"
@@ -107,8 +111,10 @@ project "EklipseScriptAPI"
         {
             "{COPYFILE} %{prj.location}/src/EklipseEngine.h %{wks.location}/EklipseEditor/Resources/Scripting/Include",
 		    "{COPYDIR} %{prj.location}/src/ScriptAPI %{wks.location}/EklipseEditor/Resources/Scripting/Include/ScriptAPI",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor",
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime",
-            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Dist/EklipseScriptAPI.lib",
-		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Dist/EklipseScriptAPI.dll",
+
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseEditor/EklipseScriptAPI.dll",
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{cfg.targetdir}/../EklipseRuntime/EklipseScriptAPI.dll",
+
+            "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.lib %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseScriptAPI.lib",
+		    "{COPYFILE} %{cfg.targetdir}/EklipseScriptAPI.dll %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseScriptAPI.dll",
         }

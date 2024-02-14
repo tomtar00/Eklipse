@@ -5,9 +5,20 @@
 
 namespace Eklipse
 {
+    static String BuildTypeToString(ProjectExportBuildType buildType)
+    {
+        switch (buildType)
+        {
+            case ProjectExportBuildType::DEBUG:         return "Debug";
+            case ProjectExportBuildType::Developement:  return "Developement";
+            case ProjectExportBuildType::Release:       return "Release";
+        }
+        return "Unknown";
+    }
+
     // TODO: This is a temporary implementation of the project exporter.
     // Is should look for exported scenes and get only the neccessary assets instead of copying everything.
-    bool CopyAssetsFromEditorRegistry(const Path& sourceAssetsDir, const Path& destinationAssetsDir, AssetRegistry& registry)
+    static bool CopyAssetsFromEditorRegistry(const Path& sourceAssetsDir, const Path& destinationAssetsDir, AssetRegistry& registry)
     {
         EK_CORE_PROFILE();
         AssetRegistry runtimeRegistry;
@@ -68,7 +79,7 @@ namespace Eklipse
         
         RuntimeConfig runtimeConfig{};
         runtimeConfig.name = config.name;
-        String exportConfig = settings.configuration;
+        String exportConfig = BuildTypeToString(settings.buildType);
 
         // Copy assets
         runtimeConfig.assetsDirectoryPath = destinationDir / "Assets";
@@ -81,46 +92,57 @@ namespace Eklipse
         // Copy the scripting library
         Path scriptLibraryPath = config.scriptBuildDirectoryPath / exportConfig / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
         // Recompile all scripts if the export configuration is different from the current one
-        if (scriptLibraryPath.empty() || !fs::exists(scriptLibraryPath))
-        {
-            EK_CORE_WARN("Script library not found at path '{0}'!", scriptLibraryPath.string());
-        }
-        else
+        if (FileUtilities::IsPathValid(scriptLibraryPath))
         {
             Path destinationScriptLibraryPath = destinationDir / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
             fs::copy_file(scriptLibraryPath, destinationScriptLibraryPath, fs::copy_options::overwrite_existing);
             runtimeConfig.scriptsLibraryPath = destinationScriptLibraryPath;
         }
+        else
+        {
+            EK_CORE_WARN("Script library not found at path '{0}'!", scriptLibraryPath.string());
+            return false;
+        }
 
-        // Copy the engine library // TODO: Name shouldnt be const
+        // Copy the engine library
         Path engineLibraryPath = "Resources/Export/" + exportConfig + "/Eklipse" + EK_SCRIPT_LIBRARY_EXTENSION;
-        if (engineLibraryPath.empty() || !fs::exists(engineLibraryPath))
+        if (FileUtilities::IsPathValid(engineLibraryPath))
+        { 
+            Path destinationEngineLibraryPath = destinationDir / (String("Eklipse") + EK_SCRIPT_LIBRARY_EXTENSION);
+            fs::copy_file(engineLibraryPath, destinationEngineLibraryPath, fs::copy_options::overwrite_existing);
+        }
+        else
         {
             EK_CORE_ERROR("Engine library not found at path '{0}'!", engineLibraryPath.string());
             return false;
         }
-        Path destinationEngineLibraryPath = destinationDir / (String("Eklipse") + EK_SCRIPT_LIBRARY_EXTENSION);
-        fs::copy_file(engineLibraryPath, destinationEngineLibraryPath, fs::copy_options::overwrite_existing);
 
-        // Copy the script api library // TODO: Name shouldnt be const
+        // Copy the script api library
         Path scriptApiLibraryPath = "Resources/Export/" + exportConfig + "/EklipseScriptAPI" + EK_SCRIPT_LIBRARY_EXTENSION;
-        if (scriptApiLibraryPath.empty() || !fs::exists(scriptApiLibraryPath))
+        if (FileUtilities::IsPathValid(scriptApiLibraryPath))
+        { 
+            Path destinationScriptApiLibraryPath = destinationDir / (String("EklipseScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION);
+            fs::copy_file(scriptApiLibraryPath, destinationScriptApiLibraryPath, fs::copy_options::overwrite_existing);
+        }
+        else
         {
             EK_CORE_ERROR("Script API library not found at path '{0}'!", scriptApiLibraryPath.string());
             return false;
         }
-        Path destinationScriptApiLibraryPath = destinationDir / (String("EklipseScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION);
-        fs::copy_file(scriptApiLibraryPath, destinationScriptApiLibraryPath, fs::copy_options::overwrite_existing);
 
-        // Copy the executable // TODO: Name shouldnt be const
+        // Copy the executable
         Path executablePath = Path("Resources/Export") / exportConfig / (String("EklipseRuntime") + EK_EXECUTABLE_EXTENSION);
-        if (executablePath.empty() || !fs::exists(executablePath))
+        if (FileUtilities::IsPathValid(executablePath))
+        { 
+            Path destinationExecutablePath = destinationDir / (config.name + EK_EXECUTABLE_EXTENSION);
+            fs::copy_file(executablePath, destinationExecutablePath, fs::copy_options::overwrite_existing);
+            runtimeConfig.executablePath = destinationExecutablePath;
+        }
+        else
         {
             EK_CORE_ERROR("Executable not found at path '{0}'!", executablePath.string());
+            return false;
         }
-        Path destinationExecutablePath = destinationDir / (config.name + EK_EXECUTABLE_EXTENSION);
-        fs::copy_file(executablePath, destinationExecutablePath, fs::copy_options::overwrite_existing);
-        runtimeConfig.executablePath = destinationExecutablePath;
 
         runtimeConfig.startScenePath = runtimeConfig.assetsDirectoryPath / fs::relative(config.startScenePath, config.assetsDirectoryPath);
         runtimeConfig.startSceneHandle = config.startSceneHandle;

@@ -6,6 +6,7 @@
 
 #include <Eklipse/Core/Timer.h>
 #include <Eklipse/Utils/Yaml.h>
+#include <Eklipse/Project/ProjectExporter.h>
 
 #ifdef EK_PLATFORM_WINDOWS
 	#define EK_SCRIPT_LIBRARY_EXTENSION ".dll"
@@ -44,7 +45,7 @@ namespace Eklipse
 		void RecompileAll();
 		bool GenerateFactoryFile(const Path& targetDirectoryPath, const Vec<ClassReflection>& classReflections);
 		void RunPremake(const Path& premakeDirPath);
-		void CompileScripts(const Path& sourceDirectoryPath, const String& configuration);
+		void CompileScripts(const Path& sourceDirectoryPath, const ProjectExportBuildType& buildType);
 
 		const String& GetState() const { return m_stateString; }
 		const ScriptsState GetScriptsState() const { return m_state; }

@@ -79,7 +79,7 @@ project "EklipseRuntime"
 	    }
         postbuildcommands
 		{
-			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseRuntime.exe"
+			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Developement/EklipseRuntime.exe"
 		}
 
 	filter "configurations:Dist"
@@ -92,5 +92,5 @@ project "EklipseRuntime"
         }
 		postbuildcommands
 		{
-			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Dist/EklipseRuntime.exe"
+			"{COPYFILE} %{cfg.targetdir}/EklipseRuntime.exe %{wks.location}/EklipseEditor/Resources/Export/Release/EklipseRuntime.exe"
 		}

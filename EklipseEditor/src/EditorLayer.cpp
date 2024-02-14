@@ -142,7 +142,7 @@ namespace Eklipse
 
             m_editorCameraTransform.position = cameraPosition;
             glm::vec3 cameraDir = glm::normalize(targetPosition - m_editorCameraTransform.position);
-            m_editorCameraTransform.rotation = glm::degrees(-glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));
+            m_editorCameraTransform.rotation = glm::degrees(glm::eulerAngles(glm::quatLookAt(cameraDir, cameraUp)));
         }
         // ===================================
 
@@ -343,11 +343,22 @@ namespace Eklipse
             {
                 static ProjectExportSettings exportSettings{};
                 ImGui::InputDirPath("exportpath", "Export path", exportSettings.path);
+
+                #if EK_DEBUG
                 static int configurationIndex = 0;
-                if (ImGui::Combo("Configuration", &configurationIndex, "Debug\0Release\0Dist\0"))
-                {
-                    exportSettings.configuration = configurationIndex == 0 ? "Debug" : configurationIndex == 1 ? "Release" : "Dist";
-                }
+                ImGui::DrawProperty("isDevBuild", "Build Type", [&]() {
+                    if (ImGui::Combo("##Configuration", &configurationIndex, "Debug\0Developement\0Release\0"))
+                    {
+                        exportSettings.buildType = configurationIndex == 0 ? ProjectExportBuildType::DEBUG : configurationIndex == 1 ? ProjectExportBuildType::Developement : ProjectExportBuildType::Release;
+                    }
+                });
+                #else
+                ImGui::DrawProperty("isDevBuild", "Development Build", [&]() {
+                    static bool isDevBuild = false;
+                    ImGui::Checkbox("##isDevBuild", &isDevBuild);
+                    exportSettings.buildType = isDevBuild ? ProjectExportBuildType::Developement : ProjectExportBuildType::Release;
+                });
+                #endif
                 if (ImGui::Button("Export"))
                 {
                     ExportProject(exportSettings);
@@ -635,9 +646,9 @@ namespace Eklipse
         EK_ASSERT(Project::GetActive(), "Project is null!");
 
         SaveProject();
-        if (EK_CURRENT_CONFIG != exportSettings.configuration && ScriptLinker::Get().HasAnyScriptClasses())
+        if (EK_CURRENT_CONFIG != exportSettings.buildType && ScriptLinker::Get().HasAnyScriptClasses())
         {
-            m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.configuration);
+            m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.buildType);
         }
         if (!ProjectExporter::Export(m_editorAssetLibrary, Project::GetActive(), exportSettings))
         {

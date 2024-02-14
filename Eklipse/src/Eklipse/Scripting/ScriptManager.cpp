@@ -8,6 +8,17 @@
 
 namespace Eklipse
 {
+    static String BuildTypeToString(ProjectExportBuildType type)
+    {
+        switch (type)
+        {
+            case ProjectExportBuildType::DEBUG:			return "Debug";
+            case ProjectExportBuildType::Developement:	return "Release";
+            case ProjectExportBuildType::Release:		return "Dist";
+            default:									return "Unknown";
+        }
+    }
+
     ScriptManager::ScriptManager(ScriptManagerSettings* settings) 
         : m_settings(settings), m_state(ScriptsState::NONE) 
     {
@@ -24,7 +35,7 @@ namespace Eklipse
 
         SetState(ScriptsState::NONE);
 
-        auto& libraryPath = config.scriptBuildDirectoryPath / EK_CURRENT_CONFIG / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+        auto& libraryPath = config.scriptBuildDirectoryPath / BuildTypeToString(EK_CURRENT_CONFIG) / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
         if (fs::exists(libraryPath) && m_scriptLinker->LinkScriptLibrary(libraryPath))
         {
             auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
@@ -159,18 +170,11 @@ namespace Eklipse
         int res = system(command.c_str());
         EK_ASSERT(res == 0, "Failed to run premake5.lua!");
     }
-    void ScriptManager::CompileScripts(const Path& sourceDirectoryPath, const String& configuration)
+    void ScriptManager::CompileScripts(const Path& sourceDirectoryPath, const ProjectExportBuildType& buildType)
     {
         EK_CORE_PROFILE();
         EK_ASSERT(fs::exists(sourceDirectoryPath), "Source directory does not exist!");
         EK_CORE_TRACE("Compiling scripts...");
-
-        String configuration_ = configuration;
-        if (configuration_.empty() || (configuration_ != "Debug" && configuration_ != "Release" && configuration_ != "Dist"))
-        {
-            configuration_ = EK_CURRENT_CONFIG;
-            EK_CORE_WARN("Invalid configuration: {0}. Using default configuration: {1}", configuration, configuration_);
-        }
 
         SetState(ScriptsState::COMPILING);
         String command;
@@ -188,7 +192,7 @@ namespace Eklipse
             return;
         }
         String solutionLocation = (projectDirectoryPath / (config.name + "-Scripts.sln")).string();
-        command = msBuildLocation.string() + " /m /p:Configuration=" + configuration_ + " " + solutionLocation;
+        command = msBuildLocation.string() + " /m /p:Configuration=" + BuildTypeToString(buildType) + " " + solutionLocation;
 
 #elif defined(EK_PLATFORM_LINUX)
         #error Linux compilation not implemented yet
@@ -243,7 +247,7 @@ namespace Eklipse
             RunPremake(config.scriptPremakeDirectoryPath);
             CompileScripts(config.scriptsSourceDirectoryPath, EK_CURRENT_CONFIG);
 
-            auto& libraryPath = config.scriptBuildDirectoryPath / EK_CURRENT_CONFIG / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+            auto& libraryPath = config.scriptBuildDirectoryPath / BuildTypeToString(EK_CURRENT_CONFIG) / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
             if (FileUtilities::IsPathValid(libraryPath))
             {
                 if (m_scriptLinker->LinkScriptLibrary(libraryPath))

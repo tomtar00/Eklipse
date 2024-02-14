@@ -5,6 +5,8 @@
 
 namespace Eklipse
 {
+	bool started = false;
+
 	void RuntimeLayer::OnAttach()
 	{
 		m_runtimeConfig = CreateRef<RuntimeConfig>();
@@ -34,9 +36,6 @@ namespace Eklipse
 		// Load start scene
 		auto scene = AssetManager::GetAsset<Scene>(m_runtimeConfig->startSceneHandle);
 		SceneManager::SetActiveScene(scene);
-
-		// Start scene
-		scene->OnSceneStart();
 	}
 	void RuntimeLayer::OnDetach()
 	{
@@ -62,6 +61,13 @@ namespace Eklipse
 
 	void RuntimeLayer::OnAPIHasInitialized(ApiType api)
 	{
+		if (!started)
+		{
+			// Start scene
+			SceneManager::GetActiveScene()->OnSceneStart();
+			started = true;
+		}
+
 		// Set window title
 		Application::Get().GetWindow()->SetTitle(m_runtimeConfig->name.c_str());
 
