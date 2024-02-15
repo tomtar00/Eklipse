@@ -19,8 +19,10 @@ namespace Eklipse
 
     static float cameraSpeed = 5.0f;
     static float cameraSensitivity = 0.06f;
-
     static bool cursorDisabled = false;
+
+    static Ref<VertexArray> s_vertexArray;
+    static Ref<Shader> s_rayShader;
 
     static void ControlCamera(float deltaTime)
     {
@@ -57,6 +59,7 @@ namespace Eklipse
 
     void SandboxLayer::OnAttach()
     {
+        // Scene
         auto scene = CreateRef<Scene>();
         SceneManager::SetActiveScene(scene);
 
@@ -105,11 +108,40 @@ namespace Eklipse
             ControlCamera(deltaTime);   
 
         Renderer::BeginDefaultRenderPass();
-        Renderer::RenderScene(SceneManager::GetActiveScene());
+
+        //Renderer::RenderScene(SceneManager::GetActiveScene());
+        s_rayShader->Bind();
+        RenderCommand::DrawIndexed(s_vertexArray);
+
         Renderer::EndDefaultRenderPass();
     }
     void SandboxLayer::OnAPIHasInitialized(ApiType api)
     {
+        // Fullscreen quad
+        std::vector<float> vertices = {
+             1.0f,  1.0f,  // top right
+             1.0f, -1.0f,  // bottom right
+            -1.0f, -1.0f,  // bottom left
+            -1.0f,  1.0f,  // top left
+        };
+        std::vector<uint32_t> indices = {
+            0, 1, 3,
+            1, 2, 3
+        };
+
+        Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
+        BufferLayout layout = {
+            { "inPos", ShaderDataType::FLOAT2, false }
+        };
+        vertexBuffer->SetLayout(layout);
+
+        s_vertexArray = VertexArray::Create();
+        s_vertexArray->AddVertexBuffer(vertexBuffer);
+        s_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
+
+        // Ray tracing shader
+        s_rayShader = Shader::Create("Assets/Shaders/RayTracing.glsl");
+
         // Load assets
         s_shader3D = Shader::Create("Assets/Shaders/3D.glsl");
 
@@ -150,6 +182,10 @@ namespace Eklipse
     }
     void SandboxLayer::OnShutdownAPI()
     {
+        // Dispose fullscreen quad
+        s_vertexArray->Dispose();
+        s_rayShader->Dispose();
+
         // Dispose assets
         s_shader3D->Dispose();
 

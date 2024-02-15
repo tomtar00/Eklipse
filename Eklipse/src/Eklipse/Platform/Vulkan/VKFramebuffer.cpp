@@ -227,13 +227,22 @@ namespace Eklipse
 
             vkCmdBeginRenderPass(g_currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            VkViewport viewport{};
+            /*VkViewport viewport{};
             viewport.x = 0.0f;
             viewport.y = static_cast<float>(m_framebufferInfo.height);
             viewport.width = static_cast<float>(m_framebufferInfo.width);
             viewport.height = -static_cast<float>(m_framebufferInfo.height);
             viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;*/
+
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = static_cast<float>(m_framebufferInfo.width);
+            viewport.height = static_cast<float>(m_framebufferInfo.height);
+            viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
+
             vkCmdSetViewport(g_currentCommandBuffer, 0, 1, &viewport);
             
             VkRect2D scissor{};

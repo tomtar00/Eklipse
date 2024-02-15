@@ -59,6 +59,14 @@ namespace Eklipse
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& camera) = default;
 	};
+	struct EK_API LightComponent
+	{
+		glm::vec4 lightColor;
+		float intensity;
+
+		LightComponent() = default;
+		LightComponent(const LightComponent& light) = default;
+	};
 
 	struct EK_API ScriptComponent
 	{

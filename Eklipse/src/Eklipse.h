@@ -8,6 +8,7 @@
 #include <Eklipse/Core/Input.h>
 
 #include <Eklipse/Renderer/Renderer.h>
+#include <Eklipse/Renderer/RenderCommand.h>
 #include <Eklipse/Renderer/Material.h>
 #include <Eklipse/Renderer/Texture.h>
 #include <Eklipse/Renderer/Shader.h>
