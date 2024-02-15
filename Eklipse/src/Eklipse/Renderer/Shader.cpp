@@ -178,8 +178,9 @@ namespace Eklipse
                 if (material->GetShaderHandle() == Handle)
                 {
                     EK_CORE_TRACE("Reloading material {0}, because shader {1} has been recompiled", material->Handle, Handle);
+                    auto& metadata = AssetManager::GetMetadata(handle);
                     material->OnShaderReloaded();
-                    material->ApplyChanges();
+                    material->ApplyChanges(metadata.FilePath);
                 }
             }
         }

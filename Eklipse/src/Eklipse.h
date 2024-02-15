@@ -13,6 +13,8 @@
 #include <Eklipse/Renderer/Shader.h>
 
 #include <Eklipse/Scene/Scene.h>
+#include <Eklipse/Scene/Entity.h>
+#include <Eklipse/Scene/Components.h>
 
 #include <Eklipse/Scene/SceneManager.h>
 #include <Eklipse/Core/Timer.h>

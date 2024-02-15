@@ -11,7 +11,7 @@ namespace Eklipse
 		Vec<uint32_t> indices;
 	};
 
-	class Mesh : public Asset
+	class EK_API Mesh : public Asset
 	{
 	public:
 		Mesh() = delete;

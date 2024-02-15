@@ -15,6 +15,13 @@ namespace Eklipse
 			CreateDescriptorSets();
 		}
 
+		VKMaterial::VKMaterial(const Ref<Shader> shader) : Material(shader)
+		{
+			EK_CORE_PROFILE();
+			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
+			CreateDescriptorSets();
+		}
+
 		void VKMaterial::Bind()
 		{
 			EK_CORE_PROFILE();
@@ -41,10 +48,10 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
 		}
-		void VKMaterial::ApplyChanges()
+		void VKMaterial::ApplyChanges(const Path& filePath)
 		{
 			EK_CORE_PROFILE();
-			Material::ApplyChanges();
+			Material::ApplyChanges(filePath);
 			vkDeviceWaitIdle(g_logicalDevice);
 			Dispose();
 			CreateDescriptorSets();
@@ -55,6 +62,12 @@ namespace Eklipse
 			EK_CORE_PROFILE();
             Material::SetShader(shaderHandle);
             m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
+		}
+		void VKMaterial::SetShader(const Ref<Shader> shader)
+		{
+			EK_CORE_PROFILE();
+			Material::SetShader(shader);
+			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
 		}
 		
 		void VKMaterial::CreateDescriptorSets()

@@ -23,6 +23,7 @@ include "Eklipse/Eklipse.lua"
 include "EklipseEditor/EklipseEditor.lua"
 include "EklipseScriptAPI/EklipseScriptAPI.lua"
 include "EklipseRuntime/EklipseRuntime.lua"
+include "EklipseSandbox/EklipseSandbox.lua"
 
 include "Eklipse/vendor/_projects/glfw/glfw.lua"
 include "Eklipse/vendor/_projects/glad/glad.lua"

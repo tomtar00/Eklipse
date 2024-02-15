@@ -11,6 +11,12 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			m_glShader = std::static_pointer_cast<GLShader>(m_shader);
 		}
+		GLMaterial::GLMaterial(const Ref<Shader> shader) : Material(shader)
+		{
+			EK_CORE_PROFILE();
+			m_glShader = std::static_pointer_cast<GLShader>(m_shader);
+		}
+
 		void GLMaterial::Bind()
 		{
 			EK_CORE_PROFILE();
@@ -67,6 +73,12 @@ namespace Eklipse
 			EK_CORE_PROFILE();
             Material::SetShader(shaderHandle);
             m_glShader = std::static_pointer_cast<GLShader>(m_shader);
+		}
+		void GLMaterial::SetShader(const Ref<Shader> shader)
+		{
+			EK_CORE_PROFILE();
+			Material::SetShader(shader);
+			m_glShader = std::static_pointer_cast<GLShader>(m_shader);
 		}
 	}
 }

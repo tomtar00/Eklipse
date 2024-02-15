@@ -233,7 +233,8 @@ namespace Eklipse
         {
             if (ImGui::InputAsset(id+(i++), textureName.c_str(), AssetType::Texture2D, sampler.textureHandle))
             {
-                material->ApplyChanges();
+                auto& metadata = AssetManager::GetMetadata(sampler.textureHandle);
+                material->ApplyChanges(metadata.FilePath);
             }
         }
         for (auto&& [name, pushConstant] : material->GetPushConstants())

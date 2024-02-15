@@ -96,6 +96,7 @@ project "Eklipse"
         {
             "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/Eklipse.dll",
             "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/Eklipse.dll",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseSandbox/Eklipse.dll",
 
 		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Debug/Eklipse.dll",
         }
@@ -118,6 +119,7 @@ project "Eklipse"
         {
             "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/Eklipse.dll",
             "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/Eklipse.dll",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseSandbox/Eklipse.dll",
 
 		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Developement/Eklipse.dll",
         }
@@ -139,6 +141,7 @@ project "Eklipse"
         {
             "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseEditor/Eklipse.dll",
             "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseRuntime/Eklipse.dll",
+            "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{cfg.targetdir}/../EklipseSandbox/Eklipse.dll",
 
 		    "{COPYFILE} %{cfg.targetdir}/Eklipse.dll %{wks.location}/EklipseEditor/Resources/Export/Release/Eklipse.dll",
         }

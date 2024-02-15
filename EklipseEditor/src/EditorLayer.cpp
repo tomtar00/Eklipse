@@ -626,7 +626,8 @@ namespace Eklipse
         {
             if (metadata.Type == AssetType::Material)
             {
-                AssetManager::GetAsset<Material>(handle)->ApplyChanges();
+                auto& metadata = m_editorAssetLibrary->GetMetadata(handle);
+                AssetManager::GetAsset<Material>(handle)->ApplyChanges(metadata.FilePath);
             }
         }
     }

@@ -7,10 +7,10 @@ namespace Eklipse
 	class RuntimeLayer : public Layer
 	{
 	public:
-		void OnAttach() override;
-		void OnDetach() override;
-		void OnUpdate(float deltaTime) override;
-		void OnGUI(float deltaTime) override;
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnUpdate(float deltaTime) override;
+		virtual void OnGUI(float deltaTime) override;
 
 		void OnAPIHasInitialized(ApiType api);
 		void OnShutdownAPI();

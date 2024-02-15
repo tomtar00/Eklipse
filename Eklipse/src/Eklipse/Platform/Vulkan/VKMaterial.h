@@ -13,12 +13,14 @@ namespace Eklipse
 		{
 		public:
 			VKMaterial(const Path& path, AssetHandle shaderHandle);
+			VKMaterial(const Ref<Shader> shader);
 
 			virtual void Bind() override;
 			virtual void Dispose() override;
-			virtual void ApplyChanges() override;
+			virtual void ApplyChanges(const Path& filePath) override;
 
 			virtual void SetShader(AssetHandle shaderHandle) override;
+			virtual void SetShader(const Ref<Shader> shader) override;
 
 		private:
 			void CreateDescriptorSets();

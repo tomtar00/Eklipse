@@ -60,6 +60,11 @@ namespace Eklipse
         }
     }
 
+    Material::Material(const Ref<Shader> shader)
+    {
+        SetShader(shader);
+    }
+
     Material::Material(const Path& path, AssetHandle shaderHandle)
     {
         EK_CORE_PROFILE();
@@ -80,6 +85,17 @@ namespace Eklipse
                 EK_CORE_ERROR("Failed to serialize material '{0}'", Name);
             }
         }
+    }
+    Ref<Material> Material::Create(const Ref<Shader> shader)
+    {
+        EK_CORE_PROFILE();
+        switch (Renderer::GetAPI())
+        {
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(shader);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(shader);
+        }
+        EK_ASSERT(false, "Material creation not implemented for current graphics API");
+        return nullptr;
     }
     Ref<Material> Material::Create(const Path& path, AssetHandle shaderHandle)
     {
@@ -118,18 +134,17 @@ namespace Eklipse
         EK_CORE_PROFILE();
         m_shader->Bind();
     }
-    void Material::ApplyChanges()
+    void Material::ApplyChanges(const Path& filePath)
     {
         EK_CORE_PROFILE();
         EK_CORE_TRACE("Applying changes to material '{0}'", Name);
 
-        auto& materialPath = AssetManager::GetMetadata(Handle).FilePath;
-        if (!Serialize(materialPath))
+        if (!Serialize(filePath))
         {
             EK_CORE_ERROR("Failed to serialize material '{0}'", Name);
             return;
         }
-        if (!Deserialize(materialPath))
+        if (!Deserialize(filePath))
         {
             EK_CORE_ERROR("Failed to deserialize material '{0}'", Name);
         }
@@ -149,7 +164,24 @@ namespace Eklipse
         }
 
         m_shader = AssetManager::GetAsset<Shader>(shaderHandle);
+        SetShader(m_shader);
         m_shaderHandle = shaderHandle;
+
+        EK_CORE_DBG("Set shader for material '{0}' to '{1}'", Name, shaderHandle);
+    }
+    void Material::SetShader(const Ref<Shader> shader)
+    {
+        EK_CORE_PROFILE();
+        EK_CORE_TRACE("Setting shader for material '{0}' to '{1}'", Name, shader->Name);
+
+        if (!shader || !shader->IsValid())
+        {
+            EK_CORE_ERROR("Failed to set shader for material '{0}'. Shader is not valid", Name);
+            return;
+        }
+
+        m_shader = shader;
+        m_shaderHandle = 0;
         m_pushConstants.clear();
         m_samplers.clear();
 

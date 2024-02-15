@@ -39,16 +39,19 @@ namespace Eklipse
     {
     public:
         Material() = delete;
+        Material(const Ref<Shader> shader);
         Material(const Path& path, AssetHandle shaderHandle);
+        static Ref<Material> Create(const Ref<Shader> shader);
         static Ref<Material> Create(const Path& path, AssetHandle shaderHandle);
 
         template <typename T>
         void SetConstant(const String& constantName, const String& memberName, const T* data, size_t size);
 
         virtual void Bind();
-        virtual void ApplyChanges();
+        virtual void ApplyChanges(const Path& filePath);
 
         virtual void SetShader(AssetHandle shaderHandle);
+        virtual void SetShader(const Ref<Shader> shader);
         
         void OnShaderReloaded();
         bool Serialize(const Path& path);
