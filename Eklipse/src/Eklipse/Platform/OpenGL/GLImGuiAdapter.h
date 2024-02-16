@@ -18,11 +18,10 @@ namespace Eklipse
             Ref<GLTexture2D> m_texture;
         };
 
-        class GLImGuiLayer : public ImGuiLayer
+        class GLImGuiAdapter : public ImGuiAdapter
         {
         public:
-            GLImGuiLayer(const GuiLayerConfigInfo& configInfo);
-            virtual ~GLImGuiLayer() {}
+            GLImGuiAdapter(const ImGuiLayerConfig& config);
 
             virtual void Init() override;
             virtual void Shutdown() override;

@@ -21,11 +21,10 @@ namespace Eklipse
             VkDescriptorSet m_descriptorSet;
         };
 
-        class VkImGuiLayer : public Eklipse::ImGuiLayer
+        class VkImGuiAdapter : public ImGuiAdapter
         {
         public:
-            VkImGuiLayer(const GuiLayerConfigInfo& configInfo);
-            virtual ~VkImGuiLayer() {}
+            VkImGuiAdapter(const ImGuiLayerConfig& config);
 
             virtual void Init() override;
             virtual void Shutdown() override;

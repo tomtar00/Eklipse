@@ -1,7 +1,7 @@
 #include "precompiled.h"
 
 #include "GL.h"
-#include "GLImGuiLayer.h"
+#include "GLImGuiAdapter.h"
 
 #include <Eklipse/Renderer/RenderCommand.h>
 #include <Eklipse/Platform/Windows/WindowsWindow.h>
@@ -15,44 +15,35 @@ namespace Eklipse
 {
     namespace OpenGL
     {
-        GLImGuiLayer::GLImGuiLayer(const GuiLayerConfigInfo& configInfo) : Eklipse::ImGuiLayer(configInfo)
+        GLImGuiAdapter::GLImGuiAdapter(const ImGuiLayerConfig& config) : ImGuiAdapter(config)
         {
             m_glfwWindow = Application::Get().GetWindow()->GetGlfwWindow();
             EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in GL ImGui Layer!");
         }
-        void GLImGuiLayer::Init()
+        void GLImGuiAdapter::Init()
         {
             EK_CORE_PROFILE();
-            if (s_initialized) return;
-            s_initialized = true;
-
             ImGui_ImplGlfw_InitForOpenGL(m_glfwWindow, true);
             ImGui_ImplOpenGL3_Init("#version 460");
         }
-        void GLImGuiLayer::Shutdown()
+        void GLImGuiAdapter::Shutdown()
         {
             EK_CORE_PROFILE();
-            if (!s_initialized) return;
-            s_initialized = false;
-
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplGlfw_Shutdown();
-            ImGuiLayer::Shutdown();
         }
-        void GLImGuiLayer::NewFrame()
+        void GLImGuiAdapter::NewFrame()
         {
             EK_CORE_PROFILE();
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
         }
-        void GLImGuiLayer::Render()
+        void GLImGuiAdapter::Render()
         {
             EK_CORE_PROFILE();
-            if (!(*m_config.enabled)) return;
-
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
-        void GLImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
+        void GLImGuiAdapter::DrawViewport(Framebuffer* framebuffer, float width, float height)
         {
             EK_CORE_PROFILE();
             if (width != framebuffer->GetInfo().width || height != framebuffer->GetInfo().height)
@@ -63,7 +54,7 @@ namespace Eklipse
             GLFramebuffer* glFramebuffer = static_cast<GLFramebuffer*>(framebuffer);
             ImGui::Image((ImTextureID)glFramebuffer->GetMainColorAttachment(), ImVec2{ width, height }, { 0, 1 }, { 1, 0 });
         }
-        void GLImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
+        void GLImGuiAdapter::ResizeViewport(Framebuffer* framebuffer, float width, float height)
         {
             EK_CORE_PROFILE();
             if (width > 0 && height > 0)

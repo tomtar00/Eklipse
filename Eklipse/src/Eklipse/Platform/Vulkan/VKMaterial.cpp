@@ -46,7 +46,8 @@ namespace Eklipse
 		void VKMaterial::Dispose()
 		{
 			EK_CORE_PROFILE();
-			vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
+			if (m_descriptorSets.size() > 0)
+				vkFreeDescriptorSets(g_logicalDevice, g_descriptorPool, static_cast<uint32_t>(m_descriptorSets.size()), m_descriptorSets.data());
 		}
 		void VKMaterial::ApplyChanges(const Path& filePath)
 		{

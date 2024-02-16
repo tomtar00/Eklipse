@@ -6,6 +6,11 @@
 #include <Eklipse/Assets/AssetLibrary.h>
 #include <Eklipse/Renderer/Framebuffer.h>
 
+#define IMGUI_INIT_FOR_DLL ImGuiLayer::CTX = ImGui::CreateContext();\
+                                             ImGui::SetCurrentContext(ImGuiLayer::CTX);
+
+#define IMGUI_SHUTDOWN_FOR_DLL ImGui::SetCurrentContext(ImGuiLayer::CTX = nullptr);
+
 namespace Eklipse
 {
     class EK_API GuiIcon
@@ -19,10 +24,10 @@ namespace Eklipse
     {
     public:
         GuiPanel();
-        virtual bool OnGUI(float deltaTime) { return IsVisible(); };
+        virtual bool OnGUI(float deltaTime);
     public:
-        void SetVisible(bool visible) { m_visible = visible; }
-        bool IsVisible() const { return m_visible; }
+        void SetVisible(bool visible);
+        bool IsVisible() const;
     private:
         bool m_visible = true;
     };
@@ -34,7 +39,7 @@ namespace Eklipse
         Dir_Stack = BIT(2),
         Dir_Rest = BIT(3)
     };
-    struct EK_API DockLayoutInfo
+    struct DockLayoutInfo
     {
         char* name;
         ImGuiDir_ dir;
@@ -43,52 +48,55 @@ namespace Eklipse
 
         ImGuiID id;
     };
-    struct EK_API GuiLayerConfigInfo
+    struct ImGuiLayerConfig
     {
-        bool* enabled;
         bool menuBarEnabled;
         bool dockingEnabled;
         Vec<DockLayoutInfo> dockLayouts;
         Vec<GuiPanel*> panels;
     };
 
-    class EK_API ImGuiLayer : public Layer
+    class EK_API ImGuiAdapter
     {
     public:
-        ImGuiLayer() = delete;
-        ImGuiLayer(const GuiLayerConfigInfo& configInfo);
-        virtual ~ImGuiLayer() {}
+        ImGuiAdapter(const ImGuiLayerConfig& config);
 
-        virtual void OnAttach() override;
-        virtual void OnDetach() override;
-        virtual void OnGUI(float deltaTime) override;
-
-        void Begin();
-        void DrawDockspace();
-        void End();
-
-    public:
         virtual void Init() = 0;
-        virtual void Shutdown();
+        virtual void Shutdown() = 0;
         virtual void NewFrame() = 0;
         virtual void Render() = 0;
 
         virtual void DrawViewport(Framebuffer* framebuffer, float width, float height) = 0;
         virtual void ResizeViewport(Framebuffer* framebuffer, float width, float height) = 0;
 
-        GuiLayerConfigInfo GetConfig();
-        void SetConfig(GuiLayerConfigInfo configInfo);
+        static Ref<ImGuiAdapter> Create(const ImGuiLayerConfig& config);
+    };
 
-        static Ref<ImGuiLayer> Create(const GuiLayerConfigInfo& configInfo);
+    class EK_API ImGuiLayer : public Layer
+    {
+    public:
+        ImGuiLayer() = delete;
+        ImGuiLayer(const ImGuiLayerConfig& configInfo);
+        virtual ~ImGuiLayer() {}
 
-        inline bool IsEnabled() const { return *m_config.enabled; }
+        virtual void OnAttach() override;
+        virtual void OnDetach() override;
+        virtual void OnGUI(float deltaTime) override;
+        virtual void OnRender() override;
+
+        virtual void OnAPIHasInitialized(ApiType api) override;
+        virtual void OnShutdownAPI(bool quit) override;
+
+        void Begin();
+        void DrawDockspace();
+        void End();
+        void Shutdown();
+
         inline static ImGuiContext* CTX = nullptr;
 
-    protected:		
-        inline static bool s_initialized = false;
-        GuiLayerConfigInfo m_config;
-
     private:
+        Ref<ImGuiAdapter> m_adapter;
+        ImGuiLayerConfig m_config;
         bool m_first_time;
     };
 }

@@ -1,7 +1,6 @@
 #pragma once
 #include <Eklipse/Renderer/GraphicsAPI.h>
 #include <vulkan/vulkan.h>
-#include "VKImGuiLayer.h"
 #include "VKFramebuffer.h"
 
 namespace Eklipse

@@ -38,7 +38,8 @@ project "EklipseSandbox"
 		"Eklipse",
 		"EklipseScriptAPI",
 
-		"spdlog"
+		"spdlog",
+        "imgui",
 	}
 
 	defines

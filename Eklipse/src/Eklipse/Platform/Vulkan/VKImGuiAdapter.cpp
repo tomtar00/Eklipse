@@ -1,5 +1,5 @@
 #include "precompiled.h"
-#include "VkImGuiLayer.h"
+#include "VkImGuiAdapter.h"
 
 #include "VK.h"
 #include "VKUtils.h"
@@ -23,18 +23,16 @@ namespace Eklipse
     {
         VkExtent2D	g_viewportExtent = { 512, 512 };
 
-        VkImGuiLayer::VkImGuiLayer(const GuiLayerConfigInfo& configInfo) :
-            m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), Eklipse::ImGuiLayer(configInfo)
+        VkImGuiAdapter::VkImGuiAdapter(const ImGuiLayerConfig& config) :
+            m_imguiPool(VK_NULL_HANDLE), m_imageDescrSets(), ImGuiAdapter(config)
         {
             EK_CORE_PROFILE();
             m_glfwWindow = Eklipse::Application::Get().GetWindow()->GetGlfwWindow();
             EK_ASSERT(m_glfwWindow, "Failed to get GLFW window in VK ImGui Layer!");
         }
-        void VkImGuiLayer::Init()
+        void VkImGuiAdapter::Init()
         {
             EK_CORE_PROFILE();
-            if (s_initialized) return;
-            s_initialized = true;
 
             m_imguiPool = CreateDescriptorPool({
                 { VK_DESCRIPTOR_TYPE_SAMPLER,					1000 },
@@ -66,38 +64,31 @@ namespace Eklipse
             EK_ASSERT(g_VKDefaultFramebuffer != nullptr, "Default framebuffer is null!");
             ImGui_ImplVulkan_Init(&init_info, g_VKDefaultFramebuffer->GetRenderPass());
 
-            //auto cmd = BeginSingleCommands();
             ImGui_ImplVulkan_CreateFontsTexture();
-            //EndSingleCommands(cmd);
-
-            //ImGui_ImplVulkan_DestroyFontUploadObjects();
         }
-        void VkImGuiLayer::Shutdown()
+        void VkImGuiAdapter::Shutdown()
         {
-            if (!s_initialized) return;
-            s_initialized = false;
-
-            vkFreeDescriptorSets(g_logicalDevice, m_imguiPool, m_imageDescrSets.size(), m_imageDescrSets.data());
-            vkDestroyDescriptorPool(g_logicalDevice, m_imguiPool, nullptr);
-
+            EK_CORE_PROFILE();
             ImGui_ImplVulkan_Shutdown();
             ImGui_ImplGlfw_Shutdown();
-            ImGuiLayer::Shutdown();
+
+            if (m_imageDescrSets.size() > 0)
+                vkFreeDescriptorSets(g_logicalDevice, m_imguiPool, m_imageDescrSets.size(), m_imageDescrSets.data());
+            if (m_imguiPool)
+                vkDestroyDescriptorPool(g_logicalDevice, m_imguiPool, nullptr);
         }
-        void VkImGuiLayer::NewFrame()
+        void VkImGuiAdapter::NewFrame()
         {
             EK_CORE_PROFILE();
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplGlfw_NewFrame();
         }
-        void VkImGuiLayer::Render()
+        void VkImGuiAdapter::Render()
         {
             EK_CORE_PROFILE();
-            if (!(*m_config.enabled)) return;
-
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_currentCommandBuffer);
         }
-        void VkImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
+        void VkImGuiAdapter::DrawViewport(Framebuffer* framebuffer, float width, float height)
         {
             EK_CORE_PROFILE();
             if (m_imageDescrSets.size() <= 0) // TODO: What if we want to draw multiple viewports?
@@ -115,13 +106,8 @@ namespace Eklipse
             }
 
             ImGui::Image(m_imageDescrSets[*vkImageIndex], ImVec2{ width, height });
-
-            /*for (int i = 0; i < g_swapChainImageCount; ++i)
-            {
-                ImGui::Image(m_imageDescrSets[i], ImVec2{ width, height / g_swapChainImageCount });
-            }*/
         }
-        void VkImGuiLayer::ResizeViewport(Framebuffer* framebuffer, float width, float height)
+        void VkImGuiAdapter::ResizeViewport(Framebuffer* framebuffer, float width, float height)
         {
             EK_CORE_PROFILE();
             if (m_imageDescrSets.size() <= 0) // TODO: What if we want to draw multiple viewports?
@@ -140,7 +126,7 @@ namespace Eklipse
                 SetupDescriptorSets(framebuffer);
             }
         }
-        void VkImGuiLayer::SetupDescriptorSets(Framebuffer* framebuffer)
+        void VkImGuiAdapter::SetupDescriptorSets(Framebuffer* framebuffer)
         {
             EK_CORE_PROFILE();
             VKFramebuffer* vkFramebuffer = static_cast<VKFramebuffer*>(framebuffer);

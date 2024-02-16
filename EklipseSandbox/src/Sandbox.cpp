@@ -1,8 +1,10 @@
-#define EK_PROFILE_NAME(name)	
+#define EK_PROFILE_NAME(name)
 #define EK_PROFILE()	
 #define EK_PROFILE_END_FRAME()
 
 #include <SandboxLayer.h>
+#include <RTLayer.h>
+
 #include <Eklipse/Core/EntryPoint.h>
 
 namespace Eklipse
@@ -12,21 +14,36 @@ namespace Eklipse
     public:
         Sandbox(ApplicationInfo& info) : Application(info)
         {
-            m_sandboxLayer = CreateRef<SandboxLayer>();
-            PushLayer(m_sandboxLayer);
+            //PushLayer(CreateRef<SandboxLayer>());
+            PushLayer(CreateRef<RTLayer>());
+
+            ImGuiLayerConfig config{};
+            config.dockingEnabled = false;
+            config.menuBarEnabled = false;
+            GUI = CreateRef<ImGuiLayer>(config);
+            PushOverlay(GUI);
         }
 
         void OnAPIHasInitialized(ApiType api) override
         {
-            m_sandboxLayer->OnAPIHasInitialized(api);
+            IMGUI_INIT_FOR_DLL
         }
         void OnShutdownAPI(bool quit) override
         {
-            m_sandboxLayer->OnShutdownAPI();
+            IMGUI_SHUTDOWN_FOR_DLL
+        }
+
+        void OnPreGUI(float deltaTime) override
+        {
+            GUI->Begin();
+        }
+        void OnPostGUI(float deltaTime) override
+        {
+            GUI->End();
         }
 
     private:
-        Ref<SandboxLayer> m_sandboxLayer;
+        Ref<ImGuiLayer> GUI;
     };
 }
 

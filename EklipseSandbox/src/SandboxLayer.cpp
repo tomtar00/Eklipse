@@ -3,12 +3,9 @@
 namespace Eklipse
 {
     static Ref<Shader> s_shader3D;
-
     static Ref<Material> s_planeMaterial;
-
     static Ref<Mesh> s_cubeMesh;
     static Ref<Material> s_cubeMaterial;
-
     static Ref<Mesh> s_sphereMesh;
     static Ref<Material> s_sphereMaterial;
 
@@ -20,9 +17,6 @@ namespace Eklipse
     static float cameraSpeed = 5.0f;
     static float cameraSensitivity = 0.06f;
     static bool cursorDisabled = false;
-
-    static Ref<VertexArray> s_vertexArray;
-    static Ref<Shader> s_rayShader;
 
     static void ControlCamera(float deltaTime)
     {
@@ -105,44 +99,15 @@ namespace Eklipse
         }
 
         if (cursorDisabled)
-            ControlCamera(deltaTime);   
+            ControlCamera(deltaTime);
 
         Renderer::BeginDefaultRenderPass();
-
-        //Renderer::RenderScene(SceneManager::GetActiveScene());
-        s_rayShader->Bind();
-        RenderCommand::DrawIndexed(s_vertexArray);
-
+        Renderer::RenderScene(SceneManager::GetActiveScene());
         Renderer::EndDefaultRenderPass();
     }
     void SandboxLayer::OnAPIHasInitialized(ApiType api)
     {
-        // Fullscreen quad
-        std::vector<float> vertices = {
-             1.0f,  1.0f,  // top right
-             1.0f, -1.0f,  // bottom right
-            -1.0f, -1.0f,  // bottom left
-            -1.0f,  1.0f,  // top left
-        };
-        std::vector<uint32_t> indices = {
-            0, 1, 3,
-            1, 2, 3
-        };
-
-        Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
-        BufferLayout layout = {
-            { "inPos", ShaderDataType::FLOAT2, false }
-        };
-        vertexBuffer->SetLayout(layout);
-
-        s_vertexArray = VertexArray::Create();
-        s_vertexArray->AddVertexBuffer(vertexBuffer);
-        s_vertexArray->SetIndexBuffer(IndexBuffer::Create(indices));
-
-        // Ray tracing shader
-        s_rayShader = Shader::Create("Assets/Shaders/RayTracing.glsl");
-
-        // Load assets
+        // Geometry
         s_shader3D = Shader::Create("Assets/Shaders/3D.glsl");
 
         s_planeMaterial = Material::Create(s_shader3D);
@@ -180,12 +145,8 @@ namespace Eklipse
         Application::Get().GetWindow()->SetCursorMode(CursorMode::Disabled);
         cursorDisabled = true;
     }
-    void SandboxLayer::OnShutdownAPI()
+    void SandboxLayer::OnShutdownAPI(bool quit)
     {
-        // Dispose fullscreen quad
-        s_vertexArray->Dispose();
-        s_rayShader->Dispose();
-
         // Dispose assets
         s_shader3D->Dispose();
 

@@ -13,6 +13,11 @@ void main()
 
 out vec4 outColor;
 
+layout(push_constant) uniform PushConstants
+{
+    vec2 uResolution;
+} pushConstants;
+
 float rand(vec2 co)
 {
     float seed = dot(co, vec2(12.9898, 78.233));
@@ -21,7 +26,7 @@ float rand(vec2 co)
 
 void main()
 {
-    vec2 uv = gl_FragCoord.xy;
-    float randomValue = rand(uv);
-    outColor = vec4(randomValue, randomValue, 0.0, 1.0);
+    vec2 uv = gl_FragCoord.xy / pushConstants.uResolution.xy;
+    // float randomValue = rand(uv);
+    outColor = vec4(uv, 0.0, 1.0);
 }

@@ -4,42 +4,21 @@
 
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Renderer/Renderer.h>
-#include <Eklipse/Platform/Vulkan/VkImGuiLayer.h>
-#include <Eklipse/Platform/OpenGL/GLImGuiLayer.h>
+#include <Eklipse/Platform/Vulkan/VkImGuiAdapter.h>
+#include <Eklipse/Platform/OpenGL/GLImGuiAdapter.h>
 
 #include <ImGuizmo.h>
 
 namespace Eklipse
 {
-    ImGuiLayer::ImGuiLayer(const GuiLayerConfigInfo& configInfo)
+    ImGuiLayer::ImGuiLayer(const ImGuiLayerConfig& configInfo)
         : m_config(configInfo), m_first_time(true) {}
 
     void ImGuiLayer::OnAttach()
     {
-        EK_CORE_PROFILE();
-        IMGUI_CHECKVERSION();
-        EK_ASSERT(CTX != nullptr, "ImGui context is null. Set ImGuiLayer::CTX to ImGui::CreateContext().");
-        ImGui::SetCurrentContext(CTX);
-
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        if (m_config.dockingEnabled)
-        {
-            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        }
-
-        ImGui::StyleColorsDark();
-
-        float fontSize = 16.0f;
-        io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Bold.ttf", fontSize);
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Regular.ttf", fontSize);
-
-
-        EK_CORE_TRACE("{0} imgui layer attached", typeid(*this).name());
     }
     void ImGuiLayer::OnDetach()
     {
-        EK_CORE_PROFILE();
-        EK_CORE_TRACE("{0} imgui layer detached", typeid(*this).name());
     }
     void ImGuiLayer::OnGUI(float deltaTime)
     {
@@ -49,25 +28,31 @@ namespace Eklipse
             panel->OnGUI(deltaTime);
         }
     }
-    void ImGuiLayer::Shutdown()
+    void ImGuiLayer::OnRender()
     {
         EK_CORE_PROFILE();
-        ImGui::DestroyContext(CTX);
-        ImGui::SetCurrentContext(CTX = nullptr);
-
-        EK_CORE_TRACE("{0} imgui layer shutdown", typeid(*this).name());
+        m_adapter->Render();
     }
+
+    void ImGuiLayer::OnAPIHasInitialized(ApiType apiType)
+    {
+        EK_CORE_PROFILE();
+        m_adapter = ImGuiAdapter::Create(m_config);
+        m_adapter->Init();
+    }
+    void ImGuiLayer::OnShutdownAPI(bool quit)
+    {
+        EK_CORE_PROFILE();
+        Shutdown();
+        m_adapter.reset();
+    }
+    
     void ImGuiLayer::Begin()
     {
         EK_CORE_PROFILE();
-        NewFrame();
+        m_adapter->NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
-    }
-    void ImGuiLayer::End()
-    {
-        EK_CORE_PROFILE();
-        ImGui::Render();
     }
     void ImGuiLayer::DrawDockspace()
     {
@@ -145,26 +130,57 @@ namespace Eklipse
 
         ImGui::End();
     }
+    void ImGuiLayer::End()
+    {
+        EK_CORE_PROFILE();
+        ImGui::Render();
+    }
+    void ImGuiLayer::Shutdown()
+    {
+        EK_CORE_PROFILE();
+        m_adapter->Shutdown();
+        ImGui::DestroyContext(CTX);
+        ImGui::SetCurrentContext(CTX = nullptr);
 
-    GuiLayerConfigInfo ImGuiLayer::GetConfig()
-    {
-        return m_config;
+        EK_CORE_TRACE("{0} imgui layer shutdown", typeid(*this).name());
     }
-    void ImGuiLayer::SetConfig(GuiLayerConfigInfo configInfo)
+
+    // === ADAPTER
+
+    ImGuiAdapter::ImGuiAdapter(const ImGuiLayerConfig& config)
     {
-        m_config = configInfo;
+        EK_CORE_PROFILE();
+        IMGUI_CHECKVERSION();
+        EK_ASSERT(ImGuiLayer::CTX != nullptr, "ImGui context is null. Set ImGuiLayer::CTX to ImGui::CreateContext().");
+        ImGui::SetCurrentContext(ImGuiLayer::CTX);
+
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        if (config.dockingEnabled)
+        {
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        }
+
+        ImGui::StyleColorsDark();
+
+        float fontSize = 16.0f;
+        io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Bold.ttf", fontSize);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Regular.ttf", fontSize);
     }
-    Ref<ImGuiLayer> ImGuiLayer::Create(const GuiLayerConfigInfo& configInfo)
+
+    Ref<ImGuiAdapter> ImGuiAdapter::Create(const ImGuiLayerConfig& config)
     {
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VkImGuiLayer>(configInfo);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiLayer>(configInfo);
+            case ApiType::Vulkan: return CreateRef<Vulkan::VkImGuiAdapter>(config);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiAdapter>(config);
         }
-        EK_ASSERT(false, "ImGui Layer creation not implemented for current graphics API");
+        EK_ASSERT(false, "ImGui Adapter creation not implemented for current graphics API");
         return nullptr;
     }
+
+    // === ICON
+
     Ref<GuiIcon> GuiIcon::Create(const Path& texturePath)
     {
         EK_CORE_PROFILE();
@@ -176,5 +192,19 @@ namespace Eklipse
         EK_ASSERT(false, "ImGui Icon creation not implemented for current graphics API");
         return nullptr;
     }
+
     GuiPanel::GuiPanel() : m_visible(true) {}
+    bool GuiPanel::OnGUI(float deltaTime)
+    {
+        EK_CORE_PROFILE();
+        return IsVisible();
+    }
+    void GuiPanel::SetVisible(bool visible)
+    {
+        m_visible = visible;
+    }
+    bool GuiPanel::IsVisible() const
+    {
+        return m_visible;
+    }
 }

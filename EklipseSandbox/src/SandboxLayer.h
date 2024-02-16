@@ -9,7 +9,7 @@ namespace Eklipse
         virtual void OnAttach() override;
         virtual void OnUpdate(float deltaTime) override;
 
-        void OnAPIHasInitialized(ApiType api);
-        void OnShutdownAPI();
+        virtual void OnAPIHasInitialized(ApiType api) override;
+        virtual void OnShutdownAPI(bool quit) override;
     };
 }

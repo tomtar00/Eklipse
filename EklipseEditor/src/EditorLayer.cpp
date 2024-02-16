@@ -23,7 +23,6 @@ namespace Eklipse
         m_editorCamera.m_nearPlane = 0.1f;
         m_editorCamera.m_fov = 45.0f;
 
-        m_guiLayerCreateInfo.enabled = &m_guiEnabled;
         m_guiLayerCreateInfo.menuBarEnabled = true;
         m_guiLayerCreateInfo.dockingEnabled = true;
         m_guiLayerCreateInfo.dockLayouts =

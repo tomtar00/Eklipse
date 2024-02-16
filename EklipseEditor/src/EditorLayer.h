@@ -130,7 +130,7 @@ namespace Eklipse
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
-		GuiLayerConfigInfo m_guiLayerCreateInfo{};
+		ImGuiLayerConfig m_guiLayerCreateInfo{};
 
 		EditorState m_editorState;
 		EditorSettings m_settings;

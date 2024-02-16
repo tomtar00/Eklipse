@@ -28,15 +28,6 @@ namespace Eklipse
 			PushLayer(m_runtimeLayer);
 		}
 
-		void OnAPIHasInitialized(ApiType api) override
-		{
-			m_runtimeLayer->OnAPIHasInitialized(api);
-		}
-		void OnShutdownAPI(bool quit) override
-		{
-			m_runtimeLayer->OnShutdownAPI();
-		}
-
 	private:
 		Ref<RuntimeLayer> m_runtimeLayer;
 	};

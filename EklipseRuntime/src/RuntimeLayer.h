@@ -12,8 +12,8 @@ namespace Eklipse
 		virtual void OnUpdate(float deltaTime) override;
 		virtual void OnGUI(float deltaTime) override;
 
-		void OnAPIHasInitialized(ApiType api);
-		void OnShutdownAPI();
+		virtual void OnAPIHasInitialized(ApiType api) override;
+		virtual void OnShutdownAPI() override;
 
 	private:
 		Ref<RuntimeConfig> m_runtimeConfig;
