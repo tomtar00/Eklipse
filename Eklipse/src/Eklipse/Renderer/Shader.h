@@ -112,12 +112,13 @@ namespace Eklipse
 		virtual void Unbind() const = 0;
 		virtual void Dispose() = 0;
 
+		virtual bool Compile(const Path& shaderPath, bool forceCompile = false) = 0;
+
 	protected:
 		void Reflect(const StageSpirvMap& shaderData, const String& shaderName);
 		bool CompileOrGetVulkanBinaries(const Path& shaderPath, const StageSourceMap& shaderSources, bool forceCompile);
 		StageSourceMap PreProcess(const String& source) const;
 
-		virtual bool Compile(const Path& shaderPath, bool forceCompile = false) = 0;
 		virtual const String GetCacheDirectoryPath() = 0;
 
 	protected:

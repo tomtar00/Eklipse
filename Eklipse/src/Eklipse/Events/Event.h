@@ -47,14 +47,14 @@ namespace Eklipse
 			: m_event(event) {}
 
 		template<typename T, typename F>
-		bool Dispatch(const F& func)
+		bool Dispatch(const F& func, bool markHandled)
 		{
 			EK_CORE_PROFILE();
 			if (m_event.Handled) return false;
 
 			if (m_event.GetEventType() == T::GetStaticType())
 			{
-				m_event.Handled = true;
+				m_event.Handled = markHandled;
 				func(static_cast<T&>(m_event));
 			}
 			return m_event.Handled;

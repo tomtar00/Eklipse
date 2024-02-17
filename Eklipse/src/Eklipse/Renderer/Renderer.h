@@ -35,6 +35,7 @@ namespace Eklipse
 
 		// Render stages
 		static void BeginFrame();
+		static void UpdateViewProjection(Camera& camera, Transform& cameraTransform);
 		static void BeginDefaultRenderPass();
 		static void EndDefaultRenderPass();
 		static void BeginRenderPass(Framebuffer* framebuffer);

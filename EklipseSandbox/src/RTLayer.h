@@ -7,9 +7,10 @@ namespace Eklipse
     {
     public:
         virtual void OnAttach() override;
-        virtual void OnRender() override;
 
+        virtual void OnEvent(Event& event) override;
         virtual void OnGUI(float deltaTime) override;
+        virtual void OnRender() override;
 
         virtual void OnAPIHasInitialized(ApiType api) override;
         virtual void OnShutdownAPI(bool quit) override;
@@ -18,5 +19,8 @@ namespace Eklipse
         Ref<Shader> m_rayShader;
         Ref<Material> m_rayMaterial;
         Ref<VertexArray> m_fullscreenVA;
+
+        Camera m_camera;
+        Transform m_cameraTransform;
     };
 }

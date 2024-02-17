@@ -25,13 +25,6 @@ namespace Eklipse
 		WindowResizeEvent event(width, height);
 		PROPAGATE_GLFW_EVENT(event);
 	}
-	/*void GlfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
-	{
-		FramebufferResizeEvent event(width, height);
-
-		((WindowData*)glfwGetWindowUserPointer(window))->framebufferResized = true;
-		PROPAGATE_GLFW_EVENT(event);
-	}*/
 	static void GlfwWindowCloseCallback(GLFWwindow* window)
 	{
 		EK_CORE_PROFILE();
@@ -141,7 +134,6 @@ namespace Eklipse
 
 		glfwSetErrorCallback(GlfwErrorCallback);
 		glfwSetWindowSizeCallback(m_window, GlfwWindowSizeCallback);
-		//glfwSetFramebufferSizeCallback(m_window, GlfwFramebufferSizeCallback);
 		glfwSetWindowCloseCallback(m_window, GlfwWindowCloseCallback);
 		glfwSetKeyCallback(m_window, GlfwKeyCallback);
 		glfwSetMouseButtonCallback(m_window, GlfwMouseButtonCallback);

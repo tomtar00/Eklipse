@@ -74,6 +74,11 @@ namespace Eklipse
         Stats::Get().Reset();
         RenderCommand::API->BeginFrame();
     }
+    void Renderer::UpdateViewProjection(Camera& camera, Transform& cameraTransform)
+    {
+        camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
+        s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
+    }
     void Renderer::BeginDefaultRenderPass()
     {
         EK_PROFILE();
@@ -90,8 +95,7 @@ namespace Eklipse
     {
         EK_PROFILE();
 
-        camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
-        s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
+        UpdateViewProjection(camera, cameraTransform);
 
         // Geometry
         auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();

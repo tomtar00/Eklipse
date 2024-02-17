@@ -134,11 +134,11 @@ namespace Eklipse
         //EK_CORE_TRACE(event.ToString());
 
         EventDispatcher dispatcher(event);
-        dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose));
-        dispatcher.Dispatch<WindowFocusEvent>(CAPTURE_FN(OnWindowFocus));
-        dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized));
-        dispatcher.Dispatch<MouseMovedEvent>(CAPTURE_FN(OnMouseMove));
-        dispatcher.Dispatch<MouseScrolledEvent>(CAPTURE_FN(OnMouseScroll));
+        dispatcher.Dispatch<WindowCloseEvent>(CAPTURE_FN(OnWindowClose), true);
+        dispatcher.Dispatch<WindowFocusEvent>(CAPTURE_FN(OnWindowFocus), true);
+        dispatcher.Dispatch<WindowResizeEvent>(CAPTURE_FN(OnWindowResized), false);
+        dispatcher.Dispatch<MouseMovedEvent>(CAPTURE_FN(OnMouseMove), true);
+        dispatcher.Dispatch<MouseScrolledEvent>(CAPTURE_FN(OnMouseScroll), true);
 
         for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
         {
