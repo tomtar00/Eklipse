@@ -78,8 +78,19 @@ namespace Eklipse
             uint32_t singlePixelSize = FormatToChannels(m_textureInfo.imageFormat);
             uint32_t dataSize = m_textureInfo.width * m_textureInfo.height * singlePixelSize;
             EK_ASSERT((size == dataSize), "Data is not equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
-            glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_textureInfo.width, m_textureInfo.height, 0, m_format, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
+            
+            if (m_textureInfo.samples > 1)
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_textureInfo.samples, m_internalFormat, m_textureInfo.width, m_textureInfo.height, GL_FALSE);
+            else
+            {
+                if (m_textureInfo.imageFormat == ImageFormat::D24S8)
+                    glTexStorage2D(GL_TEXTURE_2D, 1, m_format, m_textureInfo.width, m_textureInfo.height);
+                else
+                    glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_textureInfo.width, m_textureInfo.height, 0, m_format, GL_UNSIGNED_BYTE, data);
+            }
+            
+            if (m_textureInfo.mipMapLevel > 1)
+                glGenerateMipmap(GL_TEXTURE_2D);
         }
         void GLTexture2D::Bind() const
         {

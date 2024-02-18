@@ -25,11 +25,13 @@ namespace Eklipse
 			VkCommandBuffer GetCommandBuffer(uint32_t index);
 			uint32_t* GetImageIndexPtr();
 
+			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual Ref<Texture2D> GetColorAttachment(uint32_t index) override;
+
 			virtual FramebufferInfo& GetInfo() override;
 			virtual void Build() override;
 			virtual void Bind() override;
 			virtual void Unbind() override;
-			virtual void Resize(uint32_t width, uint32_t height) override;
 			virtual void Dispose() override;
 
 		private:

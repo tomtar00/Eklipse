@@ -101,12 +101,26 @@ namespace Eklipse
 	class EK_API UniformBuffer
 	{
 	public:
-		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
+		static Ref<UniformBuffer> Create(size_t size, uint32_t binding);
 		virtual ~UniformBuffer() = default;
 
 		virtual void Dispose() const = 0;
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
-		
+		virtual void SetData(const void* data, size_t size, uint32_t offset = 0) = 0;
 		virtual void* GetBuffer() const = 0;
+	};
+
+	class EK_API StorageBuffer
+	{
+	public:
+		static Ref<StorageBuffer> Create(size_t size, uint32_t binding);
+        virtual ~StorageBuffer() = default;
+
+        virtual void Dispose() const = 0;
+        virtual void SetData(const void* data, size_t size, uint32_t offset = 0) = 0;
+        virtual void* GetBuffer() const = 0;
+		inline size_t GetSize() const { return m_size; }
+
+	protected: 
+		size_t m_size;
 	};
 }

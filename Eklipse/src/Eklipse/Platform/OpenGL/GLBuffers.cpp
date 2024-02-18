@@ -88,7 +88,7 @@ namespace Eklipse
 		// UNIFORM BUFFER //////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 
-		GLUniformBuffer::GLUniformBuffer(uint32_t size, uint32_t binding) : m_id(0)
+		GLUniformBuffer::GLUniformBuffer(size_t size, uint32_t binding) : m_id(0)
 		{
 			EK_CORE_PROFILE();
 			glCreateBuffers(1, &m_id);
@@ -105,7 +105,7 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			glDeleteBuffers(1, &m_id);
 		}
-		void GLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
+		void GLUniformBuffer::SetData(const void* data, size_t size, uint32_t offset)
 		{
 			EK_CORE_PROFILE();
 			glNamedBufferSubData(m_id, offset, size, data);
@@ -114,5 +114,33 @@ namespace Eklipse
 		{
 			return nullptr;
 		}
-	}
+
+		GLStorageBuffer::GLStorageBuffer(size_t size, uint32_t binding)
+		{
+		    EK_CORE_PROFILE();
+			m_size = size;
+            glCreateBuffers(1, &m_id);
+            glNamedBufferData(m_id, size, nullptr, GL_DYNAMIC_DRAW);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, m_id);
+		}
+		GLStorageBuffer::~GLStorageBuffer()
+		{
+		    EK_CORE_PROFILE();
+            Dispose();
+		}
+		void GLStorageBuffer::Dispose() const
+		{
+            EK_CORE_PROFILE();
+            glDeleteBuffers(1, &m_id);
+		}
+		void GLStorageBuffer::SetData(const void* data, size_t size, uint32_t offset)
+		{
+			EK_CORE_PROFILE();
+            glNamedBufferSubData(m_id, offset, size, data);
+		}
+		void* GLStorageBuffer::GetBuffer() const
+		{
+			return nullptr;
+		}
+}
 }

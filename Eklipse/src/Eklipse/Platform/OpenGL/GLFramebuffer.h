@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <Eklipse/Renderer/Framebuffer.h>
+#include <Eklipse/Platform/OpenGL/GLTexture.h>
 
 namespace Eklipse
 {
@@ -24,7 +25,7 @@ namespace Eklipse
 			return 0;
 		}
 
-		class GLFramebuffer : public Eklipse::Framebuffer
+		class GLFramebuffer : public Framebuffer
 		{
 		public:
 			GLFramebuffer(const FramebufferInfo& frambufferInfo);
@@ -32,10 +33,12 @@ namespace Eklipse
 			virtual FramebufferInfo& GetInfo() override;
 			uint32_t GetMainColorAttachment();
 
+			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual Ref<Texture2D> GetColorAttachment(uint32_t index) override;
+
 			virtual void Build() override;
 			virtual void Bind() override;
 			virtual void Unbind() override;
-			virtual void Resize(uint32_t width, uint32_t height) override;
 			virtual void Dispose() override;
 		
 		private:
@@ -43,8 +46,8 @@ namespace Eklipse
 			FramebufferInfo m_framebufferInfo;
 			GLenum m_texTarget;
 
-			Vec<uint32_t> m_colorAttachments{};
-			uint32_t m_depthAttachment{0};
+			Vec<Ref<GLTexture2D>> m_colorAttachments{};
+			Ref<GLTexture2D> m_depthAttachment{};
 		};
 	}
 }

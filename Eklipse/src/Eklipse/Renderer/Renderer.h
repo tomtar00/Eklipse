@@ -61,6 +61,9 @@ namespace Eklipse
 		// Uniform buffers
 		static Ref<UniformBuffer> CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding);
 		static Ref<UniformBuffer> GetUniformBuffer(const String& uniformBufferName);
+		// Storage buffers
+		static Ref<StorageBuffer> CreateStorageBuffer(const String& storageBufferName, const size_t size, const uint32_t binding);
+		static Ref<StorageBuffer> GetStorageBuffer(const String& storageBufferName);
 
 		// Settings
 		static void SerializeRendererSettings(YAML::Emitter& out);
@@ -69,6 +72,7 @@ namespace Eklipse
 	private:
 		static ApiType s_apiType;
 		static RendererSettings s_settings;
-		static std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	s_uniformBufferCache;
+		static std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>> s_uniformBufferCache;
+		static std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>> s_storageBufferCache;
 	};
 }

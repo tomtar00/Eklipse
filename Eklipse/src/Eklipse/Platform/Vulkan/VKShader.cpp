@@ -43,7 +43,7 @@ namespace Eklipse
 		VKShader::VKShader(const Path& filePath, const AssetHandle handle) : Shader(filePath, handle)
 		{		
 			EK_CORE_PROFILE();
-			m_isValid = Compile(filePath);
+			Compile(filePath);
 		}
 
 		VkDescriptorSetLayout VKShader::GetDescriptorSetLayout() const
@@ -59,20 +59,24 @@ namespace Eklipse
 		{
 			EK_CORE_PROFILE();
 
-#if EK_DEBUG
-			if (m_isValid)
-#endif
 			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 		}
 		void VKShader::Unbind() const {}
 		void VKShader::Dispose()
 		{
-			if (m_isValid)
-			{
-				vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
-				vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
-				vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
-			}
+			EK_CORE_PROFILE();
+			EK_CORE_TRACE("Disposing Vulkan shader '{0}'", Name);
+			//if (m_isValid)
+			//{
+				if (m_pipelineLayout != VK_NULL_HANDLE)
+					vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
+				if (m_descriptorSetLayout != VK_NULL_HANDLE)
+					vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
+				if (m_pipeline != VK_NULL_HANDLE) 
+					vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
+			//}
+			//else EK_CORE_WARN("Shader '{0}' is not valid, cannot dispose", Name);
+			EK_CORE_DBG("Disposed Vulkan shader '{0}'", Name);
 		}
 
 		const String VKShader::GetCacheDirectoryPath()
@@ -85,12 +89,13 @@ namespace Eklipse
 			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", Name);
 
 			auto shaderSources = Setup(shaderPath);
-			bool success = true;
 
 			Timer _timer;
-			success = success && CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
+			bool success = CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
 			if (success)
 			{
+				Dispose();
+
 				// Create modules
 				auto& vertShaderCode = m_vulkanSPIRV[ShaderStage::VERTEX];
 				VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
@@ -123,6 +128,16 @@ namespace Eklipse
 						uboLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
 						uboLayoutBinding.pImmutableSamplers = nullptr;
 						descriptorSetLayoutBindings.push_back(uboLayoutBinding);
+					}
+					for (auto& storageBuffer : reflection.storageBuffers)
+					{
+						VkDescriptorSetLayoutBinding storageLayoutBinding{};
+                        storageLayoutBinding.binding = storageBuffer.binding;
+                        storageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        storageLayoutBinding.descriptorCount = 1;
+                        storageLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
+                        storageLayoutBinding.pImmutableSamplers = nullptr;
+                        descriptorSetLayoutBindings.push_back(storageLayoutBinding);
 					}
 					for (auto& sampler : reflection.samplers)
 					{
@@ -192,7 +207,7 @@ namespace Eklipse
 				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, _timer.ElapsedTimeMs());
 			}
 			else EK_CORE_ERROR("Shader {0} compilation failed", Handle);
-			
+
 			return success;
 		}
 	}

@@ -117,7 +117,7 @@ namespace Eklipse
                         textureInfo.imageAspect = ImageAspect::DEPTH;
                         textureInfo.imageUsage = ImageUsage::DEPTH_ATTACHMENT;
 
-                        Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(Texture2D::Create(textureInfo));
+                        Ref<VKTexture2D> texture = CreateRef<VKTexture2D>(textureInfo);
                         m_framebufferAttachments[i].depthAttachment = texture;
                         attachments.push_back(texture->GetImageView());
                     }
@@ -160,7 +160,7 @@ namespace Eklipse
                     textureInfo.imageAspect = ImageAspect::COLOR;
                     textureInfo.imageUsage	= ImageUsage::COLOR_ATTACHMENT | ImageUsage::SAMPLED;
 
-                    Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(Texture2D::Create(textureInfo));
+                    Ref<VKTexture2D> texture = CreateRef<VKTexture2D>(textureInfo);
                     m_framebufferAttachments[idx].colorAttachments[i] = texture;
                     attachments.push_back(texture->GetImageView());
                 }
@@ -178,7 +178,7 @@ namespace Eklipse
                     textureInfo.imageAspect	= ImageAspect::DEPTH;
                     textureInfo.imageUsage	= ImageUsage::DEPTH_ATTACHMENT;
 
-                    Ref<VKTexture2D> texture = std::static_pointer_cast<VKTexture2D>(Texture2D::Create(textureInfo));
+                    Ref<VKTexture2D> texture = CreateRef<VKTexture2D>(textureInfo);
                     m_framebufferAttachments[idx].depthAttachment = texture;
                     attachments.push_back(texture->GetImageView());
                 }
@@ -275,6 +275,10 @@ namespace Eklipse
             m_framebufferInfo.width = width;
             m_framebufferInfo.height = height;
             Build();
+        }
+        Ref<Texture2D> VKFramebuffer::GetColorAttachment(uint32_t index)
+        {
+            return m_framebufferAttachments[m_imageIndex].colorAttachments[index];
         }
         void VKFramebuffer::Dispose()
         {

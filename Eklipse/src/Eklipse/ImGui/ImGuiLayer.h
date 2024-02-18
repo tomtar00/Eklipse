@@ -82,7 +82,7 @@ namespace Eklipse
         virtual void OnAttach() override;
         virtual void OnDetach() override;
         virtual void OnGUI(float deltaTime) override;
-        virtual void OnRender() override;
+        virtual void OnRender(float deltaTime) override;
 
         virtual void OnAPIHasInitialized(ApiType api) override;
         virtual void OnShutdownAPI(bool quit) override;

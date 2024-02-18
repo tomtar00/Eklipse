@@ -28,7 +28,7 @@ namespace Eklipse
             panel->OnGUI(deltaTime);
         }
     }
-    void ImGuiLayer::OnRender()
+    void ImGuiLayer::OnRender(float deltaTime)
     {
         EK_CORE_PROFILE();
         m_adapter->Render();
@@ -163,8 +163,10 @@ namespace Eklipse
         ImGui::StyleColorsDark();
 
         float fontSize = 16.0f;
-        io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Bold.ttf", fontSize);
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Regular.ttf", fontSize);
+        if (FileUtilities::IsPathValid("Assets/Fonts/Inter/Inter-Bold.ttf"))
+            io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Bold.ttf", fontSize);
+        if (FileUtilities::IsPathValid("Assets/Fonts/Inter/Inter-Regular.ttf"))
+            io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Inter/Inter-Regular.ttf", fontSize);
     }
 
     Ref<ImGuiAdapter> ImGuiAdapter::Create(const ImGuiLayerConfig& config)

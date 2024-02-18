@@ -45,13 +45,18 @@ namespace Eklipse
 		uint32_t offset;
 		Vec<ShaderUniformMember> members;
 	};
-
-	// Samplers
 	struct ShaderSampler
 	{
 		String name;
 		uint32_t binding;
 	};
+	struct ShaderStorageBuffer
+	{
+        String name;
+        size_t size;
+        uint32_t binding;
+        Vec<ShaderUniformMember> members;
+    };
 	
 	// Inputs and outputs
 	struct ShaderInput
@@ -78,6 +83,7 @@ namespace Eklipse
 		Vec<ShaderUniformBuffer> uniformBuffers;
 		Vec<ShaderPushConstant> pushConstants;
 		Vec<ShaderSampler> samplers;
+		Vec<ShaderStorageBuffer> storageBuffers;
 		uint32_t maxLocation = 0;
 	};
 

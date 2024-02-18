@@ -37,10 +37,10 @@ namespace Eklipse
             inline VkSampler GetSampler() const { return m_sampler; }
 
         private:
-            VkImage m_image;
-            VkImageView m_imageView;
-            VmaAllocation m_allocation;
-            VkSampler m_sampler;
+            VkImage m_image = VK_NULL_HANDLE;
+            VkImageView m_imageView = VK_NULL_HANDLE;
+            VmaAllocation m_allocation = VK_NULL_HANDLE;
+            VkSampler m_sampler = VK_NULL_HANDLE;
         };
     }
 }

@@ -53,10 +53,9 @@ namespace Eklipse
         uint32_t size;
     };
 
-    int FormatToChannels(ImageFormat format);
-    ImageFormat ChannelsToFormat(int channels);
-
-    bool LoadTextureFromFile(const Path& path, TextureData& outData);
+    EK_API int FormatToChannels(ImageFormat format);
+    EK_API ImageFormat ChannelsToFormat(int channels);
+    EK_API bool LoadTextureFromFile(const Path& path, TextureData& outData);
 
     class Texture : public Asset
     {

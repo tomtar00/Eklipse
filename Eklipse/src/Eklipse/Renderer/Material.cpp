@@ -129,6 +129,13 @@ namespace Eklipse
         std::memcpy(dst, &data, sizeof(T));
     }
 
+    void Material::SetSampler(const String& samplerName, const Ref<Texture2D> texture)
+    {
+        EK_CORE_PROFILE();
+        EK_ASSERT(m_samplers.find(samplerName) != m_samplers.end(), "Sampler '{0}' not found", samplerName);
+        m_samplers.at(samplerName).texture = texture;
+    }
+
     void Material::Bind()
     {
         EK_CORE_PROFILE();
@@ -193,12 +200,10 @@ namespace Eklipse
                 pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size);
                 pushConstant.pushConstantSize = pushConstantRef.size;
 
-                uint32_t offset = 0;
                 pushConstant.dataPointers.clear();
                 for (auto& member : pushConstantRef.members)
                 {
-                    pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + offset, member.size, member.type };
-                    offset += member.size;
+                    pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + member.offset, member.size, member.type };
                 }
             }
             for (auto& samplerRef : reflection.samplers)
@@ -231,12 +236,11 @@ namespace Eklipse
                 {
                     auto& oldPushConstant = it->second;
 
-                    uint32_t offset = 0;
                     std::unordered_map<String, PushConstantData> dataPointers;
                     for (auto& member : pushConstantRef.members)
                     {
                         auto& dataPointer = dataPointers[member.name];
-                        dataPointer = { pushConstant.pushConstantData.get() + offset, member.size, member.type };
+                        dataPointer = { pushConstant.pushConstantData.get() + member.offset, member.size, member.type };
 
                         // if the member already exists, copy the data over
                         auto it = oldPushConstant.dataPointers.find(member.name);
@@ -244,8 +248,6 @@ namespace Eklipse
                         {
                             std::memcpy(dataPointer.data, it->second.data, dataPointer.size);
                         }
-
-                        offset += member.size;
                     }
 
                     oldPushConstant.dataPointers = dataPointers;
@@ -256,11 +258,9 @@ namespace Eklipse
                 // otherwise, create a new push constant
                 else
                 {
-                    uint32_t offset = 0;
                     for (auto& member : pushConstantRef.members)
                     {
-                        pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + offset, member.size, member.type };
-                        offset += member.size;
+                        pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + member.offset, member.size, member.type };
                     }
 
                     auto& mPushConstant = m_pushConstants[pushConstantRef.name];

@@ -36,6 +36,7 @@ namespace Eklipse
     RendererSettings Renderer::s_settings;
     ApiType	Renderer::s_apiType = ApiType::Vulkan;
     std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
+    std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>>	Renderer::s_storageBufferCache;
     static Ref<UniformBuffer> s_cameraUniformBuffer;
 
     bool Renderer::Init()
@@ -58,11 +59,19 @@ namespace Eklipse
     void Renderer::Shutdown()
     {
         EK_CORE_PROFILE();
+
         for (auto&& [name, uniformBuffer] : s_uniformBufferCache)
         {
             uniformBuffer->Dispose();
         }
         s_uniformBufferCache.clear();
+
+        for (auto&& [name, storageBuffer] : s_storageBufferCache)
+        {
+            storageBuffer->Dispose();
+        }
+        s_storageBufferCache.clear();
+
         RenderCommand::API->Shutdown();
     }
 
@@ -228,6 +237,32 @@ namespace Eklipse
         }
 
         EK_ASSERT(false, "Uniform buffer '{0}' not found", uniformBufferName);
+        return nullptr;
+    }
+
+    // Storage buffers
+    Ref<StorageBuffer> Renderer::CreateStorageBuffer(const String& storageBufferName, const size_t size, const uint32_t binding)
+    {
+        EK_CORE_PROFILE();
+        if (s_storageBufferCache.find(storageBufferName) != s_storageBufferCache.end())
+        {
+            s_storageBufferCache.at(storageBufferName)->Dispose();
+        }
+
+        Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding);
+        s_storageBufferCache[storageBufferName] = storageBuffer;
+        EK_CORE_DBG("Created storage buffer '{0}' with size {1} and binding {2}", storageBufferName, size, binding);
+        return storageBuffer;
+    }
+    Ref<StorageBuffer> Renderer::GetStorageBuffer(const String& storageBufferName)
+    {
+        EK_CORE_PROFILE();
+        if (s_storageBufferCache.find(storageBufferName) != s_storageBufferCache.end())
+        {
+            return s_storageBufferCache[storageBufferName];
+        }
+
+        EK_ASSERT(false, "Storage buffer '{0}' not found", storageBufferName);
         return nullptr;
     }
 

@@ -164,7 +164,7 @@ namespace Eklipse
         EK_CORE_TRACE("Recompiling shader '{0}'", Name);
 
         Dispose();
-        m_isValid = Compile(shaderPath, true);
+        Compile(shaderPath, true);
 
         if (m_isValid)
         {
@@ -316,6 +316,32 @@ namespace Eklipse
                 EK_CORE_TRACE("\tBinding: {0}", binding);
                 reflection.samplers.push_back({ resource.name, binding });
             }
+            EK_CORE_TRACE("Storage buffers:");
+            for (const auto& resource : resources.storage_buffers)
+            {
+                auto& name = compiler.get_name(resource.id);
+                const auto& bufferType = compiler.get_type(resource.base_type_id);
+                uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+                size_t bufferSize = compiler.get_declared_struct_size(bufferType);
+                EK_CORE_TRACE("\tName: {0}", name);
+                EK_CORE_TRACE("\tSize: {0}", bufferSize);
+                EK_CORE_TRACE("\tBinding: {0}", binding);
+                ShaderStorageBuffer storageBuffer = { name, bufferSize, binding };
+                for (size_t memberIndex = 0; memberIndex < bufferType.member_types.size(); ++memberIndex)
+                {
+                    const auto& name = compiler.get_member_name(bufferType.self, memberIndex);
+                    const auto& memberType = compiler.get_type(bufferType.member_types[memberIndex]);
+                    size_t memberSize = compiler.get_declared_struct_member_size(bufferType, memberIndex);
+                    uint32_t memberOffset = compiler.get_member_decoration(bufferType.self, memberIndex, spv::DecorationOffset);
+                    ShaderDataType type = SpirvTypeToDataType(memberType);
+                    EK_CORE_TRACE("\t\tName: {0}", name);
+                    EK_CORE_TRACE("\t\tSize: {0}", memberSize);
+                    EK_CORE_TRACE("\t\tOffset: {0}", memberOffset);
+                    EK_CORE_TRACE("\t\tType: {0}", ShaderDataTypeToString(type));
+                    storageBuffer.members.push_back({ name, memberSize, memberOffset, type });
+                }
+                reflection.storageBuffers.push_back(storageBuffer);
+            }
             m_reflections[stage] = reflection;
         }
     }
@@ -392,6 +418,7 @@ namespace Eklipse
             Reflect(m_vulkanSPIRV, Name);
             EK_CORE_DBG("Compiled vulkan binaries for shader '{0}'", Name);
         }
+        m_isValid = success;
         return success;
     }
     StageSourceMap Shader::PreProcess(const String& source) const

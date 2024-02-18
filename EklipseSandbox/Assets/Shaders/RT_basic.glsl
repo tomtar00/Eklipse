@@ -18,8 +18,9 @@ layout(binding = 0) uniform Camera
 out vec4 fragColor;
 
 layout(push_constant) uniform PushConstants {
-    // vec3 uCameraPos;
     vec2 uResolution;
+    vec3 uCameraPos;
+    float uTime;
 } pushConstants;
 
 float rand(vec2 co) {
@@ -128,7 +129,8 @@ vec3 Trace(Ray ray, int maxBounces, vec2 co) {
     return light;
 }
 
-const int NumRaysPerPixel = 10;
+const int NumRaysPerPixel = 1;
+const int NumMaxBounces = 2;
 void main() {
     vec2 uv = gl_FragCoord.xy / pushConstants.uResolution.xy;
     uv = uv * 2.0 - 1.0;
@@ -137,12 +139,12 @@ void main() {
     viewDir.xyz /= viewDir.w;
 
     Ray ray;
-    ray.origin = vec3(0.0, 2.0, 10.0);
+    ray.origin = pushConstants.uCameraPos;
     ray.dir = normalize(viewDir.xyz - ray.origin);
 
     vec3 totalLight = vec3(0.0);
     for (int i = 0; i < NumRaysPerPixel; i++) {
-        totalLight += Trace(ray, 3, uv);
+        totalLight += Trace(ray, NumMaxBounces, uv);
     }
     fragColor = vec4(totalLight / NumRaysPerPixel, 1.0);
 }

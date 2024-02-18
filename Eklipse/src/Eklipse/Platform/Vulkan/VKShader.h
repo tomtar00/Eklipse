@@ -26,9 +26,9 @@ namespace Eklipse
 			virtual bool Compile(const Path& shaderPath, bool forceCompile = false) override;
 
 		private:
-			VkPipeline m_pipeline;
-			VkPipelineLayout m_pipelineLayout;
-			VkDescriptorSetLayout m_descriptorSetLayout;
+			VkPipeline m_pipeline = VK_NULL_HANDLE;
+			VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+			VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 		};
 	}
 }

@@ -18,7 +18,7 @@ namespace Eklipse
 		virtual void OnEvent(Event& event) {}
 
 		virtual void OnUpdate(float deltaTime) {}
-		virtual void OnRender() {}
+		virtual void OnRender(float deltaTime) {}
 		virtual void OnGUI(float deltaTime) {}
 
 		virtual void OnAPIHasInitialized(ApiType api) {}

@@ -59,7 +59,6 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Vertex Buffer creation", int(apiType));
         return nullptr;
     }
-
     Ref<IndexBuffer> IndexBuffer::Create(const Vec<uint32_t>& indices)
     {
         EK_CORE_PROFILE();
@@ -72,8 +71,7 @@ namespace Eklipse
         EK_ASSERT(false, "API {0} not implemented for Index Buffer creation", int(apiType));
         return nullptr;
     }
-
-    Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
+    Ref<UniformBuffer> UniformBuffer::Create(size_t size, uint32_t binding)
     {
         EK_CORE_PROFILE();
         auto apiType = Renderer::GetAPI();
@@ -83,6 +81,18 @@ namespace Eklipse
             case ApiType::OpenGL: return CreateRef<OpenGL::GLUniformBuffer>(size, binding);
         }
         EK_ASSERT(false, "API {0} not implemented for Uniform Buffer creation", int(apiType));
+        return nullptr;
+    }
+    Ref<StorageBuffer> StorageBuffer::Create(size_t size, uint32_t binding)
+    {
+        EK_CORE_PROFILE();
+        auto apiType = Renderer::GetAPI();
+        switch (apiType)
+        {
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKStorageBuffer>(size, binding);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLStorageBuffer>(size, binding);
+        }
+        EK_ASSERT(false, "API {0} not implemented for Storage Buffer creation", int(apiType));
         return nullptr;
     }
 }

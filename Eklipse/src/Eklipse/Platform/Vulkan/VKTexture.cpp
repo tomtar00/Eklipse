@@ -363,9 +363,12 @@ namespace Eklipse
         void VKTexture2D::Dispose()
         {
             EK_CORE_PROFILE();
-            vkDestroySampler(g_logicalDevice, m_sampler, nullptr);
-            vkDestroyImageView(g_logicalDevice, m_imageView, nullptr);
-            vmaDestroyImage(g_allocator, m_image, m_allocation);
+            if (m_sampler != VK_NULL_HANDLE)
+                vkDestroySampler(g_logicalDevice, m_sampler, nullptr);
+            if (m_imageView != VK_NULL_HANDLE)
+                vkDestroyImageView(g_logicalDevice, m_imageView, nullptr);
+            if (m_image != VK_NULL_HANDLE)
+                vmaDestroyImage(g_allocator, m_image, m_allocation);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Eklipse
 			VmaAllocation m_allocation{};
 		};
 
-		class VKVertexBuffer : public Eklipse::VertexBuffer, public VKBuffer
+		class VKVertexBuffer : public VertexBuffer, public VKBuffer
 		{
 		public:
 			VKVertexBuffer(const Vec<float>& vertices);
@@ -31,7 +31,7 @@ namespace Eklipse
 			virtual void Dispose() const override;
 		};
 
-		class VKIndexBuffer : public Eklipse::IndexBuffer, public VKBuffer
+		class VKIndexBuffer : public IndexBuffer, public VKBuffer
 		{
 		public:
 			VKIndexBuffer(const Vec<uint32_t>& indices);
@@ -41,18 +41,14 @@ namespace Eklipse
 			virtual size_t GetCount() const override;
 		};
 
-		class VKUniformBuffer : public Eklipse::UniformBuffer, public VKBuffer
+		class VKUniformBuffer : public UniformBuffer, public VKBuffer
 		{
 		public:
-			VKUniformBuffer(uint32_t size, uint32_t binding);
+			VKUniformBuffer(size_t size, uint32_t binding);
 
 			virtual void Dispose() const override;
-			virtual void SetData(const void* data, uint32_t size, uint32_t offset) override;
+			virtual void SetData(const void* data, size_t size, uint32_t offset) override;
 			virtual void* GetBuffer() const override;
-
-		private:
-			void* m_mappedData;
-			VkDeviceMemory m_memory;
 		};
 
 		class VKStagingBuffer : public VKBuffer
@@ -63,11 +59,14 @@ namespace Eklipse
 			void* m_data;
 		};	
 
-		class VKStorageBuffer : public VKBuffer
+		class VKStorageBuffer : public StorageBuffer, public VKBuffer
 		{
 		public:
-			void Setup(VKStagingBuffer& stagingBuffer, VkDeviceSize bufferSize);
-			void Dispose();
+			VKStorageBuffer(size_t size, uint32_t binding);
+
+			virtual void Dispose() const override;
+			virtual void SetData(const void* data, size_t size, uint32_t offset) override;
+			virtual void* GetBuffer() const override;
 		};
 	}
 }

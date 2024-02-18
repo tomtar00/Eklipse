@@ -227,7 +227,7 @@ namespace Eklipse
                     Renderer::BeginDefaultRenderPass();
                     for (auto& layer : m_layerStack)
                     {
-                        layer->OnRender();
+                        layer->OnRender(deltaTime);
                     }
                     Renderer::EndDefaultRenderPass();
                     Renderer::Submit();

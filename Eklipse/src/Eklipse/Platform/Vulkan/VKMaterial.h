@@ -22,6 +22,8 @@ namespace Eklipse
 			virtual void SetShader(AssetHandle shaderHandle) override;
 			virtual void SetShader(const Ref<Shader> shader) override;
 
+			virtual void SetSampler(const String& samplerName, const Ref<Texture2D> texture) override;
+
 		private:
 			void CreateDescriptorSets();
 

@@ -25,6 +25,8 @@ namespace Eklipse
 		const float GetAspectRatio() const;
 		virtual void Resize(uint32_t width, uint32_t height);
 
+		virtual Ref<Texture2D> GetColorAttachment(uint32_t index) = 0;
+
 		virtual FramebufferInfo& GetInfo() = 0;
 		virtual void Build() = 0;
 		virtual void Bind() = 0;

@@ -31,7 +31,7 @@ namespace Eklipse
 		}
 		uint32_t GLFramebuffer::GetMainColorAttachment()
 		{
-			return m_colorAttachments[0];
+			return m_colorAttachments[0]->GetID();
 		}
 
 		void GLFramebuffer::Build()
@@ -45,17 +45,13 @@ namespace Eklipse
 			bool multiSampled = msaaSamples > 1;
 			m_texTarget = multiSampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 
-			// TODO: maybe use renderbuffers for better performance (no shader read)
-
 			if (m_framebufferInfo.colorAttachmentInfos.size() > 0)
 			{
 				// Color attachments
 				m_colorAttachments.resize(m_framebufferInfo.colorAttachmentInfos.size());
-				glGenTextures(m_colorAttachments.size(), m_colorAttachments.data());
-
 				for (size_t i = 0; i < m_colorAttachments.size(); i++)
 				{
-					glBindTexture(m_texTarget, m_colorAttachments[i]);
+					/*glBindTexture(m_texTarget, m_colorAttachments[i]);
 					GLenum colorFormat = ConvertToGLFormat(m_framebufferInfo.colorAttachmentInfos[i].textureFormat);
 
 					if (multiSampled)
@@ -69,9 +65,21 @@ namespace Eklipse
 						glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 						glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 						glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-					}
+					}*/
 
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_texTarget, m_colorAttachments[i], 0);
+					TextureInfo textureInfo{};
+					textureInfo.width = m_framebufferInfo.width;
+					textureInfo.height = m_framebufferInfo.height;
+					textureInfo.mipMapLevel = 1;
+					textureInfo.samples = m_framebufferInfo.numSamples;
+					textureInfo.imageFormat = m_framebufferInfo.colorAttachmentInfos[i].textureFormat;
+					textureInfo.imageLayout = ImageLayout::SHADER_READ_ONLY;
+					textureInfo.imageAspect = ImageAspect::COLOR;
+					textureInfo.imageUsage = ImageUsage::COLOR_ATTACHMENT | ImageUsage::SAMPLED;
+
+					m_colorAttachments[i] = CreateRef<GLTexture2D>(textureInfo);
+
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_texTarget, m_colorAttachments[i]->GetID(), 0);
 				}
 				glBindTexture(m_texTarget, 0);
 			}
@@ -79,7 +87,7 @@ namespace Eklipse
 			// Depth and stencil attachment
 			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED)
 			{
-				glGenTextures(1, &m_depthAttachment);
+				/*glGenTextures(1, &m_depthAttachment);
 				glBindTexture(m_texTarget, m_depthAttachment);
 
 				GLenum depthFormat = ConvertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
@@ -95,9 +103,20 @@ namespace Eklipse
 					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				}
+				}*/
 
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment, 0);
+				TextureInfo textureInfo{};
+				textureInfo.width = m_framebufferInfo.width;
+				textureInfo.height = m_framebufferInfo.height;
+				textureInfo.mipMapLevel = 1;
+				textureInfo.samples = m_framebufferInfo.numSamples;
+				textureInfo.imageFormat = m_framebufferInfo.depthAttachmentInfo.textureFormat;
+				textureInfo.imageAspect = ImageAspect::DEPTH;
+				textureInfo.imageUsage = ImageUsage::DEPTH_ATTACHMENT;
+
+				m_depthAttachment = CreateRef<GLTexture2D>(textureInfo);
+
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment->GetID(), 0);
 				glBindTexture(m_texTarget, 0);
 			}
 			else
@@ -147,14 +166,20 @@ namespace Eklipse
 			m_framebufferInfo.height = height;
 			Build();
 		}
+		Ref<Texture2D> GLFramebuffer::GetColorAttachment(uint32_t index)
+		{
+			return m_colorAttachments[index];
+		}
 		void GLFramebuffer::Dispose()
 		{
 			EK_CORE_PROFILE();
 			glDeleteFramebuffers(1, &m_id);
-			glDeleteTextures(m_colorAttachments.size(), m_colorAttachments.data());
+			
+			for (auto& colorAttachment : m_colorAttachments)
+                colorAttachment->Dispose();
 
-			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED)
-				glDeleteTextures(1, &m_depthAttachment);
+			if (m_depthAttachment)
+				m_depthAttachment->Dispose();
 		}
 	}
 }

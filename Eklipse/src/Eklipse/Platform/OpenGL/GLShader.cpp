@@ -40,7 +40,7 @@ namespace Eklipse
 			: m_id(0), Shader(filePath, handle)
 		{
 			EK_CORE_PROFILE();
-			m_isValid = Compile(filePath);
+			Compile(filePath);
 		}
 
 		uint32_t GLShader::GetID() const
@@ -65,8 +65,11 @@ namespace Eklipse
 		}
 		void GLShader::Dispose()
 		{
-			if (m_isValid)
+			EK_CORE_PROFILE();
+			EK_CORE_TRACE("Disposing OpenGL shader '{0}'", Name);
+			//if (m_isValid)
 				glDeleteProgram(m_id);
+			EK_CORE_DBG("Disposed OpenGL shader '{0}'", Name);
 		}
 
 		const String GLShader::GetCacheDirectoryPath()
@@ -87,6 +90,7 @@ namespace Eklipse
 				success = success && CompileOrGetOpenGLBinaries(shaderPath, forceCompile);
 				if (success)
 				{
+					Dispose();
 					CreateProgram();
 					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, timer.ElapsedTimeMs());
 				}
@@ -179,6 +183,7 @@ namespace Eklipse
 				}
 			}
 			EK_CORE_DBG("Compiled or got binaries for OpenGL shader '{0}'", Name);
+			m_isValid = success;
 			return success;
 		}
 		void GLShader::CreateProgram()

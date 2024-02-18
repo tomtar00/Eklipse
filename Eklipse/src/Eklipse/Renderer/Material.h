@@ -46,6 +46,7 @@ namespace Eklipse
 
         template <typename T>
         void SetConstant(const String& constantName, const String& memberName, const T* data, size_t size);
+        virtual void SetSampler(const String& samplerName, const Ref<Texture2D> texture);
 
         virtual void Bind();
         virtual void ApplyChanges(const Path& filePath);

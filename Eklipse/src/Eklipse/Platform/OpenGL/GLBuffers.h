@@ -6,7 +6,7 @@ namespace Eklipse
 {
 	namespace OpenGL
 	{
-		class GLVertexBuffer : public Eklipse::VertexBuffer
+		class GLVertexBuffer : public VertexBuffer
 		{
 		public:
 			GLVertexBuffer(const Vec<float>& vertices);
@@ -21,7 +21,7 @@ namespace Eklipse
 			uint32_t m_id;
 		};
 
-		class GLIndexBuffer : public Eklipse::IndexBuffer
+		class GLIndexBuffer : public IndexBuffer
 		{
 		public:
 			GLIndexBuffer(const Vec<uint32_t>& indices);
@@ -35,14 +35,27 @@ namespace Eklipse
 			uint32_t m_id;
 		};
 
-		class GLUniformBuffer : public Eklipse::UniformBuffer
+		class GLUniformBuffer : public UniformBuffer
 		{
 		public:
-			GLUniformBuffer(uint32_t size, uint32_t binding);
+			GLUniformBuffer(size_t size, uint32_t binding);
 			~GLUniformBuffer();
 
 			virtual void Dispose() const override;
-			virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+			virtual void SetData(const void* data, size_t size, uint32_t offset = 0) override;
+			virtual void* GetBuffer() const override;
+		private:
+			uint32_t m_id;
+		};
+
+		class GLStorageBuffer : public StorageBuffer
+		{
+		public:
+			GLStorageBuffer(size_t size, uint32_t binding);
+			~GLStorageBuffer();
+
+			virtual void Dispose() const override;
+			virtual void SetData(const void* data, size_t size, uint32_t offset = 0) override;
 			virtual void* GetBuffer() const override;
 		private:
 			uint32_t m_id;

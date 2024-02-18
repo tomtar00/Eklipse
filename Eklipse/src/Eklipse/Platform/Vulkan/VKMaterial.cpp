@@ -70,6 +70,32 @@ namespace Eklipse
 			Material::SetShader(shader);
 			m_vkShader = std::static_pointer_cast<VKShader>(m_shader);
 		}
+
+		void VKMaterial::SetSampler(const String& samplerName, const Ref<Texture2D> texture)
+		{
+			EK_CORE_PROFILE();
+			Material::SetSampler(samplerName, texture);
+			auto& vkTexture = std::static_pointer_cast<VKTexture2D>(texture);
+
+			for (size_t i = 0; i < g_maxFramesInFlight; i++)
+			{
+				VkDescriptorImageInfo imageInfo{};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = vkTexture->GetImageView();
+				imageInfo.sampler = vkTexture->GetSampler();
+
+                VkWriteDescriptorSet descriptorWrite{};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = m_descriptorSets[i];
+                descriptorWrite.dstBinding = m_samplers.at(samplerName).binding;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pImageInfo = &imageInfo;
+
+                vkUpdateDescriptorSets(g_logicalDevice, 1, &descriptorWrite, 0, nullptr);
+            }
+		}
 		
 		void VKMaterial::CreateDescriptorSets()
 		{
@@ -115,6 +141,29 @@ namespace Eklipse
 
 						descriptorWrites.push_back(descriptorWrite);
 						EK_CORE_TRACE("Binding uniform buffer '{0}' to descriptor set {1} at binding {2} for material {3}", ubo.name, i, ubo.binding, Name);
+					}
+
+					for (auto& storage : reflection.storageBuffers)
+					{
+						Ref<VKStorageBuffer> storageBuffer = std::static_pointer_cast<VKStorageBuffer>(
+							Renderer::GetStorageBuffer(storage.name)
+						);
+
+						VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo;
+						bufferInfo->buffer = storageBuffer->m_buffer;
+						bufferInfo->offset = 0;
+						bufferInfo->range = storageBuffer->GetSize();
+
+						VkWriteDescriptorSet descriptorWrite{};
+						descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						descriptorWrite.dstSet = m_descriptorSets[i];
+						descriptorWrite.dstBinding = storage.binding;
+						descriptorWrite.dstArrayElement = 0;
+						descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+						descriptorWrite.descriptorCount = 1;
+						descriptorWrite.pBufferInfo = bufferInfo;
+
+						descriptorWrites.push_back(descriptorWrite);
 					}
 				}
 
