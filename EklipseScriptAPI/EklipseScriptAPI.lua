@@ -31,7 +31,8 @@ project "EklipseScriptAPI"
 		"%{Include.imguizmo}",
 		"%{Include.nfd}",
 		"%{Include.yamlcpp}",
-		"%{Include.filewatch}"
+		"%{Include.filewatch}",
+        "%{Include.shaderc}",
 	}
 
 	links

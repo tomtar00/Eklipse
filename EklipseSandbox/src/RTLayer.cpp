@@ -2,15 +2,26 @@
 
 namespace Eklipse
 {
-    static float time = 0.0f;
-
     void RTLayer::OnAttach()
     {
-        m_cameraTransform.position = { 0.0f, 0.0f, 1.0f };
-        m_cameraTransform.rotation = { 0.0f, 0.0f, 0.0f };
-        m_camera.m_fov = 90.0f;
+        m_cameraTransform.position = { 0.0f, 0.5f, 5.0f };
+        m_cameraTransform.rotation = { -1.0f, 0.0f, 0.0f };
+        m_camera.m_fov = 50.0f;
 
         m_shaderPath = "Assets/Shaders/RT_accum.glsl";
+
+        m_frames = 1;
+        m_raysPerPixel = 1;
+        m_maxBounces = 3;
+        m_reset = 0;
+
+        // Background
+        m_skyColorHorizon = { 0.7f, 0.9f, 1.0f };
+        m_skyColorZenith = { 0.2f, 0.5f, 0.8f };
+        m_groundColor = { 0.6f, 0.6f, 0.6f };
+        m_sunDirection = { 0.0f, 0.0f, 0.0f };
+        m_sunFocus = 10.0f;
+        m_sunIntensity = 3.0f;
     }
 
     void RTLayer::OnEvent(Event& event)
@@ -18,23 +29,23 @@ namespace Eklipse
         EventDispatcher dispatcher(event);
         dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e)
         {
-            //glm::vec2 screenSize = { e.GetWidth(), e.GetHeight() };
-            //m_rayMaterial->SetConstant("pushConstants", "uResolution", &screenSize, sizeof(glm::vec2));
-
             Renderer::WaitDeviceIdle();
-
             ResetPixelBuffer();
-            time = 0.0f;
-
             m_rayMaterial->Dispose();
             InitMaterial();
-
         }, false);
     }
     void RTLayer::OnGUI(float deltaTime)
     {
         ImGui::Begin("Ray Tracing");
         ImGui::Text("FPS: %f", Stats::Get().fps);
+        
+        ImGui::Separator();
+        bool needsReset = false;
+        needsReset |= ImGui::DragFloat3("Camera Position", &m_cameraTransform.position[0], 0.1f);
+        needsReset |= ImGui::DragFloat3("Camera Rotation", &m_cameraTransform.rotation[0], 0.1f);
+        needsReset |= ImGui::SliderFloat("Camera FOV", &m_camera.m_fov, 1.0f, 120.0f);
+
         ImGui::Separator();
         static int shaderIndex = 1;
         if (ImGui::Combo("Shader", &shaderIndex, "RT_basic\0RT_accum"))
@@ -58,10 +69,50 @@ namespace Eklipse
             if (m_rayShader->Compile(m_shaderPath, true))
                 m_rayMaterial->OnShaderReloaded();
         }
+        if (ImGui::SliderInt("Rays Per Pixel", &m_raysPerPixel, 1, 20))
+        {
+            m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
+            needsReset = true;
+        }
+        if (ImGui::SliderInt("Max Bounces", &m_maxBounces, 1, 20))
+        {
+            m_rayMaterial->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
+            needsReset = true;
+        }
+
         ImGui::Separator();
-        ImGui::DragFloat3("Camera Position", &m_cameraTransform.position[0], 0.1f);
-        ImGui::DragFloat3("Camera Rotation", &m_cameraTransform.rotation[0], 0.1f);
-        if (ImGui::SliderFloat("Camera FOV", &m_camera.m_fov, 1.0f, 120.0f))
+        if (ImGui::ColorEdit3("Sky Color Horizon", &m_skyColorHorizon[0]))
+        {
+            m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
+            needsReset = true;
+        }
+        if (ImGui::ColorEdit3("Sky Color Zenith", &m_skyColorZenith[0]))
+        {
+            m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
+            needsReset = true;
+        }
+        if (ImGui::ColorEdit3("Ground Color", &m_groundColor[0]))
+        {
+            m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
+            needsReset = true;
+        }
+        if (ImGui::DragFloat3("Sun Direction", &m_sunDirection[0], 0.1f))
+        {
+            m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
+            needsReset = true;
+        }
+        if (ImGui::SliderFloat("Sun Focus", &m_sunFocus, 0.1f, 10.0f))
+        {
+            m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
+            needsReset = true;
+        }
+        if (ImGui::SliderFloat("Sun Intensity", &m_sunIntensity, 0.1f, 10.0f))
+        {
+            m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
+            needsReset = true;
+        }
+        
+        if (needsReset)
         {
             ResetPixelBuffer();
         }
@@ -69,13 +120,16 @@ namespace Eklipse
     }
     void RTLayer::OnRender(float deltaTime)
     {
-        time += deltaTime;
         m_camera.UpdateViewProjectionMatrix(m_cameraTransform, g_defaultFramebuffer->GetAspectRatio());
-        m_rayMaterial->SetConstant("pushConstants", "uCameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pushConstants", "uTime", &time, sizeof(float));
+        m_rayMaterial->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
+        m_rayMaterial->SetConstant("pData", "Frames", &m_frames, sizeof(int));
+        m_rayMaterial->SetConstant("pData", "Reset", &m_reset, sizeof(int));
         
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
+
+        m_reset = 0;
+        ++m_frames;
     }
     
     void RTLayer::OnAPIHasInitialized(ApiType api)
@@ -122,57 +176,26 @@ namespace Eklipse
     {
         glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
 
-        uint32_t numChannels = 4;
-        uint32_t floatSize = sizeof(float);
-        size_t bufferSize = screenSize.x * screenSize.y * numChannels * floatSize;
-        m_pixelBuffer = Renderer::CreateStorageBuffer("pixels", bufferSize, 1);
+        size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
+        m_pixelBuffer = Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
 
         m_rayMaterial = Material::Create(m_rayShader);
-        m_rayMaterial->SetConstant("pushConstants", "uResolution", &screenSize, sizeof(glm::vec2));
+
+        m_rayMaterial->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
+        m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
+        m_rayMaterial->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
+        m_rayMaterial->SetConstant("pData", "Reset", &m_reset, sizeof(int));
+
+        m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
+        m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
+        m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
+        m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
+        m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
+        m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
     }
     void RTLayer::ResetPixelBuffer()
     {
-        glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
-        size_t size = screenSize.x * screenSize.y * 4 * sizeof(float);
-        uint8_t* data = new uint8_t[size];
-
-        for (int i = 0; i < size; i += 4)
-        {
-            data[i]        = 0;
-            data[i + 1]    = 0;
-            data[i + 2]    = 0;
-            data[i + 3]    = 255;
-        }
-
-        m_pixelBuffer->SetData(data, size);
-        delete data;
+        m_frames = 1;
+        m_reset = 1;
     }
-    //void RTLayer::InitTexture()
-    //{
-    //    glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
-
-    //    TextureInfo info{};
-    //    info.width = screenSize.x;
-    //    info.height = screenSize.y;
-    //    info.imageFormat = ImageFormat::RGBA8;
-    //    info.imageAspect = ImageAspect::COLOR;
-    //    info.imageLayout = ImageLayout::SHADER_READ_ONLY;
-    //    info.imageUsage = ImageUsage::SAMPLED | ImageUsage::TRASNFER_DST;
-    //    TextureData data{};
-    //    data.info = info;
-    //    data.size = info.width * info.height * FormatToChannels(info.imageFormat);
-    //    data.data = new uint8_t[data.size];
-
-    //    for (int i = 0; i < data.size; i += 4)
-    //    {
-    //        data.data[i]        = 0;
-    //        data.data[i + 1]    = 0;
-    //        data.data[i + 2]    = 0;
-    //        data.data[i + 3]    = 255;
-    //    }
-
-    //    m_previousFrame = Texture2D::Create(data);
-    //    m_rayMaterial->SetSampler("uPreviousFrame", m_previousFrame);
-    //    delete data.data;
-    //}
 }

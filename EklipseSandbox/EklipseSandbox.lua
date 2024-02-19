@@ -30,7 +30,8 @@ project "EklipseSandbox"
 		"%{Include.nfd}",
 		"%{Include.yamlcpp}",
 		"%{Include.filewatch}",
-		"%{Include.dylib}"
+		"%{Include.dylib}",
+        "%{Include.shaderc}",
 	}
 
 	links

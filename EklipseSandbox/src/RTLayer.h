@@ -31,5 +31,19 @@ namespace Eklipse
 
         Camera m_camera;
         Transform m_cameraTransform;
+
+        // Data
+        int m_frames;
+        int m_raysPerPixel;
+        int m_maxBounces;
+        int m_reset;
+
+        // Background
+        glm::vec3 m_skyColorHorizon;
+        glm::vec3 m_skyColorZenith;
+        glm::vec3 m_groundColor;
+        glm::vec3 m_sunDirection;
+        float m_sunFocus;
+        float m_sunIntensity;
     };
 }

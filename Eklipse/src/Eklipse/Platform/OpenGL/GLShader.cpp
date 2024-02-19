@@ -113,6 +113,7 @@ namespace Eklipse
 			shaderc::CompileOptions options;
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 			options.SetSourceLanguage(shaderc_source_language_glsl);
+			options.SetIncluder(Unique<shaderc::CompileOptions::IncluderInterface>(new ShaderIncluder));
 
 			Path cacheDirectory = GetCacheDirectoryPath();
 

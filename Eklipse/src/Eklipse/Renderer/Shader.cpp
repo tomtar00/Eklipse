@@ -8,7 +8,6 @@
 #include <Eklipse/Platform/Vulkan/VKShader.h>
 #include <Eklipse/Utils/File.h>
 
-#include <shaderc/shaderc.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
 
@@ -355,6 +354,7 @@ namespace Eklipse
         shaderc::CompileOptions options;
         options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
         options.SetAutoMapLocations(true);
+        options.SetIncluder(Unique<shaderc::CompileOptions::IncluderInterface>(new ShaderIncluder));
 
         //! Strips reflection info
         //options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -449,5 +449,36 @@ namespace Eklipse
         EK_CORE_DBG("Preprocessed shader source in shader '{0}'", Name);
 
         return shaderSources;
+    }
+    shaderc_include_result* ShaderIncluder::GetInclude(const char* requested_source, shaderc_include_type type, const char* requesting_source, size_t include_depth)
+    {
+        // Load the requested file
+        Path requested_source_path = Path(requesting_source).parent_path() / requested_source;
+        std::ifstream file(requested_source_path);
+        if (!file.is_open()) {
+            EK_CORE_ERROR("Failed to open included file: {}", requested_source_path.string());
+            return nullptr;
+        }
+
+        // Read the file content
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string source_string = buffer.str();
+
+        // Create shaderc_include_result
+        auto* result = new shaderc_include_result;
+        result->content = strdup(source_string.c_str());
+        result->content_length = source_string.size();
+        result->source_name = strdup(requested_source);
+        result->source_name_length = strlen(requested_source);
+        result->user_data = nullptr;
+
+        return result;
+    }
+    void ShaderIncluder::ReleaseInclude(shaderc_include_result* data)
+    {
+        free((void*)data->content);
+        free((void*)data->source_name);
+        delete data;
     }
 }

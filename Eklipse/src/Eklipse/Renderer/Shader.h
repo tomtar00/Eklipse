@@ -4,6 +4,8 @@
 #include <Eklipse/Utils/File.h>
 #include <Eklipse/Assets/Asset.h>
 
+#include <shaderc/shaderc.hpp>
+
 namespace Eklipse
 {
 	enum class ShaderStage
@@ -132,5 +134,12 @@ namespace Eklipse
 
 		StageReflectionMap m_reflections;
 		StageSpirvMap m_vulkanSPIRV;
+	};
+
+	class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
+	{
+	public:
+        virtual shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type type, const char* requesting_source, size_t include_depth) override;
+        virtual void ReleaseInclude(shaderc_include_result* data) override;
 	};
 }
