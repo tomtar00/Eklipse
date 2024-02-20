@@ -19,9 +19,10 @@ namespace Eklipse
         m_skyColorHorizon = { 0.7f, 0.9f, 1.0f };
         m_skyColorZenith = { 0.2f, 0.5f, 0.8f };
         m_groundColor = { 0.6f, 0.6f, 0.6f };
-        m_sunDirection = { 0.0f, 0.0f, 0.0f };
-        m_sunFocus = 10.0f;
-        m_sunIntensity = 3.0f;
+        m_sunColor = { 1.0f, 1.0f, 0.8f };
+        m_sunDirection = { 0.0f, -0.5f, -1.0f };
+        m_sunFocus = 0.99f;
+        m_sunIntensity = 5.0f;
     }
 
     void RTLayer::OnEvent(Event& event)
@@ -96,12 +97,17 @@ namespace Eklipse
             m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
             needsReset = true;
         }
+        if (ImGui::ColorEdit3("Sun Color", &m_sunColor[0]))
+        {
+            m_rayMaterial->SetConstant("pData", "SunColor", &m_sunColor, sizeof(glm::vec3));
+            needsReset = true;
+        }
         if (ImGui::DragFloat3("Sun Direction", &m_sunDirection[0], 0.1f))
         {
             m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
             needsReset = true;
         }
-        if (ImGui::SliderFloat("Sun Focus", &m_sunFocus, 0.1f, 10.0f))
+        if (ImGui::SliderFloat("Sun Focus", &m_sunFocus, 0.1f, 0.99f))
         {
             m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
             needsReset = true;
@@ -178,6 +184,7 @@ namespace Eklipse
 
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         m_pixelBuffer = Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
+        m_meshBuffer = Renderer::CreateStorageBuffer("bMeshes", 1, 2);
 
         m_rayMaterial = Material::Create(m_rayShader);
 
@@ -189,9 +196,11 @@ namespace Eklipse
         m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
+        m_rayMaterial->SetConstant("pData", "SunColor", &m_sunColor, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
         m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
+
     }
     void RTLayer::ResetPixelBuffer()
     {

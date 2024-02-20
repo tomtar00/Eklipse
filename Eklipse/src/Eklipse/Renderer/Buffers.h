@@ -48,6 +48,7 @@ namespace Eklipse
 
 		inline uint32_t GetStride() const { return m_stride; }
 		inline const Vec<BufferElement>& GetElements() const { return m_elements; }
+		inline void AddElement(const BufferElement& element) { m_elements.push_back(element); }
 
 		Vec<BufferElement>::iterator begin() { return m_elements.begin(); }
 		Vec<BufferElement>::iterator end() { return m_elements.end(); }

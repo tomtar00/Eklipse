@@ -22,7 +22,8 @@ namespace Eklipse
 		INT, INT2, INT3, INT4,
 		FLOAT, FLOAT2, FLOAT3, FLOAT4, 
 		MAT3, MAT4, 
-		SAMPLER2D
+		SAMPLER2D,
+		STRUCT
 	};
 
 	// Buffer data

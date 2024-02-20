@@ -28,6 +28,7 @@ namespace Eklipse
         Ref<Material> m_rayMaterial;
         Ref<VertexArray> m_fullscreenVA;
         Ref<StorageBuffer> m_pixelBuffer;
+        Ref<StorageBuffer> m_meshBuffer;
 
         Camera m_camera;
         Transform m_cameraTransform;
@@ -42,6 +43,7 @@ namespace Eklipse
         glm::vec3 m_skyColorHorizon;
         glm::vec3 m_skyColorZenith;
         glm::vec3 m_groundColor;
+        glm::vec3 m_sunColor;
         glm::vec3 m_sunDirection;
         float m_sunFocus;
         float m_sunIntensity;

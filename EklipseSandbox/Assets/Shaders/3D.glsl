@@ -12,6 +12,7 @@ layout(push_constant) uniform VertexConstants
 } uVertConst;
 
 in vec3 inPosition;
+in vec3 inNormal;
 in vec3 inColor;
 in vec2 inTexCoord;
 
@@ -25,12 +26,12 @@ void main()
 
 layout(push_constant) uniform FragmentConstants 
 {
-	layout(offset = 64) vec4 Color;
+	vec3 Color;
 } uFragConst;
 
 out vec4 outColor;
 
 void main()
 {
-    outColor = uFragConst.Color;
+    outColor = vec4(uFragConst.Color, 1.0);
 }

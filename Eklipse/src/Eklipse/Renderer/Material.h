@@ -84,11 +84,11 @@ namespace Eklipse
 
         EK_ASSERT(m_pushConstants.find(constantName) != m_pushConstants.end(), "({0}) Push constant '{1}' not found", Name, constantName);
         auto& pushConstant = m_pushConstants.at(constantName);
+
         EK_ASSERT(pushConstant.dataPointers.find(memberName) != pushConstant.dataPointers.end(), "({0}) Push constant '{1}' member '{2}' not found", Name, constantName, memberName);
-
         auto& dataPointer = pushConstant.dataPointers.at(memberName);
-        EK_ASSERT(dataPointer.size == size, "({0}) Push constant '{1}' member '{2}' size mismatch. Required = {3} Given = {4}", Name, constantName, memberName, dataPointer.size, size);
 
+        EK_ASSERT(dataPointer.size == size, "({0}) Push constant '{1}' member '{2}' size mismatch. Required = {3} Given = {4}", Name, constantName, memberName, dataPointer.size, size);
         std::memcpy(dataPointer.data, data, size);
     }
 }

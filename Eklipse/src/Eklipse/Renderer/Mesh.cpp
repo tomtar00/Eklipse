@@ -24,6 +24,10 @@ namespace Eklipse
 		Vec<float> vertices;
 		Vec<uint32_t> indices;
 
+		bool hasNormals = !attrib.normals.empty();
+		bool hasColors = !attrib.colors.empty();
+		bool hasTexCoords = !attrib.texcoords.empty();
+
 		for (const auto& shape : shapes)
 		{
 			for (const auto& index : shape.mesh.indices)
@@ -32,12 +36,42 @@ namespace Eklipse
 				vertices.push_back(attrib.vertices[3 * index.vertex_index + 1]);
 				vertices.push_back(attrib.vertices[3 * index.vertex_index + 2]);
 
-				vertices.push_back(attrib.colors[3 * index.vertex_index + 0]);
-				vertices.push_back(attrib.colors[3 * index.vertex_index + 1]);
-				vertices.push_back(attrib.colors[3 * index.vertex_index + 2]);
+				if (hasNormals)
+				{
+					vertices.push_back(attrib.normals[3 * index.normal_index + 0]);
+					vertices.push_back(attrib.normals[3 * index.normal_index + 1]);
+					vertices.push_back(attrib.normals[3 * index.normal_index + 2]);
+				}
+				else
+				{
+                    vertices.push_back(0.0f);
+                    vertices.push_back(0.0f);
+                    vertices.push_back(0.0f);
+                }
 
-				vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-				vertices.push_back(1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
+				if (hasColors)
+				{
+					vertices.push_back(attrib.colors[3 * index.vertex_index + 0]);
+					vertices.push_back(attrib.colors[3 * index.vertex_index + 1]);
+					vertices.push_back(attrib.colors[3 * index.vertex_index + 2]);
+				}
+				else
+				{
+                    vertices.push_back(1.0f);
+                    vertices.push_back(1.0f);
+                    vertices.push_back(1.0f);
+                }
+
+				if (hasTexCoords)
+				{
+					vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
+					vertices.push_back(1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
+				}
+				else
+				{
+                    vertices.push_back(0.0f);
+                    vertices.push_back(0.0f);
+                }
 
 				indices.push_back(indices.size());
 			}
@@ -45,8 +79,9 @@ namespace Eklipse
 
 		BufferLayout layout = {
 			{ "inPosition", ShaderDataType::FLOAT3, false },
-			{ "inColor",	ShaderDataType::FLOAT3, false },
-			{ "inTexCoord", ShaderDataType::FLOAT2, false }
+			{ "inNormal", ShaderDataType::FLOAT3, false },
+			{ "inColor", ShaderDataType::FLOAT3, false },
+            { "inTexCoord", ShaderDataType::FLOAT2, false }
 		};
 
 		Ref<VertexArray> vertexArray = VertexArray::Create();

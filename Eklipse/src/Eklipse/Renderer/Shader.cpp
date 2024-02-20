@@ -64,6 +64,7 @@ namespace Eklipse
             if (type.vecsize == 3) return ShaderDataType::INT3;
             if (type.vecsize == 4) return ShaderDataType::INT4;
         }
+        if (type.basetype == spirv_cross::SPIRType::Struct) return ShaderDataType::STRUCT;
 
         EK_ASSERT(false, "Unkown SPIR-V type! Type: {0}", (uint32_t)type.basetype);
         return ShaderDataType::NONE;
@@ -86,6 +87,7 @@ namespace Eklipse
         case ShaderDataType::MAT3:     return "mat3";
         case ShaderDataType::MAT4:     return "mat4";
         case ShaderDataType::SAMPLER2D:return "sampler2D";
+        case ShaderDataType::STRUCT:   return "struct";
         }
         EK_ASSERT(false, "Unkown data type!");
         return "none";
