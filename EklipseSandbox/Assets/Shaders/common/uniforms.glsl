@@ -14,13 +14,12 @@ layout (binding = 2) buffer MeshData {
 
 layout(push_constant) uniform Data {
 
-    // 36 bytes
+    // 32 bytes
     vec2 Resolution;
     vec3 CameraPos;
     uint Frames;
     uint RaysPerPixel;
     uint MaxBounces;
-    uint Reset;
 
     // 68 bytes
     vec3 SkyColorHorizon;

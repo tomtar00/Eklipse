@@ -1,9 +1,9 @@
-const int NumSpheres = 3;
+const int NumSpheres = 4;
 Sphere spheres[NumSpheres] = Sphere[](
-    Sphere(vec3(-0.6, 0.0, 0.0), 0.5, Material(vec3(1.0, 0.0, 0.0), 0.5, 0.5, vec3(0.0), 0.0)),
-    Sphere(vec3(0.6, 0.0, 0.0), 0.5, Material(vec3(0.0, 1.0, 0.0), 0.5, 0.5, vec3(0.0), 0.0)),
-    // Sphere(vec3(0, 3, 0.0), 2.0, Material(vec3(0.0, 0.5, 1.0), 0.5, 0.5, vec3(1.0), 3.0)),
-    Sphere(vec3(0.0, -7.5, -0.5), 7.0, Material(vec3(1.0, 1.0, 1.0), 0.5, 0.5, vec3(0.0), 0.0))
+    Sphere(vec3(-0.6, 0.0, 0.0), 0.5, Material(vec3(1.0, 0.0, 0.0), 1.0, 0.1, vec3(1.0), vec3(0.0), 0.0)),
+    Sphere(vec3(0.6, 0.0, 0.0), 0.5, Material(vec3(0.0, 1.0, 0.0), 0.1, 0.0, vec3(1.0), vec3(0.0), 0.0)),
+    Sphere(vec3(0.0, 1.0, 0.0), 0.5, Material(vec3(0.0, 0.0, 1.0), 1.0, 0.9, vec3(1.0), vec3(0.0), 0.0)),
+    Sphere(vec3(0.0, -15.5, -0.5), 15.0, Material(vec3(1.0, 1.0, 1.0), 0.5, 1.0, vec3(1.0), vec3(0.0), 0.0))
 );
 
 HitInfo RaySphere(Ray ray, Sphere sphere) {

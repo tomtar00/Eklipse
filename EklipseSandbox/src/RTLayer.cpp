@@ -13,7 +13,6 @@ namespace Eklipse
         m_frames = 1;
         m_raysPerPixel = 1;
         m_maxBounces = 3;
-        m_reset = 0;
 
         // Background
         m_skyColorHorizon = { 0.7f, 0.9f, 1.0f };
@@ -23,6 +22,9 @@ namespace Eklipse
         m_sunDirection = { 0.0f, -0.5f, -1.0f };
         m_sunFocus = 0.99f;
         m_sunIntensity = 5.0f;
+
+        m_cameraSpeed = 3.0f;
+        m_cameraSensitivity = 0.04f;
     }
 
     void RTLayer::OnEvent(Event& event)
@@ -46,7 +48,23 @@ namespace Eklipse
         needsReset |= ImGui::DragFloat3("Camera Position", &m_cameraTransform.position[0], 0.1f);
         needsReset |= ImGui::DragFloat3("Camera Rotation", &m_cameraTransform.rotation[0], 0.1f);
         needsReset |= ImGui::SliderFloat("Camera FOV", &m_camera.m_fov, 1.0f, 120.0f);
-
+        ImGui::Checkbox("Control Camera", &m_controlCamera);
+        if (m_controlCamera)
+        {
+            ImGui::DragFloat("Camera Speed", &m_cameraSpeed, 0.1f);
+            ImGui::DragFloat("Camera Sensitivity", &m_cameraSensitivity, 0.001f);
+        }
+        ImGui::Separator();
+        static int api = (int)Renderer::GetAPI();
+        if (ImGui::Combo("Graphics API", &api, "Vulkan\0OpenGL"))
+        {
+            Renderer::WaitDeviceIdle();
+            switch (api)
+            {
+                case 0: Application::Get().SetAPI(ApiType::Vulkan); break;
+                case 1: Application::Get().SetAPI(ApiType::OpenGL); break;
+            }
+        }
         ImGui::Separator();
         static int shaderIndex = 1;
         if (ImGui::Combo("Shader", &shaderIndex, "RT_basic\0RT_accum"))
@@ -122,20 +140,38 @@ namespace Eklipse
         {
             ResetPixelBuffer();
         }
+
+        if (m_controlCamera)
+        {
+            bool isHovered = ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered();
+            if (m_cursorDisabled && Input::IsKeyDown(Escape))
+            {
+                Application::Get().GetWindow()->SetCursorMode(CursorMode::Normal);
+                m_cursorDisabled = false;
+            }
+            else if (!isHovered && !m_cursorDisabled && Input::IsMouseButtonDown(MouseCode::Button0))
+            {
+                Application::Get().GetWindow()->SetCursorMode(CursorMode::Disabled);
+                m_cursorDisabled = true;
+            }
+        }
+
         ImGui::End();
     }
     void RTLayer::OnRender(float deltaTime)
     {
-        m_camera.UpdateViewProjectionMatrix(m_cameraTransform, g_defaultFramebuffer->GetAspectRatio());
         m_rayMaterial->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "Frames", &m_frames, sizeof(int));
-        m_rayMaterial->SetConstant("pData", "Reset", &m_reset, sizeof(int));
         
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
 
-        m_reset = 0;
         ++m_frames;
+    }
+    void RTLayer::OnUpdate(float deltaTime)
+    {
+        if (m_controlCamera && m_cursorDisabled)
+            ControlCamera(deltaTime);
     }
     
     void RTLayer::OnAPIHasInitialized(ApiType api)
@@ -191,7 +227,6 @@ namespace Eklipse
         m_rayMaterial->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
         m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
         m_rayMaterial->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
-        m_rayMaterial->SetConstant("pData", "Reset", &m_reset, sizeof(int));
 
         m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
@@ -205,6 +240,54 @@ namespace Eklipse
     void RTLayer::ResetPixelBuffer()
     {
         m_frames = 1;
-        m_reset = 1;
+    }
+
+    void RTLayer::ControlCamera(float deltaTime)
+    {
+        bool needsReset = false;
+
+        if (Input::IsKeyDown(W))
+        {
+            m_cameraTransform.position += m_cameraTransform.GetForward() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(S))
+        {
+            m_cameraTransform.position -= m_cameraTransform.GetForward() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(A))
+        {
+            m_cameraTransform.position -= m_cameraTransform.GetRight() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(D))
+        {
+            m_cameraTransform.position += m_cameraTransform.GetRight() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(LeftShift))
+        {
+            m_cameraTransform.position -= m_cameraTransform.GetUp() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(Space))
+        {
+            m_cameraTransform.position += m_cameraTransform.GetUp() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+
+        auto mouseDelta = Input::GetMouseDelta();
+        if (mouseDelta.x != 0 || mouseDelta.y != 0)
+        {
+            m_cameraTransform.rotation.y -= mouseDelta.x * m_cameraSensitivity;
+            m_cameraTransform.rotation.x -= mouseDelta.y * m_cameraSensitivity;
+            needsReset = true;
+        }
+
+        if (needsReset)
+        {
+            ResetPixelBuffer();
+        }
     }
 }

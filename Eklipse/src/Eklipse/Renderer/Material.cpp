@@ -197,13 +197,13 @@ namespace Eklipse
             for (auto& pushConstantRef : reflection.pushConstants)
             {
                 auto& pushConstant = m_pushConstants[pushConstantRef.name];
-                pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size);
+                pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size - pushConstantRef.offset);
                 pushConstant.pushConstantSize = pushConstantRef.size;
 
                 pushConstant.dataPointers.clear();
                 for (auto& member : pushConstantRef.members)
                 {
-                    pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + member.offset, member.size, member.type };
+                    pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + member.offset - pushConstantRef.offset, member.size, member.type };
                 }
             }
             for (auto& samplerRef : reflection.samplers)
@@ -226,7 +226,7 @@ namespace Eklipse
             {
                 // create new memory block
                 PushConstant pushConstant{};
-                pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size);
+                pushConstant.pushConstantData = std::make_unique<char[]>(pushConstantRef.size - pushConstantRef.offset);
                 pushConstant.pushConstantSize = pushConstantRef.size;
 
                 auto it = m_pushConstants.find(pushConstantRef.name);
@@ -240,7 +240,7 @@ namespace Eklipse
                     for (auto& member : pushConstantRef.members)
                     {
                         auto& dataPointer = dataPointers[member.name];
-                        dataPointer = { pushConstant.pushConstantData.get() + member.offset, member.size, member.type };
+                        dataPointer = { pushConstant.pushConstantData.get() + member.offset - pushConstantRef.offset, member.size, member.type };
 
                         // if the member already exists, copy the data over
                         auto it = oldPushConstant.dataPointers.find(member.name);
@@ -260,7 +260,7 @@ namespace Eklipse
                 {
                     for (auto& member : pushConstantRef.members)
                     {
-                        pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + member.offset, member.size, member.type };
+                        pushConstant.dataPointers[member.name] = { pushConstant.pushConstantData.get() + member.offset - pushConstantRef.offset, member.size, member.type };
                     }
 
                     auto& mPushConstant = m_pushConstants[pushConstantRef.name];

@@ -14,7 +14,7 @@ HitInfo CalculateRayCollision(Ray ray) {
     HitInfo closestHit;
     closestHit.dst = 1000000.0;
     closestHit.didHit = false;
-    closestHit.material = Material(vec3(0.0), 0.0, 0.0, vec3(0.0), 0.0);
+    closestHit.material = Material(vec3(0.0), 0.0, 0.0, vec3(0.0), vec3(0.0), 0.0);
 
     // Sphere collision
     for (int i = 0; i < NumSpheres; i ++) {
@@ -51,14 +51,17 @@ vec3 Trace(Ray ray, vec2 co) {
     vec3 color = vec3(1.0);
     for (uint i = 0; i < pData.MaxBounces; i++) {
         HitInfo hitInfo = CalculateRayCollision(ray);
+        Material material = hitInfo.material;
         if (hitInfo.didHit) {
             ray.origin = hitInfo.hitPoint;
-            ray.dir = normalize(hitInfo.normal + randomDirection(co));
+            vec3 diffuseDir = normalize(hitInfo.normal + randomDirection(co));
+            vec3 specularDir = reflect(ray.dir, hitInfo.normal);
+            bool isSpecularBounce = material.specularProb >= rand(co);
+            ray.dir = mix(diffuseDir, specularDir, hitInfo.material.smoothness * float(isSpecularBounce));
 
-            Material material = hitInfo.material;
             vec3 emittedLight = material.emissionColor * material.emissionStrength;
             light += color * emittedLight;
-            color *= material.albedo;
+            color *= mix(material.albedo, material.specularColor, float(isSpecularBounce));
         }
         else {
             light += GetEnvironmentLight(ray) * color;

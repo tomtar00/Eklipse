@@ -40,7 +40,7 @@ namespace Eklipse
         // Teapot
         m_teapot = scene->CreateEntity("Teapot");
         auto& teapot_transComp = m_teapot.GetComponent<TransformComponent>();
-        teapot_transComp.transform.position = glm::vec3(0.0f, 0.0f, 1.0f);
+        teapot_transComp.transform.position = glm::vec3(0.0f, 0.0f, 3.0f);
         m_teapot.AddComponent<MeshComponent>();
         m_teapotColor = glm::vec3(1.0f, 1.0f, 0.0f);
 

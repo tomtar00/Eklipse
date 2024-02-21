@@ -26,7 +26,7 @@ void main()
 
 layout(push_constant) uniform FragmentConstants 
 {
-	vec3 Color;
+	layout(offset = 64) vec3 Color;
 } uFragConst;
 
 out vec4 outColor;

@@ -25,18 +25,15 @@ namespace Eklipse
 	}
 	glm::vec3 TransformComponent::GetForward() const
 	{
-		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
-		return -glm::vec3(rotation[2]);
+		return transform.GetForward();
 	}
 	glm::vec3 TransformComponent::GetRight() const
 	{
-		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
-		return glm::vec3(rotation[0]);
+		return transform.GetRight();
 	}
 	glm::vec3 TransformComponent::GetUp() const
 	{
-		auto& rotation = glm::toMat4(glm::quat(glm::radians(transform.rotation)));
-        return glm::vec3(rotation[1]);
+		return transform.GetUp();
 	}
 
 

@@ -4,8 +4,9 @@ struct Ray {
 };
 struct Material {
     vec3 albedo;
-    float roughness;
-    float metallic;
+    float smoothness;
+    float specularProb;
+    vec3 specularColor;
     vec3 emissionColor;
     float emissionStrength;
 };

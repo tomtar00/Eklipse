@@ -11,6 +11,7 @@ namespace Eklipse
         virtual void OnEvent(Event& event) override;
         virtual void OnGUI(float deltaTime) override;
         virtual void OnRender(float deltaTime) override;
+        virtual void OnUpdate(float deltaTime) override;
 
         virtual void OnAPIHasInitialized(ApiType api) override;
         virtual void OnShutdownAPI(bool quit) override;
@@ -21,6 +22,7 @@ namespace Eklipse
         void InitMaterial();
 
         void ResetPixelBuffer();
+        void ControlCamera(float deltaTime);
 
     private:
         String m_shaderPath;
@@ -32,12 +34,15 @@ namespace Eklipse
 
         Camera m_camera;
         Transform m_cameraTransform;
+        bool m_controlCamera;
+        float m_cameraSpeed = 5.0f;
+        float m_cameraSensitivity = 0.06f;
+        bool m_cursorDisabled = false;
 
         // Data
         int m_frames;
         int m_raysPerPixel;
         int m_maxBounces;
-        int m_reset;
 
         // Background
         glm::vec3 m_skyColorHorizon;
