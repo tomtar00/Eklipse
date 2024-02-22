@@ -60,6 +60,17 @@ namespace Eklipse
         ImGui::Begin("Sandbox");
         ImGui::Text("FPS: %f", Stats::Get().fps);
         ImGui::Separator();
+        static int api = (int)Renderer::GetAPI();
+        if (ImGui::Combo("Graphics API", &api, "Vulkan\0OpenGL"))
+        {
+            Renderer::WaitDeviceIdle();
+            switch (api)
+            {
+                case 0: Application::Get().SetAPI(ApiType::Vulkan); break;
+                case 1: Application::Get().SetAPI(ApiType::OpenGL); break;
+            }
+        }
+        ImGui::Separator();
         if (ImGui::ColorEdit3("Plane Color", &m_planeColor[0]))
         {
             m_planeMaterial->SetConstant("uFragConst", "Color", &m_planeColor, sizeof(glm::vec3));

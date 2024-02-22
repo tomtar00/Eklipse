@@ -37,7 +37,8 @@ namespace Eklipse
     ApiType	Renderer::s_apiType = ApiType::Vulkan;
     std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
     std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>>	Renderer::s_storageBufferCache;
-    static Ref<UniformBuffer> s_cameraUniformBuffer;
+    Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
+    Ref<Framebuffer> Renderer::s_defaultFramebuffer = nullptr;
 
     bool Renderer::Init()
     {
@@ -48,7 +49,18 @@ namespace Eklipse
     }
     void Renderer::InitParameters()
     {
+        EK_CORE_PROFILE();
         s_cameraUniformBuffer = Renderer::CreateUniformBuffer("uCamera", sizeof(glm::mat4), 0);
+
+        FramebufferInfo framebufferInfo{};
+        framebufferInfo.isDefaultFramebuffer = true;
+        framebufferInfo.width = Application::Get().GetInfo().windowWidth;
+        framebufferInfo.height = Application::Get().GetInfo().windowHeight;
+        framebufferInfo.numSamples = 1;
+        framebufferInfo.colorAttachmentInfos = { { ImageFormat::RGBA32F } };
+        framebufferInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
+
+        s_defaultFramebuffer = Framebuffer::Create(framebufferInfo);
     }
 
     void Renderer::WaitDeviceIdle()
@@ -72,6 +84,13 @@ namespace Eklipse
         }
         s_storageBufferCache.clear();
 
+        g_defaultFramebuffer->Dispose();
+        for (auto& framebuffer : g_offScreenFramebuffers)
+        {
+            framebuffer->Dispose();
+        }
+        g_offScreenFramebuffers.clear();
+
         RenderCommand::API->Shutdown();
     }
 
@@ -87,18 +106,6 @@ namespace Eklipse
     {
         camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
         s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
-    }
-    void Renderer::BeginDefaultRenderPass()
-    {
-        EK_PROFILE();
-
-        RenderCommand::API->BeginDefaultRenderPass();
-    }
-    void Renderer::EndDefaultRenderPass()
-    {
-        EK_PROFILE();
-
-        RenderCommand::API->EndDefaultRenderPass();
     }
     void Renderer::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
@@ -168,7 +175,7 @@ namespace Eklipse
     void Renderer::OnWindowResize(uint32_t width, uint32_t height)
     {
         EK_CORE_PROFILE();
-        RenderCommand::API->OnWindowResize(width, height);
+        g_defaultFramebuffer->Resize(width, height);
     }
     void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
     {

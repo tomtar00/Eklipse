@@ -19,25 +19,17 @@ namespace Eklipse
 			void BeginFrame() override;
 			void Submit() override;
 
-			virtual void BeginDefaultRenderPass() override;
-			virtual void EndDefaultRenderPass() override;
-
-			virtual void OnWindowResize(uint32_t width, uint32_t height) override;
-
 			void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
 		private:
 			void CreateInstance();
 			void CreateAllocator();
 			void CreateSurface();
-			void CreateDefaultFramebuffer();
 			void CreateSyncObjects();
 
 			Vec<const char*> GetRequiredExtensions() const;
 
 		private:
-			Ref<VKFramebuffer> m_defaultFramebuffer;
-
 			Vec<VkSemaphore> m_imageAvailableSemaphores{};
 
 			Vec<VkFence> m_renderInFlightFences{};

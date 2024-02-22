@@ -40,9 +40,23 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
-		VKShader::VKShader(const Path& filePath, const AssetHandle handle) : Shader(filePath, handle)
+		VKShader::VKShader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle) 
+			: Shader(vertexSource, fragmentSource, handle)
+		{
+			EK_CORE_PROFILE();
+			Handle = handle;
+			Name = "Custom";
+			StageSourceMap shaderSources;
+			shaderSources[ShaderStage::VERTEX] = vertexSource;
+			shaderSources[ShaderStage::FRAGMENT] = fragmentSource;
+			Compile(shaderSources);
+		}
+		VKShader::VKShader(const Path& filePath, const AssetHandle handle) 
+			: Shader(filePath, handle)
 		{		
 			EK_CORE_PROFILE();
+			Handle = handle;
+			Name = filePath.stem().string();
 			Compile(filePath);
 		}
 
@@ -79,19 +93,24 @@ namespace Eklipse
 			EK_CORE_DBG("Disposed Vulkan shader '{0}'", Name);
 		}
 
-		const String VKShader::GetCacheDirectoryPath()
-		{
-			return "Assets/Cache/Shader/Vulkan";
-		}
 		bool VKShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
 			EK_CORE_PROFILE();
+			auto shaderSources = Setup(shaderPath);
+			return Compile(shaderPath, shaderSources, forceCompile);
+		}
+		bool VKShader::Compile(const StageSourceMap& sourceMap, bool forceCompile)
+		{
+			EK_CORE_PROFILE();
+			return Compile("", sourceMap, forceCompile);
+		}
+
+		bool VKShader::Compile(const Path& shaderPath, const StageSourceMap& sourceMap, bool forceCompile)
+		{
 			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", Name);
 
-			auto shaderSources = Setup(shaderPath);
-
 			Timer _timer;
-			bool success = CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
+			bool success = CompileOrGetVulkanBinaries(shaderPath, sourceMap, forceCompile);
 			if (success)
 			{
 				Dispose();
@@ -132,12 +151,12 @@ namespace Eklipse
 					for (auto& storageBuffer : reflection.storageBuffers)
 					{
 						VkDescriptorSetLayoutBinding storageLayoutBinding{};
-                        storageLayoutBinding.binding = storageBuffer.binding;
-                        storageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                        storageLayoutBinding.descriptorCount = 1;
-                        storageLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
-                        storageLayoutBinding.pImmutableSamplers = nullptr;
-                        descriptorSetLayoutBindings.push_back(storageLayoutBinding);
+						storageLayoutBinding.binding = storageBuffer.binding;
+						storageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+						storageLayoutBinding.descriptorCount = 1;
+						storageLayoutBinding.stageFlags = VKShaderStageFromInternalStage(stage);
+						storageLayoutBinding.pImmutableSamplers = nullptr;
+						descriptorSetLayoutBindings.push_back(storageLayoutBinding);
 					}
 					for (auto& sampler : reflection.samplers)
 					{
@@ -194,10 +213,9 @@ namespace Eklipse
 					attributeDescription.push_back(attribute);
 				}
 
+				// TODO: This is just... bad. Create some pipeline manager asap
 				if (g_VKOffScreenFramebuffers.size() <= 0)
-				{
 					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKDefaultFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
-				}
 				else
 					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKOffScreenFramebuffers[0]->GetRenderPass(), bindingDescription, attributeDescription);
 
@@ -207,8 +225,11 @@ namespace Eklipse
 				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, _timer.ElapsedTimeMs());
 			}
 			else EK_CORE_ERROR("Shader {0} compilation failed", Handle);
-
 			return success;
+		}
+		const String VKShader::GetCacheDirectoryPath()
+		{
+			return "Assets/Cache/Shader/Vulkan";
 		}
 	}
 }

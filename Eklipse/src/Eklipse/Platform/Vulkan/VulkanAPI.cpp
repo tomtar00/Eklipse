@@ -140,7 +140,6 @@ namespace Eklipse
 
                 ///////////////////////////////////////////////////
 
-                CreateDefaultFramebuffer();
                 CreateSyncObjects();
 
                 EK_CORE_DBG("Vulkan initialized");
@@ -199,14 +198,7 @@ namespace Eklipse
 
             // COMMON /////////////////////////////////////////////
 
-            m_defaultFramebuffer->Dispose();
-            m_defaultFramebuffer = nullptr;
             g_VKDefaultFramebuffer = nullptr;
-
-            for (auto& framebuffer : g_VKOffScreenFramebuffers)
-            {
-                framebuffer->Dispose();
-            }
             g_VKOffScreenFramebuffers.clear();
 
             DestroyValidationLayers();
@@ -250,7 +242,7 @@ namespace Eklipse
             VkResult result = vkAcquireNextImageKHR(
                 g_logicalDevice, g_swapChain, UINT64_MAX, 
                 m_imageAvailableSemaphores[g_currentFrame], VK_NULL_HANDLE, 
-                m_defaultFramebuffer->GetImageIndexPtr()
+                g_VKDefaultFramebuffer->GetImageIndexPtr()
             );
             vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
         }
@@ -266,7 +258,7 @@ namespace Eklipse
             {
                 commandBuffers.push_back(framebuffer->GetCommandBuffer(g_currentFrame));
             }
-            commandBuffers.push_back(m_defaultFramebuffer->GetCommandBuffer(g_currentFrame));
+            commandBuffers.push_back(g_VKDefaultFramebuffer->GetCommandBuffer(g_currentFrame));
 
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -287,30 +279,13 @@ namespace Eklipse
             presentInfo.pWaitSemaphores = signalSemaphores.data();
             presentInfo.swapchainCount = 1;
             presentInfo.pSwapchains = &g_swapChain;
-            presentInfo.pImageIndices = m_defaultFramebuffer->GetImageIndexPtr();
+            presentInfo.pImageIndices = g_VKDefaultFramebuffer->GetImageIndexPtr();
             presentInfo.pResults = nullptr;
 
             result = vkQueuePresentKHR(g_presentQueue, &presentInfo);
             HANDLE_VK_RESULT(result, "QUEUE PRESENT");
 
             g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
-        }
-
-        void VulkanAPI::BeginDefaultRenderPass()
-        {
-            EK_CORE_PROFILE();
-            m_defaultFramebuffer->Bind();
-        }
-        void VulkanAPI::EndDefaultRenderPass()
-        {
-            EK_CORE_PROFILE();
-            m_defaultFramebuffer->Unbind();
-        }
-
-        void VulkanAPI::OnWindowResize(uint32_t width, uint32_t height)
-        {
-            EK_CORE_PROFILE();
-            m_defaultFramebuffer->Resize(width, height);
         }
 
         void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
@@ -378,19 +353,6 @@ namespace Eklipse
 #else
             EK_ASSERT(false, "Platform not supported!");
 #endif
-        }
-        void VulkanAPI::CreateDefaultFramebuffer()
-        {
-            EK_CORE_PROFILE();
-            FramebufferInfo framebufferInfo{};
-            framebufferInfo.isDefaultFramebuffer = true;
-            framebufferInfo.width = Application::Get().GetInfo().windowWidth;
-            framebufferInfo.height = Application::Get().GetInfo().windowHeight;
-            framebufferInfo.numSamples = 1;
-            framebufferInfo.colorAttachmentInfos = { { ImageFormat::RGBA32F } };
-            framebufferInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
-
-            m_defaultFramebuffer = CreateRef<VKFramebuffer>(framebufferInfo);
         }
         void VulkanAPI::CreateSyncObjects()
         {

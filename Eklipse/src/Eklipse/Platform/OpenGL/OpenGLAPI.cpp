@@ -6,12 +6,13 @@
 #include <Eklipse/Renderer/RenderCommand.h>
 
 #include <glad/glad.h>
+#include "GLShader.h"
 
 namespace Eklipse
 {
     namespace OpenGL
     {
-        //GLFramebuffer* g_GLSceneFramebuffer = nullptr;
+        GLFramebuffer* g_GLDefaultFramebuffer = nullptr;
         Vec<GLFramebuffer*> g_GLOffScreenFramebuffers{};
 
         static void OpenGLMessageCallback(
@@ -75,6 +76,58 @@ namespace Eklipse
                 EK_CORE_INFO("  Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
                 m_initialized = true;
 
+                std::vector<float> vertices = {
+                     1.0f,  1.0f, 1.0f, 1.0f,  // top right
+                     1.0f, -1.0f, 1.0f, 0.0f,  // bottom right
+                    -1.0f, -1.0f, 0.0f, 0.0f,  // bottom left
+                    -1.0f,  1.0f, 0.0f, 1.0f,  // top left
+                };
+                std::vector<uint32_t> indices = {
+                    0, 1, 3,
+                    1, 2, 3
+                };
+
+                Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
+                BufferLayout layout = {
+                    { "inPos",          ShaderDataType::FLOAT2,     false },
+                    { "inTexCoords",    ShaderDataType::FLOAT2,     false }
+                };
+                vertexBuffer->SetLayout(layout);
+
+                m_fullscreenVA = VertexArray::Create();
+                m_fullscreenVA->AddVertexBuffer(vertexBuffer);
+                m_fullscreenVA->SetIndexBuffer(IndexBuffer::Create(indices));
+
+                String vertexSource = R"(
+                #version 460 core
+
+                in vec2 inPos;
+                in vec2 inTexCoords;
+
+                out vec2 texCoords;
+
+                void main()
+                {
+                    gl_Position = vec4(inPos.x, inPos.y, 0.0, 1.0); 
+                    texCoords = inTexCoords;
+                } 
+                )";
+                String fragmentSource = R"(
+                #version 460 core
+
+                in vec2 texCoords;
+
+                out vec4 FragColor;
+
+                layout(binding = 0) uniform sampler2D screenTexture;
+
+                void main()
+                {
+                	FragColor = texture(screenTexture, texCoords);
+                }
+                )";
+                m_fullscreenShader = CreateRef<GLShader>(vertexSource, fragmentSource);
+
                 return true;
             }
             catch (const std::exception& e)
@@ -94,7 +147,7 @@ namespace Eklipse
                 return;
             }
 
-            //g_GLDefaultFramebuffer = nullptr;
+            g_GLDefaultFramebuffer = nullptr;
             g_GLOffScreenFramebuffers.clear();
 
             EK_CORE_INFO("OpenGL shutdown");
@@ -107,26 +160,31 @@ namespace Eklipse
         {
             EK_CORE_PROFILE();
 
-            uint32_t width = Application::Get().GetInfo().windowWidth;
+            /*uint32_t width = Application::Get().GetInfo().windowWidth;
             uint32_t height = Application::Get().GetInfo().windowHeight;
             glViewport(0, 0, width, height);
             glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
         }
         void OpenGLAPI::Submit()
         {
             EK_CORE_PROFILE();
 
+            uint32_t width = Application::Get().GetInfo().windowWidth;
+            uint32_t height = Application::Get().GetInfo().windowHeight;
+            glViewport(0, 0, width, height);
+            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            m_fullscreenShader->Bind();
+            glDisable(GL_DEPTH_TEST);
+            glActiveTexture(GL_TEXTURE0 + m_fullscreenShader->GetFragmentReflection().samplers[0].binding);
+            glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
+            RenderCommand::DrawIndexed(m_fullscreenVA);
+            //glBindTexture(GL_TEXTURE_2D, 0);
+            //m_fullscreenShader->Unbind();
+
             Application::Get().GetWindow()->SwapBuffers();
-        }
-        void OpenGLAPI::BeginDefaultRenderPass()
-        {
-        }
-        void OpenGLAPI::EndDefaultRenderPass()
-        {
-        }
-        void OpenGLAPI::OnWindowResize(uint32_t width, uint32_t height)
-        {
         }
         void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)
         {	

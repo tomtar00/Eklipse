@@ -128,19 +128,31 @@ namespace Eklipse
         return 0;
     }
 
+    Shader::Shader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle) : m_isValid(false)
+    {
+    }
     Shader::Shader(const Path& filePath, const AssetHandle handle) : m_isValid(false)
     {
-        EK_CORE_PROFILE();
-        Handle = handle;
-        Name = filePath.stem().string();
     }
+
     Ref<Shader> Shader::Create(const Path& filePath, const AssetHandle handle)
     {
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-        case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
-        case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(filePath, handle);
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(filePath, handle);
+        }
+        EK_ASSERT(false, "Shader creation not implemented for current graphics API");
+        return nullptr;
+    }
+    Ref<Shader> Shader::Create(const String& vertexSource, const String& fragmentSource, const AssetHandle handle)
+    {
+        EK_CORE_PROFILE();
+        switch (Renderer::GetAPI())
+        {
+            case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(vertexSource, fragmentSource, handle);
+            case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(vertexSource, fragmentSource, handle);
         }
         EK_ASSERT(false, "Shader creation not implemented for current graphics API");
         return nullptr;
@@ -170,6 +182,7 @@ namespace Eklipse
         if (m_isValid)
         {
             // reload all materials that use this shader
+            // TODO: this should not rely on AssetManager, make some dependency tracker instead
             for (auto&& [handle, asset] : AssetManager::GetLoadedAssets())
             {
                 if (asset->GetType() != AssetType::Material)

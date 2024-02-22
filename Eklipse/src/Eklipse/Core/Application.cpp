@@ -53,11 +53,11 @@ namespace Eklipse
         while (!Renderer::Init());
 
         OnAPIHasInitialized(Renderer::GetAPI());
+        Renderer::InitParameters();
         for (auto& layer : m_layerStack)
         {
             layer->OnAPIHasInitialized(Renderer::GetAPI());
         }
-        Renderer::InitParameters();
 
         EK_PROFILE_END();
     }
@@ -224,12 +224,12 @@ namespace Eklipse
                     {
                         layer->OnUpdate(deltaTime);
                     }
-                    Renderer::BeginDefaultRenderPass();
+                    Renderer::BeginRenderPass(g_defaultFramebuffer);
                     for (auto& layer : m_layerStack)
                     {
                         layer->OnRender(deltaTime);
                     }
-                    Renderer::EndDefaultRenderPass();
+                    Renderer::EndRenderPass(g_defaultFramebuffer);
                     Renderer::Submit();
                 }
             }

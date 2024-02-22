@@ -103,8 +103,10 @@ namespace Eklipse
 	{
 	public:
 		Shader() = delete;
+		Shader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle = AssetHandle());
 		Shader(const Path& filePath, const AssetHandle handle = AssetHandle());
 		static Ref<Shader> Create(const Path& filePath, const AssetHandle handle = AssetHandle());
+		static Ref<Shader> Create(const String& vertexSource, const String& fragmentSource, const AssetHandle handle = AssetHandle());
 
 		StageSourceMap Shader::Setup(const Path& shaderPath);
 		bool Recompile(const Path& shaderPath);
@@ -122,12 +124,15 @@ namespace Eklipse
 		virtual void Dispose() = 0;
 
 		virtual bool Compile(const Path& shaderPath, bool forceCompile = false) = 0;
+		virtual bool Compile(const StageSourceMap& sourceMap, bool forceCompile = false) = 0;
 
 	protected:
+
 		void Reflect(const StageSpirvMap& shaderData, const String& shaderName);
 		bool CompileOrGetVulkanBinaries(const Path& shaderPath, const StageSourceMap& shaderSources, bool forceCompile);
 		StageSourceMap PreProcess(const String& source) const;
 
+		virtual bool Compile(const Path& shaderPath, const StageSourceMap& sourceMap, bool forceCompile = false) = 0;
 		virtual const String GetCacheDirectoryPath() = 0;
 
 	protected:

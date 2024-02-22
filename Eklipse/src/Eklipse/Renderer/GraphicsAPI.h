@@ -18,11 +18,6 @@ namespace Eklipse
         virtual void BeginFrame() = 0;
         virtual void Submit() = 0;
 
-        virtual void BeginDefaultRenderPass() = 0;
-        virtual void EndDefaultRenderPass() = 0;
-
-        virtual void OnWindowResize(uint32_t width, uint32_t height) = 0;
-
         virtual void DrawIndexed(Ref<VertexArray> vertexArray) = 0;
 
     protected:

@@ -36,10 +36,23 @@ namespace Eklipse
 			return "";
 		}
 
+		GLShader::GLShader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle) 
+			: m_id(0), Shader(vertexSource, fragmentSource, handle)
+		{
+			EK_CORE_PROFILE();
+			Handle = handle;
+			Name = "Custom";
+			StageSourceMap shaderSources;
+			shaderSources[ShaderStage::VERTEX] = vertexSource;
+			shaderSources[ShaderStage::FRAGMENT] = fragmentSource;
+			Compile(shaderSources);
+		}
 		GLShader::GLShader(const Path& filePath, const AssetHandle handle) 
 			: m_id(0), Shader(filePath, handle)
 		{
 			EK_CORE_PROFILE();
+			Handle = handle;
+			Name = filePath.stem().string();
 			Compile(filePath);
 		}
 
@@ -72,33 +85,37 @@ namespace Eklipse
 			EK_CORE_DBG("Disposed OpenGL shader '{0}'", Name);
 		}
 
-		const String GLShader::GetCacheDirectoryPath()
-		{
-			return "Assets/Cache/Shader/OpenGL";
-		}
 		bool GLShader::Compile(const Path& shaderPath, bool forceCompile)
 		{
 			EK_CORE_PROFILE();
-			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", Name);
-
 			auto shaderSources = Setup(shaderPath);
+			return Compile(shaderPath, shaderSources, forceCompile);
+		}
+		bool GLShader::Compile(const StageSourceMap& sourceMap, bool forceCompile)
+		{
+			EK_CORE_PROFILE();
+			return Compile("", sourceMap, forceCompile);
+		}
+
+		bool GLShader::Compile(const Path& shaderPath, const StageSourceMap& sourceMap, bool forceCompile)
+		{
+			EK_CORE_TRACE("Compiling OpenGL shader '{0}'", Name);
+			Timer timer;
 			bool success = true;
-
+			success = success && CompileOrGetVulkanBinaries(shaderPath, sourceMap, forceCompile);
+			success = success && CompileOrGetOpenGLBinaries(shaderPath, forceCompile);
+			if (success)
 			{
-				Timer timer;
-				success = success && CompileOrGetVulkanBinaries(shaderPath, shaderSources, forceCompile);
-				success = success && CompileOrGetOpenGLBinaries(shaderPath, forceCompile);
-				if (success)
-				{
-					Dispose();
-					CreateProgram();
-					EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, timer.ElapsedTimeMs());
-				}
-				else EK_CORE_ERROR("Failed to compile shader {0}", Handle);
+				Dispose();
+				CreateProgram();
+				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, timer.ElapsedTimeMs());
 			}
-
-			EK_CORE_DBG("Compiled OpenGL shader '{0}'", Name);
+			else EK_CORE_ERROR("Failed to compile shader {0}", Handle);
 			return success;
+		}
+		const String GLShader::GetCacheDirectoryPath()
+		{
+			return "Assets/Cache/Shader/OpenGL";
 		}
 
 		bool GLShader::CompileOrGetOpenGLBinaries(const Path& shaderPath, bool forceCompile)
@@ -118,7 +135,7 @@ namespace Eklipse
 			Path cacheDirectory = GetCacheDirectoryPath();
 
 			shaderData.clear();
-			m_openGLSourceCode.clear();
+			StageSourceMap openGLSourceCode;
 			for (auto&& [stage, spirv] : m_vulkanSPIRV)
 			{
 				Path cachedPath = cacheDirectory / (Name + GLShaderStageCachedOpenGLFileExtension(stage));
@@ -152,8 +169,8 @@ namespace Eklipse
 						glslCompiler.set_decoration(pushConstant.id, spv::DecorationLocation, locationCounter++);
 					}
 
-					m_openGLSourceCode[stage] = glslCompiler.compile();
-					auto& source = m_openGLSourceCode[stage];
+					openGLSourceCode[stage] = glslCompiler.compile();
+					auto& source = openGLSourceCode[stage];
 
 					EK_CORE_TRACE("OpenGL shader '{0}' - stage={1} source code:\n{2}", Name, ShaderStageToString(stage), source);
 

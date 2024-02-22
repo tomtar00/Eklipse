@@ -36,8 +36,6 @@ namespace Eklipse
 		// Render stages
 		static void BeginFrame();
 		static void UpdateViewProjection(Camera& camera, Transform& cameraTransform);
-		static void BeginDefaultRenderPass();
-		static void EndDefaultRenderPass();
 		static void BeginRenderPass(Framebuffer* framebuffer);
 		static void EndRenderPass(Framebuffer* framebuffer);
 		static void Submit();
@@ -74,5 +72,7 @@ namespace Eklipse
 		static RendererSettings s_settings;
 		static std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>> s_uniformBufferCache;
 		static std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>> s_storageBufferCache;
+		static Ref<UniformBuffer> s_cameraUniformBuffer;
+		static Ref<Framebuffer> s_defaultFramebuffer;
 	};
 }

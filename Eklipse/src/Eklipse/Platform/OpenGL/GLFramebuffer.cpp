@@ -14,7 +14,8 @@ namespace Eklipse
 
 			if (framebufferInfo.isDefaultFramebuffer)
 			{
-				EK_ASSERT(false, "OpenGL does not need a default framebuffer, it already has one!");
+				EK_ASSERT(g_GLDefaultFramebuffer == nullptr, "Default framebuffer already exists!");
+				g_defaultFramebuffer = g_GLDefaultFramebuffer = this;
 			}
 			else
 			{
@@ -51,22 +52,6 @@ namespace Eklipse
 				m_colorAttachments.resize(m_framebufferInfo.colorAttachmentInfos.size());
 				for (size_t i = 0; i < m_colorAttachments.size(); i++)
 				{
-					/*glBindTexture(m_texTarget, m_colorAttachments[i]);
-					GLenum colorFormat = ConvertToGLFormat(m_framebufferInfo.colorAttachmentInfos[i].textureFormat);
-
-					if (multiSampled)
-						glTexImage2DMultisample(m_texTarget, msaaSamples, colorFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
-					else
-					{
-						glTexImage2D(m_texTarget, 0, colorFormat, m_framebufferInfo.width, m_framebufferInfo.height, 0, colorFormat, GL_UNSIGNED_BYTE, nullptr);
-
-						glTexParameteri(m_texTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-						glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-						glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-						glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-						glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-					}*/
-
 					TextureInfo textureInfo{};
 					textureInfo.width = m_framebufferInfo.width;
 					textureInfo.height = m_framebufferInfo.height;
@@ -77,7 +62,14 @@ namespace Eklipse
 					textureInfo.imageAspect = ImageAspect::COLOR;
 					textureInfo.imageUsage = ImageUsage::COLOR_ATTACHMENT | ImageUsage::SAMPLED;
 
-					m_colorAttachments[i] = CreateRef<GLTexture2D>(textureInfo);
+					uint32_t singlePixelSize = FormatToChannels(textureInfo.imageFormat);
+					uint32_t dataSize = m_framebufferInfo.width * m_framebufferInfo.height * singlePixelSize;
+					TextureData data{};
+					data.info = textureInfo;
+					data.data = nullptr;
+					data.size = dataSize;
+
+					m_colorAttachments[i] = CreateRef<GLTexture2D>(data);
 
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_texTarget, m_colorAttachments[i]->GetID(), 0);
 				}
@@ -87,24 +79,6 @@ namespace Eklipse
 			// Depth and stencil attachment
 			if (m_framebufferInfo.depthAttachmentInfo.textureFormat != ImageFormat::FORMAT_UNDEFINED)
 			{
-				/*glGenTextures(1, &m_depthAttachment);
-				glBindTexture(m_texTarget, m_depthAttachment);
-
-				GLenum depthFormat = ConvertToGLFormat(m_framebufferInfo.depthAttachmentInfo.textureFormat);
-
-				if (multiSampled)
-					glTexImage2DMultisample(m_texTarget, msaaSamples, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height, GL_FALSE);
-				else
-				{
-					glTexStorage2D(m_texTarget, 1, depthFormat, m_framebufferInfo.width, m_framebufferInfo.height);
-
-					glTexParameteri(m_texTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-					glTexParameteri(m_texTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				}*/
-
 				TextureInfo textureInfo{};
 				textureInfo.width = m_framebufferInfo.width;
 				textureInfo.height = m_framebufferInfo.height;
@@ -114,7 +88,14 @@ namespace Eklipse
 				textureInfo.imageAspect = ImageAspect::DEPTH;
 				textureInfo.imageUsage = ImageUsage::DEPTH_ATTACHMENT;
 
-				m_depthAttachment = CreateRef<GLTexture2D>(textureInfo);
+				uint32_t singlePixelSize = FormatToChannels(textureInfo.imageFormat);
+				uint32_t dataSize = m_framebufferInfo.width * m_framebufferInfo.height * singlePixelSize;
+				TextureData data{};
+				data.info = textureInfo;
+				data.data = nullptr;
+				data.size = dataSize;
+
+				m_depthAttachment = CreateRef<GLTexture2D>(data);
 
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_texTarget, m_depthAttachment->GetID(), 0);
 				glBindTexture(m_texTarget, 0);

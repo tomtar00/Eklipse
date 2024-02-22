@@ -12,8 +12,10 @@ namespace Eklipse
             EK_CORE_PROFILE();
             switch (format)
             {
-                case ImageFormat::RGB8:  return GL_RGB;
-                case ImageFormat::RGBA8: return GL_RGBA;
+                case ImageFormat::RGB8:     return GL_RGB;
+                case ImageFormat::RGBA8:    return GL_RGBA;
+                case ImageFormat::RGBA32F:  return GL_RGBA;
+                case ImageFormat::D24S8:    return GL_DEPTH_STENCIL;
             }
             EK_ASSERT(false, "Wrong image format");
             return 0;
@@ -23,8 +25,10 @@ namespace Eklipse
             EK_CORE_PROFILE();
             switch (format)
             {
-                case ImageFormat::RGB8:  return GL_RGB8;
-                case ImageFormat::RGBA8: return GL_RGBA8;
+                case ImageFormat::RGB8:     return GL_RGB8;
+                case ImageFormat::RGBA8:    return GL_RGBA8;
+                case ImageFormat::RGBA32F:  return GL_RGBA32F;
+                case ImageFormat::D24S8:    return GL_DEPTH24_STENCIL8;
             }
             EK_ASSERT(false, "Wrong internal image format");
             return 0;
@@ -80,13 +84,13 @@ namespace Eklipse
             EK_ASSERT((size == dataSize), "Data is not equal required size of the texture! Given: {0} Required: {1}", size, dataSize);
             
             if (m_textureInfo.samples > 1)
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_textureInfo.samples, m_internalFormat, m_textureInfo.width, m_textureInfo.height, GL_FALSE);
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_textureInfo.samples, m_format, m_textureInfo.width, m_textureInfo.height, GL_FALSE);
             else
             {
                 if (m_textureInfo.imageFormat == ImageFormat::D24S8)
-                    glTexStorage2D(GL_TEXTURE_2D, 1, m_format, m_textureInfo.width, m_textureInfo.height);
+                    glTexStorage2D(GL_TEXTURE_2D, 1, m_internalFormat, m_textureInfo.width, m_textureInfo.height);
                 else
-                    glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_textureInfo.width, m_textureInfo.height, 0, m_format, GL_UNSIGNED_BYTE, data);
+                    glTexImage2D(GL_TEXTURE_2D, 0, m_format, m_textureInfo.width, m_textureInfo.height, 0, m_format, GL_UNSIGNED_BYTE, data);
             }
             
             if (m_textureInfo.mipMapLevel > 1)
