@@ -115,6 +115,10 @@ namespace Eklipse
 			return nullptr;
 		}
 
+		////////////////////////////////////////////////////////////////
+		// STORAGE BUFFER //////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////
+
 		GLStorageBuffer::GLStorageBuffer(size_t size, uint32_t binding)
 		{
 		    EK_CORE_PROFILE();
@@ -140,7 +144,7 @@ namespace Eklipse
 		}
 		void* GLStorageBuffer::GetBuffer() const
 		{
-			return nullptr;
+			return (void*)&m_id;
 		}
-}
+	}
 }

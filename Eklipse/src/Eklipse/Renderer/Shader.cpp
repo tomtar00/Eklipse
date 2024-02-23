@@ -57,12 +57,19 @@ namespace Eklipse
             if (type.vecsize == 3) return ShaderDataType::FLOAT3;
             if (type.vecsize == 4) return ShaderDataType::FLOAT4;
         }
-        if (type.basetype == spirv_cross::SPIRType::Int || type.basetype == spirv_cross::SPIRType::UInt)
+        if (type.basetype == spirv_cross::SPIRType::Int)
         {
             if (type.vecsize == 1) return ShaderDataType::INT;
             if (type.vecsize == 2) return ShaderDataType::INT2;
             if (type.vecsize == 3) return ShaderDataType::INT3;
             if (type.vecsize == 4) return ShaderDataType::INT4;
+        }
+        if (type.basetype == spirv_cross::SPIRType::UInt)
+        {
+            if (type.vecsize == 1) return ShaderDataType::UINT;
+            if (type.vecsize == 2) return ShaderDataType::UINT2;
+            if (type.vecsize == 3) return ShaderDataType::UINT3;
+            if (type.vecsize == 4) return ShaderDataType::UINT4;
         }
         if (type.basetype == spirv_cross::SPIRType::Struct) return ShaderDataType::STRUCT;
 
@@ -80,6 +87,10 @@ namespace Eklipse
         case ShaderDataType::INT2:     return "int2";
         case ShaderDataType::INT3:     return "int3";
         case ShaderDataType::INT4:     return "int4";
+        case ShaderDataType::UINT:     return "uint";
+        case ShaderDataType::UINT2:    return "uint2";
+        case ShaderDataType::UINT3:    return "uint3";
+        case ShaderDataType::UINT4:    return "uint4";
         case ShaderDataType::FLOAT:    return "float";
         case ShaderDataType::FLOAT2:   return "float2";
         case ShaderDataType::FLOAT3:   return "float3";

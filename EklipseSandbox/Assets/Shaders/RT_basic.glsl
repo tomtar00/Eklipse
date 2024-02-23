@@ -22,7 +22,9 @@ out vec4 fragColor;
 void main() {
     vec2 uv = gl_FragCoord.xy / pData.Resolution.xy;
     vec4 clipSpacePosition = GetClipSpacePosition(uv);
+    uint pixelIndex = uint(gl_FragCoord.x + gl_FragCoord.y * pData.Resolution.x);
+    uint randomSeed = GetRandomSeed(pixelIndex);
 
     Ray ray = GetFragRay(clipSpacePosition);
-    fragColor = vec4(RayTrace(ray, uv), 1.0);
+    fragColor = vec4(RayTrace(ray, randomSeed), 1.0);
 }

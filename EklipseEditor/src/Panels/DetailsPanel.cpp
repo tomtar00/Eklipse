@@ -296,6 +296,30 @@ namespace Eklipse
                         ImGui::DragInt4("##check", (int*)value.data);
                     });
                 }
+                else if (value.type == ShaderDataType::UINT)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragScalar("##check", ImGuiDataType_U32, (int*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::UINT2)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragScalar("##check", ImGuiDataType_U32, (int*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::UINT3)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragScalar("##check", ImGuiDataType_U32, (int*)value.data);
+                    });
+                }
+                else if (value.type == ShaderDataType::UINT4)
+                {
+                    ImGui::DrawProperty((void*)(id + i++), valueName.c_str(), [&]() {
+                        ImGui::DragScalar("##check", ImGuiDataType_U32, (int*)value.data);
+                    });
+                }
             }
         }
     }

@@ -27,8 +27,8 @@ namespace Eklipse
     {
         switch (apiType)
         {
-        case ApiType::Vulkan: return "Vulkan";
-        case ApiType::OpenGL: return "OpenGL";
+            case ApiType::Vulkan: return "Vulkan";
+            case ApiType::OpenGL: return "OpenGL";
         }
         return "Unknown";
     }
@@ -254,6 +254,7 @@ namespace Eklipse
         if (s_storageBufferCache.find(storageBufferName) != s_storageBufferCache.end())
         {
             s_storageBufferCache.at(storageBufferName)->Dispose();
+            s_storageBufferCache.at(storageBufferName).reset();
         }
 
         Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding);

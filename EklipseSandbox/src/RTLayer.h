@@ -29,15 +29,13 @@ namespace Eklipse
         Ref<Shader> m_rayShader;
         Ref<Material> m_rayMaterial;
         Ref<VertexArray> m_fullscreenVA;
-        Ref<StorageBuffer> m_pixelBuffer;
-        Ref<StorageBuffer> m_meshBuffer;
 
         Camera m_camera;
         Transform m_cameraTransform;
         bool m_controlCamera;
-        float m_cameraSpeed = 5.0f;
-        float m_cameraSensitivity = 0.06f;
-        bool m_cursorDisabled = false;
+        float m_cameraSpeed;
+        float m_cameraSensitivity;
+        bool m_cursorDisabled;
 
         // Data
         int m_frames;

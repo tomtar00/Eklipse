@@ -10,21 +10,21 @@ namespace Eklipse
 
         m_shaderPath = "Assets/Shaders/RT_accum.glsl";
 
-        m_frames = 1;
-        m_raysPerPixel = 1;
-        m_maxBounces = 3;
+        m_frames        = 0;
+        m_raysPerPixel  = 1;
+        m_maxBounces    = 4;
 
-        // Background
-        m_skyColorHorizon = { 0.7f, 0.9f, 1.0f };
-        m_skyColorZenith = { 0.2f, 0.5f, 0.8f };
-        m_groundColor = { 0.6f, 0.6f, 0.6f };
-        m_sunColor = { 1.0f, 1.0f, 0.8f };
-        m_sunDirection = { 0.0f, -0.5f, -1.0f };
-        m_sunFocus = 0.99f;
-        m_sunIntensity = 5.0f;
+        m_skyColorHorizon   = { 1.0f, 1.0f, 1.0f };
+        m_skyColorZenith    = { 0.07f, 0.36f, 0.72f };
+        m_groundColor       = { 0.35f, 0.3f, 0.35f };
+        m_sunColor          = { 1.0f, 1.0f, 0.8f };
+        m_sunDirection      = { 0.0f, 0.3f, -1.0f };
+        m_sunFocus          = 500.0f;
+        m_sunIntensity      = 200.0f;
 
-        m_cameraSpeed = 3.0f;
+        m_cameraSpeed       = 3.0f;
         m_cameraSensitivity = 0.04f;
+        m_cursorDisabled    = false;
     }
 
     void RTLayer::OnEvent(Event& event)
@@ -59,6 +59,7 @@ namespace Eklipse
         if (ImGui::Combo("Graphics API", &api, "Vulkan\0OpenGL"))
         {
             Renderer::WaitDeviceIdle();
+            ResetPixelBuffer();
             switch (api)
             {
                 case 0: Application::Get().SetAPI(ApiType::Vulkan); break;
@@ -125,12 +126,12 @@ namespace Eklipse
             m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
             needsReset = true;
         }
-        if (ImGui::SliderFloat("Sun Focus", &m_sunFocus, 0.1f, 0.99f))
+        if (ImGui::SliderFloat("Sun Focus", &m_sunFocus, 0.1f, 1000.0f))
         {
             m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
             needsReset = true;
         }
-        if (ImGui::SliderFloat("Sun Intensity", &m_sunIntensity, 0.1f, 10.0f))
+        if (ImGui::SliderFloat("Sun Intensity", &m_sunIntensity, 0.1f, 1000.0f))
         {
             m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
             needsReset = true;
@@ -160,13 +161,13 @@ namespace Eklipse
     }
     void RTLayer::OnRender(float deltaTime)
     {
+        ++m_frames;
+
         m_rayMaterial->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "Frames", &m_frames, sizeof(int));
         
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
-
-        ++m_frames;
     }
     void RTLayer::OnUpdate(float deltaTime)
     {
@@ -219,15 +220,15 @@ namespace Eklipse
         glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
 
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
-        m_pixelBuffer = Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
-        m_meshBuffer = Renderer::CreateStorageBuffer("bMeshes", 1, 2);
+        Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
+        Renderer::CreateStorageBuffer("bMeshes", 1, 2);
 
         m_rayMaterial = Material::Create(m_rayShader);
-
+        
         m_rayMaterial->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
         m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
         m_rayMaterial->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
-
+        
         m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
@@ -239,7 +240,7 @@ namespace Eklipse
     }
     void RTLayer::ResetPixelBuffer()
     {
-        m_frames = 1;
+        m_frames = 0;
     }
 
     void RTLayer::ControlCamera(float deltaTime)
