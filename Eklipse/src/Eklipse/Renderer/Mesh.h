@@ -4,12 +4,23 @@
 
 namespace Eklipse
 {
+	struct alignas(16) Triangle
+	{
+		glm::vec3 a;
+		glm::vec3 b;
+		glm::vec3 c;
+	};
 	struct MeshData
 	{
 		BufferLayout layout;
 		Vec<float> vertices;
 		Vec<uint32_t> indices;
 	};
+	struct Bounds
+	{
+        glm::vec3 min;
+        glm::vec3 max;
+    };
 
 	class EK_API Mesh : public Asset
 	{
@@ -23,11 +34,15 @@ namespace Eklipse
 		virtual void Dispose() override;
 
 		const Ref<VertexArray>& GetVertexArray() const;
+		const MeshData& GetMeshData() const;
+		Vec<Triangle> GetTriangles() const;
+		Bounds GetBounds() const;
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		virtual AssetType GetType() const override { return GetStaticType(); }
 
 	private:
 		Ref<VertexArray> m_vertexArray;
+		MeshData m_meshData;
 	};
 }

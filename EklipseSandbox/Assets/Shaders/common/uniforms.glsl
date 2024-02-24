@@ -2,15 +2,9 @@ layout(binding = 0) uniform Camera {
 	mat4 ViewProjection;
 } uCamera;
 
-layout (binding = 1) buffer PixelData {
+layout (std430, binding = 1) buffer PixelData {
     vec3 Data[];
 } bPixels;
-
-layout (binding = 2) buffer MeshData {
-    Triangle Triangle[1000];
-    MeshInfo Info[100];
-    uint NumMeshes;
-} bMeshes;
 
 layout(push_constant) uniform Data {
 

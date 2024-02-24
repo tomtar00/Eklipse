@@ -11,10 +11,11 @@ void main() {
 #version 460 core
 
 #include "common/structs.glsl"
-#include "common/sphere/structs.glsl"
+#include "common/mesh/structs.glsl"
 #include "common/uniforms.glsl"
+#include "common/mesh/uniforms.glsl"
 #include "common/rand.glsl"
-#include "common/sphere/intersection.glsl"
+#include "common/mesh/intersection.glsl"
 #include "common/trace.glsl"
 #include "common/util.glsl"
 
@@ -27,5 +28,11 @@ void main() {
     uint randomSeed = GetRandomSeed(pixelIndex);
 
     Ray ray = GetFragRay(clipSpacePosition);
-    fragColor = vec4(RayTrace(ray, randomSeed), 1.0);
+    vec3 currentColor = RayTrace(ray, randomSeed);
+
+    float weight = 1.0 / float(pData.Frames);
+    vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
+
+    bPixels.Data[pixelIndex] = newColor;
+    fragColor = vec4(newColor, 1.0);
 }

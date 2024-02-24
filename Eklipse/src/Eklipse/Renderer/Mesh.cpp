@@ -6,7 +6,7 @@
 
 namespace Eklipse
 {
-	static Ref<VertexArray> LoadOBJ(const Path& filePath)
+	static MeshData LoadOBJ(const Path& filePath)
 	{
 		EK_CORE_PROFILE();
 		tinyobj::attrib_t attrib;
@@ -18,7 +18,7 @@ namespace Eklipse
 		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.c_str()))
 		{
 			EK_CORE_ERROR("Failed to load model at location: {0}. {1}", meshPath.c_str(), warn + err);
-			return nullptr;
+			return {};
 		}
 
 		Vec<float> vertices;
@@ -78,21 +78,17 @@ namespace Eklipse
 		}
 
 		BufferLayout layout = {
-			{ "inPosition", ShaderDataType::FLOAT3, false },
-			{ "inNormal", ShaderDataType::FLOAT3, false },
-			{ "inColor", ShaderDataType::FLOAT3, false },
+			{ "inPosition",	ShaderDataType::FLOAT3, false },
+			{ "inNormal",	ShaderDataType::FLOAT3, false },
+			{ "inColor",	ShaderDataType::FLOAT3, false },
             { "inTexCoord", ShaderDataType::FLOAT2, false }
 		};
 
-		Ref<VertexArray> vertexArray = VertexArray::Create();
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
-		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices);
-
-		vertexBuffer->SetLayout(layout);
-		vertexArray->AddVertexBuffer(vertexBuffer);
-		vertexArray->SetIndexBuffer(indexBuffer);
-
-		return vertexArray;
+		MeshData meshData;
+		meshData.layout = layout;
+		meshData.vertices = vertices;
+		meshData.indices = indices;
+		return meshData;
 	}
 
 	Mesh::Mesh(const Path& filePath, const AssetHandle handle)
@@ -102,14 +98,22 @@ namespace Eklipse
 		String extension = filePath.extension().string();
 		if (extension == ".obj")
 		{
-			m_vertexArray = LoadOBJ(filePath);
+			m_meshData = LoadOBJ(filePath);
 		}
 		else
 		{
 			EK_ASSERT(false, "Mesh format '{0}' is not supported!", extension);
 		}
+
+		m_vertexArray = VertexArray::Create();
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(m_meshData.vertices);
+		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(m_meshData.indices);
+
+		vertexBuffer->SetLayout(m_meshData.layout);
+		m_vertexArray->AddVertexBuffer(vertexBuffer);
+		m_vertexArray->SetIndexBuffer(indexBuffer);
 	}
-	Mesh::Mesh(const MeshData& data)
+	Mesh::Mesh(const MeshData& data) : m_meshData(data)
 	{
 		EK_CORE_PROFILE();
 		m_vertexArray = VertexArray::Create();
@@ -142,5 +146,44 @@ namespace Eklipse
 	const Ref<VertexArray>& Mesh::GetVertexArray() const
 	{
 		return m_vertexArray;
+	}
+	const MeshData& Mesh::GetMeshData() const
+	{
+		return m_meshData;
+	}
+	Vec<Triangle> Mesh::GetTriangles() const
+	{
+		Vec<Triangle> triangles;
+		for (uint32_t i = 0; i < m_meshData.indices.size(); i += 3)
+		{
+			uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
+			uint32_t idx1 = m_meshData.indices[i];
+			uint32_t idx2 = m_meshData.indices[i + 1];
+			uint32_t idx3 = m_meshData.indices[i + 2];
+
+			glm::vec3 v1(m_meshData.vertices[idx1 * stride], m_meshData.vertices[idx1 * stride + 1], m_meshData.vertices[idx1 * stride + 2]);
+			glm::vec3 v2(m_meshData.vertices[idx2 * stride], m_meshData.vertices[idx2 * stride + 1], m_meshData.vertices[idx2 * stride + 2]);
+			glm::vec3 v3(m_meshData.vertices[idx3 * stride], m_meshData.vertices[idx3 * stride + 1], m_meshData.vertices[idx3 * stride + 2]);
+
+			triangles.push_back({ v1, v2, v3 });
+        }
+		return triangles;
+	}
+	Bounds Mesh::GetBounds() const
+	{
+		Bounds bounds{};
+		bounds.min = { FLT_MAX, FLT_MAX, FLT_MAX };
+		bounds.max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += m_meshData.layout.GetStride())
+		{
+			glm::vec3 vertex = {
+                m_meshData.vertices[i + 0],
+                m_meshData.vertices[i + 1],
+                m_meshData.vertices[i + 2]
+            };
+            bounds.min = glm::min(bounds.min, vertex);
+            bounds.max = glm::max(bounds.max, vertex);
+        }
+		return bounds;
 	}
 }

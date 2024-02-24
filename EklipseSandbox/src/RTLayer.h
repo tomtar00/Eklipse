@@ -3,6 +3,29 @@
 
 namespace Eklipse
 {
+    struct RTMaterial 
+    {
+        glm::vec3 albedo;
+        float smoothness;
+        float specularProb;
+        glm::vec3 specularColor;
+        glm::vec3 emissionColor;
+        float emissionStrength;
+    };
+    struct MeshInfo
+    {
+        uint32_t firstTriangle;
+        uint32_t numTriangles;
+        glm::vec3 boundMin;
+        glm::vec3 boundMax;
+        RTMaterial material;
+    };
+    struct Meshes
+    {
+        uint32_t numMeshes;
+        MeshInfo* meshes;
+    };
+
     class RTLayer : public Layer
     {
     public:
@@ -20,6 +43,7 @@ namespace Eklipse
         void InitQuad();
         void InitShader();
         void InitMaterial();
+        void InitMeshes();
 
         void ResetPixelBuffer();
         void ControlCamera(float deltaTime);
@@ -29,6 +53,9 @@ namespace Eklipse
         Ref<Shader> m_rayShader;
         Ref<Material> m_rayMaterial;
         Ref<VertexArray> m_fullscreenVA;
+
+        Ref<Mesh> m_cubeMesh;
+        Vec<Triangle> m_triangles;
 
         Camera m_camera;
         Transform m_cameraTransform;

@@ -1,3 +1,4 @@
+
 const int NumSpheres = 4;
 Sphere spheres[NumSpheres] = Sphere[](
     Sphere(vec3(-0.5, 0.0, 0.0), 0.5, Material(vec3(1.0, 0.0, 0.0), 1.0, 0.1, vec3(1.0), vec3(0.0), 0.0)),
@@ -25,4 +26,22 @@ HitInfo RaySphere(Ray ray, Sphere sphere) {
         }
     }
     return hitInfo;
+}
+
+HitInfo CalculateRayCollision(Ray ray) {
+    HitInfo closestHit;
+    closestHit.dst = 1000000.0;
+    closestHit.didHit = false;
+    closestHit.material = Material(vec3(0.0), 0.0, 0.0, vec3(0.0), vec3(0.0), 0.0);
+
+    for (int i = 0; i < NumSpheres; i ++) {
+		Sphere sphere = spheres[i];
+		HitInfo hitInfo = RaySphere(ray, sphere);
+		if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
+			closestHit = hitInfo;
+			closestHit.material = sphere.material;
+		}
+	}
+
+    return closestHit;
 }

@@ -8,14 +8,14 @@ namespace Eklipse
         m_cameraTransform.rotation = { -1.0f, 0.0f, 0.0f };
         m_camera.m_fov = 50.0f;
 
-        m_shaderPath = "Assets/Shaders/RT_accum.glsl";
+        m_shaderPath = "Assets/Shaders/RT_mesh.glsl";
 
         m_frames        = 0;
         m_raysPerPixel  = 1;
         m_maxBounces    = 4;
 
         m_skyColorHorizon   = { 1.0f, 1.0f, 1.0f };
-        m_skyColorZenith    = { 0.07f, 0.36f, 0.72f };
+        m_skyColorZenith    = { 0.07f, 0.36f, 0.72f };  
         m_groundColor       = { 0.35f, 0.3f, 0.35f };
         m_sunColor          = { 1.0f, 1.0f, 0.8f };
         m_sunDirection      = { 0.0f, 0.3f, -1.0f };
@@ -67,8 +67,8 @@ namespace Eklipse
             }
         }
         ImGui::Separator();
-        static int shaderIndex = 1;
-        if (ImGui::Combo("Shader", &shaderIndex, "RT_basic\0RT_accum"))
+        static int shaderIndex = 2;
+        if (ImGui::Combo("Shader", &shaderIndex, "RT_basic\0RT_accum\0RT_mesh"))
         {
             Renderer::WaitDeviceIdle();
             m_rayShader->Dispose();
@@ -78,6 +78,7 @@ namespace Eklipse
             {
                 case 0: m_shaderPath = "Assets/Shaders/RT_basic.glsl"; break;
                 case 1: m_shaderPath = "Assets/Shaders/RT_accum.glsl"; break;
+                case 2: m_shaderPath = "Assets/Shaders/RT_mesh.glsl"; break;
             }
             InitShader();
             InitMaterial();
@@ -179,6 +180,7 @@ namespace Eklipse
     {
         InitQuad();
         InitShader();
+        InitMeshes();
         InitMaterial();
     }
     void RTLayer::OnShutdownAPI(bool quit)
@@ -186,6 +188,8 @@ namespace Eklipse
         m_fullscreenVA->Dispose();
         m_rayShader->Dispose();
         m_rayMaterial->Dispose();
+
+        m_cubeMesh->Dispose();
     }
 
     void RTLayer::InitQuad()
@@ -221,7 +225,40 @@ namespace Eklipse
 
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
-        Renderer::CreateStorageBuffer("bMeshes", 1, 2);
+
+        if (m_shaderPath == "Assets/Shaders/RT_mesh.glsl")
+        {
+            RTMaterial material{};
+            material.albedo = { 0.8f, 0.8f, 0.8f };
+            material.smoothness = 0.5f;
+            material.specularProb = 0.0f;
+            material.specularColor = { 0.0f, 0.0f, 0.0f };
+            material.emissionColor = { 0.0f, 0.0f, 0.0f };
+            material.emissionStrength = 0.0f;
+
+            //Vec<Triangle> cubeTriangles = m_cubeMesh->GetTriangles();
+            MeshInfo meshInfo{};
+            meshInfo.firstTriangle = 0;//m_triangles.size();
+            meshInfo.numTriangles = 1;//cubeTriangles.size();
+            meshInfo.boundMin = {};//m_cubeMesh->GetBounds().min;
+            meshInfo.boundMax = {};//m_cubeMesh->GetBounds().max;
+            meshInfo.material = material;
+
+            //m_triangles.insert(m_triangles.end(), cubeTriangles.begin(), cubeTriangles.end());
+            Triangle triangle{};
+            triangle.a = { -1.0f, -1.0f, -1.0f };
+            triangle.b = {  1.0f, -1.0f, -1.0f };
+            triangle.c = {  1.0f,  1.0f, -1.0f };
+
+            auto trBuff = Renderer::CreateStorageBuffer("bTriangles", /*m_triangles.size() **/ sizeof(Triangle), 2);
+            trBuff->SetData(/*m_triangles.data()*/ &triangle, /*m_triangles.size() **/ sizeof(Triangle));
+
+            Meshes meshes{};
+            meshes.numMeshes = 1;
+            meshes.meshes = &meshInfo;
+            auto mshBuff = Renderer::CreateStorageBuffer("bMeshes", sizeof(uint32_t) + sizeof(MeshInfo), 3);
+            mshBuff->SetData(&meshes, sizeof(uint32_t) + sizeof(MeshInfo));
+        }
 
         m_rayMaterial = Material::Create(m_rayShader);
         
@@ -236,7 +273,10 @@ namespace Eklipse
         m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
         m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
-
+    }
+    void RTLayer::InitMeshes()
+    {
+        m_cubeMesh = Mesh::Create("Assets/Meshes/cube.obj");
     }
     void RTLayer::ResetPixelBuffer()
     {

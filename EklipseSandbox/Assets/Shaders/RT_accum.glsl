@@ -10,10 +10,10 @@ void main() {
 #stage fragment
 #version 460 core
 #include "common/structs.glsl"
+#include "common/sphere/structs.glsl"
 #include "common/uniforms.glsl"
 #include "common/rand.glsl"
-#include "common/sphere_trace.glsl"
-#include "common/mesh_trace.glsl"
+#include "common/sphere/intersection.glsl"
 #include "common/trace.glsl"
 #include "common/util.glsl"
 
