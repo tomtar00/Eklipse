@@ -165,11 +165,15 @@ namespace Eklipse
 			glm::vec3 v2(m_meshData.vertices[idx2 * stride], m_meshData.vertices[idx2 * stride + 1], m_meshData.vertices[idx2 * stride + 2]);
 			glm::vec3 v3(m_meshData.vertices[idx3 * stride], m_meshData.vertices[idx3 * stride + 1], m_meshData.vertices[idx3 * stride + 2]);
 
-			triangles.push_back({ v1, v2, v3 });
+			Triangle triangle{};
+			triangle.a = v1;
+			triangle.b = v2;
+			triangle.c = v3;
+			triangles.push_back(triangle);
         }
 		return triangles;
 	}
-	Bounds Mesh::GetBounds() const
+	Bounds Mesh::GetBounds() const // TODO: NOT WORKING
 	{
 		Bounds bounds{};
 		bounds.min = { FLT_MAX, FLT_MAX, FLT_MAX };

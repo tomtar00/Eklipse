@@ -26,13 +26,13 @@ void main() {
     vec4 clipSpacePosition = GetClipSpacePosition(uv);
     uint pixelIndex = uint(gl_FragCoord.x + gl_FragCoord.y * pData.Resolution.x);
     uint randomSeed = GetRandomSeed(pixelIndex);
-
+  
     Ray ray = GetFragRay(clipSpacePosition);
     vec3 currentColor = RayTrace(ray, randomSeed);
-
+  
     float weight = 1.0 / float(pData.Frames);
     vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
-
+  
     bPixels.Data[pixelIndex] = newColor;
     fragColor = vec4(newColor, 1.0);
 }

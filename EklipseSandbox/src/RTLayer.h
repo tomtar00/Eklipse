@@ -3,13 +3,16 @@
 
 namespace Eklipse
 {
-    struct RTMaterial 
+    struct RTMaterial
     {
         glm::vec3 albedo;
+        float pad0;
         float smoothness;
         float specularProb;
         glm::vec3 specularColor;
+        float pad1;
         glm::vec3 emissionColor;
+        float pad2;
         float emissionStrength;
     };
     struct MeshInfo
@@ -17,7 +20,10 @@ namespace Eklipse
         uint32_t firstTriangle;
         uint32_t numTriangles;
         glm::vec3 boundMin;
+        float pad0;
         glm::vec3 boundMax;
+        float pad1;
+        float pad[2];
         RTMaterial material;
     };
     struct Meshes

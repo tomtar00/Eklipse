@@ -29,13 +29,15 @@ namespace Eklipse
 			VkResult res = vmaCreateBuffer(g_allocator, &bufferInfo, &vmaAllocInfo, &buffer, &allocation, nullptr);
 			HANDLE_VK_RESULT(res, "CREATE BUFFER");
 		}
-		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, uint32_t offset)
 		{
 			EK_CORE_PROFILE();
 			VkCommandBuffer commandBuffer = BeginSingleCommands();
 
 			VkBufferCopy copyRegion{};
 			copyRegion.size = size;
+			copyRegion.srcOffset = 0;
+			copyRegion.dstOffset = offset;
 			vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
 			EndSingleCommands(commandBuffer);
@@ -191,9 +193,9 @@ namespace Eklipse
 		}
 		void VKStorageBuffer::SetData(const void* data, size_t size, uint32_t offset)
 		{
-		    EK_CORE_PROFILE();
+			EK_CORE_PROFILE();
             VKStagingBuffer stagingBuffer(data, size);
-            CopyBuffer(stagingBuffer.m_buffer, m_buffer, size);
+            CopyBuffer(stagingBuffer.m_buffer, m_buffer, size, offset);
 		}
 		void* VKStorageBuffer::GetBuffer() const
 		{

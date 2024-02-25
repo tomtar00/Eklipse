@@ -228,36 +228,66 @@ namespace Eklipse
 
         if (m_shaderPath == "Assets/Shaders/RT_mesh.glsl")
         {
+            /*
             RTMaterial material{};
-            material.albedo = { 0.8f, 0.8f, 0.8f };
-            material.smoothness = 0.5f;
+            material.albedo = { 1.0f, 0.0f, 0.0f };
+            material.smoothness = 0.0f;
             material.specularProb = 0.0f;
             material.specularColor = { 0.0f, 0.0f, 0.0f };
             material.emissionColor = { 0.0f, 0.0f, 0.0f };
             material.emissionStrength = 0.0f;
 
-            //Vec<Triangle> cubeTriangles = m_cubeMesh->GetTriangles();
             MeshInfo meshInfo{};
-            meshInfo.firstTriangle = 0;//m_triangles.size();
-            meshInfo.numTriangles = 1;//cubeTriangles.size();
-            meshInfo.boundMin = {};//m_cubeMesh->GetBounds().min;
-            meshInfo.boundMax = {};//m_cubeMesh->GetBounds().max;
+            meshInfo.firstTriangle = 0;
+            meshInfo.numTriangles = 1;
+            meshInfo.boundMin = {};
+            meshInfo.boundMax = {};
             meshInfo.material = material;
 
-            //m_triangles.insert(m_triangles.end(), cubeTriangles.begin(), cubeTriangles.end());
             Triangle triangle{};
-            triangle.a = { -1.0f, -1.0f, -1.0f };
-            triangle.b = {  1.0f, -1.0f, -1.0f };
-            triangle.c = {  1.0f,  1.0f, -1.0f };
+            triangle.a = {  1.0f, 0.0f, 0.0f };
+            triangle.b = {  0.0f, 1.0f, 0.0f };
+            triangle.c = {  0.0f, 0.0f, 1.0f };
 
-            auto trBuff = Renderer::CreateStorageBuffer("bTriangles", /*m_triangles.size() **/ sizeof(Triangle), 2);
-            trBuff->SetData(/*m_triangles.data()*/ &triangle, /*m_triangles.size() **/ sizeof(Triangle));
+            auto trBuff = Renderer::CreateStorageBuffer("bTriangles", meshInfo.numTriangles * sizeof(Triangle), 2);
+            trBuff->SetData(&triangle, meshInfo.numTriangles * sizeof(Triangle));
 
             Meshes meshes{};
             meshes.numMeshes = 1;
             meshes.meshes = &meshInfo;
-            auto mshBuff = Renderer::CreateStorageBuffer("bMeshes", sizeof(uint32_t) + sizeof(MeshInfo), 3);
-            mshBuff->SetData(&meshes, sizeof(uint32_t) + sizeof(MeshInfo));
+
+            auto mshBuff = Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + meshes.numMeshes * sizeof(MeshInfo), 3);
+            mshBuff->SetData(&meshes.numMeshes, sizeof(uint32_t));
+            mshBuff->SetData(meshes.meshes, meshes.numMeshes * sizeof(MeshInfo), 4 * sizeof(uint32_t));
+            */
+            
+            RTMaterial material{};
+            material.albedo = { 1.0f, 0.0f, 0.0f };
+            material.smoothness = 0.0f;
+            material.specularProb = 0.0f;
+            material.specularColor = { 0.0f, 0.0f, 0.0f };
+            material.emissionColor = { 0.0f, 0.0f, 0.0f };
+            material.emissionStrength = 0.0f;
+
+            Vec<Triangle> triangles = m_cubeMesh->GetTriangles();
+            MeshInfo meshInfo{};
+            Bounds bounds = m_cubeMesh->GetBounds();
+            meshInfo.firstTriangle = 0;
+            meshInfo.numTriangles = triangles.size();
+            meshInfo.boundMin = bounds.min;
+            meshInfo.boundMax = bounds.max;
+            meshInfo.material = material;
+
+            auto trBuff = Renderer::CreateStorageBuffer("bTriangles", meshInfo.numTriangles * sizeof(Triangle), 2);
+            trBuff->SetData(triangles.data(), meshInfo.numTriangles * sizeof(Triangle));
+
+            Meshes meshes{};
+            meshes.numMeshes = 1;
+            meshes.meshes = &meshInfo;
+
+            auto mshBuff = Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + meshes.numMeshes * sizeof(MeshInfo), 3);
+            mshBuff->SetData(&meshes.numMeshes, sizeof(uint32_t));
+            mshBuff->SetData(meshes.meshes, meshes.numMeshes * sizeof(MeshInfo), 4 * sizeof(uint32_t));
         }
 
         m_rayMaterial = Material::Create(m_rayShader);

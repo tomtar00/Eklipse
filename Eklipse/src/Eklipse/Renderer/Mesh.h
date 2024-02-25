@@ -4,23 +4,27 @@
 
 namespace Eklipse
 {
-	struct alignas(16) Triangle
+	struct Triangle
 	{
 		glm::vec3 a;
+		float pad0;
 		glm::vec3 b;
+		float pad1;
 		glm::vec3 c;
+		float pad2;
 	};
+	struct Bounds
+	{
+		glm::vec3 min;
+		glm::vec3 max;
+	};
+
 	struct MeshData
 	{
 		BufferLayout layout;
 		Vec<float> vertices;
 		Vec<uint32_t> indices;
 	};
-	struct Bounds
-	{
-        glm::vec3 min;
-        glm::vec3 max;
-    };
 
 	class EK_API Mesh : public Asset
 	{

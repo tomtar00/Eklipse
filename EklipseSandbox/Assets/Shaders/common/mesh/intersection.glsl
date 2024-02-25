@@ -76,9 +76,9 @@ HitInfo CalculateRayCollision(Ray ray) {
     for (int i = 0; i < bMeshes.NumMeshes; i++) {
         MeshInfo meshInfo = bMeshes.Meshes[i];
         
-        //if (!RayBounds(ray, meshInfo.boundMin, meshInfo.boundMax)) {
+        // if (!RayBounds(ray, meshInfo.boundMin, meshInfo.boundMax)) {
         //    continue;
-        //}
+        // }
 
         for (int j = 0; j < meshInfo.numTriangles; j++) {
             Triangle triangle = bTriangles.Triangles[meshInfo.firstTriangle + j];

@@ -12,7 +12,7 @@ namespace Eklipse
 	{
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
 			VkBuffer& buffer, VmaAllocation& allocation, VmaAllocationCreateFlags vmaFlags);
-		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, uint32_t offset = 0);
 
 		class VKBuffer
 		{
