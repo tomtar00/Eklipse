@@ -40,6 +40,53 @@ namespace Eklipse
 			return VK_FORMAT_UNDEFINED;
 		}
 
+		Vec<VkVertexInputAttributeDescription> CreateVertexInputAttributeDescriptions(const ShaderReflection& vertexShaderReflection)
+		{
+			Vec<VkVertexInputAttributeDescription> attributeDescription;
+			for (auto& vertexReflection : vertexShaderReflection.inputs)
+			{
+				VkVertexInputAttributeDescription attribute{};
+				attribute.binding = 0;
+				attribute.location = vertexReflection.location;
+				attribute.format = VertexInputSizeToVKFormat(vertexReflection.size);
+				attribute.offset = vertexReflection.offset;
+				attributeDescription.push_back(attribute);
+			}
+			return attributeDescription;
+		}
+		Vec<VkVertexInputBindingDescription> CreateVertexInputBindingDescriptions(const ShaderReflection& vertexShaderReflection)
+		{
+			size_t inputSize = 0;
+			for (auto& vertexReflection : vertexShaderReflection.inputs)
+				inputSize += vertexReflection.size;
+
+			Vec<VkVertexInputBindingDescription> bindingDescription;
+			VkVertexInputBindingDescription vertexInputDescription{};
+			vertexInputDescription.binding = 0;
+			vertexInputDescription.stride = inputSize;
+			vertexInputDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			bindingDescription.push_back(vertexInputDescription);
+
+			return bindingDescription;
+		}
+
+		Vec<VkPipelineShaderStageCreateInfo> CreateShaderStages(VkShaderModule vertexShaderModule, VkShaderModule framentShaderModule)
+		{
+			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+			vertShaderStageInfo.module = vertexShaderModule;
+			vertShaderStageInfo.pName = "main";
+
+			VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+			fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+			fragShaderStageInfo.module = framentShaderModule;
+			fragShaderStageInfo.pName = "main";
+
+			Vec<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+		}
+
 		VKShader::VKShader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle) 
 			: Shader(vertexSource, fragmentSource, handle)
 		{
@@ -60,6 +107,14 @@ namespace Eklipse
 			Compile(filePath);
 		}
 
+		VkShaderModule VKShader::GetVertexShaderModule() const
+		{
+			return m_vertexShaderModule;
+		}
+		VkShaderModule VKShader::GetFragmentShaderModule() const
+		{
+			return m_fragmentShaderModule;
+		}
 		VkDescriptorSetLayout VKShader::GetDescriptorSetLayout() const
 		{
 			return m_descriptorSetLayout;
@@ -71,25 +126,20 @@ namespace Eklipse
 
 		void VKShader::Bind() const 
 		{
-			EK_CORE_PROFILE();
-
-			vkCmdBindPipeline(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 		}
 		void VKShader::Unbind() const {}
 		void VKShader::Dispose()
 		{
 			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Disposing Vulkan shader '{0}'", Name);
-			//if (m_isValid)
-			//{
-				if (m_pipelineLayout != VK_NULL_HANDLE)
-					vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
-				if (m_descriptorSetLayout != VK_NULL_HANDLE)
-					vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
-				if (m_pipeline != VK_NULL_HANDLE) 
-					vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
-			//}
-			//else EK_CORE_WARN("Shader '{0}' is not valid, cannot dispose", Name);
+			if (m_vertexShaderModule != VK_NULL_HANDLE)
+                vkDestroyShaderModule(g_logicalDevice, m_vertexShaderModule, nullptr);
+			if (m_fragmentShaderModule != VK_NULL_HANDLE)
+				vkDestroyShaderModule(g_logicalDevice, m_fragmentShaderModule, nullptr);
+			if (m_pipelineLayout != VK_NULL_HANDLE)
+				vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
+			if (m_descriptorSetLayout != VK_NULL_HANDLE)
+				vkDestroyDescriptorSetLayout(g_logicalDevice, m_descriptorSetLayout, nullptr);
 			EK_CORE_DBG("Disposed Vulkan shader '{0}'", Name);
 		}
 
@@ -104,7 +154,6 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			return Compile("", sourceMap, forceCompile);
 		}
-
 		bool VKShader::Compile(const Path& shaderPath, const StageSourceMap& sourceMap, bool forceCompile)
 		{
 			EK_CORE_TRACE("Compiling Vulkan shader '{0}'", Name);
@@ -118,21 +167,8 @@ namespace Eklipse
 				// Create modules
 				auto& vertShaderCode = m_vulkanSPIRV[ShaderStage::VERTEX];
 				VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-				VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-				vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-				vertShaderStageInfo.module = vertShaderModule;
-				vertShaderStageInfo.pName = "main";
-
 				auto& fragShaderCode = m_vulkanSPIRV[ShaderStage::FRAGMENT];
 				VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
-				VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-				fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-				fragShaderStageInfo.module = fragShaderModule;
-				fragShaderStageInfo.pName = "main";
-
-				Vec<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
 
 				// Create descriptor set layout
 				Vec<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
@@ -169,7 +205,6 @@ namespace Eklipse
 						descriptorSetLayoutBindings.push_back(samplerLayoutBinding);
 					}
 				}
-
 				m_descriptorSetLayout = CreateDescriptorSetLayout(descriptorSetLayoutBindings);
 
 				// Create push constant ranges
@@ -190,37 +225,13 @@ namespace Eklipse
 				// Create pipeline layout
 				m_pipelineLayout = CreatePipelineLayout({ m_descriptorSetLayout }, pushConstantRanges);
 
-				// Create pipeline
-				size_t inputSize = 0;
-				for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
-					inputSize += vertexReflection.size;
-
-				Vec<VkVertexInputBindingDescription> bindingDescription;
-				VkVertexInputBindingDescription vertexInputDescription{};
-				vertexInputDescription.binding = 0;
-				vertexInputDescription.stride = inputSize;
-				vertexInputDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-				bindingDescription.push_back(vertexInputDescription);
-
-				Vec<VkVertexInputAttributeDescription> attributeDescription;
-				for (auto& vertexReflection : m_reflections[ShaderStage::VERTEX].inputs)
-				{
-					VkVertexInputAttributeDescription attribute{};
-					attribute.binding = 0;
-					attribute.location = vertexReflection.location;
-					attribute.format = VertexInputSizeToVKFormat(vertexReflection.size);
-					attribute.offset = vertexReflection.offset;
-					attributeDescription.push_back(attribute);
-				}
-
-				// TODO: This is just... bad. Create some pipeline manager asap
-				if (g_VKOffScreenFramebuffers.size() <= 0)
-					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKDefaultFramebuffer->GetRenderPass(), bindingDescription, attributeDescription);
-				else
-					m_pipeline = CreateGraphicsPipeline(shaderStages, m_pipelineLayout, g_VKOffScreenFramebuffers[0]->GetRenderPass(), bindingDescription, attributeDescription);
-
-				vkDestroyShaderModule(g_logicalDevice, fragShaderModule, nullptr);
-				vkDestroyShaderModule(g_logicalDevice, vertShaderModule, nullptr);
+				// Rebuild pipelines
+				Vec<Ref<Pipeline>> pipelines = Pipeline::GetPipelinesByShader(Handle);
+				for (auto& pipeline : pipelines)
+                {
+                    pipeline->Dispose();
+                    pipeline->Build();
+                }
 
 				EK_CORE_DBG("Creation of shader '{0}' took {1} ms", Name, _timer.ElapsedTimeMs());
 			}

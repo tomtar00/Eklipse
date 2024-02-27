@@ -9,12 +9,18 @@ namespace Eklipse
 		VkShaderStageFlagBits VKShaderStageFromInternalStage(const ShaderStage stage);
 		VkFormat VertexInputSizeToVKFormat(const size_t size);
 
+		Vec<VkVertexInputAttributeDescription> CreateVertexInputAttributeDescriptions(const ShaderReflection& vertexShaderReflection);
+		Vec<VkVertexInputBindingDescription> CreateVertexInputBindingDescriptions(const ShaderReflection& vertexShaderReflection);
+		Vec<VkPipelineShaderStageCreateInfo> CreateShaderStages(VkShaderModule vertexShaderModule, VkShaderModule framentShaderModule);
+
 		class VKShader : public Shader
 		{
 		public:
 			VKShader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle = AssetHandle());
 			VKShader(const Path& filePath, const AssetHandle handle = AssetHandle());
 
+			VkShaderModule GetVertexShaderModule() const;
+			VkShaderModule GetFragmentShaderModule() const;
 			VkDescriptorSetLayout GetDescriptorSetLayout() const;
 			VkPipelineLayout GetPipelineLayout() const;
 
@@ -30,8 +36,9 @@ namespace Eklipse
 			virtual const String GetCacheDirectoryPath() override;
 
 		private:
-			VkPipeline m_pipeline = VK_NULL_HANDLE;
-			VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+			VkShaderModule m_vertexShaderModule			= VK_NULL_HANDLE;
+			VkShaderModule m_fragmentShaderModule		= VK_NULL_HANDLE;
+			VkPipelineLayout m_pipelineLayout			= VK_NULL_HANDLE;
 			VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 		};
 	}

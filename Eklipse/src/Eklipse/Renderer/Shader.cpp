@@ -187,7 +187,6 @@ namespace Eklipse
         EK_CORE_PROFILE();
         EK_CORE_TRACE("Recompiling shader '{0}'", Name);
 
-        Dispose();
         Compile(shaderPath, true);
 
         if (m_isValid)

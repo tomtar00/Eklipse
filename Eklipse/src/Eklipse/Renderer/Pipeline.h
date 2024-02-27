@@ -1,32 +1,46 @@
 #pragma once
+#include "Shader.h"
+#include "Framebuffer.h"
 
 namespace Eklipse
 {
-	/*
-	
-	enum class PipelineType
-	{
-		None,
-		Resterization,
-		RayTracing,
-		PathTracing
-	};
-
 	class EK_API Pipeline
 	{
 	public:
-		virtual ~Pipeline() {};
+		enum class Type
+		{
+			Resterization,
+			Compute,
+			RayTracing,
+		};
+		enum class Mode
+		{
+			TRIANGLE,
+			LINE,
+		};
+		struct Config
+		{
+            Type type;
+            Mode mode;
+			Ref<Shader> shader;
+			Ref<Framebuffer> framebuffer;
+        };
 
-		virtual void InitPool() {};
-		virtual void Shutdown() {};
+	public:
+		Pipeline(const Config& config);
 
-		PipelineType GetPipelineType() { return m_pipelineType; }
-		void SetPipelineType(PipelineType pipelineTye) { m_pipelineType = pipelineTye; }
+		static Ref<Pipeline> Get(const Config& config);
+		static Vec<Ref<Pipeline>> GetPipelinesByShader(const AssetHandle shaderHandle);
+
+		virtual void Build() = 0;
+		virtual void Bind() = 0;
+		virtual void Dispose() = 0;
+
+	private:
+        static Ref<Pipeline> Create(const Config& config);
+		static std::map<size_t, Ref<Pipeline>> s_pipelines;
 
 	protected:
-		PipelineType m_pipelineType;
-		bool m_initialized = false;
+		Config m_config;
 	};
-	
-	*/
 }

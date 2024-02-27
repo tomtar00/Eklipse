@@ -80,8 +80,7 @@ namespace Eklipse
 		{
 			EK_CORE_PROFILE();
 			EK_CORE_TRACE("Disposing OpenGL shader '{0}'", Name);
-			//if (m_isValid)
-				glDeleteProgram(m_id);
+			glDeleteProgram(m_id);
 			EK_CORE_DBG("Disposed OpenGL shader '{0}'", Name);
 		}
 

@@ -119,9 +119,8 @@ namespace Eklipse
         {
             auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
 
-#ifdef EK_DEBUG
-            if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) continue;
-#endif
+            if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) 
+                continue;
 
             glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
             meshComponent.material->SetConstant("uVertConst", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
@@ -136,7 +135,6 @@ namespace Eklipse
         auto camera = scene->GetMainCamera();
         auto cameraTransform = scene->GetMainCameraTransform();
 
-#ifdef EK_DEBUG
         if (!camera)
         {
             EK_CORE_ERROR("No main camera present on the scene!");
@@ -145,9 +143,9 @@ namespace Eklipse
         else if (!cameraTransform)
         {
             EK_CORE_ERROR("Main camera transform is null!");
+            return;
         }
         else
-#endif
             RenderScene(scene, *camera, *cameraTransform);
     }
     void Renderer::Submit()

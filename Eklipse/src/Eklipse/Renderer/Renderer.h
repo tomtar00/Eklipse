@@ -43,6 +43,7 @@ namespace Eklipse
 		// Render calls
 		static void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform);
 		static void RenderScene(Ref<Scene> scene);
+		static void RenderLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color);
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);

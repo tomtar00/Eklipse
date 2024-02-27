@@ -4,6 +4,7 @@
 #include "VKPipeline.h"
 #include "VKUtils.h"
 #include "VKDescriptor.h"
+#include "VKShader.h"
 
 #include <Eklipse/Utils/File.h>
 #include <Eklipse/Renderer/Renderer.h>
@@ -11,31 +12,37 @@
 namespace Eklipse
 {
     namespace Vulkan
-    {
-        //VkRenderPass        g_renderPass                = VK_NULL_HANDLE;
-        //VkPipeline          g_graphicsPipeline          = VK_NULL_HANDLE;
-        //VkPipelineLayout    g_graphicsPipelineLayout    = VK_NULL_HANDLE;
-        //VkPipeline          g_particlePipeline          = VK_NULL_HANDLE;
-        //VkPipelineLayout    g_particlePipelineLayout    = VK_NULL_HANDLE;
-        //VkPipeline          g_computePipeline           = VK_NULL_HANDLE;
-        //VkPipelineLayout    g_computePipelineLayout     = VK_NULL_HANDLE;
+    {        
+        VkPipelineLayout CreatePipelineLayout(Vec<VkDescriptorSetLayout> descSetLayouts, Vec<VkPushConstantRange> pushConstantRanges)
+        {
+            EK_CORE_PROFILE();
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descSetLayouts.size());
+            pipelineLayoutInfo.pSetLayouts = descSetLayouts.data();
+            pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
+            pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
 
-        VkPipeline CreateGraphicsPipeline(Vec<VkPipelineShaderStageCreateInfo> shaderStages,
-            VkPipelineLayout pipelineLayout, VkRenderPass renderPass,
-            Vec<VkVertexInputBindingDescription> bindingDesc,
-            Vec<VkVertexInputAttributeDescription> attribteDesc)
+            VkPipelineLayout pipelineLayout;
+            VkResult res = vkCreatePipelineLayout(g_logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+            HANDLE_VK_RESULT(res, "CREATE PIPELINE LAYOUT");
+
+            return pipelineLayout;
+        }
+
+        VkPipeline CreateGraphicsPipeline(const GraphicsPipelineCreateInfo& createInfo)
         {
             EK_CORE_PROFILE();
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDesc.size());
-            vertexInputInfo.pVertexBindingDescriptions = bindingDesc.data();
-            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribteDesc.size());
-            vertexInputInfo.pVertexAttributeDescriptions = attribteDesc.data();
+            vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(createInfo.bindingDesc.size());
+            vertexInputInfo.pVertexBindingDescriptions = createInfo.bindingDesc.data();
+            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(createInfo.attribteDesc.size());
+            vertexInputInfo.pVertexAttributeDescriptions = createInfo.attribteDesc.data();
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
             inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-            inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+            inputAssembly.topology = createInfo.topology;
             inputAssembly.primitiveRestartEnable = VK_FALSE;
 
             VkPipelineViewportStateCreateInfo viewportState{};
@@ -47,7 +54,7 @@ namespace Eklipse
             rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
             rasterizer.depthClampEnable = VK_FALSE;
             rasterizer.rasterizerDiscardEnable = VK_FALSE;
-            rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+            rasterizer.polygonMode = createInfo.mode;
             rasterizer.lineWidth = 1.0f;
             rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
             rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
@@ -106,11 +113,11 @@ namespace Eklipse
 
             VkGraphicsPipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.layout = pipelineLayout;
-            pipelineInfo.renderPass = renderPass;
+            pipelineInfo.layout = createInfo.pipelineLayout;
+            pipelineInfo.renderPass = createInfo.renderPass;
             pipelineInfo.subpass = 0;
-            pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-            pipelineInfo.pStages = shaderStages.data();
+            pipelineInfo.stageCount = static_cast<uint32_t>(createInfo.shaderStages.size());
+            pipelineInfo.pStages = createInfo.shaderStages.data();
             pipelineInfo.pVertexInputState = &vertexInputInfo;
             pipelineInfo.pInputAssemblyState = &inputAssembly;
             pipelineInfo.pViewportState = &viewportState;
@@ -129,23 +136,7 @@ namespace Eklipse
 
             return pipeline;
         }
-        VkPipelineLayout CreatePipelineLayout(Vec<VkDescriptorSetLayout> descSetLayouts, Vec<VkPushConstantRange> pushConstantRanges)
-        {
-            EK_CORE_PROFILE();
-            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descSetLayouts.size());
-            pipelineLayoutInfo.pSetLayouts = descSetLayouts.data();
-            pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
-            pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
-
-            VkPipelineLayout pipelineLayout;
-            VkResult res = vkCreatePipelineLayout(g_logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
-            HANDLE_VK_RESULT(res, "CREATE PIPELINE LAYOUT");
-
-            return pipelineLayout;
-        }
-        VkPipeline CreateComputePipeline(const char* shaderRelPath, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout* descSetLayout)
+        VkPipeline CreateComputePipeline(const ComputePipelineCreateInfo& createInfo)
         {
             EK_CORE_PROFILE();
             /*auto& computeShaderCode = Eklipse::ReadFileFromPath(shaderRelPath);
@@ -180,214 +171,73 @@ namespace Eklipse
 
             return VK_NULL_HANDLE;
         }
-        VkRenderPass CreateRenderPass()
+        
+        VKPipeline::VKPipeline(const Pipeline::Config& config) : Pipeline(config)
         {
             EK_CORE_PROFILE();
-            VkSampleCountFlagBits msaaSamples = (VkSampleCountFlagBits)Renderer::GetSettings().GetMsaaSamples();
-            bool msaaEnabled = msaaSamples != VK_SAMPLE_COUNT_1_BIT;
-
-            VkAttachmentDescription colorAttachment{};
-            colorAttachment.format = g_swapChainImageFormat;
-            colorAttachment.samples = msaaSamples;
-            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            VkAttachmentReference colorAttachmentRef{};
-            colorAttachmentRef.attachment = 0;
-            colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            VkAttachmentDescription depthAttachment{};
-            depthAttachment.format = FindDepthFormat();
-            depthAttachment.samples = msaaSamples;
-            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            VkAttachmentReference depthAttachmentRef{};
-            depthAttachmentRef.attachment = 1;
-            depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            Vec<VkAttachmentDescription> attachments =
-            {
-                colorAttachment,
-                depthAttachment
-            };
-
-            VkSubpassDescription subpass{};
-            subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpass.colorAttachmentCount = 1;
-            subpass.pColorAttachments = &colorAttachmentRef;
-            subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-            VkAttachmentReference colorAttachmentResolveRef{};
-            VkAttachmentDescription colorAttachmentResolve{};
-
-            if (msaaEnabled)
-            {
-                colorAttachmentResolve.format = g_swapChainImageFormat;
-                colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-                colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-                colorAttachmentResolveRef.attachment = 2;
-                colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-                attachments.push_back(colorAttachmentResolve);
-
-                subpass.pResolveAttachments = &colorAttachmentResolveRef;
-            }       
-
-            VkRenderPassCreateInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            renderPassInfo.attachmentCount = attachments.size();
-            renderPassInfo.pAttachments = attachments.data();
-            renderPassInfo.subpassCount = 1;
-            renderPassInfo.pSubpasses = &subpass;
-
-            VkSubpassDependency dependency{};
-            dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-            dependency.dstSubpass = 0;
-            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            dependency.srcAccessMask = 0;
-            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            renderPassInfo.dependencyCount = 1;
-            renderPassInfo.pDependencies = &dependency;
-
-            VkRenderPass renderPass;
-            VkResult res = vkCreateRenderPass(g_logicalDevice, &renderPassInfo, nullptr, &renderPass);
-            HANDLE_VK_RESULT(res, "CREATE RENDER PASS");
-
-            return renderPass;
+            Build();
         }
-        VkRenderPass CreateViewportRenderPass()
+
+        void VKPipeline::Build()
         {
-            EK_CORE_PROFILE();
-            std::array<VkAttachmentDescription, 2> attachments = {};
-            // Color attachment
-            attachments[0].format = g_swapChainImageFormat;
-            attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            // Depth attachment
-            attachments[1].format = FindDepthFormat();
-            attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            EK_CORE_TRACE("Building pipeline");
+            if (m_config.type == Pipeline::Type::Resterization)
+            {
+                Ref<VKShader> shader = Cast<VKShader>(m_config.shader);
+                Ref<VKFramebuffer> framebuffer = Cast<VKFramebuffer>(m_config.framebuffer);
 
-            VkAttachmentReference colorReference = {};
-            colorReference.attachment = 0;
-            colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                GraphicsPipelineCreateInfo info{};
+                info.shaderStages = CreateShaderStages(shader->GetVertexShaderModule(), shader->GetFragmentShaderModule());
+                info.attribteDesc = CreateVertexInputAttributeDescriptions(shader->GetVertexReflection());
+                info.bindingDesc = CreateVertexInputBindingDescriptions(shader->GetVertexReflection());
+                info.pipelineLayout = shader->GetPipelineLayout();
+                info.renderPass = framebuffer->GetRenderPass();
+                if (m_config.mode == Pipeline::Mode::TRIANGLE)
+                {
+                    info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+                    info.mode = VK_POLYGON_MODE_FILL;
+                }
+                else if (m_config.mode == Pipeline::Mode::LINE)
+                {
+                    info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+                    info.mode = VK_POLYGON_MODE_LINE;
+                }
+                m_pipeline = CreateGraphicsPipeline(info);
+                m_bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            }
+            /*
+            else if (config.type == Pipeline::Type::RayTracing)
+            {
+                 m_bindPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
+            }
+            */
+            /*
+            else if (config.type == Pipeline::Type::Compute)
+            {
+                Ref<VKShader> shader = Cast<VKShader>(config.shader);
+                Ref<VKFramebuffer> framebuffer = Cast<VKFramebuffer>(config.framebuffer);
 
-            VkAttachmentReference depthReference = {};
-            depthReference.attachment = 1;
-            depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                m_pipeline = CreateComputePipeline(shader->GetPath().c_str(), shader->GetPipelineLayout(), nullptr);
 
-            VkSubpassDescription subpassDescription = {};
-            subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpassDescription.colorAttachmentCount = 1;
-            subpassDescription.pColorAttachments = &colorReference;
-            subpassDescription.pDepthStencilAttachment = &depthReference;
-            subpassDescription.pResolveAttachments = nullptr;
-
-            // Subpass dependencies for layout transitions
-            std::array<VkSubpassDependency, 2> dependencies{};
-
-            dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-            dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-            dependencies[0].dstSubpass = 0;
-            dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-            dependencies[1].srcSubpass = 0;
-            dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-            dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-            dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-            VkRenderPassCreateInfo renderPassInfo = {};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            renderPassInfo.attachmentCount = attachments.size();
-            renderPassInfo.pAttachments = attachments.data();
-            renderPassInfo.subpassCount = 1;
-            renderPassInfo.pSubpasses = &subpassDescription;
-            renderPassInfo.dependencyCount = dependencies.size();
-            renderPassInfo.pDependencies = dependencies.data();
-
-            VkRenderPass renderPass;
-            VkResult res = vkCreateRenderPass(g_logicalDevice, &renderPassInfo, nullptr, &renderPass);
-            HANDLE_VK_RESULT(res, "CREATE VIEWPORT RENDER PASS");
-
-            return renderPass;
+                 m_bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+            }
+            */
+            else
+            {
+                EK_CORE_ERROR("PIPELINE TYPE NOT SUPPORTED: {}", (int)m_config.type);
+            }
         }
-        VkRenderPass CreateImGuiRenderPass()
+        void VKPipeline::Bind()
         {
             EK_CORE_PROFILE();
-            VkAttachmentDescription attachment = {};
-            attachment.format = g_swapChainImageFormat;
-            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // VK_ATTACHMENT_LOAD_OP_LOAD;
-            attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-            VkAttachmentReference color_attachment = {};
-            color_attachment.attachment = 0;
-            color_attachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            VkSubpassDescription subpass = {};
-            subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpass.colorAttachmentCount = 1;
-            subpass.pColorAttachments = &color_attachment;
-
-            VkSubpassDependency dependency = {};
-            dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependency.srcAccessMask = 0;
-            dependency.dstSubpass = 0;
-            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-            VkRenderPassCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            info.attachmentCount = 1;
-            info.pAttachments = &attachment;
-            info.subpassCount = 1;
-            info.pSubpasses = &subpass;
-            info.dependencyCount = 1;
-            info.pDependencies = &dependency;
-
-            VkRenderPass renderPass;
-            VkResult res = vkCreateRenderPass(g_logicalDevice, &info, nullptr, &renderPass);
-            HANDLE_VK_RESULT(res, "CREATE RENDER PASS");
-
-            return renderPass;
+            vkCmdBindPipeline(g_currentCommandBuffer, m_bindPoint, m_pipeline);
+        }
+        void VKPipeline::Dispose()
+        {
+            EK_CORE_PROFILE();
+            EK_CORE_TRACE("Disposing pipeline");
+            vkDestroyPipeline(g_logicalDevice, m_pipeline, nullptr);
+            EK_CORE_DBG("Pipeline disposed");
         }
     }
 }
