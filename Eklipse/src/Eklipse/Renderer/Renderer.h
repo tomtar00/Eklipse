@@ -5,6 +5,7 @@
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Utils/Yaml.h>
+#include <Eklipse/Renderer/Pipeline.h>
 
 namespace Eklipse
 {
@@ -21,6 +22,8 @@ namespace Eklipse
 	{
 		bool Vsync = false;
 		int MsaaSamplesIndex = 0;
+		Pipeline::Type PipelineType = Pipeline::Type::Resterization;
+		Pipeline::Mode PipelineMode = Pipeline::Mode::Triangle;
 
 		int GetMsaaSamples() const { return 1 << MsaaSamplesIndex; }
 	};
@@ -43,7 +46,6 @@ namespace Eklipse
 		// Render calls
 		static void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform);
 		static void RenderScene(Ref<Scene> scene);
-		static void RenderLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color);
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);

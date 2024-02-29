@@ -71,6 +71,25 @@ namespace Eklipse
             }
         }
         ImGui::Separator();
+        static int renderer = (int)Renderer::GetSettings().PipelineType;
+        if (ImGui::Combo("Renderer", &renderer, "Raster\0RayTracing"))
+        {
+            switch (renderer)
+            {
+                case 0: Renderer::GetSettings().PipelineType = Pipeline::Type::Resterization;   break;
+                case 1: Renderer::GetSettings().PipelineType = Pipeline::Type::RayTracing;      break;
+            }
+        }
+        static int polygonMode = (int)Renderer::GetSettings().PipelineMode;
+        if (ImGui::Combo("Polygon mode", &polygonMode, "Triangle\0Line"))
+        {
+            switch (polygonMode)
+            {
+                case 0: Renderer::GetSettings().PipelineMode = Pipeline::Mode::Triangle;    break;
+                case 1: Renderer::GetSettings().PipelineMode = Pipeline::Mode::Line;        break;
+            }
+        }
+        ImGui::Separator();
         if (ImGui::ColorEdit3("Plane Color", &m_planeColor[0]))
         {
             m_planeMaterial->SetConstant("uFragConst", "Color", &m_planeColor, sizeof(glm::vec3));

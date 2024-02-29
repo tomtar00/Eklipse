@@ -20,7 +20,6 @@ namespace Eklipse
         void GLMaterial::Bind()
         {
             EK_CORE_PROFILE();
-            Material::Bind();
 
             for (auto&& [stage, reflection] : m_shader->GetReflections())
             {

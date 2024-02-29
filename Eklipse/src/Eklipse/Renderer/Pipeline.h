@@ -15,15 +15,15 @@ namespace Eklipse
 		};
 		enum class Mode
 		{
-			TRIANGLE,
-			LINE,
+			Triangle,
+			Line,
 		};
 		struct Config
 		{
             Type type;
             Mode mode;
-			Ref<Shader> shader;
-			Ref<Framebuffer> framebuffer;
+			Shader* shader;
+			Framebuffer* framebuffer;
         };
 
 	public:
@@ -31,6 +31,7 @@ namespace Eklipse
 
 		static Ref<Pipeline> Get(const Config& config);
 		static Vec<Ref<Pipeline>> GetPipelinesByShader(const AssetHandle shaderHandle);
+		static void DisposeAll();
 
 		virtual void Build() = 0;
 		virtual void Bind() = 0;

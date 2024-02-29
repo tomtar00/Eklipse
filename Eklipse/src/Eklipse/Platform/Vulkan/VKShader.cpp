@@ -84,7 +84,7 @@ namespace Eklipse
 			fragShaderStageInfo.module = framentShaderModule;
 			fragShaderStageInfo.pName = "main";
 
-			Vec<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+			return Vec<VkPipelineShaderStageCreateInfo>{ vertShaderStageInfo, fragShaderStageInfo };
 		}
 
 		VKShader::VKShader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle) 
@@ -126,6 +126,7 @@ namespace Eklipse
 
 		void VKShader::Bind() const 
 		{
+			EK_CORE_WARN("VKShader::Bind() not implemented. Call Bind() on Pipeline object instead");
 		}
 		void VKShader::Unbind() const {}
 		void VKShader::Dispose()
@@ -165,10 +166,8 @@ namespace Eklipse
 				Dispose();
 
 				// Create modules
-				auto& vertShaderCode = m_vulkanSPIRV[ShaderStage::VERTEX];
-				VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-				auto& fragShaderCode = m_vulkanSPIRV[ShaderStage::FRAGMENT];
-				VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+				m_vertexShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::VERTEX]);
+				m_fragmentShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::FRAGMENT]);
 
 				// Create descriptor set layout
 				Vec<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;

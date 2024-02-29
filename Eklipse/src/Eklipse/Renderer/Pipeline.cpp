@@ -11,7 +11,14 @@ namespace Eklipse
 {
     std::map<size_t, Ref<Pipeline>> Pipeline::s_pipelines;
 
-    Pipeline::Pipeline(const Config& config) : m_config(config) {}
+    Pipeline::Pipeline(const Config& config) : m_config(config) 
+    {
+        EK_CORE_PROFILE();
+        EK_ASSERT(config.shader, "Shader is null");
+        EK_ASSERT(config.framebuffer, "Framebuffer is null");
+
+        // TODO: validate config, eg. RT pipeline cannot have line topology
+    }
 
     Ref<Pipeline> Pipeline::Get(const Config& config)
     {
@@ -47,6 +54,14 @@ namespace Eklipse
             }
         }
         return pipelines;
+    }
+    void Pipeline::DisposeAll()
+    {
+        for (auto& [hash, pipeline] : s_pipelines)
+        {
+            pipeline->Dispose();
+        }
+        s_pipelines.clear();
     }
     
     Ref<Pipeline> Pipeline::Create(const Config& config)

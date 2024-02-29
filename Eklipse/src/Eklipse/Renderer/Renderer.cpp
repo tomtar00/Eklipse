@@ -91,6 +91,8 @@ namespace Eklipse
         }
         g_offScreenFramebuffers.clear();
 
+        Pipeline::DisposeAll();
+
         RenderCommand::API->Shutdown();
     }
 

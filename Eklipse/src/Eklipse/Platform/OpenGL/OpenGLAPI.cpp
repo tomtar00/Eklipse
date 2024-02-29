@@ -15,6 +15,17 @@ namespace Eklipse
         GLFramebuffer* g_GLDefaultFramebuffer = nullptr;
         Vec<GLFramebuffer*> g_GLOffScreenFramebuffers{};
 
+        static GLint PipelineModeToGL(Pipeline::Mode mode)
+        {
+            switch (mode)
+            {
+                case Pipeline::Mode::Triangle: return GL_TRIANGLES;
+                case Pipeline::Mode::Line: return GL_LINES;
+            }
+            EK_ASSERT(false, "Unknown pipeline mode!");
+            return 0;
+        }
+
         static void OpenGLMessageCallback(
             unsigned source,
             unsigned type,
@@ -158,13 +169,6 @@ namespace Eklipse
         }
         void OpenGLAPI::BeginFrame()
         {
-            EK_CORE_PROFILE();
-
-            /*uint32_t width = Application::Get().GetInfo().windowWidth;
-            uint32_t height = Application::Get().GetInfo().windowHeight;
-            glViewport(0, 0, width, height);
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
         }
         void OpenGLAPI::Submit()
         {
@@ -180,9 +184,9 @@ namespace Eklipse
             glDisable(GL_DEPTH_TEST);
             glActiveTexture(GL_TEXTURE0 + m_fullscreenShader->GetFragmentReflection().samplers[0].binding);
             glBindTexture(GL_TEXTURE_2D, g_GLDefaultFramebuffer->GetMainColorAttachment());
-            RenderCommand::DrawIndexed(m_fullscreenVA);
-            //glBindTexture(GL_TEXTURE_2D, 0);
-            //m_fullscreenShader->Unbind();
+            m_fullscreenVA->Bind();
+            uint32_t numIndices = m_fullscreenVA->GetIndexBuffer()->GetCount();
+            glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
 
             Application::Get().GetWindow()->SwapBuffers();
         }
@@ -191,7 +195,7 @@ namespace Eklipse
             EK_CORE_PROFILE();
 
             uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
-            glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
+            glDrawElements(PipelineModeToGL(Renderer::GetSettings().PipelineMode), numIndices, GL_UNSIGNED_INT, nullptr);
         }
     }
 }

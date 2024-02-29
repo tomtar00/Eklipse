@@ -183,8 +183,8 @@ namespace Eklipse
             EK_CORE_TRACE("Building pipeline");
             if (m_config.type == Pipeline::Type::Resterization)
             {
-                Ref<VKShader> shader = Cast<VKShader>(m_config.shader);
-                Ref<VKFramebuffer> framebuffer = Cast<VKFramebuffer>(m_config.framebuffer);
+                VKShader* shader = static_cast<VKShader*>(m_config.shader);
+                VKFramebuffer* framebuffer = static_cast<VKFramebuffer*>(m_config.framebuffer);
 
                 GraphicsPipelineCreateInfo info{};
                 info.shaderStages = CreateShaderStages(shader->GetVertexShaderModule(), shader->GetFragmentShaderModule());
@@ -192,12 +192,12 @@ namespace Eklipse
                 info.bindingDesc = CreateVertexInputBindingDescriptions(shader->GetVertexReflection());
                 info.pipelineLayout = shader->GetPipelineLayout();
                 info.renderPass = framebuffer->GetRenderPass();
-                if (m_config.mode == Pipeline::Mode::TRIANGLE)
+                if (m_config.mode == Pipeline::Mode::Triangle)
                 {
                     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
                     info.mode = VK_POLYGON_MODE_FILL;
                 }
-                else if (m_config.mode == Pipeline::Mode::LINE)
+                else if (m_config.mode == Pipeline::Mode::Line)
                 {
                     info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
                     info.mode = VK_POLYGON_MODE_LINE;

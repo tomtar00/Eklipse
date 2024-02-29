@@ -136,11 +136,6 @@ namespace Eklipse
         m_samplers.at(samplerName).texture = texture;
     }
 
-    void Material::Bind()
-    {
-        EK_CORE_PROFILE();
-        m_shader->Bind();
-    }
     void Material::ApplyChanges(const Path& filePath)
     {
         EK_CORE_PROFILE();

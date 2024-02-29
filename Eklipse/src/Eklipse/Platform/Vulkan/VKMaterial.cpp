@@ -25,7 +25,6 @@ namespace Eklipse
 		void VKMaterial::Bind()
 		{
 			EK_CORE_PROFILE();
-			Material::Bind();
 			vkCmdBindDescriptorSets(g_currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkShader->GetPipelineLayout(), 0, 1, &m_descriptorSets[g_currentFrame], 0, nullptr);
 
 			for (auto&& [stage, reflection] : m_shader->GetReflections())

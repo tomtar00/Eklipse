@@ -67,10 +67,4 @@ namespace Eklipse
 			return std::hash<T*>{}(ref.get());
 		}
 	};
-
-	template <typename TargetType, typename BaseType>
-	Ref<TargetType> Cast(Ref<BaseType> ref)
-	{
-        return static_cast<TargetType>(ref);
-	}
 }
