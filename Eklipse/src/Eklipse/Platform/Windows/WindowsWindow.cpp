@@ -111,7 +111,7 @@ namespace Eklipse
 			EK_ASSERT(s_glfwInitialized, "Failed to initialize GLFW!");
 		}
 
-		if (Renderer::GetAPI() == ApiType::OpenGL)
+		if (Renderer::GetAPI() == GraphicsAPI::Type::OpenGL)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 		}
@@ -124,7 +124,7 @@ namespace Eklipse
 		m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title, nullptr, nullptr);
 		glfwSetWindowTitle(m_window, m_data.title);
 
-		if (Renderer::GetAPI() == ApiType::OpenGL)
+		if (Renderer::GetAPI() == GraphicsAPI::Type::OpenGL)
 		{
 			glfwMakeContextCurrent(m_window);
 			glfwSwapInterval(0);

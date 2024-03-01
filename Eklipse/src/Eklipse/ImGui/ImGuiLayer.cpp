@@ -34,7 +34,7 @@ namespace Eklipse
         m_adapter->Render();
     }
 
-    void ImGuiLayer::OnAPIHasInitialized(ApiType apiType)
+    void ImGuiLayer::OnAPIHasInitialized(GraphicsAPI::Type apiType)
     {
         EK_CORE_PROFILE();
         m_adapter = ImGuiAdapter::Create(m_config);
@@ -130,6 +130,11 @@ namespace Eklipse
 
         ImGui::End();
     }
+    void ImGuiLayer::DrawViewport(Framebuffer* framebuffer, float width, float height)
+    {
+        EK_CORE_PROFILE();
+        m_adapter->DrawViewport(framebuffer, width, height);
+    }
     void ImGuiLayer::End()
     {
         EK_CORE_PROFILE();
@@ -174,8 +179,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VkImGuiAdapter>(config);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiAdapter>(config);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VkImGuiAdapter>(config);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLImGuiAdapter>(config);
         }
         EK_ASSERT(false, "ImGui Adapter creation not implemented for current graphics API");
         return nullptr;
@@ -188,8 +193,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(texturePath);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(texturePath);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(texturePath);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(texturePath);
         }
         EK_ASSERT(false, "ImGui Icon creation not implemented for current graphics API");
         return nullptr;

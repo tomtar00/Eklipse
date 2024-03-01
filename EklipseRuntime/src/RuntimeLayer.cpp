@@ -59,7 +59,7 @@ namespace Eklipse
 		// TODO: Terminal Panel (ImGui)
 	}
 
-	void RuntimeLayer::OnAPIHasInitialized(ApiType api)
+	void RuntimeLayer::OnAPIHasInitialized(GraphicsAPI api)
 	{
 		if (!started)
 		{

@@ -32,12 +32,12 @@ namespace Eklipse
         m_quit = false;
 
         int tries = 0;
-        ApiType api = Renderer::GetAPI();
+        GraphicsAPI::Type api = Renderer::GetAPI();
         do
         {
-            Renderer::SetAPI((ApiType)(((int)api + tries) % API_TYPE_COUNT));
+            Renderer::SetAPI((GraphicsAPI::Type)(((int)api + tries) % GraphicsAPI::TYPE_COUNT));
 
-            if (++tries > API_TYPE_COUNT)
+            if (++tries > GraphicsAPI::TYPE_COUNT)
             {
                 EK_CORE_CRITICAL("Could not find any supported Graphics API!");
                 exit(-1);
@@ -110,15 +110,15 @@ namespace Eklipse
     const bool Application::IsMinimized() const						{ return m_minimized; }
 
     // === Setters ===
-    void Application::SetAPI(ApiType api)
+    void Application::SetAPI(GraphicsAPI::Type api)
     {
         EK_CORE_PROFILE();
         if (Renderer::GetAPI() == api)
         {
-            EK_CORE_WARN("API already set to {0}", APITypeToString(api));
+            EK_CORE_WARN("API already set to {0}", GraphicsAPI::TypeToString(api));
             return;
         }
-        EK_CORE_INFO("Setting API to {0}", APITypeToString(api));
+        EK_CORE_INFO("Setting API to {0}", GraphicsAPI::TypeToString(api));
 
         Renderer::SetAPI(api);
 

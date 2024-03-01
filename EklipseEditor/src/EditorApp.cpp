@@ -12,31 +12,25 @@ namespace Eklipse
 		EklipseEditor(ApplicationInfo& info) : Application(info)
 		{
 			editorLayer = CreateRef<EditorLayer>();
+			PushLayer(editorLayer->GUI);
 			PushLayer(editorLayer);
 		}	
 
-		void OnAPIHasInitialized(ApiType api) override
+		void OnAPIHasInitialized(GraphicsAPI::Type api) override
 		{
-			ImGuiLayer::CTX = ImGui::CreateContext();
-			ImGui::SetCurrentContext(ImGuiLayer::CTX);
-			editorLayer->OnAPIHasInitialized(api);
+			IMGUI_INIT_FOR_DLL
 		}
 		void OnShutdownAPI(bool quit) override
 		{
-			editorLayer->OnShutdownAPI(quit);
-			ImGui::SetCurrentContext(ImGuiLayer::CTX = nullptr);
+			IMGUI_SHUTDOWN_FOR_DLL
 		}
 
 		void OnPreGUI(float deltaTime) override
 		{
-			EK_PROFILE();
-
 			editorLayer->GUI->Begin();
 		}
 		void OnPostGUI(float deltaTime) override
 		{
-			EK_PROFILE();
-
 			editorLayer->GUI->End();
 		}
 

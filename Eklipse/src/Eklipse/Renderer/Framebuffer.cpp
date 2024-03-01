@@ -21,8 +21,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKFramebuffer>(framebufferInfo);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLFramebuffer>(framebufferInfo);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKFramebuffer>(framebufferInfo);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLFramebuffer>(framebufferInfo);
         }
         EK_ASSERT(false, "Framebuffer creation not implemented for current graphics API");
         return nullptr;

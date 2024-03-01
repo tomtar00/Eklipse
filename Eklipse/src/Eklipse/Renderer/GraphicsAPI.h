@@ -8,8 +8,17 @@ namespace Eklipse
     class EK_API GraphicsAPI
     {
     public:
-        static Unique<GraphicsAPI> Create();
+        enum class Type
+        {
+            Vulkan = 0,
+            OpenGL = 1
+        };
+        static const uint32_t TYPE_COUNT = 2;
+        static const String TypeToString(Type type);
+
+    public:
         GraphicsAPI();
+        static Unique<GraphicsAPI> Create();
 
         virtual bool Init() = 0;
         virtual void Shutdown() = 0;
@@ -22,8 +31,5 @@ namespace Eklipse
 
     protected:
         bool m_initialized = false;
-
-        // TODO: more like... render pipeline (raster / raytracing)
-        //Pipeline m_pipeline;
     };
 }

@@ -91,8 +91,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(shader);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(shader);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKMaterial>(shader);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLMaterial>(shader);
         }
         EK_ASSERT(false, "Material creation not implemented for current graphics API");
         return nullptr;
@@ -102,8 +102,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderHandle);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLMaterial>(path, shaderHandle);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderHandle);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLMaterial>(path, shaderHandle);
         }
         EK_ASSERT(false, "Material creation not implemented for current graphics API");
         return nullptr;

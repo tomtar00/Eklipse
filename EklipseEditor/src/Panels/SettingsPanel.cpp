@@ -65,7 +65,7 @@ namespace Eklipse
 						static int api = (int)Renderer::GetAPI();
 						if (ImGui::Combo("##API", &api, APIs, IM_ARRAYSIZE(APIs)))
 						{
-							Application::Get().SetAPI((ApiType)(api));
+							Application::Get().SetAPI((GraphicsAPI::Type)(api));
 						}
 					});
 				}

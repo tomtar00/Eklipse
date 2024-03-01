@@ -66,8 +66,8 @@ namespace Eklipse
             Renderer::WaitDeviceIdle();
             switch (api)
             {
-                case 0: Application::Get().SetAPI(ApiType::Vulkan); break;
-                case 1: Application::Get().SetAPI(ApiType::OpenGL); break;
+                case 0: Application::Get().SetAPI(GraphicsAPI::Type::Vulkan); break;
+                case 1: Application::Get().SetAPI(GraphicsAPI::Type::OpenGL); break;
             }
         }
         ImGui::Separator();
@@ -121,7 +121,7 @@ namespace Eklipse
 
         ImGui::End();
     }
-    void SandboxLayer::OnAPIHasInitialized(ApiType api)
+    void SandboxLayer::OnAPIHasInitialized(GraphicsAPI::Type api)
     {
         // Geometry
         m_shader3D = Shader::Create("Assets/Shaders/3D.glsl");

@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "Timer.h"
 #include "Window.h"
+
 #include "LayerStack.h"
 
 #include <Eklipse/Scene/Scene.h>
@@ -49,11 +50,11 @@ namespace Eklipse
 		const bool IsMinimized() const;
 
 		// === Setters ===
-		void SetAPI(ApiType api);
+		void SetAPI(GraphicsAPI::Type api);
 
 		// === Virtual Event Handling ===
-		virtual void OnInitAPI(ApiType api) {}
-		virtual void OnAPIHasInitialized(ApiType api) {}
+		virtual void OnInitAPI(GraphicsAPI::Type api) {}
+		virtual void OnAPIHasInitialized(GraphicsAPI::Type api) {}
 		virtual void OnShutdownAPI(bool quit) {}
 		virtual void OnAPIHasShutdown() {}
 		virtual void OnPreGUI(float deltaTime) {}

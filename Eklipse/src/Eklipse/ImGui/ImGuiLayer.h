@@ -5,6 +5,7 @@
 #include <Eklipse/Core/Layer.h>
 #include <Eklipse/Assets/AssetLibrary.h>
 #include <Eklipse/Renderer/Framebuffer.h>
+#include <Eklipse/Renderer/GraphicsAPI.h>
 
 #define IMGUI_INIT_FOR_DLL ImGuiLayer::CTX = ImGui::CreateContext();\
                                              ImGui::SetCurrentContext(ImGuiLayer::CTX);
@@ -84,11 +85,12 @@ namespace Eklipse
         virtual void OnGUI(float deltaTime) override;
         virtual void OnRender(float deltaTime) override;
 
-        virtual void OnAPIHasInitialized(ApiType api) override;
+        virtual void OnAPIHasInitialized(GraphicsAPI::Type api) override;
         virtual void OnShutdownAPI(bool quit) override;
 
         void Begin();
         void DrawDockspace();
+        void DrawViewport(Framebuffer* framebuffer, float width, float height);
         void End();
         void Shutdown();
 

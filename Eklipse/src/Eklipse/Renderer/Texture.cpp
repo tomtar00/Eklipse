@@ -79,8 +79,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path, handle);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(path, handle);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path, handle);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLTexture2D>(path, handle);
         }
         EK_ASSERT(false, "Texture creation not implemented for current graphics API");
         return nullptr;
@@ -90,8 +90,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureInfo);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureInfo);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureInfo);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureInfo);
         }
         EK_ASSERT(false, "Texture creation not implemented for current graphics API");
         return nullptr;
@@ -101,8 +101,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureData);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureData);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureData);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureData);
         }
         EK_ASSERT(false, " Texture creation not implemented for current graphics API");
         return nullptr;

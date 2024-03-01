@@ -11,7 +11,7 @@ namespace Eklipse
         virtual void OnRender(float deltaTime) override;    
         virtual void OnGUI(float deltaTime) override;
 
-        virtual void OnAPIHasInitialized(ApiType api) override;
+        virtual void OnAPIHasInitialized(GraphicsAPI::Type api) override;
         virtual void OnShutdownAPI(bool quit) override;
 
     private:

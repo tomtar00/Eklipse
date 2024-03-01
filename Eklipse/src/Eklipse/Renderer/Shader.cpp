@@ -151,8 +151,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(filePath, handle);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLShader>(filePath, handle);
         }
         EK_ASSERT(false, "Shader creation not implemented for current graphics API");
         return nullptr;
@@ -162,8 +162,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKShader>(vertexSource, fragmentSource, handle);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLShader>(vertexSource, fragmentSource, handle);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKShader>(vertexSource, fragmentSource, handle);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLShader>(vertexSource, fragmentSource, handle);
         }
         EK_ASSERT(false, "Shader creation not implemented for current graphics API");
         return nullptr;

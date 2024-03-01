@@ -69,8 +69,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (Renderer::GetAPI())
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKPipeline>(config);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLPipeline>(config);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKPipeline>(config);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLPipeline>(config);
         }
         EK_ASSERT(false, "Shader creation not implemented for current graphics API");
         return nullptr;

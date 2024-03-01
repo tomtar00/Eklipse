@@ -62,14 +62,14 @@ namespace Eklipse
 		EditorLayer();
 
 		// === Layer ===
-		void OnAttach() override;
-		void OnDetach() override;
-		void OnUpdate(float deltaTime) override;
-		void OnGUI(float deltaTime) override;
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnUpdate(float deltaTime) override;
+		virtual void OnGUI(float deltaTime) override;
 
 		// === API Events ===
-		void OnAPIHasInitialized(ApiType api);
-		void OnShutdownAPI(bool quit);
+		virtual void OnAPIHasInitialized(GraphicsAPI::Type api) override;
+		virtual void OnShutdownAPI(bool quit) override;
 
 		// === Project ===
 		bool NewProject(const Path& path, const String& name);
@@ -130,7 +130,6 @@ namespace Eklipse
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
-		ImGuiLayerConfig m_guiLayerCreateInfo{};
 
 		EditorState m_editorState;
 		EditorSettings m_settings;

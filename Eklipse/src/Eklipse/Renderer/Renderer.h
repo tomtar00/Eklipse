@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "Framebuffer.h"
 #include "Buffers.h"
+#include "GraphicsAPI.h"
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Utils/Yaml.h>
@@ -9,23 +10,23 @@
 
 namespace Eklipse
 {
-	const constexpr uint32_t API_TYPE_COUNT = 2;
-	enum class ApiType
-	{
-		Vulkan	= 0,
-		OpenGL	= 1
-	};
-	
-	const String APITypeToString(ApiType apiType);
-
 	struct RendererSettings
 	{
 		bool Vsync = false;
 		int MsaaSamplesIndex = 0;
+
+		GraphicsAPI::Type GraphicsAPIType = GraphicsAPI::Type::Vulkan;
+
 		Pipeline::Type PipelineType = Pipeline::Type::Resterization;
 		Pipeline::Mode PipelineMode = Pipeline::Mode::Triangle;
 
 		int GetMsaaSamples() const { return 1 << MsaaSamplesIndex; }
+	};
+
+	class EK_API RendererAPI
+	{
+	public:
+		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) = 0;
 	};
 
 	static class EK_API Renderer
@@ -45,7 +46,7 @@ namespace Eklipse
 
 		// Render calls
 		static void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform);
-		static void RenderScene(Ref<Scene> scene);
+	static void RenderScene(Ref<Scene> scene);
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);
@@ -53,11 +54,8 @@ namespace Eklipse
 		static void OnVsyncChanged(bool enabled);
 
 		// Getters / Setters
-		static ApiType GetAPI();
-		static void SetStartupAPI(ApiType apiType);
-		static void SetAPI(ApiType apiType);
-
-		static RendererSettings& GetSettings();
+		static GraphicsAPI::Type GetAPI();
+		static void SetAPI(GraphicsAPI::Type apiType);
 
 		// Uniform buffers
 		static Ref<UniformBuffer> CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding);
@@ -67,11 +65,11 @@ namespace Eklipse
 		static Ref<StorageBuffer> GetStorageBuffer(const String& storageBufferName);
 
 		// Settings
+		static RendererSettings& GetSettings();
 		static void SerializeRendererSettings(YAML::Emitter& out);
 		static void DeserializeRendererSettings(const YAML::Node& data);
 
 	private:
-		static ApiType s_apiType;
 		static RendererSettings s_settings;
 		static std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>> s_uniformBufferCache;
 		static std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>> s_storageBufferCache;

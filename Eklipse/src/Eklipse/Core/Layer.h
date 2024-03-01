@@ -1,11 +1,10 @@
 #pragma once
 
 #include <Eklipse/Events/Event.h>
+#include <Eklipse/Renderer/GraphicsAPI.h>
 
 namespace Eklipse
 {
-	enum class ApiType;
-
 	class EK_API Layer
 	{
 	public:
@@ -21,7 +20,7 @@ namespace Eklipse
 		virtual void OnRender(float deltaTime) {}
 		virtual void OnGUI(float deltaTime) {}
 
-		virtual void OnAPIHasInitialized(ApiType api) {}
+		virtual void OnAPIHasInitialized(GraphicsAPI::Type api) {}
 		virtual void OnShutdownAPI(bool quit) {}
 	};
 }

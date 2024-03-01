@@ -13,8 +13,8 @@ namespace Eklipse
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKVertexArray>();
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLVertexArray>();
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKVertexArray>();
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLVertexArray>();
         }
         EK_ASSERT(false, "API {0} not implemented for Vertex Array creation", int(apiType));
         return nullptr;

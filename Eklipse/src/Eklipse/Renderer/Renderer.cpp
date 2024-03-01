@@ -23,18 +23,8 @@ extern "C" {
 
 namespace Eklipse
 {
-    const String APITypeToString(ApiType apiType)
-    {
-        switch (apiType)
-        {
-            case ApiType::Vulkan: return "Vulkan";
-            case ApiType::OpenGL: return "OpenGL";
-        }
-        return "Unknown";
-    }
 
     RendererSettings Renderer::s_settings;
-    ApiType	Renderer::s_apiType = ApiType::Vulkan;
     std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
     std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>>	Renderer::s_storageBufferCache;
     Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
@@ -175,7 +165,7 @@ namespace Eklipse
     void Renderer::OnWindowResize(uint32_t width, uint32_t height)
     {
         EK_CORE_PROFILE();
-        g_defaultFramebuffer->Resize(width, height);
+        s_defaultFramebuffer->Resize(width, height);
     }
     void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
     {
@@ -204,21 +194,13 @@ namespace Eklipse
     }
 
     // Getters / Setters
-    ApiType Renderer::GetAPI()
+    GraphicsAPI::Type Renderer::GetAPI()
     {
-        return s_apiType;
+        return s_settings.GraphicsAPIType;
     }
-    void Renderer::SetStartupAPI(ApiType apiType)
+    void Renderer::SetAPI(GraphicsAPI::Type apiType)
     {
-        s_apiType = apiType;
-    }
-    void Renderer::SetAPI(ApiType apiType)
-    {
-        s_apiType = apiType;
-    }
-    RendererSettings& Renderer::GetSettings()
-    {
-        return s_settings;
+        s_settings.GraphicsAPIType = apiType;
     }
 
     // Uniform buffers
@@ -275,6 +257,10 @@ namespace Eklipse
     }
 
     // Settings
+    RendererSettings& Renderer::GetSettings()
+    {
+        return s_settings;
+    }
     void Renderer::SerializeRendererSettings(YAML::Emitter& out)
     {
         EK_CORE_PROFILE();

@@ -53,8 +53,8 @@ namespace Eklipse
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKVertexBuffer>(vertices);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLVertexBuffer>(vertices);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKVertexBuffer>(vertices);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLVertexBuffer>(vertices);
         }
         EK_ASSERT(false, "API {0} not implemented for Vertex Buffer creation", int(apiType));
         return nullptr;
@@ -65,8 +65,8 @@ namespace Eklipse
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKIndexBuffer>(indices);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLIndexBuffer>(indices);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKIndexBuffer>(indices);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLIndexBuffer>(indices);
         }
         EK_ASSERT(false, "API {0} not implemented for Index Buffer creation", int(apiType));
         return nullptr;
@@ -77,8 +77,8 @@ namespace Eklipse
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKUniformBuffer>(size, binding);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLUniformBuffer>(size, binding);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKUniformBuffer>(size, binding);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLUniformBuffer>(size, binding);
         }
         EK_ASSERT(false, "API {0} not implemented for Uniform Buffer creation", int(apiType));
         return nullptr;
@@ -89,8 +89,8 @@ namespace Eklipse
         auto apiType = Renderer::GetAPI();
         switch (apiType)
         {
-            case ApiType::Vulkan: return CreateRef<Vulkan::VKStorageBuffer>(size, binding);
-            case ApiType::OpenGL: return CreateRef<OpenGL::GLStorageBuffer>(size, binding);
+            case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKStorageBuffer>(size, binding);
+            case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLStorageBuffer>(size, binding);
         }
         EK_ASSERT(false, "API {0} not implemented for Storage Buffer creation", int(apiType));
         return nullptr;

@@ -62,8 +62,8 @@ namespace Eklipse
             ResetPixelBuffer();
             switch (api)
             {
-                case 0: Application::Get().SetAPI(ApiType::Vulkan); break;
-                case 1: Application::Get().SetAPI(ApiType::OpenGL); break;
+                case 0: Application::Get().SetAPI(GraphicsAPI::Type::Vulkan); break;
+                case 1: Application::Get().SetAPI(GraphicsAPI::Type::OpenGL); break;
             }
         }
         ImGui::Separator();
@@ -176,7 +176,7 @@ namespace Eklipse
             ControlCamera(deltaTime);
     }
     
-    void RTLayer::OnAPIHasInitialized(ApiType api)
+    void RTLayer::OnAPIHasInitialized(GraphicsAPI::Type api)
     {
         InitQuad();
         InitShader();

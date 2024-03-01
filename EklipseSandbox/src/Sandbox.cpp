@@ -24,7 +24,7 @@ namespace Eklipse
             PushOverlay(GUI);
         }
 
-        void OnAPIHasInitialized(ApiType api) override
+        void OnAPIHasInitialized(GraphicsAPI::Type api) override
         {
             IMGUI_INIT_FOR_DLL
         }

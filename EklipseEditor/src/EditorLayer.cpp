@@ -14,18 +14,11 @@ namespace Eklipse
     {
         EK_ASSERT(s_instance == nullptr, "Editor layer already exists!");
         s_instance = this;
-    }
 
-    // === Layer ===
-    void EditorLayer::OnAttach()
-    {
-        m_editorCamera.m_farPlane = 1000.0f;
-        m_editorCamera.m_nearPlane = 0.1f;
-        m_editorCamera.m_fov = 45.0f;
-
-        m_guiLayerCreateInfo.menuBarEnabled = true;
-        m_guiLayerCreateInfo.dockingEnabled = true;
-        m_guiLayerCreateInfo.dockLayouts =
+        ImGuiLayerConfig guiConfig{};
+        guiConfig.menuBarEnabled = true;
+        guiConfig.dockingEnabled = true;
+        guiConfig.dockLayouts =
         {
             { "Entities",	ImGuiDir_Left,	Dir_Opposite,	0.20f },
             { "Settings",	ImGuiDir_Down,	Dir_Same,		0.60f },
@@ -37,7 +30,7 @@ namespace Eklipse
             { "View",		ImGuiDir_Up,	Dir_Rest,		0.50f },
             { "Debug",		ImGuiDir_Down,	Dir_Stack,		0.50f }
         };
-        m_guiLayerCreateInfo.panels =
+        guiConfig.panels =
         {
             &m_entitiesPanel,
             &m_settingsPanel,
@@ -49,6 +42,15 @@ namespace Eklipse
             &m_debugPanel,
             &m_terminalPanel
         };
+        GUI = CreateRef<ImGuiLayer>(guiConfig);
+    }
+
+    // === Layer ===
+    void EditorLayer::OnAttach()
+    {
+        m_editorCamera.m_farPlane = 1000.0f;
+        m_editorCamera.m_nearPlane = 0.1f;
+        m_editorCamera.m_fov = 45.0f;
 
         m_isWindowMaximized = false;
 
@@ -64,14 +66,14 @@ namespace Eklipse
         Log::AddCoreSink(terminalSink);
         Log::AddClientSink(terminalSink);
         
-        EklipseScriptAPI::ScriptingConfig config{};
+        EklipseScriptAPI::ScriptingConfig scriptConfig{};
         // Logging
         {
-            config.loggerConfig.name = "SCRIPT";
-            config.loggerConfig.pattern = "%^[%T] %n: %v%$";
-            config.loggerConfig.sink = terminalSink;
+            scriptConfig.loggerConfig.name = "SCRIPT";
+            scriptConfig.loggerConfig.pattern = "%^[%T] %n: %v%$";
+            scriptConfig.loggerConfig.sink = terminalSink;
         }
-        EklipseScriptAPI::Init(config);
+        EklipseScriptAPI::Init(scriptConfig);
 
         AddDebugDrawInfo();
         AddTeminalCommands();
@@ -167,9 +169,6 @@ namespace Eklipse
 
         Renderer::EndRenderPass(m_viewportFramebuffer.get());
 
-        Renderer::BeginDefaultRenderPass();
-        GUI->Render();
-        Renderer::EndDefaultRenderPass();
         // ===================================
     }
     void EditorLayer::OnGUI(float deltaTime)
@@ -405,7 +404,7 @@ namespace Eklipse
     }
     
     // === API Events ===
-    void EditorLayer::OnAPIHasInitialized(ApiType api)
+    void EditorLayer::OnAPIHasInitialized(GraphicsAPI::Type api)
     {
         EK_PROFILE();
 
@@ -420,10 +419,6 @@ namespace Eklipse
 
             m_viewportFramebuffer = Framebuffer::Create(fbInfo);
         }
-
-        GUI = ImGuiLayer::Create(m_guiLayerCreateInfo);
-        Application::Get().PushOverlay(GUI);
-        GUI->Init();
 
         if (m_isWindowMaximized)
             Application::Get().GetWindow()->Maximize();
@@ -443,10 +438,6 @@ namespace Eklipse
     void EditorLayer::OnShutdownAPI(bool quit)
     {
         EK_PROFILE();
-
-        Application::Get().PopOverlay(GUI);
-        GUI->Shutdown();
-        GUI.reset();
 
         ClearSelection();
 
