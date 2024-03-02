@@ -12,6 +12,7 @@ layout(push_constant) uniform VertexConstants
 } uVertConst;
 
 in vec3 inPosition;
+in vec3 inNormal;
 in vec3 inColor;
 in vec2 inTexCoord;
 

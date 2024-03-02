@@ -20,15 +20,15 @@ namespace Eklipse
         guiConfig.dockingEnabled = true;
         guiConfig.dockLayouts =
         {
-            { "Entities",	ImGuiDir_Left,	Dir_Opposite,	0.20f },
-            { "Settings",	ImGuiDir_Down,	Dir_Same,		0.60f },
-            { "Stats",		ImGuiDir_Down,	Dir_Same,		0.50f },
-            { "Details",	ImGuiDir_Right,	Dir_Opposite,	0.25f },
-            { "Files",		ImGuiDir_Down,	Dir_Opposite,	0.30f },
-            { "Profiler",	ImGuiDir_Down,	Dir_Stack,	    0.30f },
-            { "Terminal",	ImGuiDir_Right,	Dir_Same,		0.50f },
-            { "View",		ImGuiDir_Up,	Dir_Rest,		0.50f },
-            { "Debug",		ImGuiDir_Down,	Dir_Stack,		0.50f }
+            { "Entities",	ImGuiDir_Left,	Dir_Opposite,	0.7f },
+            { "Settings",	ImGuiDir_Down,	Dir_Same,		1.0f },
+            { "Stats",		ImGuiDir_Down,	Dir_Same,		1.0f },
+            { "Details",	ImGuiDir_Right,	Dir_Opposite,	0.7f },
+            { "Files",		ImGuiDir_Down,	Dir_Opposite,	0.8f },
+            { "Profiler",	ImGuiDir_Down,	Dir_Stack,	    1.0f },
+            { "Terminal",	ImGuiDir_Right,	Dir_Same,		0.5f },
+            { "View",		ImGuiDir_Up,	Dir_Rest,		1.0f },
+            { "Debug",		ImGuiDir_Down,	Dir_Stack,		1.0f }
         };
         guiConfig.panels =
         {
@@ -270,8 +270,6 @@ namespace Eklipse
         }
         else 
         {
-            GUI->DrawDockspace();
-
             if (ImGui::BeginMainMenuBar())
             {
                 bool isPlaying = m_editorState == EditorState::PLAY;
@@ -342,21 +340,26 @@ namespace Eklipse
                 static ProjectExportSettings exportSettings{};
                 ImGui::InputDirPath("exportpath", "Export path", exportSettings.path);
 
-                #if EK_DEBUG
+#if EK_DEBUG
                 static int configurationIndex = 0;
                 ImGui::DrawProperty("isDevBuild", "Build Type", [&]() {
                     if (ImGui::Combo("##Configuration", &configurationIndex, "Debug\0Developement\0Release\0"))
                     {
-                        exportSettings.buildType = configurationIndex == 0 ? ProjectExportBuildType::DEBUG : configurationIndex == 1 ? ProjectExportBuildType::Developement : ProjectExportBuildType::Release;
+                        if (configurationIndex == 0)
+                            exportSettings.buildType = ProjectExportBuildType::DEBUG;
+                        else if (configurationIndex == 1)
+                            exportSettings.buildType = ProjectExportBuildType::Developement;
+                        else if(configurationIndex == 2)
+                            exportSettings.buildType = ProjectExportBuildType::Release;
                     }
                 });
-                #else
+#else
                 ImGui::DrawProperty("isDevBuild", "Development Build", [&]() {
                     static bool isDevBuild = false;
                     ImGui::Checkbox("##isDevBuild", &isDevBuild);
                     exportSettings.buildType = isDevBuild ? ProjectExportBuildType::Developement : ProjectExportBuildType::Release;
                 });
-                #endif
+#endif
                 if (ImGui::Button("Export"))
                 {
                     ExportProject(exportSettings);

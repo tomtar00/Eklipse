@@ -23,6 +23,10 @@ namespace Eklipse
     void ImGuiLayer::OnGUI(float deltaTime)
     {
         EK_CORE_PROFILE();
+        if (m_config.dockingEnabled)
+        {
+            DrawDockspace();
+        }
         for (auto& panel : m_config.panels)
         {
             panel->OnGUI(deltaTime);
