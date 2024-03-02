@@ -10,7 +10,7 @@ namespace Eklipse
     Ref<VertexArray> Eklipse::VertexArray::Create()
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetAPI();
+        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKVertexArray>();

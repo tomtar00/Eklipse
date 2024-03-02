@@ -23,10 +23,95 @@ extern "C" {
 
 namespace Eklipse
 {
+    void RasterizationContext::Init()
+    {
+    }
+    void RasterizationContext::Shutdown()
+    {
+    }
+    void RasterizationContext::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
+    {
+        EK_PROFILE();
 
-    RendererSettings Renderer::s_settings;
+        // Geometry
+        auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
+        for (auto& entity : view)
+        {
+            auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
+
+            if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid())
+                continue;
+
+            glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
+            meshComponent.material->SetConstant("uVertConst", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
+            RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
+        }
+
+        // ...
+    }
+    
+    void RayTracingContext::Init()
+    {
+        // Quad
+        {
+            std::vector<float> vertices = {
+                 1.0f,  1.0f,  // top right
+                 1.0f, -1.0f,  // bottom right
+                -1.0f, -1.0f,  // bottom left
+                -1.0f,  1.0f,  // top left
+            };
+            std::vector<uint32_t> indices = {
+                0, 1, 3,
+                1, 2, 3
+            };
+
+            Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
+            BufferLayout layout = {
+                { "inPos", ShaderDataType::FLOAT2, false }
+            };
+            vertexBuffer->SetLayout(layout);
+
+            m_rayTracingQuad = VertexArray::Create();
+            m_rayTracingQuad->AddVertexBuffer(vertexBuffer);
+            m_rayTracingQuad->SetIndexBuffer(IndexBuffer::Create(indices));
+        }
+
+        // Shader
+        {
+            m_rayTracingShader = Shader::Create("Assets/Shaders/RayTracing.glsl");
+        }
+
+        // Material
+        {
+            m_rayTracingMaterial = Material::Create(m_rayTracingShader);
+        }
+    }
+    void RayTracingContext::Shutdown()
+    {
+        m_rayTracingQuad->Dispose();
+        m_rayTracingShader->Dispose();
+        m_rayTracingMaterial->Dispose();
+    }
+    void RayTracingContext::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
+    {
+        EK_PROFILE();
+
+        // foreach mesh in the scene, take its pbr material and add it to the ray tracing pipeline
+
+        ++m_frameIndex;
+
+        m_rayTracingMaterial->SetConstant("pData", "CameraPos", &cameraTransform.position[0], sizeof(glm::vec3));
+        m_rayTracingMaterial->SetConstant("pData", "Frames", &m_frameIndex, sizeof(int));
+
+        Renderer::UpdateViewProjection(camera, cameraTransform);
+        RenderCommand::DrawIndexed(m_rayTracingQuad, m_rayTracingMaterial.get());
+    }
+
     std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>>	Renderer::s_uniformBufferCache;
     std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>>	Renderer::s_storageBufferCache;
+
+    RendererSettings Renderer::s_settings;
+    Unique<RendererContext> Renderer::s_rendererContext = nullptr;
     Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
     Ref<Framebuffer> Renderer::s_defaultFramebuffer = nullptr;
 
@@ -35,6 +120,8 @@ namespace Eklipse
         EK_CORE_PROFILE();
         RenderCommand::API.reset();
         RenderCommand::API = GraphicsAPI::Create();
+        SetPipelineTopologyMode(Pipeline::TopologyMode::Triangle);
+        SetPipelineType(Pipeline::Type::Resterization);
         return RenderCommand::API->Init();
     }
     void Renderer::InitParameters()
@@ -52,12 +139,10 @@ namespace Eklipse
 
         s_defaultFramebuffer = Framebuffer::Create(framebufferInfo);
     }
-
     void Renderer::WaitDeviceIdle()
     {
         RenderCommand::API->WaitDeviceIdle();
     }
-
     void Renderer::Shutdown()
     {
         EK_CORE_PROFILE();
@@ -83,6 +168,9 @@ namespace Eklipse
 
         Pipeline::DisposeAll();
 
+        s_rendererContext->Shutdown();
+        s_rendererContext = nullptr;
+
         RenderCommand::API->Shutdown();
     }
 
@@ -102,24 +190,8 @@ namespace Eklipse
     void Renderer::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
         EK_PROFILE();
-
         UpdateViewProjection(camera, cameraTransform);
-
-        // Geometry
-        auto view = scene->GetRegistry().view<TransformComponent, MeshComponent>();
-        for (auto& entity : view)
-        {
-            auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity);
-
-            if (meshComponent.mesh == nullptr || meshComponent.material == nullptr || !meshComponent.material->IsValid()) 
-                continue;
-
-            glm::mat4& modelMatrix = transformComponent.GetTransformMatrix();
-            meshComponent.material->SetConstant("uVertConst", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
-            RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
-        }
-
-        // ...
+        s_rendererContext->RenderScene(scene, camera, cameraTransform);
     }
     void Renderer::RenderScene(Ref<Scene> scene)
     {
@@ -193,14 +265,41 @@ namespace Eklipse
 #endif
     }
 
-    // Getters / Setters
-    GraphicsAPI::Type Renderer::GetAPI()
+    // State changing
+    GraphicsAPI::Type Renderer::GetGraphicsAPIType()
     {
         return s_settings.GraphicsAPIType;
     }
-    void Renderer::SetAPI(GraphicsAPI::Type apiType)
+    void Renderer::SetGraphicsAPIType(GraphicsAPI::Type apiType)
     {
         s_settings.GraphicsAPIType = apiType;
+    }
+    void Renderer::SetPipelineTopologyMode(Pipeline::TopologyMode mode)
+    {
+        EK_CORE_PROFILE();
+        RenderCommand::API->SetPipelineTopologyMode(mode);
+        s_settings.PipelineTopologyMode = mode;
+    }
+    void Renderer::SetPipelineType(Pipeline::Type type)
+    {
+        EK_CORE_PROFILE();
+        if (s_settings.PipelineType == type && s_rendererContext)
+            return;
+
+        RenderCommand::API->SetPipelineType(type);
+        s_settings.PipelineType = type;
+
+        // WaitDeviceIdle();
+
+        if (s_rendererContext)
+            s_rendererContext->Shutdown();
+
+        if (type == Pipeline::Type::Resterization)
+            s_rendererContext = CreateUnique<RasterizationContext>();
+        else if (type == Pipeline::Type::RayTracing)
+            s_rendererContext = CreateUnique<RayTracingContext>();
+
+        s_rendererContext->Init();
     }
 
     // Uniform buffers
@@ -257,7 +356,7 @@ namespace Eklipse
     }
 
     // Settings
-    RendererSettings& Renderer::GetSettings()
+    const RendererSettings& Renderer::GetSettings()
     {
         return s_settings;
     }
@@ -281,4 +380,5 @@ namespace Eklipse
         s_settings.MsaaSamplesIndex = TryDeserailize<int>(data, "MsaaSamplesIndex", 0);
         OnMultiSamplingChanged(s_settings.MsaaSamplesIndex);
     }
+    
 }

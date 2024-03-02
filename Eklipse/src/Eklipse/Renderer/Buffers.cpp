@@ -50,7 +50,7 @@ namespace Eklipse
     Ref<VertexBuffer> VertexBuffer::Create(const Vec<float>& vertices)
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetAPI();
+        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKVertexBuffer>(vertices);
@@ -62,7 +62,7 @@ namespace Eklipse
     Ref<IndexBuffer> IndexBuffer::Create(const Vec<uint32_t>& indices)
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetAPI();
+        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKIndexBuffer>(indices);
@@ -74,7 +74,7 @@ namespace Eklipse
     Ref<UniformBuffer> UniformBuffer::Create(size_t size, uint32_t binding)
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetAPI();
+        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKUniformBuffer>(size, binding);
@@ -86,7 +86,7 @@ namespace Eklipse
     Ref<StorageBuffer> StorageBuffer::Create(size_t size, uint32_t binding)
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetAPI();
+        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKStorageBuffer>(size, binding);

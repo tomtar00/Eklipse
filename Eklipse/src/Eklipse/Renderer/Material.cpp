@@ -89,7 +89,7 @@ namespace Eklipse
     Ref<Material> Material::Create(const Ref<Shader> shader)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKMaterial>(shader);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLMaterial>(shader);
@@ -100,7 +100,7 @@ namespace Eklipse
     Ref<Material> Material::Create(const Path& path, AssetHandle shaderHandle)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKMaterial>(path, shaderHandle);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLMaterial>(path, shaderHandle);

@@ -19,7 +19,7 @@ namespace Eklipse
     Ref<Framebuffer> Eklipse::Framebuffer::Create(const FramebufferInfo& framebufferInfo)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKFramebuffer>(framebufferInfo);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLFramebuffer>(framebufferInfo);

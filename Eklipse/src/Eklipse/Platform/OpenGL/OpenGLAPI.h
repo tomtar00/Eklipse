@@ -1,4 +1,5 @@
 #pragma once
+#include <glad/glad.h>
 #include <Eklipse/Renderer/GraphicsAPI.h>
 
 namespace Eklipse
@@ -18,6 +19,9 @@ namespace Eklipse
 			void BeginFrame() override;
 			void Submit() override;
 
+			virtual void SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode) override;
+			virtual void SetPipelineType(Pipeline::Type type) override;
+
 			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
 		private:
@@ -25,6 +29,8 @@ namespace Eklipse
 
 			Ref<VertexArray> m_fullscreenVA;
 			Ref<Shader> m_fullscreenShader;
+
+			GLint m_topologyMode;
 		};
 	}
 }

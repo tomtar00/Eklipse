@@ -27,7 +27,7 @@ namespace Eklipse
         // hash the config
         size_t hash = 0;
         HashCombine(hash, config.type);
-        HashCombine(hash, config.mode);
+        HashCombine(hash, config.topologyMode);
         HashCombine(hash, config.shader);
         HashCombine(hash, config.framebuffer);
 
@@ -67,7 +67,7 @@ namespace Eklipse
     Ref<Pipeline> Pipeline::Create(const Config& config)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKPipeline>(config);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLPipeline>(config);

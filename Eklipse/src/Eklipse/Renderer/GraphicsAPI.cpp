@@ -22,7 +22,7 @@ namespace Eklipse
     Unique<GraphicsAPI> GraphicsAPI::Create()
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetAPI();
+        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateUnique<Vulkan::VulkanAPI>();

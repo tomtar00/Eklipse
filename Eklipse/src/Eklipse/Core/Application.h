@@ -50,7 +50,7 @@ namespace Eklipse
 		const bool IsMinimized() const;
 
 		// === Setters ===
-		void SetAPI(GraphicsAPI::Type api);
+		void SetGraphicsAPIType(GraphicsAPI::Type api);
 
 		// === Virtual Event Handling ===
 		virtual void OnInitAPI(GraphicsAPI::Type api) {}

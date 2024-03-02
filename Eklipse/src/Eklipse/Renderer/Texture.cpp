@@ -77,7 +77,7 @@ namespace Eklipse
     Ref<Texture2D> Texture2D::Create(const Path& path, const AssetHandle handle)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKTexture2D>(path, handle);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLTexture2D>(path, handle);
@@ -88,7 +88,7 @@ namespace Eklipse
     Ref<Texture2D> Texture2D::Create(const TextureInfo& textureInfo)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureInfo);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureInfo);
@@ -99,7 +99,7 @@ namespace Eklipse
     Ref<Texture2D> Texture2D::Create(const TextureData& textureData)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKTexture2D>(textureData);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLTexture2D>(textureData);

@@ -43,7 +43,7 @@ namespace Eklipse
         auto& camera = EditorLayer::Get().GetEditorCamera();
         auto* viewMatrix = glm::value_ptr(camera.GetViewMatrix());
         auto proj = camera.GetProjectionMatrix();
-        proj[1][1] *= int(Renderer::GetAPI() == GraphicsAPI::Type::OpenGL) * 2 - 1;
+        proj[1][1] *= int(Renderer::GetGraphicsAPIType() == GraphicsAPI::Type::OpenGL) * 2 - 1;
         auto* projMatrix = glm::value_ptr(proj);
 
         bool viewportHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_DockHierarchy);

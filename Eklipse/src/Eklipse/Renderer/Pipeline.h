@@ -14,7 +14,7 @@ namespace Eklipse
 			Compute,
 			RayTracing,
 		};
-		enum class Mode
+		enum class TopologyMode
 		{
 			Triangle,
 			Line,
@@ -22,7 +22,7 @@ namespace Eklipse
 		struct Config
 		{
             Type type;
-            Mode mode;
+            TopologyMode topologyMode;
 			Shader* shader;
 			Framebuffer* framebuffer;
         };

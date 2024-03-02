@@ -60,14 +60,14 @@ namespace Eklipse
         ImGui::Begin("Sandbox");
         ImGui::Text("FPS: %f", Stats::Get().fps);
         ImGui::Separator();
-        static int api = (int)Renderer::GetAPI();
+        static int api = (int)Renderer::GetGraphicsAPIType();
         if (ImGui::Combo("Graphics API", &api, "Vulkan\0OpenGL"))
         {
             Renderer::WaitDeviceIdle();
             switch (api)
             {
-                case 0: Application::Get().SetAPI(GraphicsAPI::Type::Vulkan); break;
-                case 1: Application::Get().SetAPI(GraphicsAPI::Type::OpenGL); break;
+                case 0: Application::Get().SetGraphicsAPIType(GraphicsAPI::Type::Vulkan); break;
+                case 1: Application::Get().SetGraphicsAPIType(GraphicsAPI::Type::OpenGL); break;
             }
         }
         ImGui::Separator();
@@ -76,17 +76,17 @@ namespace Eklipse
         {
             switch (renderer)
             {
-                case 0: Renderer::GetSettings().PipelineType = Pipeline::Type::Resterization;   break;
-                case 1: Renderer::GetSettings().PipelineType = Pipeline::Type::RayTracing;      break;
+                case 0: Renderer::SetPipelineType(Pipeline::Type::Resterization);   break;
+                case 1: Renderer::SetPipelineType(Pipeline::Type::RayTracing);      break;
             }
         }
-        static int polygonMode = (int)Renderer::GetSettings().PipelineMode;
-        if (ImGui::Combo("Polygon mode", &polygonMode, "Triangle\0Line"))
+        static int polygonMode = (int)Renderer::GetSettings().PipelineTopologyMode;
+        if (ImGui::Combo("Topology mode", &polygonMode, "Triangle\0Line"))
         {
             switch (polygonMode)
             {
-                case 0: Renderer::GetSettings().PipelineMode = Pipeline::Mode::Triangle;    break;
-                case 1: Renderer::GetSettings().PipelineMode = Pipeline::Mode::Line;        break;
+                case 0: Renderer::SetPipelineTopologyMode(Pipeline::TopologyMode::Triangle);    break;
+                case 1: Renderer::SetPipelineTopologyMode(Pipeline::TopologyMode::Line);        break;
             }
         }
         ImGui::Separator();

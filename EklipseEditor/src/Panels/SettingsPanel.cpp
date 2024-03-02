@@ -62,10 +62,10 @@ namespace Eklipse
 				{
 					ImGui::DrawProperty("graphics_api", "Graphics API", [&]() {
 						static const char* APIs[]{ "Vulkan", "OpenGL" };
-						static int api = (int)Renderer::GetAPI();
+						static int api = (int)Renderer::GetGraphicsAPIType();
 						if (ImGui::Combo("##API", &api, APIs, IM_ARRAYSIZE(APIs)))
 						{
-							Application::Get().SetAPI((GraphicsAPI::Type)(api));
+							Application::Get().SetGraphicsAPIType((GraphicsAPI::Type)(api));
 						}
 					});
 				}

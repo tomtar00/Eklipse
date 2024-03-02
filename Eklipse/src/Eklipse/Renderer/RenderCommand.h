@@ -16,6 +16,5 @@ namespace Eklipse
 
 	private:
 		static Unique<GraphicsAPI> API;
-
 	};
 }

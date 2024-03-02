@@ -149,7 +149,7 @@ namespace Eklipse
     Ref<Shader> Shader::Create(const Path& filePath, const AssetHandle handle)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKShader>(filePath, handle);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLShader>(filePath, handle);
@@ -160,7 +160,7 @@ namespace Eklipse
     Ref<Shader> Shader::Create(const String& vertexSource, const String& fragmentSource, const AssetHandle handle)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKShader>(vertexSource, fragmentSource, handle);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLShader>(vertexSource, fragmentSource, handle);

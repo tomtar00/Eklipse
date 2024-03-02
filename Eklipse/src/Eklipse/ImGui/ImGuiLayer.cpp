@@ -181,7 +181,7 @@ namespace Eklipse
     Ref<ImGuiAdapter> ImGuiAdapter::Create(const ImGuiLayerConfig& config)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VkImGuiAdapter>(config);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLImGuiAdapter>(config);
@@ -195,7 +195,7 @@ namespace Eklipse
     Ref<GuiIcon> GuiIcon::Create(const Path& texturePath)
     {
         EK_CORE_PROFILE();
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetGraphicsAPIType())
         {
             case GraphicsAPI::Type::Vulkan: return CreateRef<Vulkan::VKImGuiIcon>(texturePath);
             case GraphicsAPI::Type::OpenGL: return CreateRef<OpenGL::GLImGuiIcon>(texturePath);

@@ -55,15 +55,15 @@ namespace Eklipse
             ImGui::DragFloat("Camera Sensitivity", &m_cameraSensitivity, 0.001f);
         }
         ImGui::Separator();
-        static int api = (int)Renderer::GetAPI();
+        static int api = (int)Renderer::GetGraphicsAPIType();
         if (ImGui::Combo("Graphics API", &api, "Vulkan\0OpenGL"))
         {
             Renderer::WaitDeviceIdle();
             ResetPixelBuffer();
             switch (api)
             {
-                case 0: Application::Get().SetAPI(GraphicsAPI::Type::Vulkan); break;
-                case 1: Application::Get().SetAPI(GraphicsAPI::Type::OpenGL); break;
+                case 0: Application::Get().SetGraphicsAPIType(GraphicsAPI::Type::Vulkan); break;
+                case 1: Application::Get().SetGraphicsAPIType(GraphicsAPI::Type::OpenGL); break;
             }
         }
         ImGui::Separator();

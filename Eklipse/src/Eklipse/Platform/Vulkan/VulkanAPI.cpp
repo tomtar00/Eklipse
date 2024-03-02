@@ -288,6 +288,13 @@ namespace Eklipse
             g_currentFrame = (g_currentFrame + 1) % g_maxFramesInFlight;
         }
 
+        void VulkanAPI::SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode)
+        {
+        }
+        void VulkanAPI::SetPipelineType(Pipeline::Type type)
+        {
+        }
+
         void VulkanAPI::DrawIndexed(Ref<VertexArray> vertexArray)
         {
             EK_CORE_PROFILE();

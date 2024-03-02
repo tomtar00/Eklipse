@@ -32,10 +32,10 @@ namespace Eklipse
         m_quit = false;
 
         int tries = 0;
-        GraphicsAPI::Type api = Renderer::GetAPI();
+        GraphicsAPI::Type api = Renderer::GetGraphicsAPIType();
         do
         {
-            Renderer::SetAPI((GraphicsAPI::Type)(((int)api + tries) % GraphicsAPI::TYPE_COUNT));
+            Renderer::SetGraphicsAPIType((GraphicsAPI::Type)(((int)api + tries) % GraphicsAPI::TYPE_COUNT));
 
             if (++tries > GraphicsAPI::TYPE_COUNT)
             {
@@ -48,15 +48,15 @@ namespace Eklipse
             m_window = Window::Create(data);
             m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
-            OnInitAPI(Renderer::GetAPI());
+            OnInitAPI(Renderer::GetGraphicsAPIType());
         } 
         while (!Renderer::Init());
 
-        OnAPIHasInitialized(Renderer::GetAPI());
+        OnAPIHasInitialized(Renderer::GetGraphicsAPIType());
         Renderer::InitParameters();
         for (auto& layer : m_layerStack)
         {
-            layer->OnAPIHasInitialized(Renderer::GetAPI());
+            layer->OnAPIHasInitialized(Renderer::GetGraphicsAPIType());
         }
 
         EK_PROFILE_END();
@@ -110,17 +110,17 @@ namespace Eklipse
     const bool Application::IsMinimized() const						{ return m_minimized; }
 
     // === Setters ===
-    void Application::SetAPI(GraphicsAPI::Type api)
+    void Application::SetGraphicsAPIType(GraphicsAPI::Type api)
     {
         EK_CORE_PROFILE();
-        if (Renderer::GetAPI() == api)
+        if (Renderer::GetGraphicsAPIType() == api)
         {
             EK_CORE_WARN("API already set to {0}", GraphicsAPI::TypeToString(api));
             return;
         }
         EK_CORE_INFO("Setting API to {0}", GraphicsAPI::TypeToString(api));
 
-        Renderer::SetAPI(api);
+        Renderer::SetGraphicsAPIType(api);
 
         m_running = false;
         m_quit = false;

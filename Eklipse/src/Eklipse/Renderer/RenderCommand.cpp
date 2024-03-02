@@ -28,7 +28,7 @@ namespace Eklipse
 
 		Pipeline::Config config{};
 		config.type = Renderer::GetSettings().PipelineType;
-		config.mode = Renderer::GetSettings().PipelineMode;
+		config.topologyMode = Renderer::GetSettings().PipelineTopologyMode;
 		config.shader = material->GetShader().get();
 		config.framebuffer = g_currentFramebuffer;
 		Pipeline::Get(config)->Bind();

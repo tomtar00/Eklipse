@@ -192,12 +192,12 @@ namespace Eklipse
                 info.bindingDesc = CreateVertexInputBindingDescriptions(shader->GetVertexReflection());
                 info.pipelineLayout = shader->GetPipelineLayout();
                 info.renderPass = framebuffer->GetRenderPass();
-                if (m_config.mode == Pipeline::Mode::Triangle)
+                if (m_config.topologyMode == Pipeline::TopologyMode::Triangle)
                 {
                     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
                     info.mode = VK_POLYGON_MODE_FILL;
                 }
-                else if (m_config.mode == Pipeline::Mode::Line)
+                else if (m_config.topologyMode == Pipeline::TopologyMode::Line)
                 {
                     info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
                     info.mode = VK_POLYGON_MODE_LINE;
