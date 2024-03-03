@@ -21,6 +21,7 @@
 #include <Eklipse/Renderer/Material.h>
 #include <Eklipse/Renderer/Texture.h>
 #include <Eklipse/Renderer/Shader.h>
+#include <Eklipse/Renderer/ComputeShader.h>
 
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Entity.h>

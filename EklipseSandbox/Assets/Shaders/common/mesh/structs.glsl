@@ -10,5 +10,6 @@ struct MeshInfo
     uint numTriangles;
     vec3 boundMin;
     vec3 boundMax;
+    mat4 transform;
     Material material;
 };

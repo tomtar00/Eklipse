@@ -59,13 +59,20 @@ namespace Eklipse
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& camera) = default;
 	};
-	struct EK_API LightComponent
+	struct EK_API RayTracingTargetComponent
 	{
-		glm::vec4 lightColor;
-		float intensity;
+		RayTracingMaterial material;
 
-		LightComponent() = default;
-		LightComponent(const LightComponent& light) = default;
+		RayTracingTargetComponent() = default;
+		RayTracingTargetComponent(const RayTracingTargetComponent& comp) = default;
+	};
+	struct EK_API RayTracingSphereComponent
+	{
+		float radius;
+		RayTracingMaterial material;
+
+		RayTracingSphereComponent() = default;
+		RayTracingSphereComponent(const RayTracingSphereComponent& comp) = default;
 	};
 
 	struct EK_API ScriptComponent

@@ -13,7 +13,8 @@ namespace Eklipse {
 		Texture2D,
 		Material,
 		Shader,
-		Mesh
+		Mesh,
+		ComputeShader
 	};
 
 	class EK_API Asset

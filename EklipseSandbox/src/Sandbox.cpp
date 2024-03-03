@@ -4,6 +4,7 @@
 
 #include <SandboxLayer.h>
 #include <RTLayer.h>
+#include <ComputeLayer.h>
 
 #include <Eklipse/Core/EntryPoint.h>
 
@@ -14,8 +15,9 @@ namespace Eklipse
     public:
         Sandbox(ApplicationInfo& info) : Application(info)
         {
-            PushLayer(CreateRef<SandboxLayer>());
+            //PushLayer(CreateRef<SandboxLayer>());
             //PushLayer(CreateRef<RTLayer>());
+            PushLayer(CreateRef<ComputeLayer>());
 
             ImGuiLayerConfig config{};
             config.dockingEnabled = false;

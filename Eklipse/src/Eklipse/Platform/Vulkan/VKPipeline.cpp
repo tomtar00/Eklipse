@@ -139,37 +139,16 @@ namespace Eklipse
         VkPipeline CreateComputePipeline(const ComputePipelineCreateInfo& createInfo)
         {
             EK_CORE_PROFILE();
-            /*auto& computeShaderCode = Eklipse::ReadFileFromPath(shaderRelPath);
-            VkShaderModule computeShaderModule = CreateShaderModule(computeShaderCode);
-            VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
-            computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            computeShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-            computeShaderStageInfo.module = computeShaderModule;
-            computeShaderStageInfo.pName = "main";
-
-            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo.setLayoutCount = 1;
-            pipelineLayoutInfo.pSetLayouts = descSetLayout;
-
-            VkResult res;
-            res = vkCreatePipelineLayout(g_logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
-            HANDLE_VK_RESULT(res, "CREATE COMPUTE PIPELINE LAYOUT");
-
             VkComputePipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-            pipelineInfo.layout = pipelineLayout;
-            pipelineInfo.stage = computeShaderStageInfo;
+            pipelineInfo.layout = createInfo.pipelineLayout;
+            pipelineInfo.stage = createInfo.shaderStage;
 
             VkPipeline pipeline;
-            res = vkCreateComputePipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
+            VkResult res = vkCreateComputePipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
             HANDLE_VK_RESULT(res, "CREATE COMPUTE PIPELINES");
 
-            vkDestroyShaderModule(g_logicalDevice, computeShaderModule, nullptr);
-
-            return pipeline;*/
-
-            return VK_NULL_HANDLE;
+            return pipeline;
         }
         
         VKPipeline::VKPipeline(const Pipeline::Config& config) : Pipeline(config)
@@ -211,21 +190,22 @@ namespace Eklipse
                  m_bindPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
             }
             */
-            /*
-            else if (config.type == Pipeline::Type::Compute)
+            else if (m_config.type == Pipeline::Type::Compute)
             {
-                Ref<VKShader> shader = Cast<VKShader>(config.shader);
-                Ref<VKFramebuffer> framebuffer = Cast<VKFramebuffer>(config.framebuffer);
+                VKShader* shader = static_cast<VKShader*>(m_config.shader);
+                VKFramebuffer* framebuffer = static_cast<VKFramebuffer*>(m_config.framebuffer);
 
-                m_pipeline = CreateComputePipeline(shader->GetPath().c_str(), shader->GetPipelineLayout(), nullptr);
-
-                 m_bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+                ComputePipelineCreateInfo info{};
+                info.shaderStage = CreateShaderStage(shader->GetComputeShaderModule());
+                info.pipelineLayout = shader->GetPipelineLayout();
+                m_pipeline = CreateComputePipeline(info);
+                m_bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
             }
-            */
             else
             {
                 EK_CORE_ERROR("PIPELINE TYPE NOT SUPPORTED: {}", (int)m_config.type);
             }
+            EK_CORE_DBG("Pipeline built");
         }
         void VKPipeline::Bind()
         {

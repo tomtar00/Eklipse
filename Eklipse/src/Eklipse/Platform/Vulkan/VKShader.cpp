@@ -22,6 +22,7 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			if (stage == ShaderStage::VERTEX)   return VK_SHADER_STAGE_VERTEX_BIT;
 			if (stage == ShaderStage::FRAGMENT) return VK_SHADER_STAGE_FRAGMENT_BIT;
+			if (stage == ShaderStage::COMPUTE) return VK_SHADER_STAGE_COMPUTE_BIT;
 
 			EK_ASSERT(false, "Unknown shader stage! ({0})", (int)stage);
 			return VK_SHADER_STAGE_ALL;
@@ -86,6 +87,16 @@ namespace Eklipse
 
 			return Vec<VkPipelineShaderStageCreateInfo>{ vertShaderStageInfo, fragShaderStageInfo };
 		}
+		VkPipelineShaderStageCreateInfo CreateShaderStage(VkShaderModule computeShaderModule)
+		{
+			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			vertShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+			vertShaderStageInfo.module = computeShaderModule;
+			vertShaderStageInfo.pName = "main";
+
+			return vertShaderStageInfo;
+		}
 
 		VKShader::VKShader(const String& vertexSource, const String& fragmentSource, const AssetHandle handle) 
 			: Shader(vertexSource, fragmentSource, handle)
@@ -115,6 +126,10 @@ namespace Eklipse
 		{
 			return m_fragmentShaderModule;
 		}
+		VkShaderModule VKShader::GetComputeShaderModule() const
+		{
+			return m_computeShaderModule;
+		}
 		VkDescriptorSetLayout VKShader::GetDescriptorSetLayout() const
 		{
 			return m_descriptorSetLayout;
@@ -137,6 +152,8 @@ namespace Eklipse
                 vkDestroyShaderModule(g_logicalDevice, m_vertexShaderModule, nullptr);
 			if (m_fragmentShaderModule != VK_NULL_HANDLE)
 				vkDestroyShaderModule(g_logicalDevice, m_fragmentShaderModule, nullptr);
+			if (m_computeShaderModule != VK_NULL_HANDLE)
+                vkDestroyShaderModule(g_logicalDevice, m_computeShaderModule, nullptr);
 			if (m_pipelineLayout != VK_NULL_HANDLE)
 				vkDestroyPipelineLayout(g_logicalDevice, m_pipelineLayout, nullptr);
 			if (m_descriptorSetLayout != VK_NULL_HANDLE)
@@ -166,8 +183,14 @@ namespace Eklipse
 				Dispose();
 
 				// Create modules
-				m_vertexShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::VERTEX]);
-				m_fragmentShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::FRAGMENT]);
+				if (m_vulkanSPIRV.find(ShaderStage::VERTEX) != m_vulkanSPIRV.end())
+                    m_vertexShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::VERTEX]);
+
+				if (m_vulkanSPIRV.find(ShaderStage::FRAGMENT) != m_vulkanSPIRV.end())
+					m_fragmentShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::FRAGMENT]);
+
+				if (m_vulkanSPIRV.find(ShaderStage::COMPUTE) != m_vulkanSPIRV.end())
+                    m_computeShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::COMPUTE]);
 
 				// Create descriptor set layout
 				Vec<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;

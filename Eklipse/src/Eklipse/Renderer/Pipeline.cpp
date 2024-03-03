@@ -15,7 +15,9 @@ namespace Eklipse
     {
         EK_CORE_PROFILE();
         EK_ASSERT(config.shader, "Shader is null");
-        EK_ASSERT(config.framebuffer, "Framebuffer is null");
+
+        // Compute shaders don't have a framebuffer
+        //EK_ASSERT(config.framebuffer, "Framebuffer is null");
 
         // TODO: validate config, eg. RT pipeline cannot have line topology
     }

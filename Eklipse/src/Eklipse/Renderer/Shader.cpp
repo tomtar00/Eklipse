@@ -24,8 +24,9 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (stage)
         {
-        case ShaderStage::VERTEX:    return ".cached_vulkan.vert";
-        case ShaderStage::FRAGMENT:  return ".cached_vulkan.frag";
+            case ShaderStage::VERTEX:    return ".cached_vulkan.vert";
+            case ShaderStage::FRAGMENT:  return ".cached_vulkan.frag";
+            case ShaderStage::COMPUTE:  return ".cached_vulkan.comp";
         }
         EK_ASSERT(false, "Unknown shader stage!");
         return "";
@@ -119,9 +120,9 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (stage)
         {
-        case ShaderStage::VERTEX:   return "vertex";
-        case ShaderStage::FRAGMENT: return "fragment";
-        case ShaderStage::COMPUTE:  return "compute";
+            case ShaderStage::VERTEX:   return "vertex";
+            case ShaderStage::FRAGMENT: return "fragment";
+            case ShaderStage::COMPUTE:  return "compute";
         }
         EK_ASSERT(false, "Wrong shader stage");
         return "none";
@@ -131,9 +132,9 @@ namespace Eklipse
         EK_CORE_PROFILE();
         switch (stage)
         {
-        case ShaderStage::VERTEX:   return shaderc_glsl_vertex_shader;
-        case ShaderStage::FRAGMENT: return shaderc_glsl_fragment_shader;
-        case ShaderStage::COMPUTE:  return shaderc_glsl_compute_shader;
+            case ShaderStage::VERTEX:   return shaderc_glsl_vertex_shader;
+            case ShaderStage::FRAGMENT: return shaderc_glsl_fragment_shader;
+            case ShaderStage::COMPUTE:  return shaderc_glsl_compute_shader;
         }
         EK_ASSERT(false, "Unkown shader stage!");
         return 0;

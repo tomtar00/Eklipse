@@ -12,6 +12,7 @@ namespace Eklipse
 		Vec<VkVertexInputAttributeDescription> CreateVertexInputAttributeDescriptions(const ShaderReflection& vertexShaderReflection);
 		Vec<VkVertexInputBindingDescription> CreateVertexInputBindingDescriptions(const ShaderReflection& vertexShaderReflection);
 		Vec<VkPipelineShaderStageCreateInfo> CreateShaderStages(VkShaderModule vertexShaderModule, VkShaderModule framentShaderModule);
+		VkPipelineShaderStageCreateInfo CreateShaderStage(VkShaderModule computeShaderModule);
 
 		class VKShader : public Shader
 		{
@@ -21,6 +22,7 @@ namespace Eklipse
 
 			VkShaderModule GetVertexShaderModule() const;
 			VkShaderModule GetFragmentShaderModule() const;
+			VkShaderModule GetComputeShaderModule() const;
 			VkDescriptorSetLayout GetDescriptorSetLayout() const;
 			VkPipelineLayout GetPipelineLayout() const;
 
@@ -38,6 +40,7 @@ namespace Eklipse
 		private:
 			VkShaderModule m_vertexShaderModule			= VK_NULL_HANDLE;
 			VkShaderModule m_fragmentShaderModule		= VK_NULL_HANDLE;
+			VkShaderModule m_computeShaderModule		= VK_NULL_HANDLE;
 			VkPipelineLayout m_pipelineLayout			= VK_NULL_HANDLE;
 			VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 		};

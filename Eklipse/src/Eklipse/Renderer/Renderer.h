@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Material.h"
 #include "GraphicsAPI.h"
+#include "RendererContext.h"
 
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Camera.h>
@@ -24,52 +25,6 @@ namespace Eklipse
 		Pipeline::TopologyMode PipelineTopologyMode = Pipeline::TopologyMode::Triangle;
 
 		int GetMsaaSamples() const { return 1 << MsaaSamplesIndex; }
-	};
-
-	class EK_API RendererContext
-	{
-	public:
-	    virtual void Init() = 0;
-		virtual void Shutdown() = 0;
-		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) = 0;
-	};
-	
-	class EK_API RasterizationContext : public RendererContext
-	{
-	public:
-		virtual void Init() override;
-		virtual void Shutdown() override;
-		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) override;
-	};
-	
-	class EK_API RayTracingContext : public RendererContext
-	{
-	public:
-		struct Settings 
-		{
-			uint32_t raysPerPixel	= 1;
-			uint32_t maxBounces		= 4;
-
-			glm::vec3 m_skyColorHorizon		= { 1.0f, 1.0f, 1.0f };
-			glm::vec3 m_skyColorZenith		= { 0.07f, 0.36f, 0.72f };
-			glm::vec3 m_groundColor			= { 0.35f, 0.3f, 0.35f };
-			glm::vec3 m_sunColor			= { 1.0f, 1.0f, 0.8f };
-			glm::vec3 m_sunDirection		= { 0.0f, 0.3f, -1.0f };
-
-			float m_sunFocus				= 500.0f;
-			float m_sunIntensity			= 200.0f;
-		};
-
-	public:
-		virtual void Init() override;
-		virtual void Shutdown() override;
-		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) override;
-	
-	private:
-		uint32_t m_frameIndex = 0;
-		Ref<Shader> m_rayTracingShader;
-		Ref<Material> m_rayTracingMaterial;
-		Ref<VertexArray> m_rayTracingQuad;
 	};
 
 	static class EK_API Renderer

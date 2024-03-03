@@ -27,13 +27,28 @@ namespace Eklipse
 		EK_ASSERT(g_currentFramebuffer, "Current framebuffer is null");
 
 		Pipeline::Config config{};
-		config.type = Renderer::GetSettings().PipelineType;
-		config.topologyMode = Renderer::GetSettings().PipelineTopologyMode;
-		config.shader = material->GetShader().get();
-		config.framebuffer = g_currentFramebuffer;
+		config.type				= Renderer::GetSettings().PipelineType;
+		config.topologyMode		= Renderer::GetSettings().PipelineTopologyMode;
+		config.shader			= material->GetShader().get();
+		config.framebuffer		= g_currentFramebuffer;
 		Pipeline::Get(config)->Bind();
 
 		material->Bind();
 		DrawIndexed(vertexArray);
+	}
+	void RenderCommand::Dispatch(Ref<ComputeShader> computeShader, uint32_t x, uint32_t y, uint32_t z)
+	{
+        EK_PROFILE();
+        EK_ASSERT(computeShader, "Compute shader is null");
+
+		Pipeline::Config config{};
+		config.type				= Pipeline::Type::Compute;
+		config.topologyMode		= Pipeline::TopologyMode::Triangle;
+		config.shader			= computeShader->GetShader().get();
+		config.framebuffer		= g_currentFramebuffer;
+		Pipeline::Get(config)->Bind();
+
+		computeShader->GetMaterial()->Bind();
+        computeShader->Dispatch(x, y, z);
 	}
 }

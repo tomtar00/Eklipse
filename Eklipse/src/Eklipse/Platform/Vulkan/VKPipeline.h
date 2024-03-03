@@ -24,10 +24,10 @@ namespace Eklipse
 
 		struct ComputePipelineCreateInfo
 		{
-			
+			VkPipelineShaderStageCreateInfo shaderStage;
+            VkPipelineLayout pipelineLayout;
 		};
 		VkPipeline CreateComputePipeline(const ComputePipelineCreateInfo& createInfo);
-
 
 		class EK_API VKPipeline : public Pipeline
 		{
