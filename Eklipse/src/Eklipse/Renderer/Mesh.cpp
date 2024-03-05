@@ -173,6 +173,21 @@ namespace Eklipse
         }
 		return triangles;
 	}
+	Vec<float> Mesh::GetVertices() const
+	{
+		Vec<float> vertices;
+		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += m_meshData.layout.GetStride())
+		{
+            vertices.push_back(m_meshData.vertices[i + 0]);
+            vertices.push_back(m_meshData.vertices[i + 1]);
+            vertices.push_back(m_meshData.vertices[i + 2]);
+        }
+		return vertices;
+	}
+	Vec<uint32_t> Mesh::GetIndices() const
+	{
+		return m_meshData.indices;
+	}
 	Bounds Mesh::GetBounds() const // TODO: NOT WORKING
 	{
 		Bounds bounds{};

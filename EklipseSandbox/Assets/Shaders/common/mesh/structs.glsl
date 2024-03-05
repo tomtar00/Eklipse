@@ -6,10 +6,11 @@ struct Triangle
 };
 struct MeshInfo
 {
-    uint firstTriangle;
-    uint numTriangles;
+    uint vertexOffset;
+    uint vertexCount;
+    uint indexOffset;
+    uint indexCount;
+    uint materialIndex;
     vec3 boundMin;
     vec3 boundMax;
-    mat4 transform;
-    Material material;
 };

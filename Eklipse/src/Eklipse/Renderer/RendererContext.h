@@ -57,25 +57,25 @@ namespace Eklipse
 	struct RayTracingMaterial
 	{
 		glm::vec3 albedo;
-		float pad0;
+		float __pad0;
 		float smoothness;
 		float specularProb;
 		glm::vec3 specularColor;
-		float pad1;
+		float __pad1;
 		glm::vec3 emissionColor;
-		float pad2;
+		float __pad2;
 		float emissionStrength;
 	};
 	struct RayTracingMeshInfo
 	{
-		uint32_t firstTriangle;
-		uint32_t numTriangles;
+		uint32_t vertexOffset;
+		uint32_t vertexCount;
+		uint32_t indexOffset;
+		uint32_t indexCount;
+		uint32_t materialIndex;
 		glm::vec3 boundMin;
-		float pad0;
+		float __pad0;
 		glm::vec3 boundMax;
-		float pad1;
-		glm::mat4 transform;
-		float pad[2];
-		RayTracingMaterial material;
+		float __pad1;
 	};
 }

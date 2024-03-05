@@ -7,11 +7,12 @@ namespace Eklipse
     {
     public:
         virtual void OnAttach() override;
-
         virtual void OnEvent(Event& event) override;
+
         virtual void OnGUI(float deltaTime) override;
-        virtual void OnRender(float deltaTime) override;
         virtual void OnUpdate(float deltaTime) override;
+        virtual void OnCompute(float deltaTime) override;
+        virtual void OnRender(float deltaTime) override;
 
         virtual void OnAPIHasInitialized(GraphicsAPI::Type api) override;
         virtual void OnShutdownAPI(bool quit) override;
@@ -31,6 +32,9 @@ namespace Eklipse
         Ref<Material> m_rayMaterial;
         Ref<VertexArray> m_fullscreenVA;
 
+        uint32_t m_numTotalVertices;
+        uint32_t m_numTotalIndices;
+        uint32_t m_numTotalMeshes;
         Ref<Mesh> m_cubeMesh;
         Ref<Scene> m_scene;
 

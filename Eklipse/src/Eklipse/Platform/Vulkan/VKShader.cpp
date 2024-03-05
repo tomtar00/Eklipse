@@ -138,6 +138,10 @@ namespace Eklipse
 		{
 			return m_pipelineLayout;
 		}
+		VkPipelineBindPoint VKShader::GetPipelineBindPoint() const
+		{
+			return m_pipelineBindPoint;
+		}
 
 		void VKShader::Bind() const 
 		{
@@ -190,7 +194,10 @@ namespace Eklipse
 					m_fragmentShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::FRAGMENT]);
 
 				if (m_vulkanSPIRV.find(ShaderStage::COMPUTE) != m_vulkanSPIRV.end())
+				{
+					m_pipelineBindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
                     m_computeShaderModule = CreateShaderModule(m_vulkanSPIRV[ShaderStage::COMPUTE]);
+				}
 
 				// Create descriptor set layout
 				Vec<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;

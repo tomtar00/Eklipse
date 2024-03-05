@@ -15,7 +15,6 @@ namespace Eklipse
 
         m_scene = CreateRef<Scene>();
     }
-
     void ComputeLayer::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
@@ -27,6 +26,7 @@ namespace Eklipse
             InitMaterial();
         }, false);
     }
+
     void ComputeLayer::OnGUI(float deltaTime)
     {
         ImGui::Begin("Ray Tracing");
@@ -60,7 +60,7 @@ namespace Eklipse
         {
             Renderer::WaitDeviceIdle();
             ResetPixelBuffer();
-            if (m_rayShader->Compile("", true))
+            if (m_rayShader->Compile("Assets/Shaders/RT_mesh.glsl", true))
                 m_rayMaterial->OnShaderReloaded();
         }
         if (ImGui::SliderInt("Rays Per Pixel", &m_rtSettings.raysPerPixel, 1, 20))
@@ -135,9 +135,30 @@ namespace Eklipse
         ImGui::Begin("Scene");
         if (ImGui::Button("Add Cube"))
         {
-            auto entity = m_scene->CreateEntity("Cube " + m_scene->GetRegistry().size());
+            auto entity = m_scene->CreateEntity("Cube " + m_numTotalMeshes);
             entity.AddComponent<MeshComponent>(m_cubeMesh.get(), nullptr);
             entity.AddComponent<RayTracingTargetComponent>();
+
+            Vec<float> vertices = m_cubeMesh->GetVertices();
+            auto buffer = Renderer::GetStorageBuffer("bVertices");
+            buffer->SetData(vertices.data(), vertices.size() * sizeof(float), m_numTotalVertices * sizeof(float));
+
+            Vec<uint32_t> indices = m_cubeMesh->GetIndices();
+            buffer = Renderer::GetStorageBuffer("bIndices");
+            buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), m_numTotalIndices * sizeof(uint32_t));
+
+            RayTracingMeshInfo meshInfo{};
+            meshInfo.vertexOffset = m_numTotalVertices;
+            meshInfo.vertexCount = vertices.size();
+            meshInfo.indexOffset = m_numTotalIndices;
+            meshInfo.indexCount = indices.size();
+            meshInfo.materialIndex = m_numTotalMeshes;
+            buffer = Renderer::GetStorageBuffer("bMeshes");
+            buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), m_numTotalMeshes * sizeof(RayTracingMeshInfo));
+
+            m_numTotalVertices += vertices.size();
+            m_numTotalIndices += indices.size();
+            m_numTotalMeshes += 1;
         }
         if (ImGui::Button("Add Sphere"))
         {
@@ -172,6 +193,38 @@ namespace Eklipse
         });
         ImGui::End();
     }
+    void ComputeLayer::OnUpdate(float deltaTime)
+    {
+        {
+            Vec<RayTracingMaterial> materials{};
+            Vec<glm::mat4> transforms{};
+            m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
+            {
+                Entity entity = { entityID, m_scene.get() };
+                auto& material = rtComp.material;
+                auto& transfomMatrix = entity.GetComponent<TransformComponent>().transformMatrix;
+
+                materials.push_back(material);
+                transforms.push_back(transfomMatrix);
+            });
+
+            if (m_numTotalVertices)
+            {
+                auto buffer = Renderer::GetStorageBuffer("bMaterials");
+                buffer->SetData(materials.data(), materials.size() * sizeof(RayTracingMaterial), 0);
+
+                buffer = Renderer::GetStorageBuffer("bTransforms");
+                buffer->SetData(transforms.data(), transforms.size() * sizeof(glm::mat4), 0);
+            }
+        }
+
+        if (m_controlCamera && m_cursorDisabled)
+            ControlCamera(deltaTime);
+    }
+    void ComputeLayer::OnCompute(float deltaTime)
+    {
+        RenderCommand::Dispatch(m_computeShader, m_numTotalVertices / 3, 1, 1);
+    }
     void ComputeLayer::OnRender(float deltaTime)
     {
         ++m_frameIndex;
@@ -181,44 +234,6 @@ namespace Eklipse
 
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
-    }
-    void ComputeLayer::OnUpdate(float deltaTime)
-    {
-        {
-            Vec<Triangle> triangles{};
-            Vec<RayTracingMeshInfo> meshes{};
-            m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
-                {
-                    Entity entity = { entityID, m_scene.get() };
-                    auto& material = rtComp.material;
-                    auto& meshComp = entity.GetComponent<MeshComponent>();
-                    auto& meshTriangles = meshComp.mesh->GetTriangles();
-
-                    RayTracingMeshInfo meshInfo{};
-                    Bounds bounds = meshComp.mesh->GetBounds();
-                    meshInfo.firstTriangle = triangles.size();
-                    meshInfo.numTriangles = meshTriangles.size();
-                    meshInfo.boundMin = bounds.min;
-                    meshInfo.boundMax = bounds.max;
-                    meshInfo.material = material;
-
-                    meshes.push_back(meshInfo);
-                    triangles.insert(triangles.end(), meshTriangles.begin(), meshTriangles.end());
-                });
-
-            RenderCommand::Dispatch(m_computeShader, triangles.size(), 1, 1);
-
-            auto trBuff = Renderer::CreateStorageBuffer("bTriangles", triangles.size() * sizeof(Triangle), 2);
-            trBuff->SetData(triangles.data(), triangles.size() * sizeof(Triangle));
-
-            auto mshBuff = Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + meshes.size() * sizeof(RayTracingMeshInfo), 3);
-            uint32_t size = meshes.size();
-            mshBuff->SetData(&size, sizeof(uint32_t));
-            mshBuff->SetData(meshes.data(), meshes.size() * sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t));
-        }
-
-        if (m_controlCamera && m_cursorDisabled)
-            ControlCamera(deltaTime);
     }
 
     void ComputeLayer::OnAPIHasInitialized(GraphicsAPI::Type api)
@@ -271,8 +286,16 @@ namespace Eklipse
 
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
-        Renderer::CreateStorageBuffer("bTriangles", sizeof(Triangle), 2);
-        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + 1 * sizeof(RayTracingMeshInfo), 3);
+
+        const int maxVerticies = 1000000;
+        const int maxIndices = 1000000;
+        const int maxMeshes = 100;
+        Renderer::CreateStorageBuffer("bVertices", maxVerticies * sizeof(float), 2);
+        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 7);
+        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 3);
+        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 4);
+        Renderer::CreateStorageBuffer("bMaterials", maxMeshes * sizeof(RayTracingMaterial), 5);
+        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 6);
 
         m_rayMaterial = Material::Create(m_rayShader);
 

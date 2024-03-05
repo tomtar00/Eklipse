@@ -169,6 +169,12 @@ namespace Eklipse
         void OpenGLAPI::BeginFrame()
         {
         }
+        void OpenGLAPI::BeginComputePass()
+        {
+        }
+        void OpenGLAPI::EndComputePass()
+        {
+        }
         void OpenGLAPI::Submit()
         {
             EK_CORE_PROFILE();

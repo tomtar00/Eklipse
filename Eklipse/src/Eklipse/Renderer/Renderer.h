@@ -38,6 +38,8 @@ namespace Eklipse
 		// Render stages
 		static void BeginFrame();
 		static void UpdateViewProjection(Camera& camera, Transform& cameraTransform);
+		static void BeginComputePass();
+		static void EndComputePass();
 		static void BeginRenderPass(Framebuffer* framebuffer);
 		static void EndRenderPass(Framebuffer* framebuffer);
 		static void Submit();

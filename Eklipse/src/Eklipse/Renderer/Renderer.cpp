@@ -103,6 +103,16 @@ namespace Eklipse
         camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
         s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
     }
+    void Renderer::BeginComputePass()
+    {
+        EK_PROFILE();
+        RenderCommand::API->BeginComputePass();
+    }
+    void Renderer::EndComputePass()
+    {
+        EK_PROFILE();
+        RenderCommand::API->EndComputePass();
+    }
     void Renderer::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
         EK_PROFILE();

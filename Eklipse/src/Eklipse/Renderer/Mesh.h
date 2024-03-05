@@ -40,6 +40,8 @@ namespace Eklipse
 		const Ref<VertexArray>& GetVertexArray() const;
 		const MeshData& GetMeshData() const;
 		Vec<Triangle> GetTriangles() const;
+		Vec<float> GetVertices() const;
+		Vec<uint32_t> GetIndices() const;
 		Bounds GetBounds() const;
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }

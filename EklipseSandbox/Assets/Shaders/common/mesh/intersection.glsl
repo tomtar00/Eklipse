@@ -1,26 +1,5 @@
 HitInfo RayTriangle(Ray ray, Triangle triangle)
 {
-    // vec3 eAB = triangle.b - triangle.a;
-    // vec3 eAC = triangle.c - triangle.a;
-    // vec3 normal = cross(eAB, eAC);
-    // vec3 ao = ray.origin - triangle.a;
-    // vec3 dao = cross(ray.dir, ao);
-
-    // float det = -dot(ray.dir, normal);
-    // float invDet = 1.0 / det;
-
-    // float dst = dot(ao, normal) * invDet;
-    // float u = dot(dao, eAC) * invDet;
-    // float v = dot(eAB, dao) * invDet;
-    // float w = 1.0 - u - v;
-
-    // HitInfo hitInfo;
-    // hitInfo.didHit = dst > 0.0 && u >= 0.0 && v >= 0.0 && w >= 0.0;
-    // hitInfo.dst = dst;
-    // hitInfo.hitPoint = ray.origin + ray.dir * dst;
-    // hitInfo.normal = normalize(triangle.na * w + triangle.nb * u + triangle.nc * v);
-    // return hitInfo;
-
     HitInfo hitInfo;
     hitInfo.didHit = false;
 
@@ -80,12 +59,19 @@ HitInfo CalculateRayCollision(Ray ray) {
         //    continue;
         // }
 
-        for (int j = 0; j < meshInfo.numTriangles; j++) {
-            Triangle triangle = bTriangles.Triangles[meshInfo.firstTriangle + j];
+        for (uint j = meshInfo.indexOffset; j < meshInfo.indexCount; j += 3) {
+            Triangle triangle;
+            uint idx1 = bIndices.Indices[j];
+            uint idx2 = bIndices.Indices[j + 1];
+            uint idx3 = bIndices.Indices[j + 2];
+            triangle.a = vec3(bVertices.Vertices[idx1 * 3], bVertices.Vertices[idx1 * 3 + 1], bVertices.Vertices[idx1 * 3 + 2]);
+            triangle.b = vec3(bVertices.Vertices[idx2 * 3], bVertices.Vertices[idx2 * 3 + 1], bVertices.Vertices[idx2 * 3 + 2]);
+            triangle.c = vec3(bVertices.Vertices[idx3 * 3], bVertices.Vertices[idx3 * 3 + 1], bVertices.Vertices[idx3 * 3 + 2]);
+
             HitInfo hitInfo = RayTriangle(ray, triangle);
             if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
                 closestHit = hitInfo;
-                closestHit.material = meshInfo.material;
+                closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
             }
         }
     }

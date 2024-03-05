@@ -17,6 +17,8 @@ namespace Eklipse
 			void WaitDeviceIdle() override;
 
 			void BeginFrame() override;
+			void BeginComputePass() override;
+			void EndComputePass() override;
 			void Submit() override;
 
 			virtual void SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode) override;
@@ -40,6 +42,8 @@ namespace Eklipse
 
 			Vec<VkFence> m_computeInFlightFences{};
 			Vec<VkSemaphore> m_computeFinishedSemaphores{};
+
+			Vec<VkCommandBuffer> m_computeCommandBuffers{};
 		};
 	}
 }

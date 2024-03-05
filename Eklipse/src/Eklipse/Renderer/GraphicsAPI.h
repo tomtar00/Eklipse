@@ -25,6 +25,8 @@ namespace Eklipse
         virtual void WaitDeviceIdle() = 0;
 
         virtual void BeginFrame() = 0;
+        virtual void BeginComputePass() = 0;
+        virtual void EndComputePass() = 0;
         virtual void Submit() = 0;
 
         virtual void SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode) = 0;

@@ -30,9 +30,11 @@ void main() {
     Ray ray = GetFragRay(clipSpacePosition);
     vec3 currentColor = RayTrace(ray, randomSeed);
   
-    float weight = 1.0 / float(pData.Frames);
-    vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
+    // float weight = 1.0 / float(pData.Frames);
+    // vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
   
-    bPixels.Data[pixelIndex] = newColor;
-    fragColor = vec4(newColor, 1.0);
+    // bPixels.Data[pixelIndex] = newColor;
+    // fragColor = vec4(newColor, 1.0);
+
+    fragColor = vec4(currentColor, 1.0);
 }

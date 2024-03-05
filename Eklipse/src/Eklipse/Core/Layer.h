@@ -19,6 +19,7 @@ namespace Eklipse
 		virtual void OnUpdate(float deltaTime) {}
 		virtual void OnRender(float deltaTime) {}
 		virtual void OnGUI(float deltaTime) {}
+		virtual void OnCompute(float deltaTime) {}
 
 		virtual void OnAPIHasInitialized(GraphicsAPI::Type api) {}
 		virtual void OnShutdownAPI(bool quit) {}

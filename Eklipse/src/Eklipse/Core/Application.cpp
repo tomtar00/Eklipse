@@ -224,12 +224,21 @@ namespace Eklipse
                     {
                         layer->OnUpdate(deltaTime);
                     }
+
+                    Renderer::BeginComputePass();
+                    for (auto& layer : m_layerStack)
+                    {
+                        layer->OnCompute(deltaTime);
+                    }
+                    Renderer::EndComputePass();
+
                     Renderer::BeginRenderPass(g_defaultFramebuffer);
                     for (auto& layer : m_layerStack)
                     {
                         layer->OnRender(deltaTime);
                     }
                     Renderer::EndRenderPass(g_defaultFramebuffer);
+
                     Renderer::Submit();
                 }
             }

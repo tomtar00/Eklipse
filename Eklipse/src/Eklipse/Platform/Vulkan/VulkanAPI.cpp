@@ -108,6 +108,7 @@ namespace Eklipse
                 CreateAllocator();
 
                 g_commandPool = CreateCommandPool(g_queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+                CreateCommandBuffers(m_computeCommandBuffers, g_maxFramesInFlight, g_commandPool);
 
                 g_descriptorPool = CreateDescriptorPool(
                 {
@@ -202,6 +203,8 @@ namespace Eklipse
             g_VKOffScreenFramebuffers.clear();
 
             DestroyValidationLayers();
+            if (m_computeCommandBuffers.size())	
+                FreeCommandBuffers(m_computeCommandBuffers, g_commandPool);
             if (g_commandPool)
             {
                 vkDestroyCommandPool(g_logicalDevice, g_commandPool, nullptr);
@@ -245,12 +248,42 @@ namespace Eklipse
                 g_VKDefaultFramebuffer->GetImageIndexPtr()
             );
             vkResetFences(g_logicalDevice, 1, &m_renderInFlightFences[g_currentFrame]);
+            vkWaitForFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame], VK_TRUE, UINT64_MAX);
+        }
+        void VulkanAPI::BeginComputePass()
+        {
+            EK_CORE_PROFILE();
+            g_currentCommandBuffer = m_computeCommandBuffers[g_currentFrame];
+            vkResetFences(g_logicalDevice, 1, &m_computeInFlightFences[g_currentFrame]);
+            vkResetCommandBuffer(g_currentCommandBuffer, 0);
+
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+            VkResult res = vkBeginCommandBuffer(g_currentCommandBuffer, &beginInfo);
+            HANDLE_VK_RESULT(res, "BEGIN COMPUTE PASS COMMAND BUFFER");
+        }
+        void VulkanAPI::EndComputePass()
+        {
+            EK_CORE_PROFILE();
+            VkResult res = vkEndCommandBuffer(g_currentCommandBuffer);
+            HANDLE_VK_RESULT(res, "END COMPUTE PASS COMMAND BUFFER");
+
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &g_currentCommandBuffer;
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = &m_computeFinishedSemaphores[g_currentFrame];
+
+            res = vkQueueSubmit(g_computeQueue, 1, &submitInfo, m_computeInFlightFences[g_currentFrame]);
+            HANDLE_VK_RESULT(res, "QUEUE SUBMIT");
         }
         void VulkanAPI::Submit()
         {
             EK_CORE_PROFILE();
-            std::array<VkSemaphore, 1> waitSemaphores = { m_imageAvailableSemaphores[g_currentFrame] };
-            std::array<VkPipelineStageFlags, 1> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+            std::array<VkSemaphore, 2> waitSemaphores = { m_computeFinishedSemaphores[g_currentFrame], m_imageAvailableSemaphores[g_currentFrame] };
+            std::array<VkPipelineStageFlags, 2> waitStages = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
             std::array<VkSemaphore, 1> signalSemaphores = { m_renderFinishedSemaphores[g_currentFrame] };
             Vec<VkCommandBuffer> commandBuffers{};
 
