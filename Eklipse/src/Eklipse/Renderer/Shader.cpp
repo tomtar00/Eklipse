@@ -7,6 +7,7 @@
 #include <Eklipse/Platform/OpenGL/GLShader.h>
 #include <Eklipse/Platform/Vulkan/VKShader.h>
 #include <Eklipse/Utils/File.h>
+#include <Eklipse/Utils/Hash.h>
 
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
@@ -392,7 +393,7 @@ namespace Eklipse
         shaderData.clear();
         for (auto&& [stage, source] : shaderSources)
         {
-            Path cachedPath = cacheDirectory / (Name + VKShaderStageCachedVulkanFileExtension(stage));
+            Path cachedPath = cacheDirectory / (HashToString(shaderPath) + VKShaderStageCachedVulkanFileExtension(stage));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (!forceCompile && in.is_open())

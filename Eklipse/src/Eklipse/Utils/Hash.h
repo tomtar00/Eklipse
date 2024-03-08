@@ -7,4 +7,12 @@ namespace Eklipse
     {
         seed = std::hash<T>()(value) + (seed << 5) + seed;
     }
+
+    template <typename T>
+    String HashToString(const T& value)
+    {
+        size_t seed = 0;
+        HashCombine(seed, value);
+        return std::to_string(seed);
+    }
 }

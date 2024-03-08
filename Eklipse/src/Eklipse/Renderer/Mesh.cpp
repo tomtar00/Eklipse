@@ -151,6 +151,8 @@ namespace Eklipse
 	{
 		return m_meshData;
 	}
+
+	// TODO: Should take account of the buffer layout
 	Vec<Triangle> Mesh::GetTriangles() const
 	{
 		Vec<Triangle> triangles;
@@ -173,10 +175,13 @@ namespace Eklipse
         }
 		return triangles;
 	}
+
+	// TODO: Should take account of the buffer layout
 	Vec<float> Mesh::GetVertices() const
 	{
 		Vec<float> vertices;
-		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += m_meshData.layout.GetStride())
+		uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
+		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += stride)
 		{
             vertices.push_back(m_meshData.vertices[i + 0]);
             vertices.push_back(m_meshData.vertices[i + 1]);
@@ -184,16 +189,21 @@ namespace Eklipse
         }
 		return vertices;
 	}
+
+	// TODO: Should take account of the buffer layout
 	Vec<uint32_t> Mesh::GetIndices() const
 	{
 		return m_meshData.indices;
 	}
+
+	// TODO: Should take account of the buffer layout
 	Bounds Mesh::GetBounds() const // TODO: NOT WORKING
 	{
 		Bounds bounds{};
 		bounds.min = { FLT_MAX, FLT_MAX, FLT_MAX };
 		bounds.max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += m_meshData.layout.GetStride())
+		uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
+		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += stride)
 		{
 			glm::vec3 vertex = {
                 m_meshData.vertices[i + 0],

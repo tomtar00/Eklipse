@@ -22,6 +22,7 @@ namespace Eklipse
         void InitShader();
         void InitMaterial();
         void InitMeshes();
+        void InitComputeShader();
 
         void ResetPixelBuffer();
         void ControlCamera(float deltaTime);
@@ -45,7 +46,7 @@ namespace Eklipse
         float m_cameraSensitivity;
         bool m_cursorDisabled;
 
-        float m_frameIndex = 0;
+        int m_frameIndex = 0;
         RayTracingContext::Settings m_rtSettings;
     };
 }

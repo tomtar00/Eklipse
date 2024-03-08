@@ -2,6 +2,7 @@
 #include "GLShader.h"
 #include <Eklipse/Core/Timer.h>
 #include <Eklipse/Assets/AssetManager.h>
+#include <Eklipse/Utils/Hash.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/ext.hpp>
@@ -20,6 +21,7 @@ namespace Eklipse
 			{
 				case ShaderStage::VERTEX:   return GL_VERTEX_SHADER;
 				case ShaderStage::FRAGMENT: return GL_FRAGMENT_SHADER;
+				case ShaderStage::COMPUTE:  return GL_COMPUTE_SHADER;
 			}
 			EK_ASSERT(false, "Unknown shader stage!");
 			return 0;
@@ -31,6 +33,7 @@ namespace Eklipse
 			{
 				case ShaderStage::VERTEX:    return ".cached_opengl.vert";
 				case ShaderStage::FRAGMENT:  return ".cached_opengl.frag";
+				case ShaderStage::COMPUTE:   return ".cached_opengl.comp";
 			}
 			EK_ASSERT(false, "Unknown shader stage!");
 			return "";
@@ -41,7 +44,7 @@ namespace Eklipse
 		{
 			EK_CORE_PROFILE();
 			Handle = handle;
-			Name = "Custom";
+			Name = HashToString(vertexSource + fragmentSource); // TODO: dont hash the source code
 			StageSourceMap shaderSources;
 			shaderSources[ShaderStage::VERTEX] = vertexSource;
 			shaderSources[ShaderStage::FRAGMENT] = fragmentSource;
@@ -93,7 +96,7 @@ namespace Eklipse
 		bool GLShader::Compile(const StageSourceMap& sourceMap, bool forceCompile)
 		{
 			EK_CORE_PROFILE();
-			return Compile("", sourceMap, forceCompile);
+			return Compile(Name, sourceMap, forceCompile);
 		}
 
 		bool GLShader::Compile(const Path& shaderPath, const StageSourceMap& sourceMap, bool forceCompile)
@@ -137,7 +140,7 @@ namespace Eklipse
 			StageSourceMap openGLSourceCode;
 			for (auto&& [stage, spirv] : m_vulkanSPIRV)
 			{
-				Path cachedPath = cacheDirectory / (Name + GLShaderStageCachedOpenGLFileExtension(stage));
+				Path cachedPath = cacheDirectory / (HashToString(shaderPath) + GLShaderStageCachedOpenGLFileExtension(stage));
 
 				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 				if (!forceCompile && in.is_open())

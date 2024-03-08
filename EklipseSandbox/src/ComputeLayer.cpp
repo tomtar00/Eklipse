@@ -48,7 +48,7 @@ namespace Eklipse
         if (ImGui::Combo("Graphics API", &api, "Vulkan\0OpenGL"))
         {
             Renderer::WaitDeviceIdle();
-            ResetPixelBuffer();
+            needsReset = true;
             switch (api)
             {
                 case 0: Application::Get().SetGraphicsAPIType(GraphicsAPI::Type::Vulkan); break;
@@ -59,9 +59,16 @@ namespace Eklipse
         if (ImGui::Button("Recompile Shader"))
         {
             Renderer::WaitDeviceIdle();
-            ResetPixelBuffer();
-            if (m_rayShader->Compile("Assets/Shaders/RT_mesh.glsl", true))
+            needsReset = true;
+            if (m_rayShader->Compile("Assets/Shaders/Compute/RT_mesh.glsl", true))
                 m_rayMaterial->OnShaderReloaded();
+        }
+        if (ImGui::Button("Recompile Compute Shader"))
+        {
+            Renderer::WaitDeviceIdle();
+            needsReset = true;
+            if (m_computeShader->GetShader()->Compile("Assets/Shaders/Compute/RT_compute.glsl", true))
+                m_computeShader->GetMaterial()->OnShaderReloaded();
         }
         if (ImGui::SliderInt("Rays Per Pixel", &m_rtSettings.raysPerPixel, 1, 20))
         {
@@ -147,18 +154,22 @@ namespace Eklipse
             buffer = Renderer::GetStorageBuffer("bIndices");
             buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), m_numTotalIndices * sizeof(uint32_t));
 
+            Bounds bounds = m_cubeMesh->GetBounds();
             RayTracingMeshInfo meshInfo{};
             meshInfo.vertexOffset = m_numTotalVertices;
             meshInfo.vertexCount = vertices.size();
             meshInfo.indexOffset = m_numTotalIndices;
             meshInfo.indexCount = indices.size();
             meshInfo.materialIndex = m_numTotalMeshes;
+            meshInfo.boundMin = bounds.min;
+            meshInfo.boundMax = bounds.max;
             buffer = Renderer::GetStorageBuffer("bMeshes");
-            buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), m_numTotalMeshes * sizeof(RayTracingMeshInfo));
+            m_numTotalMeshes += 1;
+            buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
+            buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t) + (m_numTotalMeshes - 1u) * sizeof(RayTracingMeshInfo));
 
             m_numTotalVertices += vertices.size();
             m_numTotalIndices += indices.size();
-            m_numTotalMeshes += 1;
         }
         if (ImGui::Button("Add Sphere"))
         {
@@ -167,7 +178,15 @@ namespace Eklipse
         }
         m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
         {
+            ImGui::PushID((void*)entityID);
             Entity entity = { entityID, m_scene.get() };
+            auto& transComp = entity.GetComponent<TransformComponent>();
+
+            ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
+            ImGui::DragFloat3("Rotation", &transComp.transform.rotation[0], 0.1f);
+            ImGui::DragFloat3("Scale", &transComp.transform.scale[0], 0.1f);
+            ImGui::Spacing();
+
             ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
             ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
             ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
@@ -175,11 +194,20 @@ namespace Eklipse
             ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
             ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
             ImGui::Separator();
+
+            ImGui::PopID();
         });
         m_scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
         {
+            ImGui::PushID((void*)entityID);
             Entity entity = { entityID, m_scene.get() };
             auto& transComp = entity.GetComponent<TransformComponent>();
+
+            ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
+            ImGui::DragFloat3("Rotation", &transComp.transform.rotation[0], 0.1f);
+            ImGui::DragFloat3("Scale", &transComp.transform.scale[0], 0.1f);
+            ImGui::Spacing();
+
             ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
             ImGui::DragFloat("Radius", &rtComp.radius, 0.1f);
             ImGui::Spacing();
@@ -190,7 +218,15 @@ namespace Eklipse
             ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
             ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
             ImGui::Separator();
+
+            ImGui::PopID();
         });
+        ImGui::End();
+
+        ImGui::Begin("Stats");
+        ImGui::Text("Vertices: %d", m_numTotalVertices);
+        ImGui::Text("Indices: %d", m_numTotalIndices);
+        ImGui::Text("Meshes: %d", m_numTotalMeshes);
         ImGui::End();
     }
     void ComputeLayer::OnUpdate(float deltaTime)
@@ -202,7 +238,7 @@ namespace Eklipse
             {
                 Entity entity = { entityID, m_scene.get() };
                 auto& material = rtComp.material;
-                auto& transfomMatrix = entity.GetComponent<TransformComponent>().transformMatrix;
+                auto& transfomMatrix = entity.GetComponent<TransformComponent>().GetTransformMatrix(); // TODO: Optimize
 
                 materials.push_back(material);
                 transforms.push_back(transfomMatrix);
@@ -241,7 +277,18 @@ namespace Eklipse
         InitQuad();
         InitShader();
         InitMeshes();
+
+        const int maxVerticies = 1000000;
+        const int maxIndices = 1000000;
+        const int maxMeshes = 100;
+        Renderer::CreateStorageBuffer("bVertices", maxVerticies * sizeof(float), 2);
+        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 7);
+        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 3);
+        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 4);
+        Renderer::CreateStorageBuffer("bMaterials", maxMeshes * sizeof(RayTracingMaterial), 5);
+        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 6);
         InitMaterial();
+        InitComputeShader();
     }
     void ComputeLayer::OnShutdownAPI(bool quit)
     {
@@ -249,7 +296,6 @@ namespace Eklipse
         m_rayShader->Dispose();
         m_rayMaterial->Dispose();
         m_computeShader->Dispose();
-
         m_cubeMesh->Dispose();
     }
 
@@ -278,7 +324,7 @@ namespace Eklipse
     }
     void ComputeLayer::InitShader()
     {
-        m_rayShader = Shader::Create("Assets/Shaders/RT_mesh.glsl");
+        m_rayShader = Shader::Create("Assets/Shaders/Compute/RT_mesh.glsl");
     }
     void ComputeLayer::InitMaterial()
     {
@@ -286,16 +332,6 @@ namespace Eklipse
 
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
-
-        const int maxVerticies = 1000000;
-        const int maxIndices = 1000000;
-        const int maxMeshes = 100;
-        Renderer::CreateStorageBuffer("bVertices", maxVerticies * sizeof(float), 2);
-        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 7);
-        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 3);
-        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 4);
-        Renderer::CreateStorageBuffer("bMaterials", maxMeshes * sizeof(RayTracingMaterial), 5);
-        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 6);
 
         m_rayMaterial = Material::Create(m_rayShader);
 
@@ -310,12 +346,15 @@ namespace Eklipse
         m_rayMaterial->SetConstant("pData", "SunDirection", &m_rtSettings.sunDirection, sizeof(glm::vec3));
         m_rayMaterial->SetConstant("pData", "SunFocus", &m_rtSettings.sunFocus, sizeof(float));
         m_rayMaterial->SetConstant("pData", "SunIntensity", &m_rtSettings.sunIntensity, sizeof(float));
-
-        m_computeShader = ComputeShader::Create("Assets/Shaders/RT_compute.glsl"); // Must be after the storage buffers are created
     }
     void ComputeLayer::InitMeshes()
     {
         m_cubeMesh = Mesh::Create("Assets/Meshes/cube.obj");
+    }
+    void ComputeLayer::InitComputeShader()
+    {
+        // Must be called after the storage buffers are created
+        m_computeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_compute.glsl"); 
     }
     void ComputeLayer::ResetPixelBuffer()
     {

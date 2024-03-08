@@ -174,7 +174,7 @@ namespace Eklipse
 		bool VKShader::Compile(const StageSourceMap& sourceMap, bool forceCompile)
 		{
 			EK_CORE_PROFILE();
-			return Compile("", sourceMap, forceCompile);
+			return Compile(Name, sourceMap, forceCompile);
 		}
 		bool VKShader::Compile(const Path& shaderPath, const StageSourceMap& sourceMap, bool forceCompile)
 		{

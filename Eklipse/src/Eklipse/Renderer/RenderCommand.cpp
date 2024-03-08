@@ -45,7 +45,7 @@ namespace Eklipse
 		config.type				= Pipeline::Type::Compute;
 		config.topologyMode		= Pipeline::TopologyMode::Triangle;
 		config.shader			= computeShader->GetShader().get();
-		config.framebuffer		= g_currentFramebuffer;
+		config.framebuffer		= g_currentFramebuffer; // at dispatch time there is no framebuffer bound, so this is null
 		Pipeline::Get(config)->Bind();
 
 		computeShader->GetMaterial()->Bind();

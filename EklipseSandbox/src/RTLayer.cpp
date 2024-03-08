@@ -8,7 +8,7 @@ namespace Eklipse
         m_cameraTransform.rotation = { -1.0f, 0.0f, 0.0f };
         m_camera.m_fov = 50.0f;
 
-        m_shaderPath = "Assets/Shaders/RT_mesh.glsl";
+        m_shaderPath = "Assets/Shaders/RT/RT_mesh.glsl";
 
         m_frames        = 0;
         m_raysPerPixel  = 1;
@@ -76,9 +76,9 @@ namespace Eklipse
             ResetPixelBuffer();
             switch (shaderIndex)
             {
-                case 0: m_shaderPath = "Assets/Shaders/RT_basic.glsl"; break;
-                case 1: m_shaderPath = "Assets/Shaders/RT_accum.glsl"; break;
-                case 2: m_shaderPath = "Assets/Shaders/RT_mesh.glsl"; break;
+                case 0: m_shaderPath = "Assets/Shaders/RT/RT_basic.glsl"; break;
+                case 1: m_shaderPath = "Assets/Shaders/RT/RT_accum.glsl"; break;
+                case 2: m_shaderPath = "Assets/Shaders/RT/RT_mesh.glsl"; break;
             }
             InitShader();
             InitMaterial();
@@ -226,7 +226,7 @@ namespace Eklipse
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
 
-        if (m_shaderPath == "Assets/Shaders/RT_mesh.glsl")
+        if (m_shaderPath == "Assets/Shaders/RT/RT_mesh.glsl")
         {
             /*
             RTMaterial material{};
