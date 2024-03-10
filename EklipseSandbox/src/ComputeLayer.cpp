@@ -30,9 +30,6 @@ namespace Eklipse
     void ComputeLayer::OnGUI(float deltaTime)
     {
         ImGui::Begin("Ray Tracing");
-        ImGui::Text("FPS: %f", Stats::Get().fps);
-
-        ImGui::Separator();
         bool needsReset = false;
         needsReset |= ImGui::DragFloat3("Camera Position", &m_cameraTransform.position[0], 0.1f);
         needsReset |= ImGui::DragFloat3("Camera Rotation", &m_cameraTransform.rotation[0], 0.1f);
@@ -118,11 +115,6 @@ namespace Eklipse
             needsReset = true;
         }
 
-        if (needsReset)
-        {
-            ResetPixelBuffer();
-        }
-
         if (m_controlCamera)
         {
             bool isHovered = ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered();
@@ -142,7 +134,7 @@ namespace Eklipse
         ImGui::Begin("Scene");
         if (ImGui::Button("Add Cube"))
         {
-            auto entity = m_scene->CreateEntity("Cube " + m_numTotalMeshes);
+            auto entity = m_scene->CreateEntity("Cube " + std::to_string(m_numTotalMeshes));
             entity.AddComponent<MeshComponent>(m_cubeMesh.get(), nullptr);
             entity.AddComponent<RayTracingTargetComponent>();
 
@@ -155,6 +147,7 @@ namespace Eklipse
             buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), m_numTotalIndices * sizeof(uint32_t));
 
             Bounds bounds = m_cubeMesh->GetBounds();
+
             RayTracingMeshInfo meshInfo{};
             meshInfo.vertexOffset = m_numTotalVertices;
             meshInfo.vertexCount = vertices.size();
@@ -163,8 +156,9 @@ namespace Eklipse
             meshInfo.materialIndex = m_numTotalMeshes;
             meshInfo.boundMin = bounds.min;
             meshInfo.boundMax = bounds.max;
-            buffer = Renderer::GetStorageBuffer("bMeshes");
+
             m_numTotalMeshes += 1;
+            buffer = Renderer::GetStorageBuffer("bMeshes");
             buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
             buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t) + (m_numTotalMeshes - 1u) * sizeof(RayTracingMeshInfo));
 
@@ -173,27 +167,32 @@ namespace Eklipse
         }
         if (ImGui::Button("Add Sphere"))
         {
-            auto entity = m_scene->CreateEntity("Sphere " + m_scene->GetRegistry().size());
+            auto entity = m_scene->CreateEntity("Sphere " + std::to_string(m_numTotalSpheres));
             entity.AddComponent<RayTracingSphereComponent>();
+
+            m_numTotalSpheres += 1;
         }
         m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
         {
             ImGui::PushID((void*)entityID);
             Entity entity = { entityID, m_scene.get() };
-            auto& transComp = entity.GetComponent<TransformComponent>();
+            if (ImGui::CollapsingHeader(entity.GetName().c_str()))
+            {
+                auto& transComp = entity.GetComponent<TransformComponent>();
 
-            ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
-            ImGui::DragFloat3("Rotation", &transComp.transform.rotation[0], 0.1f);
-            ImGui::DragFloat3("Scale", &transComp.transform.scale[0], 0.1f);
-            ImGui::Spacing();
+                needsReset |= ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
+                needsReset |= ImGui::DragFloat3("Rotation", &transComp.transform.rotation[0], 0.1f);
+                needsReset |= ImGui::DragFloat3("Scale", &transComp.transform.scale[0], 0.1f);
+                ImGui::Spacing();
 
-            ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
-            ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
-            ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
-            ImGui::ColorEdit3("Specular Color", &rtComp.material.specularColor[0]);
-            ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
-            ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
-            ImGui::Separator();
+                needsReset |= ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
+                needsReset |= ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
+                needsReset |= ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
+                needsReset |= ImGui::ColorEdit3("Specular Color", &rtComp.material.specularColor[0]);
+                needsReset |= ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
+                needsReset |= ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
+                ImGui::Separator();
+            }
 
             ImGui::PopID();
         });
@@ -201,57 +200,81 @@ namespace Eklipse
         {
             ImGui::PushID((void*)entityID);
             Entity entity = { entityID, m_scene.get() };
-            auto& transComp = entity.GetComponent<TransformComponent>();
+            if (ImGui::CollapsingHeader(entity.GetName().c_str()))
+            {
+                auto& transComp = entity.GetComponent<TransformComponent>();
 
-            ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
-            ImGui::DragFloat3("Rotation", &transComp.transform.rotation[0], 0.1f);
-            ImGui::DragFloat3("Scale", &transComp.transform.scale[0], 0.1f);
-            ImGui::Spacing();
+                needsReset |= ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
+                needsReset |= ImGui::DragFloat("Radius", &rtComp.radius, 0.1f);
+                ImGui::Spacing();
 
-            ImGui::DragFloat3("Position", &transComp.transform.position[0], 0.1f);
-            ImGui::DragFloat("Radius", &rtComp.radius, 0.1f);
-            ImGui::Spacing();
-            ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
-            ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
-            ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
-            ImGui::ColorEdit3("Specular Color", &rtComp.material.specularColor[0]);
-            ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
-            ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
-            ImGui::Separator();
-
+                needsReset |= ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
+                needsReset |= ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
+                needsReset |= ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
+                needsReset |= ImGui::ColorEdit3("Specular Color", &rtComp.material.specularColor[0]);
+                needsReset |= ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
+                needsReset |= ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
+                ImGui::Separator();
+            }
             ImGui::PopID();
         });
         ImGui::End();
 
         ImGui::Begin("Stats");
+        ImGui::Text("FPS: %f", Stats::Get().fps);
+        ImGui::Separator();
         ImGui::Text("Vertices: %d", m_numTotalVertices);
         ImGui::Text("Indices: %d", m_numTotalIndices);
         ImGui::Text("Meshes: %d", m_numTotalMeshes);
         ImGui::End();
+
+        if (needsReset)
+        {
+            ResetPixelBuffer();
+        }
     }
     void ComputeLayer::OnUpdate(float deltaTime)
     {
+        Vec<RayTracingMaterial> materials{};
+        Vec<glm::mat4> transforms{};
+        Vec<RayTracingSphereInfo> spheres{};
+
+        m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
         {
-            Vec<RayTracingMaterial> materials{};
-            Vec<glm::mat4> transforms{};
-            m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
-            {
-                Entity entity = { entityID, m_scene.get() };
-                auto& material = rtComp.material;
-                auto& transfomMatrix = entity.GetComponent<TransformComponent>().GetTransformMatrix(); // TODO: Optimize
+            Entity entity = { entityID, m_scene.get() };
+            auto& transfomMatrix = entity.GetComponent<TransformComponent>().GetTransformMatrix(); // TODO: Optimize
 
-                materials.push_back(material);
-                transforms.push_back(transfomMatrix);
-            });
+            materials.push_back(rtComp.material);
+            transforms.push_back(transfomMatrix);
+        });
+        m_scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
+        {
+            Entity entity = { entityID, m_scene.get() };
 
-            if (m_numTotalVertices)
-            {
-                auto buffer = Renderer::GetStorageBuffer("bMaterials");
-                buffer->SetData(materials.data(), materials.size() * sizeof(RayTracingMaterial), 0);
+            RayTracingSphereInfo sphereInfo{};
+            sphereInfo.position = entity.GetComponent<TransformComponent>().transform.position;
+            sphereInfo.radius = rtComp.radius;
+            sphereInfo.materialIndex = materials.size();
+            
+            materials.push_back(rtComp.material);
+            spheres.push_back(sphereInfo);
+        });
 
-                buffer = Renderer::GetStorageBuffer("bTransforms");
-                buffer->SetData(transforms.data(), transforms.size() * sizeof(glm::mat4), 0);
-            }
+        if (m_numTotalMeshes || m_numTotalSpheres)
+        {
+            auto buffer = Renderer::GetStorageBuffer("bMaterials");
+            buffer->SetData(materials.data(), materials.size() * sizeof(RayTracingMaterial), 0);
+        }
+        if (m_numTotalMeshes)
+        {
+            auto buffer = Renderer::GetStorageBuffer("bTransforms");
+            buffer->SetData(transforms.data(), transforms.size() * sizeof(glm::mat4), 0);
+        }
+        if (m_numTotalSpheres)
+        {
+            auto buffer = Renderer::GetStorageBuffer("bSpheres");
+            buffer->SetData(&m_numTotalSpheres, sizeof(uint32_t));
+            buffer->SetData(spheres.data(), spheres.size() * sizeof(RayTracingSphereInfo), 4 * sizeof(uint32_t));
         }
 
         if (m_controlCamera && m_cursorDisabled)
@@ -278,15 +301,18 @@ namespace Eklipse
         InitShader();
         InitMeshes();
 
-        const int maxVerticies = 1000000;
-        const int maxIndices = 1000000;
-        const int maxMeshes = 100;
+        const uint32_t maxVerticies = 1000000;
+        const uint32_t maxIndices = 1000000;
+        const uint32_t maxMeshes = 100;
+        const uint32_t maxSpheres = 100;
         Renderer::CreateStorageBuffer("bVertices", maxVerticies * sizeof(float), 2);
-        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 7);
-        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 3);
-        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 4);
-        Renderer::CreateStorageBuffer("bMaterials", maxMeshes * sizeof(RayTracingMaterial), 5);
-        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 6);
+        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 3);
+        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 4);
+        Renderer::CreateStorageBuffer("bSpheres", 4 * sizeof(uint32_t) + maxSpheres * sizeof(RayTracingSphereInfo), 5);
+        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6); 
+        Renderer::CreateStorageBuffer("bMaterials", (maxMeshes + maxSpheres) * sizeof(RayTracingMaterial), 7);
+        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
+
         InitMaterial();
         InitComputeShader();
     }

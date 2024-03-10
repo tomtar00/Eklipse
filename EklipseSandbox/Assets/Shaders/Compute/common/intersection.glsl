@@ -1,3 +1,22 @@
+HitInfo RaySphere(Ray ray, Sphere sphere) {
+    HitInfo hitInfo;
+    hitInfo.didHit = false;
+    vec3 offsetRayOrigin = ray.origin - sphere.position;
+    float a = dot(ray.dir, ray.dir);
+    float b = 2 * dot(offsetRayOrigin, ray.dir);
+    float c = dot(offsetRayOrigin, offsetRayOrigin) - sphere.radius * sphere.radius;
+    float discriminant = b * b - 4 * a * c;
+    if (discriminant >= 0) {
+        float dst = (-b - sqrt(discriminant)) / (2 * a);
+        if (dst >= 0) {
+            hitInfo.didHit = true;
+            hitInfo.dst = dst;
+            hitInfo.hitPoint = ray.origin + ray.dir * dst;
+            hitInfo.normal = normalize(hitInfo.hitPoint - sphere.position);
+        }
+    }
+    return hitInfo;
+}
 HitInfo RayTriangle(Ray ray, Triangle triangle) {
     HitInfo hitInfo;
     hitInfo.didHit = false;
@@ -49,6 +68,15 @@ HitInfo CalculateRayCollision(Ray ray) {
     closestHit.dst = 1000000.0;
     closestHit.didHit = false;
     closestHit.material = Material(vec3(0.0), 0.0, 0.0, vec3(0.0), vec3(0.0), 0.0);
+
+    for (int i = 0; i < bSpheres.NumSpheres; i++) {
+		Sphere sphere = bSpheres.Spheres[i];
+		HitInfo hitInfo = RaySphere(ray, sphere);
+		if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
+			closestHit = hitInfo;
+			closestHit.material = bMaterials.Materials[sphere.materialIndex];
+		}
+	}
 
     for (int i = 0; i < bMeshes.NumMeshes; i++) {
         MeshInfo meshInfo = bMeshes.Meshes[i];

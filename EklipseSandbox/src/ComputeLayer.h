@@ -35,7 +35,9 @@ namespace Eklipse
 
         uint32_t m_numTotalVertices;
         uint32_t m_numTotalIndices;
+        uint32_t m_numTotalSpheres;
         uint32_t m_numTotalMeshes;
+
         Ref<Mesh> m_cubeMesh;
         Ref<Scene> m_scene;
 

@@ -54,19 +54,28 @@ namespace Eklipse
 		Ref<Material> m_rayTracingMaterial;
 		Ref<VertexArray> m_rayTracingQuad;
 	};
-	struct RayTracingMaterial
+
+	struct alignas(16) RayTracingMaterial
 	{
 		glm::vec3 albedo;
-		float __pad0;
 		float smoothness;
 		float specularProb;
+		float __pad0[3];
 		glm::vec3 specularColor;
-		float __pad1;
 		glm::vec3 emissionColor;
-		float __pad2;
 		float emissionStrength;
+
+		//float __pad[3];
 	};
-	struct RayTracingMeshInfo
+	struct alignas(16) RayTracingSphereInfo
+	{
+		glm::vec3 position;
+		float radius;
+		uint32_t materialIndex;
+
+		float __pad[3];
+	};
+	struct alignas(16) RayTracingMeshInfo
 	{
 		uint32_t vertexOffset;
 		uint32_t vertexCount;
@@ -74,8 +83,8 @@ namespace Eklipse
 		uint32_t indexCount;
 		uint32_t materialIndex;
 		glm::vec3 boundMin;
-		float __pad0;
 		glm::vec3 boundMax;
-		float __pad1;
+
+		float __pad[3];
 	};
 }

@@ -2,8 +2,6 @@
 #version 460
 #include "common/structs.glsl"
 #include "common/uniforms.glsl"
-#include "common/mesh/structs.glsl"
-#include "common/mesh/uniforms.glsl"
 
 void main() {
     uint meshIndex = 0;

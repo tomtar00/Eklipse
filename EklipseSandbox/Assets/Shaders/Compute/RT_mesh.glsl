@@ -11,11 +11,9 @@ void main() {
 #version 460 core
 
 #include "common/structs.glsl"
-#include "common/mesh/structs.glsl"
 #include "common/uniforms.glsl"
-#include "common/mesh/uniforms.glsl"
 #include "common/rand.glsl"
-#include "common/mesh/intersection.glsl"
+#include "common/intersection.glsl"
 #include "common/trace.glsl"
 #include "common/util.glsl"
 
@@ -27,12 +25,18 @@ void main() {
     uint pixelIndex = uint(gl_FragCoord.x + gl_FragCoord.y * pData.Resolution.x);
     uint randomSeed = GetRandomSeed(pixelIndex);
   
-    Ray ray = GetFragRay(clipSpacePosition);
-    vec3 currentColor = RayTrace(ray, randomSeed);
+    // Ray ray = GetFragRay(clipSpacePosition);
+    // vec3 currentColor = RayTrace(ray, randomSeed);
   
-    float weight = 1.0 / float(pData.Frames);
-    vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
+    // float weight = 1.0 / float(pData.Frames);
+    // vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
   
-    bPixels.Data[pixelIndex] = newColor;
-    fragColor = vec4(newColor, 1.0);
+    // bPixels.Data[pixelIndex] = newColor;
+    // fragColor = vec4(newColor, 1.0);
+
+    //fragColor = vec4(float(bMeshes.NumMeshes)/ 3.0, 0,0, 1.0);
+    fragColor = vec4(float(bMeshes.Meshes[1].materialIndex), 0,0, 1.0);
+
+    //fragColor = vec4(bMaterials.Materials[bMeshes.Meshes[1].materialIndex].albedo, 1.0);
+    //fragColor = vec4(bMaterials.Materials[bMeshes.Meshes[0].materialIndex].specularProb, 0.0, 0.0, 1.0);
 }
