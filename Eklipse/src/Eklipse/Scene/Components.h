@@ -59,12 +59,13 @@ namespace Eklipse
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& camera) = default;
 	};
-	struct EK_API RayTracingTargetComponent
+	struct EK_API RayTracingMeshComponent
 	{
+		uint32_t index;
 		RayTracingMaterial material;
 
-		RayTracingTargetComponent() = default;
-		RayTracingTargetComponent(const RayTracingTargetComponent& comp) = default;
+		RayTracingMeshComponent() = default;
+		RayTracingMeshComponent(const RayTracingMeshComponent& comp) = default;
 	};
 	struct EK_API RayTracingSphereComponent
 	{

@@ -27,6 +27,8 @@ namespace Eklipse
         void ResetPixelBuffer();
         void ControlCamera(float deltaTime);
 
+        void AddMesh(const Ref<Mesh> mesh, const String& name);
+
     private:
         Ref<ComputeShader> m_computeShader;
         Ref<Shader> m_rayShader;
@@ -39,6 +41,8 @@ namespace Eklipse
         uint32_t m_numTotalMeshes;
 
         Ref<Mesh> m_cubeMesh;
+        Ref<Mesh> m_teapotMesh;
+        Ref<Mesh> m_suzanneMesh;
         Ref<Scene> m_scene;
 
         Camera m_camera;

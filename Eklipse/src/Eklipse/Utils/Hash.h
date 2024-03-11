@@ -15,4 +15,6 @@ namespace Eklipse
         HashCombine(seed, value);
         return std::to_string(seed);
     }
+
+    size_t HashVertex(const Vec<float>& vertex);
 }

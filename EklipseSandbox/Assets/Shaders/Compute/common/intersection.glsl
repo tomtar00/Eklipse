@@ -67,7 +67,7 @@ HitInfo CalculateRayCollision(Ray ray) {
     HitInfo closestHit;
     closestHit.dst = 1000000.0;
     closestHit.didHit = false;
-    closestHit.material = Material(vec3(0.0), 0.0, 0.0, vec3(0.0), vec3(0.0), 0.0);
+    closestHit.material = Material(vec3(0.0), 0.0, vec3(0.0), 0.0, vec3(0.0), 0.0);
 
     for (int i = 0; i < bSpheres.NumSpheres; i++) {
 		Sphere sphere = bSpheres.Spheres[i];
@@ -82,17 +82,17 @@ HitInfo CalculateRayCollision(Ray ray) {
         MeshInfo meshInfo = bMeshes.Meshes[i];
         
         // if (!RayBounds(ray, meshInfo.boundMin, meshInfo.boundMax)) {
-        //    continue;
+        //     continue;
         // }
 
         for (uint j = meshInfo.indexOffset; j < meshInfo.indexCount; j += 3) {
             Triangle triangle;
-            uint idx1 = bIndices.Indices[j];
-            uint idx2 = bIndices.Indices[j + 1];
-            uint idx3 = bIndices.Indices[j + 2];
-            triangle.a = vec3(bTransVertices.Vertices[idx1 * 3], bTransVertices.Vertices[idx1 * 3 + 1], bTransVertices.Vertices[idx1 * 3 + 2]);
-            triangle.b = vec3(bTransVertices.Vertices[idx2 * 3], bTransVertices.Vertices[idx2 * 3 + 1], bTransVertices.Vertices[idx2 * 3 + 2]);
-            triangle.c = vec3(bTransVertices.Vertices[idx3 * 3], bTransVertices.Vertices[idx3 * 3 + 1], bTransVertices.Vertices[idx3 * 3 + 2]);
+            uint idx1 = bIndices.Indices[j + 0] * 3 + meshInfo.vertexOffset;
+            uint idx2 = bIndices.Indices[j + 1] * 3 + meshInfo.vertexOffset;
+            uint idx3 = bIndices.Indices[j + 2] * 3 + meshInfo.vertexOffset;
+            triangle.a = vec3(bTransVertices.Vertices[idx1 + 0], bTransVertices.Vertices[idx1 + 1], bTransVertices.Vertices[idx1 + 2]);
+            triangle.b = vec3(bTransVertices.Vertices[idx2 + 0], bTransVertices.Vertices[idx2 + 1], bTransVertices.Vertices[idx2 + 2]);
+            triangle.c = vec3(bTransVertices.Vertices[idx3 + 0], bTransVertices.Vertices[idx3 + 1], bTransVertices.Vertices[idx3 + 2]);
         
             HitInfo hitInfo = RayTriangle(ray, triangle);
             if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {

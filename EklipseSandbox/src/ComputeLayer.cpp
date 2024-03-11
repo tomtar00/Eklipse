@@ -67,6 +67,7 @@ namespace Eklipse
             if (m_computeShader->GetShader()->Compile("Assets/Shaders/Compute/RT_compute.glsl", true))
                 m_computeShader->GetMaterial()->OnShaderReloaded();
         }
+        ImGui::Checkbox("Accumulate", &m_rtSettings.accumulate);
         if (ImGui::SliderInt("Rays Per Pixel", &m_rtSettings.raysPerPixel, 1, 20))
         {
             m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
@@ -134,37 +135,9 @@ namespace Eklipse
         ImGui::Begin("Scene");
         if (ImGui::Button("Add Cube"))
         {
-            auto entity = m_scene->CreateEntity("Cube " + std::to_string(m_numTotalMeshes));
-            entity.AddComponent<MeshComponent>(m_cubeMesh.get(), nullptr);
-            entity.AddComponent<RayTracingTargetComponent>();
-
-            Vec<float> vertices = m_cubeMesh->GetVertices();
-            auto buffer = Renderer::GetStorageBuffer("bVertices");
-            buffer->SetData(vertices.data(), vertices.size() * sizeof(float), m_numTotalVertices * sizeof(float));
-
-            Vec<uint32_t> indices = m_cubeMesh->GetIndices();
-            buffer = Renderer::GetStorageBuffer("bIndices");
-            buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), m_numTotalIndices * sizeof(uint32_t));
-
-            Bounds bounds = m_cubeMesh->GetBounds();
-
-            RayTracingMeshInfo meshInfo{};
-            meshInfo.vertexOffset = m_numTotalVertices;
-            meshInfo.vertexCount = vertices.size();
-            meshInfo.indexOffset = m_numTotalIndices;
-            meshInfo.indexCount = indices.size();
-            meshInfo.materialIndex = m_numTotalMeshes;
-            meshInfo.boundMin = bounds.min;
-            meshInfo.boundMax = bounds.max;
-
-            m_numTotalMeshes += 1;
-            buffer = Renderer::GetStorageBuffer("bMeshes");
-            buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
-            buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t) + (m_numTotalMeshes - 1u) * sizeof(RayTracingMeshInfo));
-
-            m_numTotalVertices += vertices.size();
-            m_numTotalIndices += indices.size();
-        }
+            AddMesh(m_cubeMesh, "Cube");
+        }        
+        ImGui::SameLine();
         if (ImGui::Button("Add Sphere"))
         {
             auto entity = m_scene->CreateEntity("Sphere " + std::to_string(m_numTotalSpheres));
@@ -172,7 +145,16 @@ namespace Eklipse
 
             m_numTotalSpheres += 1;
         }
-        m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
+        if (ImGui::Button("Add Teapot"))
+        {
+            AddMesh(m_teapotMesh, "Teapot");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Add Suzanne"))
+        {
+            AddMesh(m_suzanneMesh, "Suzanne");
+        }
+        m_scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
         {
             ImGui::PushID((void*)entityID);
             Entity entity = { entityID, m_scene.get() };
@@ -187,8 +169,8 @@ namespace Eklipse
 
                 needsReset |= ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
                 needsReset |= ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
-                needsReset |= ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
                 needsReset |= ImGui::ColorEdit3("Specular Color", &rtComp.material.specularColor[0]);
+                needsReset |= ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
                 needsReset |= ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
                 needsReset |= ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
                 ImGui::Separator();
@@ -210,8 +192,8 @@ namespace Eklipse
 
                 needsReset |= ImGui::ColorEdit3("Albedo", &rtComp.material.albedo[0]);
                 needsReset |= ImGui::SliderFloat("Smoothness", &rtComp.material.smoothness, 0.0f, 1.0f);
-                needsReset |= ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
                 needsReset |= ImGui::ColorEdit3("Specular Color", &rtComp.material.specularColor[0]);
+                needsReset |= ImGui::SliderFloat("Specular Probability", &rtComp.material.specularProb, 0.0f, 1.0f);
                 needsReset |= ImGui::ColorEdit3("Emission Color", &rtComp.material.emissionColor[0]);
                 needsReset |= ImGui::SliderFloat("Emission Strength", &rtComp.material.emissionStrength, 0.0f, 1.0f);
                 ImGui::Separator();
@@ -235,18 +217,19 @@ namespace Eklipse
     }
     void ComputeLayer::OnUpdate(float deltaTime)
     {
-        Vec<RayTracingMaterial> materials{};
-        Vec<glm::mat4> transforms{};
-        Vec<RayTracingSphereInfo> spheres{};
+        Vec<RayTracingMaterial> materials(m_numTotalMeshes + m_numTotalSpheres);
+        Vec<RayTracingSphereInfo> spheres(m_numTotalSpheres);
+        Vec<glm::mat4> transforms(m_numTotalMeshes);
 
-        m_scene->GetRegistry().view<RayTracingTargetComponent>().each([&](auto entityID, RayTracingTargetComponent& rtComp)
+        m_scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
         {
             Entity entity = { entityID, m_scene.get() };
             auto& transfomMatrix = entity.GetComponent<TransformComponent>().GetTransformMatrix(); // TODO: Optimize
 
-            materials.push_back(rtComp.material);
-            transforms.push_back(transfomMatrix);
+            materials[rtComp.index] = rtComp.material;
+            transforms[rtComp.index] = transfomMatrix;
         });
+        int i = 0;
         m_scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
         {
             Entity entity = { entityID, m_scene.get() };
@@ -254,10 +237,11 @@ namespace Eklipse
             RayTracingSphereInfo sphereInfo{};
             sphereInfo.position = entity.GetComponent<TransformComponent>().transform.position;
             sphereInfo.radius = rtComp.radius;
-            sphereInfo.materialIndex = materials.size();
+            sphereInfo.materialIndex = m_numTotalMeshes + i;
             
-            materials.push_back(rtComp.material);
-            spheres.push_back(sphereInfo);
+            materials[sphereInfo.materialIndex] = rtComp.material;
+            spheres[i] = sphereInfo;
+            ++i;
         });
 
         if (m_numTotalMeshes || m_numTotalSpheres)
@@ -289,7 +273,8 @@ namespace Eklipse
         ++m_frameIndex;
 
         m_rayMaterial->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "Frames", &m_frameIndex, sizeof(int));
+        m_rayMaterial->SetConstant("pData", "Frames", &m_frameIndex, sizeof(uint32_t));
+        m_rayMaterial->SetConstant("pData", "Accumulate", &m_rtSettings.accumulate, sizeof(uint32_t));
 
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
@@ -323,6 +308,8 @@ namespace Eklipse
         m_rayMaterial->Dispose();
         m_computeShader->Dispose();
         m_cubeMesh->Dispose();
+        m_teapotMesh->Dispose();
+        m_suzanneMesh->Dispose();
     }
 
     void ComputeLayer::InitQuad()
@@ -376,6 +363,8 @@ namespace Eklipse
     void ComputeLayer::InitMeshes()
     {
         m_cubeMesh = Mesh::Create("Assets/Meshes/cube.obj");
+        m_teapotMesh = Mesh::Create("Assets/Meshes/teapot.obj");
+        m_suzanneMesh = Mesh::Create("Assets/Meshes/suzanne.obj");
     }
     void ComputeLayer::InitComputeShader()
     {
@@ -434,5 +423,41 @@ namespace Eklipse
         {
             ResetPixelBuffer();
         }
+    }
+    void ComputeLayer::AddMesh(const Ref<Mesh> mesh, const String& name)
+    {
+        Renderer::WaitDeviceIdle();
+
+        auto entity = m_scene->CreateEntity(name + " " + std::to_string(m_numTotalMeshes));
+        entity.AddComponent<MeshComponent>(mesh.get(), nullptr);
+        auto& rtMesh = entity.AddComponent<RayTracingMeshComponent>();
+        rtMesh.index = m_numTotalMeshes;
+
+        Vec<float> vertices = mesh->GetVertices();
+        auto buffer = Renderer::GetStorageBuffer("bVertices");
+        buffer->SetData(vertices.data(), vertices.size() * sizeof(float), m_numTotalVertices * sizeof(float));
+
+        Vec<uint32_t> indices = mesh->GetIndices();
+        buffer = Renderer::GetStorageBuffer("bIndices");
+        buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), m_numTotalIndices * sizeof(uint32_t));
+
+        Bounds bounds = mesh->GetBounds();
+
+        RayTracingMeshInfo meshInfo{};
+        meshInfo.vertexOffset = m_numTotalVertices;
+        meshInfo.vertexCount = vertices.size();
+        meshInfo.indexOffset = m_numTotalIndices;
+        meshInfo.indexCount = indices.size();
+        meshInfo.boundMin = bounds.min;
+        meshInfo.boundMax = bounds.max;
+        meshInfo.materialIndex = m_numTotalMeshes;
+
+        m_numTotalMeshes += 1;
+        buffer = Renderer::GetStorageBuffer("bMeshes");
+        buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
+        buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t) + (m_numTotalMeshes - 1u) * sizeof(RayTracingMeshInfo));
+
+        m_numTotalVertices += vertices.size();
+        m_numTotalIndices += indices.size();
     }
 }

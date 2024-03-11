@@ -4,8 +4,11 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include <Eklipse/Utils/Hash.h>
+
 namespace Eklipse
 {
+	// TODO: Optimize buffer layout
 	static MeshData LoadOBJ(const Path& filePath)
 	{
 		EK_CORE_PROFILE();
@@ -28,52 +31,63 @@ namespace Eklipse
 		bool hasColors = !attrib.colors.empty();
 		bool hasTexCoords = !attrib.texcoords.empty();
 
+		std::unordered_map<size_t, uint32_t> vertexMap;
+
 		for (const auto& shape : shapes)
 		{
 			for (const auto& index : shape.mesh.indices)
 			{
-				vertices.push_back(attrib.vertices[3 * index.vertex_index + 0]);
-				vertices.push_back(attrib.vertices[3 * index.vertex_index + 1]);
-				vertices.push_back(attrib.vertices[3 * index.vertex_index + 2]);
+				Vec<float> currentVertex;
+
+				currentVertex.push_back(attrib.vertices[3 * index.vertex_index + 0]);
+				currentVertex.push_back(attrib.vertices[3 * index.vertex_index + 1]);
+				currentVertex.push_back(attrib.vertices[3 * index.vertex_index + 2]);
 
 				if (hasNormals)
 				{
-					vertices.push_back(attrib.normals[3 * index.normal_index + 0]);
-					vertices.push_back(attrib.normals[3 * index.normal_index + 1]);
-					vertices.push_back(attrib.normals[3 * index.normal_index + 2]);
+					currentVertex.push_back(attrib.normals[3 * index.normal_index + 0]);
+					currentVertex.push_back(attrib.normals[3 * index.normal_index + 1]);
+					currentVertex.push_back(attrib.normals[3 * index.normal_index + 2]);
 				}
 				else
 				{
-                    vertices.push_back(0.0f);
-                    vertices.push_back(0.0f);
-                    vertices.push_back(0.0f);
+                    currentVertex.push_back(0.0f);
+                    currentVertex.push_back(0.0f);
+                    currentVertex.push_back(0.0f);
                 }
 
 				if (hasColors)
 				{
-					vertices.push_back(attrib.colors[3 * index.vertex_index + 0]);
-					vertices.push_back(attrib.colors[3 * index.vertex_index + 1]);
-					vertices.push_back(attrib.colors[3 * index.vertex_index + 2]);
+					currentVertex.push_back(attrib.colors[3 * index.vertex_index + 0]);
+					currentVertex.push_back(attrib.colors[3 * index.vertex_index + 1]);
+					currentVertex.push_back(attrib.colors[3 * index.vertex_index + 2]);
 				}
 				else
 				{
-                    vertices.push_back(1.0f);
-                    vertices.push_back(1.0f);
-                    vertices.push_back(1.0f);
+                    currentVertex.push_back(1.0f);
+                    currentVertex.push_back(1.0f);
+                    currentVertex.push_back(1.0f);
                 }
 
 				if (hasTexCoords)
 				{
-					vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-					vertices.push_back(1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
+					currentVertex.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
+					currentVertex.push_back(1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
 				}
 				else
 				{
-                    vertices.push_back(0.0f);
-                    vertices.push_back(0.0f);
+                    currentVertex.push_back(0.0f);
+                    currentVertex.push_back(0.0f);
                 }
 
-				indices.push_back(indices.size());
+				size_t hash = HashVertex(currentVertex);
+				if (vertexMap.count(hash) == 0)
+                {
+                    vertexMap[hash] = vertices.size() / currentVertex.size();
+                    vertices.insert(vertices.end(), currentVertex.begin(), currentVertex.end());
+                }
+
+				indices.push_back(vertexMap[hash]);
 			}
 		}
 

@@ -25,18 +25,20 @@ void main() {
     uint pixelIndex = uint(gl_FragCoord.x + gl_FragCoord.y * pData.Resolution.x);
     uint randomSeed = GetRandomSeed(pixelIndex);
   
-    // Ray ray = GetFragRay(clipSpacePosition);
-    // vec3 currentColor = RayTrace(ray, randomSeed);
+    Ray ray = GetFragRay(clipSpacePosition);
+    vec3 currentColor = RayTrace(ray, randomSeed);
   
-    // float weight = 1.0 / float(pData.Frames);
-    // vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
-  
-    // bPixels.Data[pixelIndex] = newColor;
-    // fragColor = vec4(newColor, 1.0);
-
-    //fragColor = vec4(float(bMeshes.NumMeshes)/ 3.0, 0,0, 1.0);
-    fragColor = vec4(float(bMeshes.Meshes[1].materialIndex), 0,0, 1.0);
-
-    //fragColor = vec4(bMaterials.Materials[bMeshes.Meshes[1].materialIndex].albedo, 1.0);
-    //fragColor = vec4(bMaterials.Materials[bMeshes.Meshes[0].materialIndex].specularProb, 0.0, 0.0, 1.0);
+    if (pData.Accumulate > 0)
+    {
+        float weight = 1.0 / float(pData.Frames);
+        vec3 newColor = currentColor * weight + bPixels.Data[pixelIndex] * (1.0 - weight);
+    
+        bPixels.Data[pixelIndex] = newColor;
+        fragColor = vec4(newColor, 1.0);
+    }
+    else
+    {
+        bPixels.Data[pixelIndex] = currentColor;
+        fragColor = vec4(currentColor, 1.0);
+    }
 }

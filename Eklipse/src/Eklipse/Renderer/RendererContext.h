@@ -30,6 +30,7 @@ namespace Eklipse
 	public:
 		struct Settings
 		{
+			bool accumulate;
 			int raysPerPixel = 1;
 			int maxBounces = 4;
 
@@ -55,36 +56,29 @@ namespace Eklipse
 		Ref<VertexArray> m_rayTracingQuad;
 	};
 
-	struct alignas(16) RayTracingMaterial
+	struct RayTracingMaterial
 	{
 		glm::vec3 albedo;
 		float smoothness;
-		float specularProb;
-		float __pad0[3];
 		glm::vec3 specularColor;
+		float specularProb;		
 		glm::vec3 emissionColor;
 		float emissionStrength;
-
-		//float __pad[3];
 	};
-	struct alignas(16) RayTracingSphereInfo
+	struct RayTracingSphereInfo
 	{
 		glm::vec3 position;
 		float radius;
-		uint32_t materialIndex;
-
-		float __pad[3];
+		uint32_t materialIndex;		float __padding0[3];
 	};
-	struct alignas(16) RayTracingMeshInfo
+	struct RayTracingMeshInfo
 	{
 		uint32_t vertexOffset;
 		uint32_t vertexCount;
 		uint32_t indexOffset;
 		uint32_t indexCount;
-		uint32_t materialIndex;
-		glm::vec3 boundMin;
+		glm::vec3 boundMin;			float __padding0[1];
 		glm::vec3 boundMax;
-
-		float __pad[3];
+		uint32_t materialIndex;
 	};
 }

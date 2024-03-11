@@ -5,8 +5,8 @@ struct Ray {
 struct Material {
     vec3 albedo;
     float smoothness;
-    float specularProb;
     vec3 specularColor;
+    float specularProb;
     vec3 emissionColor;
     float emissionStrength;
 };
@@ -32,7 +32,7 @@ struct MeshInfo {
     uint vertexCount;
     uint indexOffset;
     uint indexCount;
-    uint materialIndex;
     vec3 boundMin;
     vec3 boundMax;
+    uint materialIndex;
 };
