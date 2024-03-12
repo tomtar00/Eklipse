@@ -136,7 +136,12 @@ namespace Eklipse
         if (ImGui::Button("Add Cube"))
         {
             AddMesh(m_cubeMesh, "Cube");
-        }        
+        }   
+        ImGui::SameLine();
+        if (ImGui::Button("Add Cylinder"))
+        {
+            AddMesh(m_cylinderMesh, "Cylinder");
+        }
         ImGui::SameLine();
         if (ImGui::Button("Add Sphere"))
         {
@@ -310,6 +315,7 @@ namespace Eklipse
         m_cubeMesh->Dispose();
         m_teapotMesh->Dispose();
         m_suzanneMesh->Dispose();
+        m_cylinderMesh->Dispose();
     }
 
     void ComputeLayer::InitQuad()
@@ -365,6 +371,7 @@ namespace Eklipse
         m_cubeMesh = Mesh::Create("Assets/Meshes/cube.obj");
         m_teapotMesh = Mesh::Create("Assets/Meshes/teapot.obj");
         m_suzanneMesh = Mesh::Create("Assets/Meshes/suzanne.obj");
+        m_cylinderMesh = Mesh::Create("Assets/Meshes/cylinder.obj");
     }
     void ComputeLayer::InitComputeShader()
     {

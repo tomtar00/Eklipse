@@ -26,7 +26,7 @@ HitInfo RayTriangle(Ray ray, Triangle triangle) {
     vec3 h = cross(ray.dir, edge2);
     float a = dot(edge1, h);
 
-    if (abs(a) < 0.00001) // Ray parallel to triangle
+    if (abs(a) < 0.00001)
         return hitInfo;
 
     float f = 1.0 / a;
@@ -47,7 +47,7 @@ HitInfo RayTriangle(Ray ray, Triangle triangle) {
         hitInfo.didHit = true;
         hitInfo.dst = t;
         hitInfo.hitPoint = ray.origin + ray.dir * t;
-        hitInfo.normal = cross(edge1, edge2);
+        hitInfo.normal = normalize(cross(edge1, edge2));
     }
 
     return hitInfo;
@@ -85,15 +85,21 @@ HitInfo CalculateRayCollision(Ray ray) {
         //     continue;
         // }
 
-        for (uint j = meshInfo.indexOffset; j < meshInfo.indexCount; j += 3) {
+        for (uint j = meshInfo.indexOffset; j < meshInfo.indexOffset + meshInfo.indexCount; j += 3) {
             Triangle triangle;
+
             uint idx1 = bIndices.Indices[j + 0] * 3 + meshInfo.vertexOffset;
             uint idx2 = bIndices.Indices[j + 1] * 3 + meshInfo.vertexOffset;
             uint idx3 = bIndices.Indices[j + 2] * 3 + meshInfo.vertexOffset;
+
             triangle.a = vec3(bTransVertices.Vertices[idx1 + 0], bTransVertices.Vertices[idx1 + 1], bTransVertices.Vertices[idx1 + 2]);
             triangle.b = vec3(bTransVertices.Vertices[idx2 + 0], bTransVertices.Vertices[idx2 + 1], bTransVertices.Vertices[idx2 + 2]);
             triangle.c = vec3(bTransVertices.Vertices[idx3 + 0], bTransVertices.Vertices[idx3 + 1], bTransVertices.Vertices[idx3 + 2]);
         
+            // triangle.a = vec3(bVertices.Vertices[idx1 + 0], bVertices.Vertices[idx1 + 1], bVertices.Vertices[idx1 + 2]);
+            // triangle.b = vec3(bVertices.Vertices[idx2 + 0], bVertices.Vertices[idx2 + 1], bVertices.Vertices[idx2 + 2]);
+            // triangle.c = vec3(bVertices.Vertices[idx3 + 0], bVertices.Vertices[idx3 + 1], bVertices.Vertices[idx3 + 2]);
+
             HitInfo hitInfo = RayTriangle(ray, triangle);
             if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
                 closestHit = hitInfo;

@@ -12,10 +12,13 @@ void main() {
             break;
         }
     }
+
     uint index = gl_GlobalInvocationID.x * 3; 
-    vec3 vertex = vec3(bVertices.Vertices[index + 0], bVertices.Vertices[index + 1], bVertices.Vertices[index + 2]);
     mat4 transform = bTransforms.Transforms[meshIndex];
+
+    vec3 vertex = vec3(bVertices.Vertices[index + 0], bVertices.Vertices[index + 1], bVertices.Vertices[index + 2]);
     vec4 transVertex = transform * vec4(vertex, 1.0);
+    
     bTransVertices.Vertices[index + 0] = transVertex.x;
     bTransVertices.Vertices[index + 1] = transVertex.y;
     bTransVertices.Vertices[index + 2] = transVertex.z;

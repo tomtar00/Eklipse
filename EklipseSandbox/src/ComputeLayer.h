@@ -41,6 +41,7 @@ namespace Eklipse
         uint32_t m_numTotalMeshes;
 
         Ref<Mesh> m_cubeMesh;
+        Ref<Mesh> m_cylinderMesh;
         Ref<Mesh> m_teapotMesh;
         Ref<Mesh> m_suzanneMesh;
         Ref<Scene> m_scene;

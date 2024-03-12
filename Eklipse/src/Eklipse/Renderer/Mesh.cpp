@@ -173,13 +173,13 @@ namespace Eklipse
 		for (uint32_t i = 0; i < m_meshData.indices.size(); i += 3)
 		{
 			uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
-			uint32_t idx1 = m_meshData.indices[i];
-			uint32_t idx2 = m_meshData.indices[i + 1];
-			uint32_t idx3 = m_meshData.indices[i + 2];
+			uint32_t idx1 = m_meshData.indices[i + 0] * stride;
+			uint32_t idx2 = m_meshData.indices[i + 1] * stride;
+			uint32_t idx3 = m_meshData.indices[i + 2] * stride;
 
-			glm::vec3 v1(m_meshData.vertices[idx1 * stride], m_meshData.vertices[idx1 * stride + 1], m_meshData.vertices[idx1 * stride + 2]);
-			glm::vec3 v2(m_meshData.vertices[idx2 * stride], m_meshData.vertices[idx2 * stride + 1], m_meshData.vertices[idx2 * stride + 2]);
-			glm::vec3 v3(m_meshData.vertices[idx3 * stride], m_meshData.vertices[idx3 * stride + 1], m_meshData.vertices[idx3 * stride + 2]);
+			glm::vec3 v1(m_meshData.vertices[idx1], m_meshData.vertices[idx1 + 1], m_meshData.vertices[idx1 + 2]);
+			glm::vec3 v2(m_meshData.vertices[idx2], m_meshData.vertices[idx2 + 1], m_meshData.vertices[idx2 + 2]);
+			glm::vec3 v3(m_meshData.vertices[idx3], m_meshData.vertices[idx3 + 1], m_meshData.vertices[idx3 + 2]);
 
 			Triangle triangle{};
 			triangle.a = v1;
@@ -204,14 +204,13 @@ namespace Eklipse
 		return vertices;
 	}
 
-	// TODO: Should take account of the buffer layout
 	Vec<uint32_t> Mesh::GetIndices() const
 	{
 		return m_meshData.indices;
 	}
 
 	// TODO: Should take account of the buffer layout
-	Bounds Mesh::GetBounds() const // TODO: NOT WORKING
+	Bounds Mesh::GetBounds() const
 	{
 		Bounds bounds{};
 		bounds.min = { FLT_MAX, FLT_MAX, FLT_MAX };
