@@ -81,9 +81,10 @@ HitInfo CalculateRayCollision(Ray ray) {
     for (int i = 0; i < bMeshes.NumMeshes; i++) {
         MeshInfo meshInfo = bMeshes.Meshes[i];
         
-        // if (!RayBounds(ray, meshInfo.boundMin, meshInfo.boundMax)) {
-        //     continue;
-        // }
+        Bounds bounds = bBounds.Bounds[i];
+        if (!RayBounds(ray, bounds.boundMin, bounds.boundMax)) {
+            continue;
+        }
 
         for (uint j = meshInfo.indexOffset; j < meshInfo.indexOffset + meshInfo.indexCount; j += 3) {
             Triangle triangle;
@@ -96,10 +97,6 @@ HitInfo CalculateRayCollision(Ray ray) {
             triangle.b = vec3(bTransVertices.Vertices[idx2 + 0], bTransVertices.Vertices[idx2 + 1], bTransVertices.Vertices[idx2 + 2]);
             triangle.c = vec3(bTransVertices.Vertices[idx3 + 0], bTransVertices.Vertices[idx3 + 1], bTransVertices.Vertices[idx3 + 2]);
         
-            // triangle.a = vec3(bVertices.Vertices[idx1 + 0], bVertices.Vertices[idx1 + 1], bVertices.Vertices[idx1 + 2]);
-            // triangle.b = vec3(bVertices.Vertices[idx2 + 0], bVertices.Vertices[idx2 + 1], bVertices.Vertices[idx2 + 2]);
-            // triangle.c = vec3(bVertices.Vertices[idx3 + 0], bVertices.Vertices[idx3 + 1], bVertices.Vertices[idx3 + 2]);
-
             HitInfo hitInfo = RayTriangle(ray, triangle);
             if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
                 closestHit = hitInfo;

@@ -15,8 +15,8 @@ namespace Eklipse
 	};
 	struct Bounds
 	{
-		glm::vec3 min;
-		glm::vec3 max;
+		glm::vec3 min;	float pad0;
+		glm::vec3 max;  float pad1;
 	};
 
 	struct MeshData

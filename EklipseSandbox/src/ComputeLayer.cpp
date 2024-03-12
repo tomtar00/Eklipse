@@ -64,8 +64,8 @@ namespace Eklipse
         {
             Renderer::WaitDeviceIdle();
             needsReset = true;
-            if (m_computeShader->GetShader()->Compile("Assets/Shaders/Compute/RT_compute.glsl", true))
-                m_computeShader->GetMaterial()->OnShaderReloaded();
+            if (m_transComputeShader->GetShader()->Compile("Assets/Shaders/Compute/RT_compute.glsl", true))
+                m_transComputeShader->GetMaterial()->OnShaderReloaded();
         }
         ImGui::Checkbox("Accumulate", &m_rtSettings.accumulate);
         if (ImGui::SliderInt("Rays Per Pixel", &m_rtSettings.raysPerPixel, 1, 20))
@@ -271,7 +271,8 @@ namespace Eklipse
     }
     void ComputeLayer::OnCompute(float deltaTime)
     {
-        RenderCommand::Dispatch(m_computeShader, m_numTotalVertices / 3, 1, 1);
+        RenderCommand::Dispatch(m_transComputeShader, m_numTotalVertices / 3, 1, 1);
+        RenderCommand::Dispatch(m_boundsComputeShader, m_numTotalMeshes, 1, 1);
     }
     void ComputeLayer::OnRender(float deltaTime)
     {
@@ -302,6 +303,7 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6); 
         Renderer::CreateStorageBuffer("bMaterials", (maxMeshes + maxSpheres) * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
+        Renderer::CreateStorageBuffer("bBounds", maxMeshes * sizeof(Bounds), 9);
 
         InitMaterial();
         InitComputeShader();
@@ -311,7 +313,10 @@ namespace Eklipse
         m_fullscreenVA->Dispose();
         m_rayShader->Dispose();
         m_rayMaterial->Dispose();
-        m_computeShader->Dispose();
+
+        m_transComputeShader->Dispose();
+        m_boundsComputeShader->Dispose();
+
         m_cubeMesh->Dispose();
         m_teapotMesh->Dispose();
         m_suzanneMesh->Dispose();
@@ -376,7 +381,8 @@ namespace Eklipse
     void ComputeLayer::InitComputeShader()
     {
         // Must be called after the storage buffers are created
-        m_computeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_compute.glsl"); 
+        m_transComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_trans_compute.glsl"); 
+        m_boundsComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_bounds_compute.glsl");
     }
     void ComputeLayer::ResetPixelBuffer()
     {

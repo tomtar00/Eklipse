@@ -30,7 +30,8 @@ namespace Eklipse
         void AddMesh(const Ref<Mesh> mesh, const String& name);
 
     private:
-        Ref<ComputeShader> m_computeShader;
+        Ref<ComputeShader> m_transComputeShader;
+        Ref<ComputeShader> m_boundsComputeShader;
         Ref<Shader> m_rayShader;
         Ref<Material> m_rayMaterial;
         Ref<VertexArray> m_fullscreenVA;
