@@ -40,7 +40,7 @@ namespace Eklipse
         SetPipelineType(s_settings.PipelineType);
         return RenderCommand::API->Init();
     }
-    void Renderer::InitParameters()
+    void Renderer::OnAPIHasInitialized()
     {
         EK_CORE_PROFILE();
         s_cameraUniformBuffer = Renderer::CreateUniformBuffer("uCamera", sizeof(glm::mat4), 0);

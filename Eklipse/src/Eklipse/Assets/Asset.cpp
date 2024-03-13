@@ -27,4 +27,34 @@ namespace Eklipse
 		else if (assetType == "Mesh")		return AssetType::Mesh;
 		else return AssetType::None;
 	}
+
+	AssetType Asset::GetTypeFromFileExtension(const String& extension)
+	{
+		EK_CORE_PROFILE();
+
+		if (extension == EK_SCENE_EXTENSION)    return AssetType::Scene;
+		if (extension == EK_MATERIAL_EXTENSION) return AssetType::Material;
+		if (extension == EK_SHADER_EXTENSION)   return AssetType::Shader;
+
+		if (extension == ".png")    return AssetType::Texture2D;
+		if (extension == ".jpg")    return AssetType::Texture2D;
+		if (extension == ".jpeg")   return AssetType::Texture2D;
+
+		if (extension == ".obj") return AssetType::Mesh;
+
+		return AssetType::None;
+	}
+	Vec<String> Asset::GetFileExtensions(AssetType type)
+	{
+		EK_CORE_PROFILE();
+
+		if (type == AssetType::Scene)    return { EK_SCENE_EXTENSION };
+		if (type == AssetType::Material) return { EK_MATERIAL_EXTENSION };
+		if (type == AssetType::Shader)   return { EK_SHADER_EXTENSION };
+
+		if (type == AssetType::Texture2D) return { ".png", ".jpg", ".jpeg" };
+		if (type == AssetType::Mesh)      return { ".obj" };
+
+		return {};
+	}
 }

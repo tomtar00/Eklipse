@@ -13,14 +13,12 @@ namespace Eklipse
     EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) 
         : m_shaderReloadPending(false), m_assetDirectory(assetDirectory)
     {
-        EK_ASSERT(AssetManager::s_assetLibrary == nullptr, "AssetLibrary already exists!");
-        AssetManager::s_assetLibrary = this;
-
+        EK_ASSERT(AssetManager::s_assetLibrary == nullptr, "AssetLibrary already exists!")
         Validate();
     }
     EditorAssetLibrary::~EditorAssetLibrary()
     {
-        AssetManager::s_assetLibrary = nullptr;
+        UnloadAssets();
     }
 
     Ref<Asset> EditorAssetLibrary::GetAsset(AssetHandle handle)
@@ -70,6 +68,9 @@ namespace Eklipse
         EK_CORE_PROFILE();
         for (auto&& [handle, asset] : m_loadedAssets)
         {
+            if (!asset)
+                continue;
+
             asset->Dispose();
             asset.reset();
             asset = nullptr;
@@ -107,7 +108,7 @@ namespace Eklipse
         AssetHandle handle;
         AssetMetadata metadata;
         metadata.FilePath = filepath;
-        metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
+        metadata.Type = Asset::GetTypeFromFileExtension(filepath.extension().string());
         if(metadata.Type == AssetType::None)
         {
             EK_CORE_ERROR("Failed to import asset from path: {0}. Unsupported asset type!", filepath.string());
@@ -131,7 +132,7 @@ namespace Eklipse
         AssetHandle handle;
         AssetMetadata metadata;
         metadata.FilePath = filepath;
-        metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
+        metadata.Type = Asset::GetTypeFromFileExtension(filepath.extension().string());
         EK_ASSERT(metadata.Type == AssetType::Material, "Wrong asset type!");
         Ref<Material> material = Material::Create(filepath, shaderHandle);
         if (material)
@@ -382,35 +383,5 @@ namespace Eklipse
             EK_CORE_TRACE("Asset event: {0}", path);
             break;
         }
-    }
-
-    AssetType EditorAssetLibrary::GetAssetTypeFromFileExtension(const String& extension)
-    {
-        EK_CORE_PROFILE();
-
-        if (extension == EK_SCENE_EXTENSION)    return AssetType::Scene;
-        if (extension == EK_MATERIAL_EXTENSION) return AssetType::Material;
-        if (extension == EK_SHADER_EXTENSION)   return AssetType::Shader;
-
-        if (extension == ".png")    return AssetType::Texture2D;
-        if (extension == ".jpg")    return AssetType::Texture2D;
-        if (extension == ".jpeg")   return AssetType::Texture2D;
-
-        if (extension == ".obj") return AssetType::Mesh;
-
-        return AssetType::None;
-    }
-    Vec<String> EditorAssetLibrary::GetAssetFileExtensions(AssetType type)
-    {
-        EK_CORE_PROFILE();
-
-        if (type == AssetType::Scene)    return { EK_SCENE_EXTENSION };
-        if (type == AssetType::Material) return { EK_MATERIAL_EXTENSION };
-        if (type == AssetType::Shader)   return { EK_SHADER_EXTENSION };
-
-        if (type == AssetType::Texture2D) return { ".png", ".jpg", ".jpeg" };
-        if (type == AssetType::Mesh)      return { ".obj" };
-
-        return {};
     }
 }

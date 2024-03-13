@@ -31,7 +31,7 @@ namespace Eklipse
 	{
 	public:
 		static bool Init();
-		static void InitParameters();
+		static void OnAPIHasInitialized();
 		static void WaitDeviceIdle();
 		static void Shutdown();
 

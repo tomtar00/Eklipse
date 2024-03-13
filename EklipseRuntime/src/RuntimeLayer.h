@@ -11,9 +11,10 @@ namespace Eklipse
 		virtual void OnDetach() override;
 		virtual void OnUpdate(float deltaTime) override;
 		virtual void OnGUI(float deltaTime) override;
+		virtual void OnRender(float deltaTime) override;
 
-		virtual void OnAPIHasInitialized(GraphicsAPI api) override;
-		virtual void OnShutdownAPI() override;
+		virtual void OnAPIHasInitialized(GraphicsAPI::Type api) override;
+		virtual void OnShutdownAPI(bool quit) override;
 
 	private:
 		Ref<RuntimeConfig> m_runtimeConfig;

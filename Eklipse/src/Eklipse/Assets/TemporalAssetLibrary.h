@@ -2,17 +2,15 @@
 #include "AssetLibrary.h"
 #include "Asset.h"
 
-// TODO: This is a temporary implementation of the runtime asset library. 
-// It will be replaced with a more robust system in the future.
-
 namespace Eklipse
 {
     using AssetRegistry = std::map<AssetHandle, AssetMetadata>;
 
-    class EK_API RuntimeAssetLibrary : public AssetLibrary
+    class TemporalAssetLibrary : public AssetLibrary
     {
     public:
-        RuntimeAssetLibrary(const Path& assetDirectory);
+        TemporalAssetLibrary();
+        ~TemporalAssetLibrary();
 
         virtual Ref<Asset> GetAsset(AssetHandle handle) override;
         virtual AssetMetadata& GetMetadata(AssetHandle handle) override;
@@ -23,9 +21,6 @@ namespace Eklipse
 
         virtual void UnloadAssets() override;
         virtual void ReloadAssets() override;
-
-    private:
-        bool DeserializeAssetRegistry();
 
     private:
         AssetRegistry m_assetRegistry;

@@ -27,6 +27,7 @@
 #include <Eklipse/Scene/Entity.h>
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Scene/SceneManager.h>
+#include <Eklipse/Assets/AssetManager.h>
 
 #include <Eklipse/Assets/AssetManager.h>
 #include <Eklipse/Scripting/ScriptManager.h>

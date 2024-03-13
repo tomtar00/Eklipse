@@ -5,10 +5,6 @@
 
 #include <FileWatch.hpp>
 
-#define EK_MATERIAL_EXTENSION ".ekmt"
-#define EK_SCENE_EXTENSION ".eksc"
-#define EK_SHADER_EXTENSION ".glsl"
-
 #define EK_REGISTRY_EXTENSION ".ekreg"
 
 namespace Eklipse 
@@ -31,7 +27,7 @@ namespace Eklipse
 
         AssetRegistry& GetAssetRegistry();
         Path& GetAssetDirectory();
-        AssetHandle ImportAsset(const Path& filepath);
+        virtual AssetHandle ImportAsset(const Path& filepath) override;
         AssetHandle ImportDefaultMaterial(const Path& filepath, AssetHandle shaderHandle);
         void RemoveAsset(AssetHandle handle);
         AssetHandle GetHandleFromAssetPath(const Path& path, bool reqExists = true) const;
@@ -44,10 +40,6 @@ namespace Eklipse
 
         void StartFileWatcher();
         void OnFileWatchEvent(const String& path, filewatch::Event change_type);
-
-        static AssetType GetAssetTypeFromFileExtension(const String& extension);
-        static Vec<String> GetAssetFileExtensions(AssetType type);
-
 
     private:
         AssetRegistry m_assetRegistry;

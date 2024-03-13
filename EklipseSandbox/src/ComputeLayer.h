@@ -27,7 +27,8 @@ namespace Eklipse
         void ResetPixelBuffer();
         void ControlCamera(float deltaTime);
 
-        void AddMesh(const Ref<Mesh> mesh, const String& name);
+        void AddMesh(const AssetHandle meshHandle, const String& name);
+        void ReconstructSceneBuffers();
 
     private:
         Ref<ComputeShader> m_transComputeShader;
@@ -41,10 +42,10 @@ namespace Eklipse
         uint32_t m_numTotalSpheres;
         uint32_t m_numTotalMeshes;
 
-        Ref<Mesh> m_cubeMesh;
-        Ref<Mesh> m_cylinderMesh;
-        Ref<Mesh> m_teapotMesh;
-        Ref<Mesh> m_suzanneMesh;
+        AssetHandle m_cubeMesh;
+        AssetHandle m_cylinderMesh;
+        AssetHandle m_teapotMesh;
+        AssetHandle m_suzanneMesh;
         Ref<Scene> m_scene;
 
         Camera m_camera;

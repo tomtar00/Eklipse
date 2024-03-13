@@ -283,9 +283,12 @@ namespace Eklipse
         EK_CORE_TRACE("Applying all components on scene '{0}'", Name);
         m_registry.view<MeshComponent>().each([&](auto entityID, auto& meshComponent)
         {
-            if (AssetManager::IsAssetHandleValid(meshComponent.meshHandle) && AssetManager::IsAssetHandleValid(meshComponent.materialHandle))
+            if (AssetManager::IsAssetHandleValid(meshComponent.meshHandle))
             {
                 meshComponent.mesh = AssetManager::GetAsset<Mesh>(meshComponent.meshHandle).get();
+            }
+            if (AssetManager::IsAssetHandleValid(meshComponent.materialHandle))
+            {
                 meshComponent.material = AssetManager::GetAsset<Material>(meshComponent.materialHandle).get();
             }
         });

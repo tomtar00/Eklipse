@@ -4,6 +4,7 @@
 #include "AssetMetadata.h"
 #include "EditorAssetLibrary.h"
 #include "RuntimeAssetLibrary.h"
+#include "TemporalAssetLibrary.h"
 
 namespace Eklipse 
 {
@@ -11,8 +12,12 @@ namespace Eklipse
 	{
 		friend EditorAssetLibrary;
 		friend RuntimeAssetLibrary;
+		friend TemporalAssetLibrary;
 
 	public:
+
+		static void SetLibrary(Ref<AssetLibrary> assetLibrary);
+
 		template<typename T>
 		static Ref<T> GetAsset(AssetHandle handle)
 		{
@@ -25,9 +30,14 @@ namespace Eklipse
 		static bool IsAssetLoaded(AssetHandle handle);
 		static const AssetMetadata& GetMetadata(AssetHandle handle);
 
+		static AssetHandle ImportAsset(const Path& filepath);
+
 		static const AssetMap& GetLoadedAssets();
 
+		static void UnloadAssets();
+		static void ReloadAssets();
+
 	private:
-		static AssetLibrary* s_assetLibrary;
+		static Ref<AssetLibrary> s_assetLibrary;
 	};
 }

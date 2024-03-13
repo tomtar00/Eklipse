@@ -3,6 +3,8 @@
 #include "Input.h"
 
 #include <Eklipse/Scene/SceneManager.h>
+#include <Eklipse/Assets/TemporalAssetLibrary.h>
+#include <Eklipse/Assets/AssetManager.h>
 
 namespace Eklipse
 {
@@ -16,6 +18,8 @@ namespace Eklipse
     {
         EK_ASSERT(s_instance == nullptr, "Application already exists!");
         s_instance = this;
+
+        AssetManager::SetLibrary(CreateRef<TemporalAssetLibrary>());
     }
     Application::~Application()
     {
@@ -52,8 +56,11 @@ namespace Eklipse
         } 
         while (!Renderer::Init());
 
+        AssetManager::ReloadAssets();
+        if(SceneManager::GetActiveScene())
+            SceneManager::GetActiveScene()->ApplyAllComponents();
         OnAPIHasInitialized(Renderer::GetGraphicsAPIType());
-        Renderer::InitParameters();
+        Renderer::OnAPIHasInitialized();
         for (auto& layer : m_layerStack)
         {
             layer->OnAPIHasInitialized(Renderer::GetGraphicsAPIType());
@@ -72,6 +79,7 @@ namespace Eklipse
             layer->OnShutdownAPI(m_quit);
         }
         OnShutdownAPI(m_quit);
+        AssetManager::UnloadAssets();
         Renderer::Shutdown();
         OnAPIHasShutdown();
 

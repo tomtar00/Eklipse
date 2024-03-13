@@ -14,6 +14,7 @@ namespace Eklipse
         m_cursorDisabled = false;
 
         m_scene = CreateRef<Scene>();
+        SceneManager::SetActiveScene(m_scene);
     }
     void ComputeLayer::OnEvent(Event& event)
     {
@@ -307,6 +308,8 @@ namespace Eklipse
 
         InitMaterial();
         InitComputeShader();
+
+        ReconstructSceneBuffers();
     }
     void ComputeLayer::OnShutdownAPI(bool quit)
     {
@@ -317,10 +320,10 @@ namespace Eklipse
         m_transComputeShader->Dispose();
         m_boundsComputeShader->Dispose();
 
-        m_cubeMesh->Dispose();
+        /*m_cubeMesh->Dispose();
         m_teapotMesh->Dispose();
         m_suzanneMesh->Dispose();
-        m_cylinderMesh->Dispose();
+        m_cylinderMesh->Dispose();*/
     }
 
     void ComputeLayer::InitQuad()
@@ -373,10 +376,10 @@ namespace Eklipse
     }
     void ComputeLayer::InitMeshes()
     {
-        m_cubeMesh = Mesh::Create("Assets/Meshes/cube.obj");
-        m_teapotMesh = Mesh::Create("Assets/Meshes/teapot.obj");
-        m_suzanneMesh = Mesh::Create("Assets/Meshes/suzanne.obj");
-        m_cylinderMesh = Mesh::Create("Assets/Meshes/cylinder.obj");
+        m_cubeMesh = AssetManager::ImportAsset("Assets/Meshes/cube.obj");
+        m_teapotMesh = AssetManager::ImportAsset("Assets/Meshes/teapot.obj");
+        m_suzanneMesh = AssetManager::ImportAsset("Assets/Meshes/suzanne.obj");
+        m_cylinderMesh = AssetManager::ImportAsset("Assets/Meshes/cylinder.obj");
     }
     void ComputeLayer::InitComputeShader()
     {
@@ -437,40 +440,68 @@ namespace Eklipse
             ResetPixelBuffer();
         }
     }
-    void ComputeLayer::AddMesh(const Ref<Mesh> mesh, const String& name)
+
+    static std::pair<int, int> AddMeshToBuffers(const Mesh* mesh, uint32_t vertOffset, uint32_t indexOffset, uint32_t meshIndex)
     {
-        Renderer::WaitDeviceIdle();
-
-        auto entity = m_scene->CreateEntity(name + " " + std::to_string(m_numTotalMeshes));
-        entity.AddComponent<MeshComponent>(mesh.get(), nullptr);
-        auto& rtMesh = entity.AddComponent<RayTracingMeshComponent>();
-        rtMesh.index = m_numTotalMeshes;
-
         Vec<float> vertices = mesh->GetVertices();
         auto buffer = Renderer::GetStorageBuffer("bVertices");
-        buffer->SetData(vertices.data(), vertices.size() * sizeof(float), m_numTotalVertices * sizeof(float));
+        buffer->SetData(vertices.data(), vertices.size() * sizeof(float), vertOffset * sizeof(float));
 
         Vec<uint32_t> indices = mesh->GetIndices();
         buffer = Renderer::GetStorageBuffer("bIndices");
-        buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), m_numTotalIndices * sizeof(uint32_t));
+        buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), indexOffset * sizeof(uint32_t));
 
         Bounds bounds = mesh->GetBounds();
 
         RayTracingMeshInfo meshInfo{};
-        meshInfo.vertexOffset = m_numTotalVertices;
+        meshInfo.vertexOffset = vertOffset;
         meshInfo.vertexCount = vertices.size();
-        meshInfo.indexOffset = m_numTotalIndices;
+        meshInfo.indexOffset = indexOffset;
         meshInfo.indexCount = indices.size();
         meshInfo.boundMin = bounds.min;
         meshInfo.boundMax = bounds.max;
-        meshInfo.materialIndex = m_numTotalMeshes;
+        meshInfo.materialIndex = meshIndex;
+
+        uint32_t newMeshCount = meshIndex + 1;
+        buffer = Renderer::GetStorageBuffer("bMeshes");
+        buffer->SetData(&newMeshCount, sizeof(uint32_t));
+        buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t) + meshIndex * sizeof(RayTracingMeshInfo));
+
+        return { vertices.size(), indices.size() };
+    }
+    void ComputeLayer::AddMesh(const AssetHandle meshHandle, const String& name)
+    {
+        Renderer::WaitDeviceIdle();
+
+        auto entity = m_scene->CreateEntity(name + " " + std::to_string(m_numTotalMeshes));
+        auto& meshComp = entity.AddComponent<MeshComponent>();
+        meshComp.mesh = AssetManager::GetAsset<Mesh>(meshHandle).get();
+        meshComp.meshHandle = meshHandle;
+        
+        auto& rtMeshComp = entity.AddComponent<RayTracingMeshComponent>();
+        rtMeshComp.index = m_numTotalMeshes;
+
+        auto& sizes = AddMeshToBuffers(meshComp.mesh, m_numTotalVertices, m_numTotalIndices, m_numTotalMeshes);
 
         m_numTotalMeshes += 1;
-        buffer = Renderer::GetStorageBuffer("bMeshes");
-        buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
-        buffer->SetData(&meshInfo, sizeof(RayTracingMeshInfo), 4 * sizeof(uint32_t) + (m_numTotalMeshes - 1u) * sizeof(RayTracingMeshInfo));
+        m_numTotalVertices += sizes.first;
+        m_numTotalIndices += sizes.second;
+    }
+    void ComputeLayer::ReconstructSceneBuffers()
+    {
+        m_numTotalIndices = 0;
+        m_numTotalVertices = 0;
+        m_numTotalMeshes = 0;
 
-        m_numTotalVertices += vertices.size();
-        m_numTotalIndices += indices.size();
+        m_scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
+        {
+            Entity entity = { entityID, m_scene.get() };
+            auto& meshComp = entity.GetComponent<MeshComponent>();
+
+            auto& sizes = AddMeshToBuffers(meshComp.mesh, m_numTotalVertices, m_numTotalIndices, m_numTotalMeshes++);
+
+            m_numTotalVertices += sizes.first;
+            m_numTotalIndices += sizes.second;
+        });
     }
 }

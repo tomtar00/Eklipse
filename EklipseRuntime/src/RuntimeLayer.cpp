@@ -32,6 +32,7 @@ namespace Eklipse
 
 		// Load assets
 		m_runtimeAssetLibrary = CreateRef<RuntimeAssetLibrary>(m_runtimeConfig->assetsDirectoryPath);
+		AssetManager::SetLibrary(m_runtimeAssetLibrary);
 
 		// Load start scene
 		auto scene = AssetManager::GetAsset<Scene>(m_runtimeConfig->startSceneHandle);
@@ -49,17 +50,17 @@ namespace Eklipse
 	void RuntimeLayer::OnUpdate(float deltaTime)
 	{
 		SceneManager::GetActiveScene()->OnSceneUpdate(deltaTime);
-
-		Renderer::BeginDefaultRenderPass();
-		Renderer::RenderScene(SceneManager::GetActiveScene());
-		Renderer::EndDefaultRenderPass();
 	}
 	void RuntimeLayer::OnGUI(float deltaTime)
 	{
 		// TODO: Terminal Panel (ImGui)
 	}
+	void RuntimeLayer::OnRender(float deltaTime)
+	{
+		Renderer::RenderScene(SceneManager::GetActiveScene());
+	}
 
-	void RuntimeLayer::OnAPIHasInitialized(GraphicsAPI api)
+	void RuntimeLayer::OnAPIHasInitialized(GraphicsAPI::Type api)
 	{
 		if (!started)
 		{
@@ -71,11 +72,11 @@ namespace Eklipse
 		// Set window title
 		Application::Get().GetWindow()->SetTitle(m_runtimeConfig->name.c_str());
 
-		m_runtimeAssetLibrary->ReloadAssets();
-		SceneManager::GetActiveScene()->ApplyAllComponents();
+		/*m_runtimeAssetLibrary->ReloadAssets();
+		SceneManager::GetActiveScene()->ApplyAllComponents();*/
 	}
-	void RuntimeLayer::OnShutdownAPI()
+	void RuntimeLayer::OnShutdownAPI(bool quit)
 	{
-        m_runtimeAssetLibrary->UnloadAssets();
+        /*m_runtimeAssetLibrary->UnloadAssets();*/
 	}
 }

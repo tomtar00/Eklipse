@@ -428,7 +428,7 @@ namespace Eklipse
 
         SetTheme(m_settings.theme);
 
-        m_filesPanel.LoadResources();
+        /*m_filesPanel.LoadResources();
         if (m_editorAssetLibrary)
         {
             m_editorAssetLibrary->ReloadAssets();
@@ -436,23 +436,20 @@ namespace Eklipse
         if (m_editorScene)
         {
             m_editorScene->ApplyAllComponents();
-        }
+        }*/
     }
     void EditorLayer::OnShutdownAPI(bool quit)
     {
         EK_PROFILE();
 
         ClearSelection();
-
         m_filesPanel.UnloadResources();
-
         m_isWindowMaximized = Application::Get().GetWindow()->IsMaximized();
 
-        if (Project::GetActive())
+        /*if (Project::GetActive())
         {
             m_editorAssetLibrary->UnloadAssets();
-            
-        }
+        }*/
         if (quit)
         {
             m_editorScene.reset();
@@ -496,6 +493,7 @@ namespace Eklipse
 
         // init asset library
         m_editorAssetLibrary = CreateRef<EditorAssetLibrary>(config.assetsDirectoryPath);
+        AssetManager::SetLibrary(m_editorAssetLibrary);
 
         // setup script manager
         m_scriptManager->RunPremake(Project::GetActive()->GetConfig().scriptPremakeDirectoryPath);
@@ -549,6 +547,7 @@ namespace Eklipse
         {
             EK_ERROR("Failed to deserialize asset registry!");
         }
+        AssetManager::SetLibrary(m_editorAssetLibrary);
 
         m_scriptManager->Load();
 
@@ -848,8 +847,9 @@ namespace Eklipse
 
         if (m_editorAssetLibrary)
         {
-            m_editorAssetLibrary->UnloadAssets();
+            AssetManager::SetLibrary(nullptr);
             m_editorAssetLibrary.reset();
+            m_editorAssetLibrary = nullptr;
         }
     }
     void EditorLayer::OnProjectLoaded()

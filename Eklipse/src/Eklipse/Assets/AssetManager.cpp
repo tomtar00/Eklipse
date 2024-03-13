@@ -3,7 +3,13 @@
 
 namespace Eklipse
 {
-    AssetLibrary* AssetManager::s_assetLibrary = nullptr;
+    Ref<AssetLibrary> AssetManager::s_assetLibrary = nullptr;
+
+    void AssetManager::SetLibrary(Ref<AssetLibrary> assetLibrary)
+    {
+        EK_CORE_PROFILE();
+        s_assetLibrary = assetLibrary;
+    }
 
     bool AssetManager::IsAssetHandleValid(AssetHandle handle)
     {
@@ -25,9 +31,24 @@ namespace Eklipse
         EK_CORE_PROFILE();
 		return s_assetLibrary->GetMetadata(handle);
     }
+    AssetHandle AssetManager::ImportAsset(const Path& filepath)
+    {
+        EK_CORE_PROFILE();
+        return s_assetLibrary->ImportAsset(filepath);
+    }
     const AssetMap& AssetManager::GetLoadedAssets()
     {
         EK_CORE_PROFILE();
         return s_assetLibrary->GetLoadedAssets();
+    }
+    void AssetManager::UnloadAssets()
+    {
+        EK_CORE_PROFILE();
+        s_assetLibrary->UnloadAssets();
+    }
+    void AssetManager::ReloadAssets()
+    {
+        EK_CORE_PROFILE();
+        s_assetLibrary->ReloadAssets();
     }
 }
