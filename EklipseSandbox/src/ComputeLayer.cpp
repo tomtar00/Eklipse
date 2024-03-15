@@ -15,6 +15,18 @@ namespace Eklipse
 
         m_scene = CreateRef<Scene>();
         SceneManager::SetActiveScene(m_scene);
+
+        m_shaderHandle = AssetManager::RegisterAsset("Assets/Shaders/Compute/RT_mesh.glsl");
+
+        m_cubeMeshHandle = AssetManager::RegisterAsset("Assets/Meshes/cube.obj");
+        m_teapotMeshHandle = AssetManager::RegisterAsset("Assets/Meshes/teapot.obj");
+        m_suzanneMeshHandle = AssetManager::RegisterAsset("Assets/Meshes/suzanne.obj");
+        m_cylinderMeshHandle = AssetManager::RegisterAsset("Assets/Meshes/cylinder.obj");
+
+        /*
+        m_transComputeShaderHandle = AssetManager::RegisterAsset("Assets/Shaders/Compute/RT_trans.comp");
+        m_boundsComputeShaderHandle = AssetManager::RegisterAsset("Assets/Shaders/Compute/RT_bounds.comp");
+        */
     }
     void ComputeLayer::OnEvent(Event& event)
     {
@@ -23,8 +35,10 @@ namespace Eklipse
         {
             Renderer::WaitDeviceIdle();
             ResetPixelBuffer();
-            m_rayMaterial->Dispose();
+
+            m_material->Dispose();
             InitMaterial();
+
         }, false);
     }
 
@@ -58,62 +72,68 @@ namespace Eklipse
         {
             Renderer::WaitDeviceIdle();
             needsReset = true;
-            if (m_rayShader->Compile("Assets/Shaders/Compute/RT_mesh.glsl", true))
-                m_rayMaterial->OnShaderReloaded();
+            Ref<Shader> shader = AssetManager::GetAsset<Shader>(m_shaderHandle);
+            if (shader->Compile("Assets/Shaders/Compute/RT_mesh.glsl", true))
+                m_material->OnShaderReloaded();
         }
         if (ImGui::Button("Recompile Compute Shader"))
         {
             Renderer::WaitDeviceIdle();
             needsReset = true;
-            if (m_transComputeShader->GetShader()->Compile("Assets/Shaders/Compute/RT_compute.glsl", true))
-                m_transComputeShader->GetMaterial()->OnShaderReloaded();
+            Ref<ComputeShader> shader = AssetManager::GetAsset<ComputeShader>(m_transComputeShaderHandle);
+            if (shader->GetShader()->Compile("Assets/Shaders/Compute/RT_compute.glsl", true))
+                shader->GetMaterial()->OnShaderReloaded();
         }
-        ImGui::Checkbox("Accumulate", &m_rtSettings.accumulate);
+        if (ImGui::Checkbox("Accumulate", &m_rtSettings.accumulate))
+        {
+            m_material->SetConstant("pData", "Accumulate", &m_rtSettings.accumulate, sizeof(uint32_t));
+            needsReset = true;
+        }
         if (ImGui::SliderInt("Rays Per Pixel", &m_rtSettings.raysPerPixel, 1, 20))
         {
-            m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
+            m_material->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
             needsReset = true;
         }
         if (ImGui::SliderInt("Max Bounces", &m_rtSettings.maxBounces, 1, 20))
         {
-            m_rayMaterial->SetConstant("pData", "MaxBounces", &m_rtSettings.maxBounces, sizeof(int));
+            m_material->SetConstant("pData", "MaxBounces", &m_rtSettings.maxBounces, sizeof(int));
             needsReset = true;
         }
 
         ImGui::Separator();
         if (ImGui::ColorEdit3("Sky Color Horizon", &m_rtSettings.skyColorHorizon[0]))
         {
-            m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_rtSettings.skyColorHorizon, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SkyColorHorizon", &m_rtSettings.skyColorHorizon, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::ColorEdit3("Sky Color Zenith", &m_rtSettings.skyColorZenith[0]))
         {
-            m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_rtSettings.skyColorZenith, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SkyColorZenith", &m_rtSettings.skyColorZenith, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::ColorEdit3("Ground Color", &m_rtSettings.groundColor[0]))
         {
-            m_rayMaterial->SetConstant("pData", "GroundColor", &m_rtSettings.groundColor, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "GroundColor", &m_rtSettings.groundColor, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::ColorEdit3("Sun Color", &m_rtSettings.sunColor[0]))
         {
-            m_rayMaterial->SetConstant("pData", "SunColor", &m_rtSettings.sunColor, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SunColor", &m_rtSettings.sunColor, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::DragFloat3("Sun Direction", &m_rtSettings.sunDirection[0], 0.1f))
         {
-            m_rayMaterial->SetConstant("pData", "SunDirection", &m_rtSettings.sunDirection, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SunDirection", &m_rtSettings.sunDirection, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::SliderFloat("Sun Focus", &m_rtSettings.sunFocus, 0.1f, 1000.0f))
         {
-            m_rayMaterial->SetConstant("pData", "SunFocus", &m_rtSettings.sunFocus, sizeof(float));
+            m_material->SetConstant("pData", "SunFocus", &m_rtSettings.sunFocus, sizeof(float));
             needsReset = true;
         }
         if (ImGui::SliderFloat("Sun Intensity", &m_rtSettings.sunIntensity, 0.1f, 1000.0f))
         {
-            m_rayMaterial->SetConstant("pData", "SunIntensity", &m_rtSettings.sunIntensity, sizeof(float));
+            m_material->SetConstant("pData", "SunIntensity", &m_rtSettings.sunIntensity, sizeof(float));
             needsReset = true;
         }
 
@@ -136,12 +156,12 @@ namespace Eklipse
         ImGui::Begin("Scene");
         if (ImGui::Button("Add Cube"))
         {
-            AddMesh(m_cubeMesh, "Cube");
+            AddMesh(m_cubeMeshHandle, "Cube");
         }   
         ImGui::SameLine();
         if (ImGui::Button("Add Cylinder"))
         {
-            AddMesh(m_cylinderMesh, "Cylinder");
+            AddMesh(m_cylinderMeshHandle, "Cylinder");
         }
         ImGui::SameLine();
         if (ImGui::Button("Add Sphere"))
@@ -153,12 +173,12 @@ namespace Eklipse
         }
         if (ImGui::Button("Add Teapot"))
         {
-            AddMesh(m_teapotMesh, "Teapot");
+            AddMesh(m_teapotMeshHandle, "Teapot");
         }
         ImGui::SameLine();
         if (ImGui::Button("Add Suzanne"))
         {
-            AddMesh(m_suzanneMesh, "Suzanne");
+            AddMesh(m_suzanneMeshHandle, "Suzanne");
         }
         m_scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
         {
@@ -279,55 +299,16 @@ namespace Eklipse
     {
         ++m_frameIndex;
 
-        m_rayMaterial->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "Frames", &m_frameIndex, sizeof(uint32_t));
-        m_rayMaterial->SetConstant("pData", "Accumulate", &m_rtSettings.accumulate, sizeof(uint32_t));
+        m_material->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
+        m_material->SetConstant("pData", "Frames", &m_frameIndex, sizeof(uint32_t));
 
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
-        RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
+        RenderCommand::DrawIndexed(m_fullscreenVA, m_material.get());
     }
 
     void ComputeLayer::OnAPIHasInitialized(GraphicsAPI::Type api)
     {
-        InitQuad();
-        InitShader();
-        InitMeshes();
-
-        const uint32_t maxVerticies = 1000000;
-        const uint32_t maxIndices = 1000000;
-        const uint32_t maxMeshes = 100;
-        const uint32_t maxSpheres = 100;
-        Renderer::CreateStorageBuffer("bVertices", maxVerticies * sizeof(float), 2);
-        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 3);
-        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 4);
-        Renderer::CreateStorageBuffer("bSpheres", 4 * sizeof(uint32_t) + maxSpheres * sizeof(RayTracingSphereInfo), 5);
-        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6); 
-        Renderer::CreateStorageBuffer("bMaterials", (maxMeshes + maxSpheres) * sizeof(RayTracingMaterial), 7);
-        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
-        Renderer::CreateStorageBuffer("bBounds", maxMeshes * sizeof(Bounds), 9);
-
-        InitMaterial();
-        InitComputeShader();
-
-        ReconstructSceneBuffers();
-    }
-    void ComputeLayer::OnShutdownAPI(bool quit)
-    {
-        m_fullscreenVA->Dispose();
-        m_rayShader->Dispose();
-        m_rayMaterial->Dispose();
-
-        m_transComputeShader->Dispose();
-        m_boundsComputeShader->Dispose();
-
-        /*m_cubeMesh->Dispose();
-        m_teapotMesh->Dispose();
-        m_suzanneMesh->Dispose();
-        m_cylinderMesh->Dispose();*/
-    }
-
-    void ComputeLayer::InitQuad()
-    {
+        // Create fullscreen quad
         std::vector<float> vertices = {
              1.0f,  1.0f,  // top right
              1.0f, -1.0f,  // bottom right
@@ -338,21 +319,55 @@ namespace Eklipse
             0, 1, 3,
             1, 2, 3
         };
-
         Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices);
         BufferLayout layout = {
             { "inPos", ShaderDataType::FLOAT2, false }
         };
         vertexBuffer->SetLayout(layout);
-
         m_fullscreenVA = VertexArray::Create();
         m_fullscreenVA->AddVertexBuffer(vertexBuffer);
         m_fullscreenVA->SetIndexBuffer(IndexBuffer::Create(indices));
+
+        // Create ray tracing buffers
+        const uint32_t maxVerticies = 1000000;
+        const uint32_t maxIndices = 1000000;
+        const uint32_t maxMeshes = 100;
+        const uint32_t maxSpheres = 100;
+        glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
+        size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
+        Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
+        Renderer::CreateStorageBuffer("bVertices", maxVerticies * sizeof(float), 2);
+        Renderer::CreateStorageBuffer("bTransVertices", maxVerticies * sizeof(float), 3);
+        Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 4);
+        Renderer::CreateStorageBuffer("bSpheres", 4 * sizeof(uint32_t) + maxSpheres * sizeof(RayTracingSphereInfo), 5);
+        Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6); 
+        Renderer::CreateStorageBuffer("bMaterials", (maxMeshes + maxSpheres) * sizeof(RayTracingMaterial), 7);
+        Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
+        Renderer::CreateStorageBuffer("bBounds", maxMeshes * sizeof(Bounds), 9);
+
+        // Create ray tracing material
+        InitMaterial();
+
+        // Load compute shaders
+        /*
+        m_transComputeShader = AssetManager::GetAsset<ComputeShader>(m_transComputeShaderHandle);
+        m_boundsComputeShader = AssetManager::GetAsset<ComputeShader>(m_boundsComputeShaderHandle);
+        */
+        m_transComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_trans.comp");
+        m_boundsComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_bounds.comp");
+
+        // Fill buffers with scene data
+        ReconstructSceneBuffers();
     }
-    void ComputeLayer::InitShader()
+    void ComputeLayer::OnShutdownAPI(bool quit)
     {
-        m_rayShader = Shader::Create("Assets/Shaders/Compute/RT_mesh.glsl");
+        m_fullscreenVA->Dispose();
+        m_material->Dispose();
+
+        m_transComputeShader->Dispose();
+        m_boundsComputeShader->Dispose();
     }
+
     void ComputeLayer::InitMaterial()
     {
         glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
@@ -360,87 +375,28 @@ namespace Eklipse
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
 
-        m_rayMaterial = Material::Create(m_rayShader);
+        m_material = Material::Create(AssetManager::GetAsset<Shader>(m_shaderHandle));
 
-        m_rayMaterial->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
-        m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
-        m_rayMaterial->SetConstant("pData", "MaxBounces", &m_rtSettings.maxBounces, sizeof(int));
+        m_material->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
+        m_material->SetConstant("pData", "CameraPos", &m_cameraTransform.position, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "Frames", &m_frameIndex, sizeof(uint32_t));
+        m_material->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
+        m_material->SetConstant("pData", "MaxBounces", &m_rtSettings.maxBounces, sizeof(int));
+        m_material->SetConstant("pData", "Accumulate", &m_rtSettings.accumulate, sizeof(uint32_t));
 
-        m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_rtSettings.skyColorHorizon, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_rtSettings.skyColorZenith, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "GroundColor", &m_rtSettings.groundColor, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SunColor", &m_rtSettings.sunColor, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SunDirection", &m_rtSettings.sunDirection, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SunFocus", &m_rtSettings.sunFocus, sizeof(float));
-        m_rayMaterial->SetConstant("pData", "SunIntensity", &m_rtSettings.sunIntensity, sizeof(float));
+        m_material->SetConstant("pData", "SkyColorHorizon", &m_rtSettings.skyColorHorizon, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SkyColorZenith", &m_rtSettings.skyColorZenith, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "GroundColor", &m_rtSettings.groundColor, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunColor", &m_rtSettings.sunColor, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunDirection", &m_rtSettings.sunDirection, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunFocus", &m_rtSettings.sunFocus, sizeof(float));
+        m_material->SetConstant("pData", "SunIntensity", &m_rtSettings.sunIntensity, sizeof(float));
     }
-    void ComputeLayer::InitMeshes()
-    {
-        m_cubeMesh = AssetManager::ImportAsset("Assets/Meshes/cube.obj");
-        m_teapotMesh = AssetManager::ImportAsset("Assets/Meshes/teapot.obj");
-        m_suzanneMesh = AssetManager::ImportAsset("Assets/Meshes/suzanne.obj");
-        m_cylinderMesh = AssetManager::ImportAsset("Assets/Meshes/cylinder.obj");
-    }
-    void ComputeLayer::InitComputeShader()
-    {
-        // Must be called after the storage buffers are created
-        m_transComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_trans_compute.glsl"); 
-        m_boundsComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_bounds_compute.glsl");
-    }
+
     void ComputeLayer::ResetPixelBuffer()
     {
         m_frameIndex = 0;
     }
-
-    void ComputeLayer::ControlCamera(float deltaTime)
-    {
-        bool needsReset = false;
-
-        if (Input::IsKeyDown(W))
-        {
-            m_cameraTransform.position += m_cameraTransform.GetForward() * m_cameraSpeed * deltaTime;
-            needsReset = true;
-        }
-        if (Input::IsKeyDown(S))
-        {
-            m_cameraTransform.position -= m_cameraTransform.GetForward() * m_cameraSpeed * deltaTime;
-            needsReset = true;
-        }
-        if (Input::IsKeyDown(A))
-        {
-            m_cameraTransform.position -= m_cameraTransform.GetRight() * m_cameraSpeed * deltaTime;
-            needsReset = true;
-        }
-        if (Input::IsKeyDown(D))
-        {
-            m_cameraTransform.position += m_cameraTransform.GetRight() * m_cameraSpeed * deltaTime;
-            needsReset = true;
-        }
-        if (Input::IsKeyDown(LeftShift))
-        {
-            m_cameraTransform.position -= m_cameraTransform.GetUp() * m_cameraSpeed * deltaTime;
-            needsReset = true;
-        }
-        if (Input::IsKeyDown(Space))
-        {
-            m_cameraTransform.position += m_cameraTransform.GetUp() * m_cameraSpeed * deltaTime;
-            needsReset = true;
-        }
-
-        auto mouseDelta = Input::GetMouseDelta();
-        if (mouseDelta.x != 0 || mouseDelta.y != 0)
-        {
-            m_cameraTransform.rotation.y -= mouseDelta.x * m_cameraSensitivity;
-            m_cameraTransform.rotation.x -= mouseDelta.y * m_cameraSensitivity;
-            needsReset = true;
-        }
-
-        if (needsReset)
-        {
-            ResetPixelBuffer();
-        }
-    }
-
     static std::pair<int, int> AddMeshToBuffers(const Mesh* mesh, uint32_t vertOffset, uint32_t indexOffset, uint32_t meshIndex)
     {
         Vec<float> vertices = mesh->GetVertices();
@@ -503,5 +459,54 @@ namespace Eklipse
             m_numTotalVertices += sizes.first;
             m_numTotalIndices += sizes.second;
         });
+    }
+    
+    void ComputeLayer::ControlCamera(float deltaTime)
+    {
+        bool needsReset = false;
+
+        if (Input::IsKeyDown(W))
+        {
+            m_cameraTransform.position += m_cameraTransform.GetForward() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(S))
+        {
+            m_cameraTransform.position -= m_cameraTransform.GetForward() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(A))
+        {
+            m_cameraTransform.position -= m_cameraTransform.GetRight() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(D))
+        {
+            m_cameraTransform.position += m_cameraTransform.GetRight() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(LeftShift))
+        {
+            m_cameraTransform.position -= m_cameraTransform.GetUp() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+        if (Input::IsKeyDown(Space))
+        {
+            m_cameraTransform.position += m_cameraTransform.GetUp() * m_cameraSpeed * deltaTime;
+            needsReset = true;
+        }
+
+        auto mouseDelta = Input::GetMouseDelta();
+        if (mouseDelta.x != 0 || mouseDelta.y != 0)
+        {
+            m_cameraTransform.rotation.y -= mouseDelta.x * m_cameraSensitivity;
+            m_cameraTransform.rotation.x -= mouseDelta.y * m_cameraSensitivity;
+            needsReset = true;
+        }
+
+        if (needsReset)
+        {
+            ResetPixelBuffer();
+        }
     }
 }

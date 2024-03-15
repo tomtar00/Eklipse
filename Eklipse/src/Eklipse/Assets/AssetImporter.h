@@ -8,6 +8,7 @@ namespace Eklipse
 	{
 	public:
 		static Ref<Asset> ImportAsset(AssetHandle handle, const AssetMetadata& metadata);
+		static bool ValidateAsset(AssetHandle handle, const AssetMetadata& metadata);
 	};
 
 }

@@ -31,6 +31,11 @@ namespace Eklipse
         EK_CORE_PROFILE();
 		return s_assetLibrary->GetMetadata(handle);
     }
+    AssetHandle AssetManager::RegisterAsset(const Path& filepath)
+    {
+        EK_CORE_PROFILE();
+        return s_assetLibrary->RegisterAsset(filepath);
+    }
     AssetHandle AssetManager::ImportAsset(const Path& filepath)
     {
         EK_CORE_PROFILE();

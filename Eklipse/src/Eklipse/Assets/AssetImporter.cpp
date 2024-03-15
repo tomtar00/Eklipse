@@ -6,6 +6,7 @@
 #include <Eklipse/Renderer/Mesh.h>
 #include <Eklipse/Renderer/Shader.h>
 #include <Eklipse/Renderer/Material.h>
+#include <Eklipse/Renderer/ComputeShader.h>
 
 namespace Eklipse
 {
@@ -36,15 +37,21 @@ namespace Eklipse
         mat->Handle = handle;
         return mat;
 	}
+    static Ref<ComputeShader> ImportComputeShader(AssetHandle handle, const AssetMetadata& metadata)
+    {
+        EK_CORE_PROFILE();
+        return ComputeShader::Create(metadata.FilePath, handle);
+    }
 
     using AssetImportFunction = std::function<Ref<Asset>(AssetHandle, const AssetMetadata&)>;
     static std::map<AssetType, AssetImportFunction> s_assetImportFunctions = 
     {
-        { AssetType::Texture2D,     ImportTexture2D },
-        { AssetType::Scene,         ImportScene     },
-		{ AssetType::Mesh,          ImportMesh      },
-		{ AssetType::Shader,        ImportShader    },
-		{ AssetType::Material,      ImportMaterial  }
+        { AssetType::Texture2D,     ImportTexture2D         },
+        { AssetType::Scene,         ImportScene             },
+		{ AssetType::Mesh,          ImportMesh              },
+		{ AssetType::Shader,        ImportShader            },
+		{ AssetType::Material,      ImportMaterial          },
+        { AssetType::ComputeShader, ImportComputeShader     }
     };
 
     Ref<Asset> AssetImporter::ImportAsset(AssetHandle handle, const AssetMetadata& metadata)
@@ -59,5 +66,16 @@ namespace Eklipse
         AssetImportFunction importFunction = s_assetImportFunctions.at(metadata.Type);
         Ref<Asset> asset = importFunction(handle, metadata);
         return asset;
+    }
+
+    bool AssetImporter::ValidateAsset(AssetHandle handle, const AssetMetadata& metadata)
+    {
+        EK_CORE_PROFILE();
+        if (s_assetImportFunctions.find(metadata.Type) == s_assetImportFunctions.end())
+        {
+            EK_CORE_ERROR("No import function available for asset type: {}", Asset::TypeToString(metadata.Type));
+            return false;
+        }
+        return true;
     }
 }

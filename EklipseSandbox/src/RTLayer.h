@@ -56,8 +56,8 @@ namespace Eklipse
 
     private:
         String m_shaderPath;
-        Ref<Shader> m_rayShader;
-        Ref<Material> m_rayMaterial;
+        Ref<Shader> m_shaderHandle;
+        Ref<Material> m_material;
         Ref<VertexArray> m_fullscreenVA;
 
         Ref<Mesh> m_cubeMesh;

@@ -18,44 +18,43 @@ namespace Eklipse
         virtual void OnShutdownAPI(bool quit) override;
 
     private:
-        void InitQuad();
-        void InitShader();
         void InitMaterial();
-        void InitMeshes();
-        void InitComputeShader();
-
         void ResetPixelBuffer();
-        void ControlCamera(float deltaTime);
-
         void AddMesh(const AssetHandle meshHandle, const String& name);
         void ReconstructSceneBuffers();
+        
+        void ControlCamera(float deltaTime);
 
     private:
+        Ref<Material> m_material;
+        Ref<VertexArray> m_fullscreenVA;
+        Ref<Scene> m_scene;
+
         Ref<ComputeShader> m_transComputeShader;
         Ref<ComputeShader> m_boundsComputeShader;
-        Ref<Shader> m_rayShader;
-        Ref<Material> m_rayMaterial;
-        Ref<VertexArray> m_fullscreenVA;
 
         uint32_t m_numTotalVertices;
         uint32_t m_numTotalIndices;
         uint32_t m_numTotalSpheres;
         uint32_t m_numTotalMeshes;
 
-        AssetHandle m_cubeMesh;
-        AssetHandle m_cylinderMesh;
-        AssetHandle m_teapotMesh;
-        AssetHandle m_suzanneMesh;
-        Ref<Scene> m_scene;
+        AssetHandle m_transComputeShaderHandle;
+        AssetHandle m_boundsComputeShaderHandle;
+        AssetHandle m_shaderHandle;
+        AssetHandle m_cubeMeshHandle;
+        AssetHandle m_cylinderMeshHandle;
+        AssetHandle m_teapotMeshHandle;
+        AssetHandle m_suzanneMeshHandle;
 
         Camera m_camera;
         Transform m_cameraTransform;
+
         bool m_controlCamera;
         float m_cameraSpeed;
         float m_cameraSensitivity;
         bool m_cursorDisabled;
-
         int m_frameIndex = 0;
+
         RayTracingContext::Settings m_rtSettings;
     };
 }

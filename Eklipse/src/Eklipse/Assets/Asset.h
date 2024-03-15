@@ -5,6 +5,7 @@
 #define EK_MATERIAL_EXTENSION ".ekmt"
 #define EK_SCENE_EXTENSION ".eksc"
 #define EK_SHADER_EXTENSION ".glsl"
+#define EK_COMPUTE_SHADER_EXTENSION ".comp"
 
 namespace Eklipse {
 

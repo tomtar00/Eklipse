@@ -7,7 +7,7 @@ namespace Eklipse
 {
     namespace OpenGL
     {
-        GLComputeShader::GLComputeShader(const String& filePath) : ComputeShader(filePath)
+        GLComputeShader::GLComputeShader(const Path& filePath, const AssetHandle handle) : ComputeShader(filePath, handle)
         {
         }
         void GLComputeShader::Dispatch(uint32_t x, uint32_t y, uint32_t z) const

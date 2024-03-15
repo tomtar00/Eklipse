@@ -7,12 +7,13 @@
 
 namespace Eklipse
 {
-    ComputeShader::ComputeShader(const String& filePath)
+    ComputeShader::ComputeShader(const Path& filePath, const AssetHandle handle)
     {
+        Handle = handle;
         m_shader = Shader::Create(filePath);
         m_material = Material::Create(m_shader);
     }
-    Ref<ComputeShader> ComputeShader::Create(const String& filePath)
+    Ref<ComputeShader> ComputeShader::Create(const Path& filePath, const AssetHandle handle)
     {
         EK_CORE_PROFILE();
         switch (Renderer::GetGraphicsAPIType())

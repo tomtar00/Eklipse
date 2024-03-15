@@ -7,8 +7,9 @@ namespace Eklipse
     class EK_API ComputeShader : public Asset
     {
     public:
-        ComputeShader(const String& filePath);
-        static Ref<ComputeShader> Create(const String& filePath);
+        ComputeShader() = delete;
+        ComputeShader(const Path& filePath, const AssetHandle handle = 0);
+        static Ref<ComputeShader> Create(const Path& filePath, const AssetHandle handle = 0);
 
         Ref<Shader> GetShader() const;
         Ref<Material> GetMaterial() const;

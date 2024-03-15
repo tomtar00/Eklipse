@@ -8,7 +8,7 @@ namespace Eklipse
 {
     namespace Vulkan
     {
-        VKComputeShader::VKComputeShader(const String& filePath) : ComputeShader(filePath)
+        VKComputeShader::VKComputeShader(const Path& filePath, const AssetHandle handle) : ComputeShader(filePath, handle)
         {
         }
         void VKComputeShader::Dispatch(uint32_t x, uint32_t y, uint32_t z) const

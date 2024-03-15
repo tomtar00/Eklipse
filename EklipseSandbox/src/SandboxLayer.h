@@ -22,7 +22,7 @@ namespace Eklipse
         Ref<Material> m_planeMaterial;
         glm::vec3 m_planeColor;
 
-        Ref<Mesh> m_cubeMesh;
+        Ref<Mesh> m_cubeMeshHandle;
         Ref<Material> m_cubeMaterial;
         glm::vec3 m_cubeColor;
 
@@ -30,7 +30,7 @@ namespace Eklipse
         Ref<Material> m_sphereMaterial;
         glm::vec3 m_sphereColor;
 
-        Ref<Mesh> m_teapotMesh;
+        Ref<Mesh> m_teapotMeshHandle;
         Ref<Material> m_teapotMaterial;
         glm::vec3 m_teapotColor;
 

@@ -34,7 +34,7 @@ namespace Eklipse
         {
             Renderer::WaitDeviceIdle();
             ResetPixelBuffer();
-            m_rayMaterial->Dispose();
+            m_material->Dispose();
             InitMaterial();
         }, false);
     }
@@ -71,8 +71,8 @@ namespace Eklipse
         if (ImGui::Combo("Shader", &shaderIndex, "RT_basic\0RT_accum\0RT_mesh"))
         {
             Renderer::WaitDeviceIdle();
-            m_rayShader->Dispose();
-            m_rayMaterial->Dispose();
+            m_shaderHandle->Dispose();
+            m_material->Dispose();
             ResetPixelBuffer();
             switch (shaderIndex)
             {
@@ -87,54 +87,54 @@ namespace Eklipse
         {
             Renderer::WaitDeviceIdle();
             ResetPixelBuffer();
-            if (m_rayShader->Compile(m_shaderPath, true))
-                m_rayMaterial->OnShaderReloaded();
+            if (m_shaderHandle->Compile(m_shaderPath, true))
+                m_material->OnShaderReloaded();
         }
         if (ImGui::SliderInt("Rays Per Pixel", &m_raysPerPixel, 1, 20))
         {
-            m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
+            m_material->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
             needsReset = true;
         }
         if (ImGui::SliderInt("Max Bounces", &m_maxBounces, 1, 20))
         {
-            m_rayMaterial->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
+            m_material->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
             needsReset = true;
         }
 
         ImGui::Separator();
         if (ImGui::ColorEdit3("Sky Color Horizon", &m_skyColorHorizon[0]))
         {
-            m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::ColorEdit3("Sky Color Zenith", &m_skyColorZenith[0]))
         {
-            m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::ColorEdit3("Ground Color", &m_groundColor[0]))
         {
-            m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::ColorEdit3("Sun Color", &m_sunColor[0]))
         {
-            m_rayMaterial->SetConstant("pData", "SunColor", &m_sunColor, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SunColor", &m_sunColor, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::DragFloat3("Sun Direction", &m_sunDirection[0], 0.1f))
         {
-            m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
+            m_material->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
             needsReset = true;
         }
         if (ImGui::SliderFloat("Sun Focus", &m_sunFocus, 0.1f, 1000.0f))
         {
-            m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
+            m_material->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
             needsReset = true;
         }
         if (ImGui::SliderFloat("Sun Intensity", &m_sunIntensity, 0.1f, 1000.0f))
         {
-            m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
+            m_material->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
             needsReset = true;
         }
         
@@ -164,11 +164,11 @@ namespace Eklipse
     {
         ++m_frames;
 
-        m_rayMaterial->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "Frames", &m_frames, sizeof(int));
+        m_material->SetConstant("pData", "CameraPos", &m_cameraTransform.position[0], sizeof(glm::vec3));
+        m_material->SetConstant("pData", "Frames", &m_frames, sizeof(int));
         
         Renderer::UpdateViewProjection(m_camera, m_cameraTransform);
-        RenderCommand::DrawIndexed(m_fullscreenVA, m_rayMaterial.get());
+        RenderCommand::DrawIndexed(m_fullscreenVA, m_material.get());
     }
     void RTLayer::OnUpdate(float deltaTime)
     {
@@ -186,8 +186,8 @@ namespace Eklipse
     void RTLayer::OnShutdownAPI(bool quit)
     {
         m_fullscreenVA->Dispose();
-        m_rayShader->Dispose();
-        m_rayMaterial->Dispose();
+        m_shaderHandle->Dispose();
+        m_material->Dispose();
 
         m_cubeMesh->Dispose();
     }
@@ -217,7 +217,7 @@ namespace Eklipse
     }
     void RTLayer::InitShader()
     {
-        m_rayShader = Shader::Create(m_shaderPath);
+        m_shaderHandle = Shader::Create(m_shaderPath);
     }
     void RTLayer::InitMaterial()
     {
@@ -290,19 +290,19 @@ namespace Eklipse
             mshBuff->SetData(meshes.meshes, meshes.numMeshes * sizeof(MeshInfo), 4 * sizeof(uint32_t));
         }
 
-        m_rayMaterial = Material::Create(m_rayShader);
+        m_material = Material::Create(m_shaderHandle);
         
-        m_rayMaterial->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
-        m_rayMaterial->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
-        m_rayMaterial->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
+        m_material->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
+        m_material->SetConstant("pData", "RaysPerPixel", &m_raysPerPixel, sizeof(int));
+        m_material->SetConstant("pData", "MaxBounces", &m_maxBounces, sizeof(int));
         
-        m_rayMaterial->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SunColor", &m_sunColor, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
-        m_rayMaterial->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
-        m_rayMaterial->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
+        m_material->SetConstant("pData", "SkyColorHorizon", &m_skyColorHorizon, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SkyColorZenith", &m_skyColorZenith, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "GroundColor", &m_groundColor, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunColor", &m_sunColor, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunDirection", &m_sunDirection, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunFocus", &m_sunFocus, sizeof(float));
+        m_material->SetConstant("pData", "SunIntensity", &m_sunIntensity, sizeof(float));
     }
     void RTLayer::InitMeshes()
     {

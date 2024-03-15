@@ -56,6 +56,30 @@ namespace Eklipse
         return m_loadedAssets.find(handle) != m_loadedAssets.end();
     }
 
+    AssetHandle RuntimeAssetLibrary::RegisterAsset(const Path& filepath)
+    {
+        EK_CORE_PROFILE();
+        EK_CORE_TRACE("Registring asset: {0}", filepath.string());
+
+        AssetHandle handle;
+        AssetMetadata metadata;
+        metadata.FilePath = filepath;
+        metadata.Type = Asset::GetTypeFromFileExtension(filepath.extension().string());
+        if (metadata.Type == AssetType::None)
+        {
+            EK_CORE_ERROR("Failed to register asset from path: {0}. Unsupported asset type!", filepath.string());
+            return 0;
+        }
+        bool assetValid = AssetImporter::ValidateAsset(handle, metadata);
+        if (assetValid)
+        {
+            m_loadedAssets[handle] = nullptr;
+            m_assetRegistry[handle] = metadata;
+        }
+
+        EK_CORE_DBG("Asset from path '{0}' registered with handle: {1}", filepath.string(), handle);
+        return handle;
+    }
     AssetHandle RuntimeAssetLibrary::ImportAsset(const Path& filepath)
     {
         EK_ASSERT(false, "Not implemented!");

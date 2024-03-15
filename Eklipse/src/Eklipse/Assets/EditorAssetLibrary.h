@@ -27,6 +27,7 @@ namespace Eklipse
 
         AssetRegistry& GetAssetRegistry();
         Path& GetAssetDirectory();
+        virtual AssetHandle RegisterAsset(const Path& filepath) override;
         virtual AssetHandle ImportAsset(const Path& filepath) override;
         AssetHandle ImportDefaultMaterial(const Path& filepath, AssetHandle shaderHandle);
         void RemoveAsset(AssetHandle handle);

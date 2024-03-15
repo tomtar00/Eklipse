@@ -30,6 +30,7 @@ namespace Eklipse
 		static bool IsAssetLoaded(AssetHandle handle);
 		static const AssetMetadata& GetMetadata(AssetHandle handle);
 
+		static AssetHandle RegisterAsset(const Path& filepath);
 		static AssetHandle ImportAsset(const Path& filepath);
 
 		static const AssetMap& GetLoadedAssets();

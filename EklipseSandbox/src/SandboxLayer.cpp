@@ -129,7 +129,7 @@ namespace Eklipse
         m_planeMaterial = Material::Create(m_shader3D);
         m_planeMaterial->SetConstant("uFragConst", "Color", &m_planeColor, sizeof(glm::vec3));
 
-        m_cubeMesh = Mesh::Create("Assets/Meshes/cube.obj");
+        m_cubeMeshHandle = Mesh::Create("Assets/Meshes/cube.obj");
         m_cubeMaterial = Material::Create(m_shader3D);
         m_cubeMaterial->SetConstant("uFragConst", "Color", &m_cubeColor, sizeof(glm::vec3));
 
@@ -137,18 +137,18 @@ namespace Eklipse
         m_sphereMaterial = Material::Create(m_shader3D);
         m_sphereMaterial->SetConstant("uFragConst", "Color", &m_sphereColor, sizeof(glm::vec3));
 
-        m_teapotMesh = Mesh::Create("Assets/Meshes/teapot.obj");
+        m_teapotMeshHandle = Mesh::Create("Assets/Meshes/teapot.obj");
         m_teapotMaterial = Material::Create(m_shader3D);
         m_teapotMaterial->SetConstant("uFragConst", "Color", &m_teapotColor, sizeof(glm::vec3));
 
         // Apply new assets to objects on the scene
         // Plane
         auto& planeMeshComp = SceneManager::GetActiveScene()->GetEntity(m_plane.GetUUID()).GetComponent<MeshComponent>();
-        planeMeshComp.mesh = m_cubeMesh.get();
+        planeMeshComp.mesh = m_cubeMeshHandle.get();
         planeMeshComp.material = m_planeMaterial.get();
         // Cube
         auto& cubeMeshComp = SceneManager::GetActiveScene()->GetEntity(m_cube.GetUUID()).GetComponent<MeshComponent>();
-        cubeMeshComp.mesh = m_cubeMesh.get();
+        cubeMeshComp.mesh = m_cubeMeshHandle.get();
         cubeMeshComp.material = m_cubeMaterial.get();
         // Sphere
         auto& sphereMeshComp = SceneManager::GetActiveScene()->GetEntity(m_sphere.GetUUID()).GetComponent<MeshComponent>();
@@ -156,7 +156,7 @@ namespace Eklipse
         sphereMeshComp.material = m_sphereMaterial.get();
         // Teapot
         auto& teapotMeshComp = SceneManager::GetActiveScene()->GetEntity(m_teapot.GetUUID()).GetComponent<MeshComponent>();
-        teapotMeshComp.mesh = m_teapotMesh.get();
+        teapotMeshComp.mesh = m_teapotMeshHandle.get();
         teapotMeshComp.material = m_teapotMaterial.get();
 
         // Maximize the window
@@ -173,13 +173,13 @@ namespace Eklipse
 
         m_planeMaterial->Dispose();
 
-        m_cubeMesh->Dispose();
+        m_cubeMeshHandle->Dispose();
         m_cubeMaterial->Dispose();
 
         m_sphereMesh->Dispose();
         m_sphereMaterial->Dispose();
 
-        m_teapotMesh->Dispose();
+        m_teapotMeshHandle->Dispose();
         m_teapotMaterial->Dispose();
     }
 
