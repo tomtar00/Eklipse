@@ -16,10 +16,7 @@ namespace Eklipse
         EK_CORE_PROFILE();
         EK_ASSERT(config.shader, "Shader is null");
 
-        // Compute shaders don't have a framebuffer
-        //EK_ASSERT(config.framebuffer, "Framebuffer is null");
-
-        // TODO: validate config, eg. RT pipeline cannot have line topology
+        m_lastAccessTime = Timer::Now();
     }
 
     Ref<Pipeline> Pipeline::Get(const Config& config)
@@ -37,6 +34,7 @@ namespace Eklipse
         auto it = s_pipelines.find(hash);
         if (it != s_pipelines.end())
         {
+            it->second->m_lastAccessTime = Timer::Now();
             return it->second;
         }
 
@@ -57,6 +55,18 @@ namespace Eklipse
         }
         return pipelines;
     }
+    void Pipeline::DeleteUnsused()
+    {
+        for (auto it = s_pipelines.begin(); it != s_pipelines.end(); ++it)
+        {
+            float timeSinceLastAccessMs = Timer::DurationMs(it->second->m_lastAccessTime, Timer::Now());
+            if (it->second.use_count() == 1 && timeSinceLastAccessMs > EK_PIPELINE_LIFETIME)
+            {
+                it->second->Dispose();
+                it = s_pipelines.erase(it);
+            }
+        }
+    }
     void Pipeline::DisposeAll()
     {
         for (auto& [hash, pipeline] : s_pipelines)
@@ -64,6 +74,12 @@ namespace Eklipse
             pipeline->Dispose();
         }
         s_pipelines.clear();
+
+        auto graphicsAPI = Renderer::GetGraphicsAPIType();
+        if (graphicsAPI == GraphicsAPI::Type::Vulkan)
+        {
+            Vulkan::VKPipeline::DisposeCache();
+        }
     }
     
     Ref<Pipeline> Pipeline::Create(const Config& config)

@@ -143,6 +143,7 @@ namespace Eklipse
         EK_PROFILE();
 
         RenderCommand::API->Submit();
+        Pipeline::DeleteUnsused();
     }
 
     // Render calls

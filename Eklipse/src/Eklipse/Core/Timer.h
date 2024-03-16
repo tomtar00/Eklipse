@@ -10,11 +10,9 @@ namespace Eklipse
 		MainLoopTimer();
 
 		void Record();
-		float DeltaTime();
+		float DeltaTime() const;
 
 	private:
-		inline static MainLoopTimer* s_instance = nullptr;
-
 		TimePoint m_time;
 		TimePoint m_lastTime;
 		double m_deltaTime;
@@ -24,9 +22,10 @@ namespace Eklipse
 	{
 	public:
 		Timer();
-		float ElapsedTimeMs();
+		float ElapsedTimeMs() const;
 
-		static TimePoint Now() { return std::chrono::high_resolution_clock::now(); }
+		static TimePoint Now();
+		static float DurationMs(const TimePoint& start, const TimePoint& end);
 
 	private:
 		TimePoint m_startTime;

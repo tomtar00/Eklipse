@@ -15,9 +15,9 @@ namespace Eklipse
     public:
         Sandbox(ApplicationInfo& info) : Application(info)
         {
-            //PushLayer(CreateRef<SandboxLayer>());
+            PushLayer(CreateRef<SandboxLayer>());
             //PushLayer(CreateRef<RTLayer>());
-            PushLayer(CreateRef<ComputeLayer>());
+            //PushLayer(CreateRef<ComputeLayer>());
 
             ImGuiLayerConfig config{};
             config.dockingEnabled = false;

@@ -15,6 +15,7 @@ namespace Eklipse
 			Vec<VkVertexInputAttributeDescription> attribteDesc;
 
 			VkPipelineLayout pipelineLayout;
+			VkPipelineCache pipelineCache;
 			VkRenderPass renderPass;
 
 			VkPrimitiveTopology topology;
@@ -26,6 +27,7 @@ namespace Eklipse
 		{
 			VkPipelineShaderStageCreateInfo shaderStage;
             VkPipelineLayout pipelineLayout;
+			VkPipelineCache pipelineCache;
 		};
 		VkPipeline CreateComputePipeline(const ComputePipelineCreateInfo& createInfo);
 
@@ -34,11 +36,14 @@ namespace Eklipse
 		public:
 			VKPipeline(const Pipeline::Config& config);
 
+			static void DisposeCache();
+
 			virtual void Build() override;
 			virtual void Bind() override;
 			virtual void Dispose() override;
 
 		private:
+			static VkPipelineCache s_pipelineCache;
 			VkPipeline m_pipeline = VK_NULL_HANDLE;
 			VkPipelineBindPoint m_bindPoint;
 		};

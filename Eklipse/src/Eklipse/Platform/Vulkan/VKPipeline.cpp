@@ -131,7 +131,7 @@ namespace Eklipse
             pipelineInfo.basePipelineIndex = -1;
 
             VkPipeline pipeline;
-            VkResult res = vkCreateGraphicsPipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
+            VkResult res = vkCreateGraphicsPipelines(g_logicalDevice, createInfo.pipelineCache, 1, &pipelineInfo, nullptr, &pipeline);
             HANDLE_VK_RESULT(res, "CREATE GRAPHICS PIPELINE");
 
             return pipeline;
@@ -145,21 +145,42 @@ namespace Eklipse
             pipelineInfo.stage = createInfo.shaderStage;
 
             VkPipeline pipeline;
-            VkResult res = vkCreateComputePipelines(g_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
+            VkResult res = vkCreateComputePipelines(g_logicalDevice, createInfo.pipelineCache, 1, &pipelineInfo, nullptr, &pipeline);
             HANDLE_VK_RESULT(res, "CREATE COMPUTE PIPELINES");
 
             return pipeline;
         }
         
+        VkPipelineCache VKPipeline::s_pipelineCache = VK_NULL_HANDLE;
+
         VKPipeline::VKPipeline(const Pipeline::Config& config) : Pipeline(config)
         {
             EK_CORE_PROFILE();
             Build();
         }
 
+        void VKPipeline::DisposeCache()
+        {
+            EK_CORE_PROFILE();
+            EK_CORE_TRACE("Disposing pipeline cache");
+            if (s_pipelineCache != VK_NULL_HANDLE)
+                vkDestroyPipelineCache(g_logicalDevice, s_pipelineCache, nullptr);
+            EK_CORE_DBG("Pipeline cache disposed");
+        }
+
         void VKPipeline::Build()
         {
+            EK_CORE_PROFILE();
             EK_CORE_TRACE("Building pipeline");
+
+            if (s_pipelineCache == VK_NULL_HANDLE)
+            {
+                 VkPipelineCacheCreateInfo pipelineCacheInfo{};
+                 pipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+                 VkResult res = vkCreatePipelineCache(g_logicalDevice, &pipelineCacheInfo, nullptr, &s_pipelineCache);
+                 HANDLE_VK_RESULT(res, "CREATE PIPELINE CACHE");
+            }
+
             if (m_config.type == Pipeline::Type::Resterization)
             {
                 VKShader* shader = static_cast<VKShader*>(m_config.shader);
@@ -170,7 +191,9 @@ namespace Eklipse
                 info.attribteDesc = CreateVertexInputAttributeDescriptions(shader->GetVertexReflection());
                 info.bindingDesc = CreateVertexInputBindingDescriptions(shader->GetVertexReflection());
                 info.pipelineLayout = shader->GetPipelineLayout();
+                info.pipelineCache = s_pipelineCache;
                 info.renderPass = framebuffer->GetRenderPass();
+
                 if (m_config.topologyMode == Pipeline::TopologyMode::Triangle)
                 {
                     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -181,6 +204,7 @@ namespace Eklipse
                     info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
                     info.mode = VK_POLYGON_MODE_LINE;
                 }
+
                 m_pipeline = CreateGraphicsPipeline(info);
                 m_bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             }
@@ -198,6 +222,8 @@ namespace Eklipse
                 ComputePipelineCreateInfo info{};
                 info.shaderStage = CreateShaderStage(shader->GetComputeShaderModule());
                 info.pipelineLayout = shader->GetPipelineLayout();
+                info.pipelineCache = s_pipelineCache;
+
                 m_pipeline = CreateComputePipeline(info);
                 m_bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
             }

@@ -3,6 +3,10 @@
 #include "Shader.h"
 #include "Framebuffer.h"
 
+#include <Eklipse/Core/Timer.h>
+
+#define EK_PIPELINE_LIFETIME 10000.0f
+
 namespace Eklipse
 {
 	class EK_API Pipeline
@@ -32,6 +36,8 @@ namespace Eklipse
 
 		static Ref<Pipeline> Get(const Config& config);
 		static Vec<Ref<Pipeline>> GetPipelinesByShader(const AssetHandle shaderHandle);
+
+		static void DeleteUnsused();
 		static void DisposeAll();
 
 		virtual void Build() = 0;
@@ -44,5 +50,6 @@ namespace Eklipse
 
 	protected:
 		Config m_config;
+		TimePoint m_lastAccessTime;
 	};
 }
