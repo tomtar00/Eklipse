@@ -36,10 +36,11 @@ namespace Eklipse
         m_quit = false;
 
         int tries = 0;
-        GraphicsAPI::Type api = Renderer::GetGraphicsAPIType();
+        GraphicsAPI::Type api = Renderer::GetTargetGraphicsAPIType();
+        GraphicsAPI::Type targetAPIType;
         do
         {
-            Renderer::SetGraphicsAPIType((GraphicsAPI::Type)(((int)api + tries) % GraphicsAPI::TYPE_COUNT));
+            targetAPIType = (GraphicsAPI::Type)(((int)api + tries) % GraphicsAPI::TYPE_COUNT);
 
             if (++tries > GraphicsAPI::TYPE_COUNT)
             {
@@ -47,16 +48,20 @@ namespace Eklipse
                 exit(-1);
             }
 
-            WindowData data{ m_appInfo.windowWidth, m_appInfo.windowHeight, m_appInfo.appName };
+            WindowData data{};
+            data.width = m_appInfo.windowWidth;
+            data.height = m_appInfo.windowHeight;
+            data.title = m_appInfo.appName;
+            data.clientAPI = targetAPIType;
             m_window.reset();
             m_window = Window::Create(data);
             m_window->SetEventCallback(CAPTURE_FN(OnEventReceived));
 
-            OnInitAPI(Renderer::GetGraphicsAPIType());
+            OnInitAPI(targetAPIType);
         } 
-        while (!Renderer::Init());
+        while (!Renderer::Init(targetAPIType));
 
-        // Renderer::InitSSBOs();
+        //Renderer::InitSSBOs();
         AssetManager::ReloadAssets();
 
         if(SceneManager::GetActiveScene())
@@ -133,7 +138,7 @@ namespace Eklipse
         }
         EK_CORE_INFO("Setting API to {0}", GraphicsAPI::TypeToString(api));
 
-        Renderer::SetGraphicsAPIType(api);
+        Renderer::SetTargetGraphicsAPIType(api);
 
         m_running = false;
         m_quit = false;
@@ -233,12 +238,14 @@ namespace Eklipse
                     EK_PROFILE_NAME("Update");
 
                     Renderer::BeginFrame();
+                    Renderer::OnUpdate(deltaTime);
                     for (auto& layer : m_layerStack)
                     {
                         layer->OnUpdate(deltaTime);
                     }
 
                     Renderer::BeginComputePass();
+                    Renderer::OnCompute(deltaTime);
                     for (auto& layer : m_layerStack)
                     {
                         layer->OnCompute(deltaTime);

@@ -19,10 +19,9 @@ namespace Eklipse
         return "Unknown";
     }
 
-    Unique<GraphicsAPI> GraphicsAPI::Create()
+    Unique<GraphicsAPI> GraphicsAPI::Create(GraphicsAPI::Type apiType)
     {
         EK_CORE_PROFILE();
-        auto apiType = Renderer::GetGraphicsAPIType();
         switch (apiType)
         {
             case GraphicsAPI::Type::Vulkan: return CreateUnique<Vulkan::VulkanAPI>();

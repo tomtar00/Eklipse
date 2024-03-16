@@ -57,14 +57,29 @@ namespace Eklipse
     }
     void Pipeline::DeleteUnsused()
     {
+        EK_CORE_PROFILE();
+        Vec<size_t> toDelete;
+
         for (auto it = s_pipelines.begin(); it != s_pipelines.end(); ++it)
         {
             float timeSinceLastAccessMs = Timer::DurationMs(it->second->m_lastAccessTime, Timer::Now());
             if (it->second.use_count() == 1 && timeSinceLastAccessMs > EK_PIPELINE_LIFETIME)
             {
-                it->second->Dispose();
-                it = s_pipelines.erase(it);
+                EK_CORE_TRACE("Pipeline {} will be deleted", it->first);
+                toDelete.push_back(it->first);
             }
+        }
+
+        if (!toDelete.empty()) 
+        {
+            Renderer::WaitDeviceIdle();
+        }
+        for (auto& hash : toDelete)
+        {
+            EK_CORE_TRACE("Disposing unsused pipeline ({})", hash);
+            s_pipelines.at(hash)->Dispose();
+            s_pipelines.erase(hash);
+            EK_CORE_DBG("Unsused pipeline disposed");
         }
     }
     void Pipeline::DisposeAll()

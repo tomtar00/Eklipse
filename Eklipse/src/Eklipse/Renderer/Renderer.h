@@ -30,15 +30,18 @@ namespace Eklipse
 	static class EK_API Renderer
 	{
 	public:
-		static bool Init();
+		static bool Init(GraphicsAPI::Type apiType);
+		static void InitSSBOs();
 		static void OnAPIHasInitialized();
-		static void WaitDeviceIdle();
 		static void Shutdown();
+		static void WaitDeviceIdle();
 
 		// Render stages
 		static void BeginFrame();
 		static void UpdateViewProjection(Camera& camera, Transform& cameraTransform);
+		static void OnUpdate(float deltaTime);
 		static void BeginComputePass();
+		static void OnCompute(float deltaTime);
 		static void EndComputePass();
 		static void BeginRenderPass(Framebuffer* framebuffer);
 		static void EndRenderPass(Framebuffer* framebuffer);
@@ -55,7 +58,8 @@ namespace Eklipse
 
 		// State changing
 		static GraphicsAPI::Type GetGraphicsAPIType();
-		static void SetGraphicsAPIType(GraphicsAPI::Type apiType);
+		static GraphicsAPI::Type GetTargetGraphicsAPIType();
+		static void SetTargetGraphicsAPIType(GraphicsAPI::Type apiType);
 		static void SetPipelineTopologyMode(Pipeline::TopologyMode mode);
 		static void SetPipelineType(Pipeline::Type type);
 
@@ -75,6 +79,7 @@ namespace Eklipse
 		static std::unordered_map<String, Ref<UniformBuffer>, std::hash<String>> s_uniformBufferCache;
 		static std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>> s_storageBufferCache;
 		
+		static GraphicsAPI::Type s_targetAPIType;
 		static RendererSettings s_settings;
 		static Unique<RendererContext> s_rendererContext;
 		static Ref<UniformBuffer> s_cameraUniformBuffer;

@@ -27,18 +27,29 @@ namespace Eklipse
     std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>>	Renderer::s_storageBufferCache;
 
     RendererSettings Renderer::s_settings;
+    GraphicsAPI::Type Renderer::s_targetAPIType;
     Unique<RendererContext> Renderer::s_rendererContext = nullptr;
     Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
     Ref<Framebuffer> Renderer::s_defaultFramebuffer = nullptr;
 
-    bool Renderer::Init()
+    bool Renderer::Init(GraphicsAPI::Type apiType)
     {
         EK_CORE_PROFILE();
         RenderCommand::API.reset();
-        RenderCommand::API = GraphicsAPI::Create();
-        SetPipelineTopologyMode(s_settings.PipelineTopologyMode);
-        SetPipelineType(s_settings.PipelineType);
-        return RenderCommand::API->Init();
+        RenderCommand::API = GraphicsAPI::Create(apiType);
+        s_settings.GraphicsAPIType = apiType;
+        if (RenderCommand::API->Init())
+        {
+            SetPipelineTopologyMode(s_settings.PipelineTopologyMode);
+            SetPipelineType(s_settings.PipelineType);
+            return true;
+        }
+        return false;
+    }
+    void Renderer::InitSSBOs()
+    {
+        EK_CORE_PROFILE();
+        s_rendererContext->InitSSBOs();
     }
     void Renderer::OnAPIHasInitialized()
     {
@@ -54,10 +65,6 @@ namespace Eklipse
         framebufferInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
 
         s_defaultFramebuffer = Framebuffer::Create(framebufferInfo);
-    }
-    void Renderer::WaitDeviceIdle()
-    {
-        RenderCommand::API->WaitDeviceIdle();
     }
     void Renderer::Shutdown()
     {
@@ -89,6 +96,10 @@ namespace Eklipse
 
         RenderCommand::API->Shutdown();
     }
+    void Renderer::WaitDeviceIdle()
+    {
+        RenderCommand::API->WaitDeviceIdle();
+    }
 
     // Render stages
     void Renderer::BeginFrame()
@@ -103,10 +114,20 @@ namespace Eklipse
         camera.UpdateViewProjectionMatrix(cameraTransform, g_currentFramebuffer->GetAspectRatio());
         s_cameraUniformBuffer->SetData(&camera.GetViewProjectionMatrix(), sizeof(glm::mat4));
     }
+    void Renderer::OnUpdate(float deltaTime)
+    {
+        EK_PROFILE();
+        s_rendererContext->OnUpdate(deltaTime);
+    }
     void Renderer::BeginComputePass()
     {
         EK_PROFILE();
         RenderCommand::API->BeginComputePass();
+    }
+    void Renderer::OnCompute(float deltaTime)
+    {
+        EK_PROFILE();
+        s_rendererContext->OnCompute(deltaTime);
     }
     void Renderer::EndComputePass()
     {
@@ -165,6 +186,7 @@ namespace Eklipse
     {
         EK_CORE_PROFILE();
         s_defaultFramebuffer->Resize(width, height);
+        s_rendererContext->OnWindowResize(width, height);
     }
     void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
     {
@@ -197,9 +219,13 @@ namespace Eklipse
     {
         return s_settings.GraphicsAPIType;
     }
-    void Renderer::SetGraphicsAPIType(GraphicsAPI::Type apiType)
+    GraphicsAPI::Type Renderer::GetTargetGraphicsAPIType()
     {
-        s_settings.GraphicsAPIType = apiType;
+        return s_targetAPIType;
+    }
+    void Renderer::SetTargetGraphicsAPIType(GraphicsAPI::Type apiType)
+    {
+        s_targetAPIType = apiType;
     }
     void Renderer::SetPipelineTopologyMode(Pipeline::TopologyMode mode)
     {
@@ -216,10 +242,12 @@ namespace Eklipse
         RenderCommand::API->SetPipelineType(type);
         s_settings.PipelineType = type;
 
-        // WaitDeviceIdle();
+         WaitDeviceIdle();
 
         if (s_rendererContext)
             s_rendererContext->Shutdown();
+
+        s_rendererContext = nullptr;
 
         if (type == Pipeline::Type::Resterization)
             s_rendererContext = CreateUnique<RasterizationContext>();

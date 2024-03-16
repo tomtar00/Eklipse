@@ -18,7 +18,7 @@ namespace Eklipse
 
     public:
         GraphicsAPI();
-        static Unique<GraphicsAPI> Create();
+        static Unique<GraphicsAPI> Create(GraphicsAPI::Type apiType);
 
         virtual bool Init() = 0;
         virtual void Shutdown() = 0;

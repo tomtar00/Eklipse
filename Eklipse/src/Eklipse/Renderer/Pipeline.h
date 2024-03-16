@@ -5,7 +5,7 @@
 
 #include <Eklipse/Core/Timer.h>
 
-#define EK_PIPELINE_LIFETIME 10000.0f
+#define EK_PIPELINE_LIFETIME 1000.0f
 
 namespace Eklipse
 {
@@ -17,6 +17,7 @@ namespace Eklipse
 			Resterization,
 			Compute,
 			RayTracing,
+			RayTracingKHR
 		};
 		enum class TopologyMode
 		{

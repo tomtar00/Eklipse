@@ -4,6 +4,7 @@
 #include "VertexArray.h"
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Camera.h>
+#include <Eklipse/Renderer/ComputeShader.h>
 
 namespace Eklipse
 {
@@ -12,6 +13,10 @@ namespace Eklipse
 	public:
 		virtual void Init() = 0;
 		virtual void Shutdown() = 0;
+		virtual void InitSSBOs() {}
+		virtual void OnUpdate(float deltaTime) {}
+		virtual void OnCompute(float deltaTime) {}
+		virtual void OnWindowResize(uint32_t width, uint32_t height) {}
 		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) = 0;
 	};
 
@@ -47,13 +52,31 @@ namespace Eklipse
 	public:
 		virtual void Init() override;
 		virtual void Shutdown() override;
+		virtual void InitSSBOs() override;
+		virtual void OnUpdate(float deltaTime) override;
+		virtual void OnCompute(float deltaTime) override;
+		virtual void OnWindowResize(uint32_t width, uint32_t height);
 		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) override;
 
 	private:
+		void InitMaterial();
+		void ReconstructSceneBuffers();
+
+	private:
+		Ref<Shader> m_shader;
+		Ref<Material> m_material;
+		Ref<VertexArray> m_fullscreenQuad;
+
+		Ref<ComputeShader> m_transComputeShader;
+		Ref<ComputeShader> m_boundsComputeShader;
+
 		uint32_t m_frameIndex = 0;
-		Ref<Shader> m_rayTracingShader;
-		Ref<Material> m_rayTracingMaterial;
-		Ref<VertexArray> m_rayTracingQuad;
+		uint32_t m_numTotalVertices;
+		uint32_t m_numTotalIndices;
+		uint32_t m_numTotalSpheres;
+		uint32_t m_numTotalMeshes;
+
+		RayTracingContext::Settings m_rtSettings;
 	};
 
 	struct RayTracingMaterial

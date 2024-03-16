@@ -163,8 +163,11 @@ namespace Eklipse
         {
             EK_CORE_PROFILE();
             EK_CORE_TRACE("Disposing pipeline cache");
-            if (s_pipelineCache != VK_NULL_HANDLE)
-                vkDestroyPipelineCache(g_logicalDevice, s_pipelineCache, nullptr);
+            if (s_pipelineCache != VK_NULL_HANDLE) 
+            {
+                vkDestroyPipelineCache(g_logicalDevice, s_pipelineCache, VK_NULL_HANDLE);
+                s_pipelineCache = VK_NULL_HANDLE;
+            }
             EK_CORE_DBG("Pipeline cache disposed");
         }
 
@@ -181,7 +184,7 @@ namespace Eklipse
                  HANDLE_VK_RESULT(res, "CREATE PIPELINE CACHE");
             }
 
-            if (m_config.type == Pipeline::Type::Resterization)
+            if (m_config.type == Pipeline::Type::Resterization || m_config.type == Pipeline::Type::RayTracing)
             {
                 VKShader* shader = static_cast<VKShader*>(m_config.shader);
                 VKFramebuffer* framebuffer = static_cast<VKFramebuffer*>(m_config.framebuffer);
@@ -208,12 +211,10 @@ namespace Eklipse
                 m_pipeline = CreateGraphicsPipeline(info);
                 m_bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             }
-            /*
-            else if (config.type == Pipeline::Type::RayTracing)
+            else if (m_config.type == Pipeline::Type::RayTracingKHR)
             {
                  m_bindPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
             }
-            */
             else if (m_config.type == Pipeline::Type::Compute)
             {
                 VKShader* shader = static_cast<VKShader*>(m_config.shader);

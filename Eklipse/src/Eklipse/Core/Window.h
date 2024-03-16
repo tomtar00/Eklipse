@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Eklipse/Events/Event.h"
 #include <GLFW/glfw3.h>
+#include <Eklipse/Events/Event.h>
+#include <Eklipse/Renderer/GraphicsAPI.h>
 
 namespace Eklipse
 {
@@ -9,6 +10,7 @@ namespace Eklipse
 	{
 		int width{ 0 }, height{ 0 };
 		char* title{ "" };
+		GraphicsAPI::Type clientAPI;
 
 		std::function<void(Event&)> EventCallback;
 	};
