@@ -13,7 +13,6 @@ namespace Eklipse
     EditorAssetLibrary::EditorAssetLibrary(const Path& assetDirectory) 
         : m_shaderReloadPending(false), m_assetDirectory(assetDirectory)
     {
-        EK_ASSERT(AssetManager::s_assetLibrary == nullptr, "AssetLibrary already exists!")
         Validate();
     }
     EditorAssetLibrary::~EditorAssetLibrary()

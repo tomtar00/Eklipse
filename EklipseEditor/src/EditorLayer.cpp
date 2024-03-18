@@ -428,8 +428,8 @@ namespace Eklipse
 
         SetTheme(m_settings.theme);
 
-        /*m_filesPanel.LoadResources();
-        if (m_editorAssetLibrary)
+        m_filesPanel.LoadResources();
+        /*if (m_editorAssetLibrary)
         {
             m_editorAssetLibrary->ReloadAssets();
         }

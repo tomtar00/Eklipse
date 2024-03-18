@@ -82,8 +82,8 @@ namespace Eklipse
         {
             switch (renderer)
             {
-                case 0: Renderer::SetPipelineType(Pipeline::Type::Resterization);   break;
-                case 1: Renderer::SetPipelineType(Pipeline::Type::RayTracing);      break;
+                case 0: Renderer::RequestPipelineTypeChange(Pipeline::Type::Resterization);   break;
+                case 1: Renderer::RequestPipelineTypeChange(Pipeline::Type::RayTracing);      break;
             }
         }
         static int polygonMode = (int)Renderer::GetSettings().PipelineTopologyMode;

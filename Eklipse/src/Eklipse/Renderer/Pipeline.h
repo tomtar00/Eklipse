@@ -5,7 +5,7 @@
 
 #include <Eklipse/Core/Timer.h>
 
-#define EK_PIPELINE_LIFETIME 1000.0f
+#define EK_PIPELINE_LIFETIME 5000.0f
 
 namespace Eklipse
 {
@@ -15,14 +15,14 @@ namespace Eklipse
 		enum class Type
 		{
 			Resterization,
-			Compute,
 			RayTracing,
-			RayTracingKHR
+			RayTracingKHR,
+			Compute
 		};
 		enum class TopologyMode
 		{
 			Triangle,
-			Line,
+			Line
 		};
 		struct Config
 		{
@@ -38,6 +38,7 @@ namespace Eklipse
 		static Ref<Pipeline> Get(const Config& config);
 		static Vec<Ref<Pipeline>> GetPipelinesByShader(const AssetHandle shaderHandle);
 
+		static String TypeToString(const Type& type);
 		static void DeleteUnsused();
 		static void DisposeAll();
 

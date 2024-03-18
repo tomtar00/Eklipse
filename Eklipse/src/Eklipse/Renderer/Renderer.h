@@ -55,13 +55,17 @@ namespace Eklipse
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void OnMultiSamplingChanged(uint32_t numSamples);
 		static void OnVsyncChanged(bool enabled);
+		static void OnMeshAdded(Entity entity);
+		static void OnSphereAdded(Entity entity);
 
 		// State changing
 		static GraphicsAPI::Type GetGraphicsAPIType();
 		static GraphicsAPI::Type GetTargetGraphicsAPIType();
+		static Pipeline::Type Renderer::GetPipelineType();
 		static void SetTargetGraphicsAPIType(GraphicsAPI::Type apiType);
 		static void SetPipelineTopologyMode(Pipeline::TopologyMode mode);
 		static void SetPipelineType(Pipeline::Type type);
+		static void RequestPipelineTypeChange(Pipeline::Type type);
 
 		// Uniform buffers
 		static Ref<UniformBuffer> CreateUniformBuffer(const String& uniformBufferName, const size_t size, const uint32_t binding);
@@ -71,7 +75,7 @@ namespace Eklipse
 		static Ref<StorageBuffer> GetStorageBuffer(const String& storageBufferName);
 
 		// Settings
-		static const RendererSettings& GetSettings();
+		static RendererSettings& GetSettings();
 		static void SerializeRendererSettings(YAML::Emitter& out);
 		static void DeserializeRendererSettings(const YAML::Node& data);
 
@@ -80,6 +84,9 @@ namespace Eklipse
 		static std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>> s_storageBufferCache;
 		
 		static GraphicsAPI::Type s_targetAPIType;
+		static Pipeline::Type s_targetPipelineType;
+		static bool s_pipelineTypeChangeRequeted;
+
 		static RendererSettings s_settings;
 		static Unique<RendererContext> s_rendererContext;
 		static Ref<UniformBuffer> s_cameraUniformBuffer;

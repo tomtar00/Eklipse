@@ -144,7 +144,7 @@ namespace Eklipse
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && path.has_extension())
             {
-                AssetType type = EditorAssetLibrary::GetAssetTypeFromFileExtension(path.extension().string());
+                AssetType type = Asset::GetTypeFromFileExtension(path.extension().string());
                 if (type == AssetType::Material)
                 {
                     AssetHandle materialHandle = EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(m_currentPath / path);
@@ -387,7 +387,7 @@ namespace Eklipse
         if (!fs::is_directory(path))
         {
             String extension = path.extension().string();
-            AssetType type = EditorAssetLibrary::GetAssetTypeFromFileExtension(extension);
+            AssetType type = Asset::GetTypeFromFileExtension(extension);
 
             if (type == AssetType::Material)
                 return m_materialIcon;

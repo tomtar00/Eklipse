@@ -27,7 +27,11 @@ namespace Eklipse
     std::unordered_map<String, Ref<StorageBuffer>, std::hash<String>>	Renderer::s_storageBufferCache;
 
     RendererSettings Renderer::s_settings;
-    GraphicsAPI::Type Renderer::s_targetAPIType;
+
+    GraphicsAPI::Type Renderer::s_targetAPIType = Renderer::s_settings.GraphicsAPIType;
+    Pipeline::Type Renderer::s_targetPipelineType;
+    bool Renderer::s_pipelineTypeChangeRequeted;
+
     Unique<RendererContext> Renderer::s_rendererContext = nullptr;
     Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
     Ref<Framebuffer> Renderer::s_defaultFramebuffer = nullptr;
@@ -92,12 +96,14 @@ namespace Eklipse
         Pipeline::DisposeAll();
 
         s_rendererContext->Shutdown();
+        s_rendererContext.reset();
         s_rendererContext = nullptr;
 
         RenderCommand::API->Shutdown();
     }
     void Renderer::WaitDeviceIdle()
     {
+        EK_PROFILE();
         RenderCommand::API->WaitDeviceIdle();
     }
 
@@ -162,8 +168,13 @@ namespace Eklipse
     void Renderer::Submit()
     {
         EK_PROFILE();
-
         RenderCommand::API->Submit();
+
+        if (s_pipelineTypeChangeRequeted)
+        {
+            SetPipelineType(s_targetPipelineType);
+            s_pipelineTypeChangeRequeted = false;
+        }
         Pipeline::DeleteUnsused();
     }
 
@@ -171,13 +182,11 @@ namespace Eklipse
     void Renderer::BeginRenderPass(Framebuffer* framebuffer)
     {
         EK_PROFILE();
-
         framebuffer->Bind();
     }
     void Renderer::EndRenderPass(Framebuffer* framebuffer)
     {
         EK_PROFILE();
-
         framebuffer->Unbind();
     }
 
@@ -213,6 +222,14 @@ namespace Eklipse
         glfwSwapInterval(enabled);
 #endif
     }
+    void Renderer::OnMeshAdded(Entity entity)
+    {
+        s_rendererContext->OnMeshAdded(entity);
+    }
+    void Renderer::OnSphereAdded(Entity entity)
+    {
+        s_rendererContext->OnSphereAdded(entity);
+    }
 
     // State changing
     GraphicsAPI::Type Renderer::GetGraphicsAPIType()
@@ -222,6 +239,10 @@ namespace Eklipse
     GraphicsAPI::Type Renderer::GetTargetGraphicsAPIType()
     {
         return s_targetAPIType;
+    }
+    Pipeline::Type Renderer::GetPipelineType()
+    {
+        return s_settings.PipelineType;
     }
     void Renderer::SetTargetGraphicsAPIType(GraphicsAPI::Type apiType)
     {
@@ -236,17 +257,27 @@ namespace Eklipse
     void Renderer::SetPipelineType(Pipeline::Type type)
     {
         EK_CORE_PROFILE();
+        EK_CORE_TRACE(" === Setting pipeline type to {0}", Pipeline::TypeToString(type));
+
         if (s_settings.PipelineType == type && s_rendererContext)
             return;
+
+        WaitDeviceIdle();
+
+        // For some reason, the storage buffers are not being disposed when the pipeline type changes
+        for (auto&& [name, storageBuffer] : s_storageBufferCache)
+        {
+            storageBuffer->Dispose();
+        }
+        s_storageBufferCache.clear();
 
         RenderCommand::API->SetPipelineType(type);
         s_settings.PipelineType = type;
 
-         WaitDeviceIdle();
-
         if (s_rendererContext)
             s_rendererContext->Shutdown();
 
+        s_rendererContext.reset();
         s_rendererContext = nullptr;
 
         if (type == Pipeline::Type::Resterization)
@@ -255,6 +286,13 @@ namespace Eklipse
             s_rendererContext = CreateUnique<RayTracingContext>();
 
         s_rendererContext->Init();
+
+        EK_CORE_DBG(" === Pipeline type set to {0}", Pipeline::TypeToString(type));
+    }
+    void Renderer::RequestPipelineTypeChange(Pipeline::Type type)
+    {
+        s_targetPipelineType = type;
+        s_pipelineTypeChangeRequeted = true;
     }
 
     // Uniform buffers
@@ -311,7 +349,7 @@ namespace Eklipse
     }
 
     // Settings
-    const RendererSettings& Renderer::GetSettings()
+    RendererSettings& Renderer::GetSettings()
     {
         return s_settings;
     }

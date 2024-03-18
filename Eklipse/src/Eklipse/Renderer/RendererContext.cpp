@@ -5,12 +5,6 @@
 namespace Eklipse
 {
     // === Rasterization ===
-    void RasterizationContext::Init()
-    {
-    }
-    void RasterizationContext::Shutdown()
-    {
-    }
     void RasterizationContext::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
         EK_PROFILE();
@@ -64,6 +58,9 @@ namespace Eklipse
 
     void RayTracingContext::Init()
     {
+        m_viewportSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
+        m_lastViewportSize = m_viewportSize;
+
         InitSSBOs();
 
         // Quad
@@ -176,6 +173,17 @@ namespace Eklipse
             buffer->SetData(&m_numTotalSpheres, sizeof(uint32_t));
             buffer->SetData(spheres.data(), spheres.size() * sizeof(RayTracingSphereInfo), 4 * sizeof(uint32_t));
         }
+
+        if (m_lastViewportSize != m_viewportSize)
+        {
+            m_viewportSize = m_lastViewportSize;
+            m_frameIndex = 0;
+
+            Renderer::WaitDeviceIdle();
+
+            m_material->Dispose();
+            InitMaterial();
+        }
     }
     void RayTracingContext::OnCompute(float deltaTime)
     {
@@ -190,6 +198,21 @@ namespace Eklipse
         m_material->Dispose();
         InitMaterial();
     }
+    void RayTracingContext::OnMeshAdded(Entity entity)
+    {
+        auto& meshComp = entity.GetComponent<MeshComponent>();
+        auto& rtMeshComp = entity.GetComponent<RayTracingMeshComponent>();
+        rtMeshComp.index = m_numTotalMeshes;
+
+        auto& sizes = AddMeshToBuffers(meshComp.mesh, m_numTotalVertices, m_numTotalIndices, m_numTotalMeshes++);
+
+        m_numTotalVertices += sizes.first;
+        m_numTotalIndices += sizes.second;
+    }
+    void RayTracingContext::OnSphereAdded(Entity entity)
+    {
+        m_numTotalSpheres++;
+    }
     void RayTracingContext::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
         EK_PROFILE();
@@ -203,18 +226,18 @@ namespace Eklipse
 
         Renderer::UpdateViewProjection(camera, cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenQuad, m_material.get());
+
+        m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };
     }
 
     void RayTracingContext::InitMaterial()
     {
-        glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
-
-        size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
+        size_t bufferSize = m_viewportSize.x * m_viewportSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
 
         m_material = Material::Create(m_shader);
 
-        m_material->SetConstant("pData", "Resolution", &screenSize, sizeof(glm::vec2));
+        m_material->SetConstant("pData", "Resolution", &m_viewportSize, sizeof(glm::vec2));
         //m_material->SetConstant("pData", "CameraPos", &m_cameraTransform.position, sizeof(glm::vec3));
         //m_material->SetConstant("pData", "Frames", &m_frameIndex, sizeof(uint32_t));
         m_material->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
@@ -239,12 +262,12 @@ namespace Eklipse
         scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
         {
             Entity entity = { entityID, scene.get() };
-            auto& meshComp = entity.GetComponent<MeshComponent>();
-
-            auto& sizes = AddMeshToBuffers(meshComp.mesh, m_numTotalVertices, m_numTotalIndices, m_numTotalMeshes++);
-
-            m_numTotalVertices += sizes.first;
-            m_numTotalIndices += sizes.second;
+            OnMeshAdded(entity);
+        });
+        scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
+        {
+            Entity entity = { entityID, scene.get() };
+            OnSphereAdded(entity);
         });
     }
 }

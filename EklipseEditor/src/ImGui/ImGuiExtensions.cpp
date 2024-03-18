@@ -53,7 +53,7 @@ bool ImGui::InputAsset(const void* id, const char* label, Eklipse::AssetType ass
         if (ImGui::Button("...", { EK_OPTION_BUTTON_WIDTH, 0 }))
         {
             auto& assetLibrary = Eklipse::EditorLayer::Get().GetAssetLibrary();
-            Eklipse::Vec<Eklipse::String> requiredExtensions = Eklipse::EditorAssetLibrary::GetAssetFileExtensions(assetType);
+            Eklipse::Vec<Eklipse::String> requiredExtensions = Eklipse::Asset::GetFileExtensions(assetType);
             auto& result = Eklipse::FileUtilities::OpenFileDialog(requiredExtensions, assetLibrary->GetAssetDirectory());
             if (result.type == Eklipse::FileDialogResultType::SUCCESS)
             {

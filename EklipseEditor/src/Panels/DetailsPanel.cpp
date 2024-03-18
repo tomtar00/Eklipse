@@ -9,6 +9,20 @@
 
 namespace Eklipse
 {
+    static void AddRTMeshComponent(Entity entity)
+    {
+        if (!entity.HasComponent<MeshComponent>())
+            entity.AddComponent<MeshComponent>();
+
+        auto& rtMeshComp = entity.AddComponent<RayTracingMeshComponent>();
+        Renderer::OnMeshAdded(entity);
+    }
+    static void AddRTSphereComponent(Entity entity)
+    {
+        entity.AddComponent<RayTracingSphereComponent>();
+        Renderer::OnSphereAdded(entity);
+    }
+
     void DetailsPanel::Setup(String& name)
     {
         m_entityNameBuffer = name;
@@ -60,6 +74,12 @@ namespace Eklipse
 
                 if (ImGui::MenuItem("Add Camera Component") && !entity.HasComponent<CameraComponent>())
                     entity.AddComponent<CameraComponent>();
+
+                if (ImGui::MenuItem("Add RT Mesh Component") && !entity.HasComponent<RayTracingMeshComponent>())
+                    AddRTMeshComponent(entity);
+
+                if (ImGui::MenuItem("Add RT Sphere Component") && !entity.HasComponent<RayTracingSphereComponent>())
+                    AddRTSphereComponent(entity);
 
                 ImGui::EndPopup();
             }
@@ -213,6 +233,31 @@ namespace Eklipse
                         }
                     }
                 }
+            }
+        }
+
+        // RT Mesh
+        {
+            auto* rtMeshComp = entity.TryGetComponent<RayTracingMeshComponent>();
+            if (rtMeshComp != nullptr && ImGui::CollapsingHeader("RT Mesh"))
+            {
+                ImGui::DrawProperty("albedo", "Albedo", [&]() {
+                    ImGui::ColorEdit3("##Albedo", glm::value_ptr(rtMeshComp->material.albedo));
+                });
+            }
+        }
+
+        // RT Sphere
+        {
+            auto* rtSphereComp = entity.TryGetComponent<RayTracingSphereComponent>();
+            if (rtSphereComp != nullptr && ImGui::CollapsingHeader("RT Sphere"))
+            {
+                ImGui::DrawProperty("radius", "Radius", [&]() {
+                    ImGui::DragFloat("##Radius", &rtSphereComp->radius);
+                });
+                ImGui::DrawProperty("albedo", "Albedo", [&]() {
+                    ImGui::ColorEdit3("##Albedo", glm::value_ptr(rtSphereComp->material.albedo));
+                });
             }
         }
     }

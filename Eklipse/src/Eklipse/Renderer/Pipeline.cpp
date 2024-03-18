@@ -55,6 +55,14 @@ namespace Eklipse
         }
         return pipelines;
     }
+    String Pipeline::TypeToString(const Type& type)
+    {
+        if (type == Type::Resterization) return "Rasterization";
+        if (type == Type::Compute) return "Compute";
+        if (type == Type::RayTracing) return "Ray Tracing";
+        if (type == Type::RayTracingKHR) return "Ray Tracing (KHR)";
+        return "Unknown";
+    }
     void Pipeline::DeleteUnsused()
     {
         EK_CORE_PROFILE();

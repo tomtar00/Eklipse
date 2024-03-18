@@ -68,6 +68,15 @@ namespace Eklipse
 							Application::Get().SetGraphicsAPIType((GraphicsAPI::Type)(api));
 						}
 					});
+
+					ImGui::DrawProperty("pipeline_type", "Pipeline Type", [&]() {
+						static const char* Types[]{ "Rasterization", "Ray Tracing" };
+						static int type = (int)Renderer::GetPipelineType();
+						if (ImGui::Combo("##Type", &type, Types, IM_ARRAYSIZE(Types)))
+						{
+							Renderer::SetPipelineType((Pipeline::Type)(type));
+						}
+					});
 				}
 			}
 		}
