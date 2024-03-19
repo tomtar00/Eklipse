@@ -38,9 +38,7 @@ void main() {
     }
     else
     {
-        bPixels.Data[pixelIndex] = currentColor;
+        bPixels.Data[pixelIndex] = vec3(0.0);
         fragColor = vec4(currentColor, 1.0);
     }
-
-    // fragColor = vec4(bMaterials.Materials[bMeshes.Meshes[1].materialIndex].albedo, 1.0);
 }

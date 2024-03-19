@@ -20,6 +20,7 @@ namespace Eklipse
 		virtual void OnWindowResize(uint32_t width, uint32_t height) {}
 		virtual void OnMeshAdded(Entity entity) {}
 		virtual void OnSphereAdded(Entity entity) {}
+		virtual void OnSceneChanged() {}
 		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) = 0;
 	};
 
@@ -36,23 +37,6 @@ namespace Eklipse
 	class EK_API RayTracingContext : public RendererContext
 	{
 	public:
-		struct Settings
-		{
-			bool accumulate;
-			int raysPerPixel = 1;
-			int maxBounces = 4;
-
-			glm::vec3 skyColorHorizon = { 1.0f, 1.0f, 1.0f };
-			glm::vec3 skyColorZenith = { 0.07f, 0.36f, 0.72f };
-			glm::vec3 groundColor = { 0.35f, 0.3f, 0.35f };
-			glm::vec3 sunColor = { 1.0f, 1.0f, 0.8f };
-			glm::vec3 sunDirection = { 0.0f, 0.3f, -1.0f };
-
-			float sunFocus = 500.0f;
-			float sunIntensity = 200.0f;
-		};
-
-	public:
 		virtual void Init() override;
 		virtual void Shutdown() override;
 		virtual void InitSSBOs() override;
@@ -61,7 +45,16 @@ namespace Eklipse
 		virtual void OnWindowResize(uint32_t width, uint32_t height);
 		virtual void OnMeshAdded(Entity entity) override;
 		virtual void OnSphereAdded(Entity entity) override;
+		virtual void OnSceneChanged() override;
 		virtual void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform) override;
+
+	public:
+		void SetAccumulate(bool accumulate);
+		void SetRaysPerPixel(uint32_t raysPerPixel);
+		void SetMaxBounces(uint32_t maxBounces);
+
+		void RecompileShader();
+		void RecompileTransformComputeShader();
 
 	private:
 		void InitMaterial();
@@ -73,7 +66,6 @@ namespace Eklipse
 		Ref<VertexArray> m_fullscreenQuad;
 
 		Ref<ComputeShader> m_transComputeShader;
-		Ref<ComputeShader> m_boundsComputeShader;
 
 		uint32_t m_frameIndex = 0;
 		uint32_t m_numTotalVertices;
@@ -81,7 +73,6 @@ namespace Eklipse
 		uint32_t m_numTotalSpheres;
 		uint32_t m_numTotalMeshes;
 
-		RayTracingContext::Settings m_rtSettings;
 		glm::vec2 m_viewportSize;
 		glm::vec2 m_lastViewportSize;
 	};

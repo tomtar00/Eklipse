@@ -22,6 +22,27 @@ namespace Eklipse
         entity.AddComponent<RayTracingSphereComponent>();
         Renderer::OnSphereAdded(entity);
     }
+    static void DrawRayTracingMaterial(RayTracingMaterial& material)
+    {
+        ImGui::DrawProperty("albedo", "Albedo", [&]() {
+            ImGui::ColorEdit3("##Albedo", glm::value_ptr(material.albedo));
+        });
+        ImGui::DrawProperty("smoothness", "Smoothness", [&]() {
+            ImGui::SliderFloat("##Smoothness", &material.smoothness, 0.0f, 1.0f);
+        });
+        ImGui::DrawProperty("specular_color", "Specular Color", [&]() {
+            ImGui::ColorEdit3("##SpecularColor", glm::value_ptr(material.specularColor));
+        });
+        ImGui::DrawProperty("specular_prob", "Specular Probability", [&]() {
+            ImGui::SliderFloat("##SpecularProb", &material.specularProb, 0.0f, 1.0f);
+        });
+        ImGui::DrawProperty("emission_color", "Emission Color", [&]() {
+            ImGui::ColorEdit3("##EmissionColor", glm::value_ptr(material.emissionColor));
+        });
+        ImGui::DrawProperty("emission_strength", "Emission Strength", [&]() {
+            ImGui::SliderFloat("##EmissionStrength", &material.emissionStrength, 0.0f, 1.0f);
+        });
+    }
 
     void DetailsPanel::Setup(String& name)
     {
@@ -241,9 +262,7 @@ namespace Eklipse
             auto* rtMeshComp = entity.TryGetComponent<RayTracingMeshComponent>();
             if (rtMeshComp != nullptr && ImGui::CollapsingHeader("RT Mesh"))
             {
-                ImGui::DrawProperty("albedo", "Albedo", [&]() {
-                    ImGui::ColorEdit3("##Albedo", glm::value_ptr(rtMeshComp->material.albedo));
-                });
+                DrawRayTracingMaterial(rtMeshComp->material);
             }
         }
 
@@ -255,9 +274,7 @@ namespace Eklipse
                 ImGui::DrawProperty("radius", "Radius", [&]() {
                     ImGui::DragFloat("##Radius", &rtSphereComp->radius);
                 });
-                ImGui::DrawProperty("albedo", "Albedo", [&]() {
-                    ImGui::ColorEdit3("##Albedo", glm::value_ptr(rtSphereComp->material.albedo));
-                });
+                DrawRayTracingMaterial(rtSphereComp->material);
             }
         }
     }

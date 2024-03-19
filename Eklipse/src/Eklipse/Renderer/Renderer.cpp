@@ -32,7 +32,7 @@ namespace Eklipse
     Pipeline::Type Renderer::s_targetPipelineType;
     bool Renderer::s_pipelineTypeChangeRequeted;
 
-    Unique<RendererContext> Renderer::s_rendererContext = nullptr;
+    Ref<RendererContext> Renderer::s_rendererContext = nullptr;
     Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
     Ref<Framebuffer> Renderer::s_defaultFramebuffer = nullptr;
 
@@ -231,6 +231,15 @@ namespace Eklipse
         s_rendererContext->OnSphereAdded(entity);
     }
 
+    void Renderer::OnSceneChanged()
+    {
+        EK_CORE_PROFILE();
+        if (s_rendererContext)
+        {
+            s_rendererContext->OnSceneChanged();
+        }
+    }
+
     // State changing
     GraphicsAPI::Type Renderer::GetGraphicsAPIType()
     {
@@ -243,6 +252,10 @@ namespace Eklipse
     Pipeline::Type Renderer::GetPipelineType()
     {
         return s_settings.PipelineType;
+    }
+    Ref<RendererContext> Renderer::GetRendererContext()
+    {
+        return s_rendererContext;
     }
     void Renderer::SetTargetGraphicsAPIType(GraphicsAPI::Type apiType)
     {
@@ -260,7 +273,10 @@ namespace Eklipse
         EK_CORE_TRACE(" === Setting pipeline type to {0}", Pipeline::TypeToString(type));
 
         if (s_settings.PipelineType == type && s_rendererContext)
+        {
+            EK_CORE_WARN("Pipeline type already set to {0}", Pipeline::TypeToString(type));
             return;
+        }
 
         WaitDeviceIdle();
 
@@ -281,9 +297,9 @@ namespace Eklipse
         s_rendererContext = nullptr;
 
         if (type == Pipeline::Type::Resterization)
-            s_rendererContext = CreateUnique<RasterizationContext>();
+            s_rendererContext = CreateRef<RasterizationContext>();
         else if (type == Pipeline::Type::RayTracing)
-            s_rendererContext = CreateUnique<RayTracingContext>();
+            s_rendererContext = CreateRef<RayTracingContext>();
 
         s_rendererContext->Init();
 
@@ -361,17 +377,46 @@ namespace Eklipse
             out << YAML::BeginMap;
             out << YAML::Key << "Vsync" << YAML::Value << s_settings.Vsync;
             out << YAML::Key << "MsaaSamplesIndex" << YAML::Value << s_settings.MsaaSamplesIndex;
+            out << YAML::Key << "PipelineType" << YAML::Value << Pipeline::TypeToString(s_settings.PipelineType);
+            out << YAML::Key << "PipelineTopologyMode" << YAML::Value << Pipeline::TopologyModeToString(s_settings.PipelineTopologyMode);
+            out << YAML::Key << "GraphicsAPIType" << YAML::Value << GraphicsAPI::TypeToString(s_settings.GraphicsAPIType);
+            out << YAML::Key << "SkyColorHorizon" << YAML::Value << s_settings.skyColorHorizon;
+            out << YAML::Key << "SkyColorZenith" << YAML::Value << s_settings.skyColorZenith;
+            out << YAML::Key << "GroundColor" << YAML::Value << s_settings.groundColor;
+            out << YAML::Key << "SunColor" << YAML::Value << s_settings.sunColor;
+            out << YAML::Key << "SunDirection" << YAML::Value << s_settings.sunDirection;
+            out << YAML::Key << "SunFocus" << YAML::Value << s_settings.sunFocus;
+            out << YAML::Key << "SunIntensity" << YAML::Value << s_settings.sunIntensity;
+            out << YAML::Key << "Accumulate" << YAML::Value << s_settings.accumulate;
+            out << YAML::Key << "RaysPerPixel" << YAML::Value << s_settings.raysPerPixel;
+            out << YAML::Key << "MaxBounces" << YAML::Value << s_settings.maxBounces;
             out << YAML::EndMap;
         }
     }
     void Renderer::DeserializeRendererSettings(const YAML::Node& data)
     {
         EK_CORE_PROFILE();
+
         s_settings.Vsync = TryDeserailize<bool>(data, "Vsync", false);
         OnVsyncChanged(s_settings.Vsync);
 
         s_settings.MsaaSamplesIndex = TryDeserailize<int>(data, "MsaaSamplesIndex", 0);
         OnMultiSamplingChanged(s_settings.MsaaSamplesIndex);
+
+        s_settings.skyColorHorizon = TryDeserailize<glm::vec3>(data, "SkyColorHorizon", { 1.0f, 1.0f, 1.0f });
+        s_settings.skyColorZenith = TryDeserailize<glm::vec3>(data, "SkyColorZenith", { 0.07f, 0.36f, 0.72f });
+        s_settings.groundColor = TryDeserailize<glm::vec3>(data, "GroundColor", { 0.35f, 0.3f, 0.35f });
+        s_settings.sunColor = TryDeserailize<glm::vec3>(data, "SunColor", { 1.0f, 1.0f, 0.8f });
+        s_settings.sunDirection = TryDeserailize<glm::vec3>(data, "SunDirection", { 0.0f, 0.3f, -1.0f });
+        s_settings.sunFocus = TryDeserailize<float>(data, "SunFocus", 500.0f);
+        s_settings.sunIntensity = TryDeserailize<float>(data, "SunIntensity", 200.0f);
+
+        s_settings.accumulate = TryDeserailize<bool>(data, "Accumulate", false);
+        s_settings.raysPerPixel = TryDeserailize<int>(data, "RaysPerPixel", 1);
+        s_settings.maxBounces = TryDeserailize<int>(data, "MaxBounces", 3);
+
+        Application::Get().SetGraphicsAPIType(s_settings.GraphicsAPIType);
+        RequestPipelineTypeChange(Pipeline::StringToType(TryDeserailize<String>(data, "PipelineType", "Rasterization")));
+        SetPipelineTopologyMode(Pipeline::StringToTopologyMode(TryDeserailize<String>(data, "PipelineTopologyMode", "Triangle")));
     }
-    
 }

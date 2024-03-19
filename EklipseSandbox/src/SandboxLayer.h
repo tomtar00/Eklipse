@@ -30,10 +30,6 @@ namespace Eklipse
         Ref<Material> m_sphereMaterial;
         glm::vec3 m_sphereColor;
 
-        Ref<Mesh> m_teapotMeshHandle;
-        Ref<Material> m_teapotMaterial;
-        glm::vec3 m_teapotColor;
-
         Entity m_camera;
         Entity m_plane;
         Entity m_cube;

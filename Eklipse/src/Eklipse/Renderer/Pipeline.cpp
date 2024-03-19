@@ -61,7 +61,35 @@ namespace Eklipse
         if (type == Type::Compute) return "Compute";
         if (type == Type::RayTracing) return "Ray Tracing";
         if (type == Type::RayTracingKHR) return "Ray Tracing (KHR)";
+
+        EK_ASSERT(false, "Unknown pipeline type");
         return "Unknown";
+    }
+    String Pipeline::TopologyModeToString(const TopologyMode& topologyMode)
+    {
+        if (topologyMode == TopologyMode::Triangle) return "Triangle";
+        if (topologyMode == TopologyMode::Line) return "Line";
+
+        EK_ASSERT(false, "Unknown topology mode");
+        return "Unknown";
+    }
+    Pipeline::Type Pipeline::StringToType(const String& type)
+    {
+        if (type == "Rasterization") return Type::Resterization;
+        if (type == "Compute") return Type::Compute;
+        if (type == "Ray Tracing") return Type::RayTracing;
+        if (type == "Ray Tracing (KHR)") return Type::RayTracingKHR;
+
+        EK_ASSERT(false, "Unknown pipeline type: {0}", type);
+        return Type::Resterization;
+    }
+    Pipeline::TopologyMode Pipeline::StringToTopologyMode(const String& topologyMode)
+    {
+        if (topologyMode == "Triangle") return TopologyMode::Triangle;
+        if (topologyMode == "Line") return TopologyMode::Line;
+
+        EK_ASSERT(false, "Unknown topology mode: {0}", topologyMode);
+        return TopologyMode::Triangle;
     }
     void Pipeline::DeleteUnsused()
     {

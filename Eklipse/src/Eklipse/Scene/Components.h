@@ -101,5 +101,5 @@ namespace Eklipse
 	struct ComponentGroup {};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, MeshComponent, CameraComponent>;
+		ComponentGroup<TransformComponent, MeshComponent, CameraComponent, RayTracingMeshComponent, RayTracingSphereComponent>;
 }

@@ -12,6 +12,7 @@ namespace Eklipse
         m_camera = scene->CreateEntity("Camera");
         auto& cameraComp = m_camera.AddComponent<CameraComponent>();
         cameraComp.camera.m_isMain = true;
+        cameraComp.camera.m_fov = 45.0f;
         auto& camera_transComp = m_camera.GetComponent<TransformComponent>();
         camera_transComp.transform.position = glm::vec3(0.0f, 0.0f, 5.0f);
 
@@ -33,22 +34,16 @@ namespace Eklipse
         m_cubeColor = glm::vec3(0.0f, 0.0f, 1.0f);
         auto& rtCubeMesh = m_cube.AddComponent<RayTracingMeshComponent>();
         rtCubeMesh.material.albedo = m_cubeColor;
-
-        /*
+        
         // Sphere
         m_sphere = scene->CreateEntity("Sphere");
         auto& sphere_transComp = m_sphere.GetComponent<TransformComponent>();
         sphere_transComp.transform.position = glm::vec3(-1.0f, 0.0f, 0.0f);
         m_sphere.AddComponent<MeshComponent>();
         m_sphereColor = glm::vec3(1.0f, 0.0f, 0.0f);
-
-        // Teapot
-        m_teapot = scene->CreateEntity("Teapot");
-        auto& teapot_transComp = m_teapot.GetComponent<TransformComponent>();
-        teapot_transComp.transform.position = glm::vec3(0.0f, 0.0f, 3.0f);
-        m_teapot.AddComponent<MeshComponent>();
-        m_teapotColor = glm::vec3(1.0f, 1.0f, 0.0f);
-        */
+        auto& rtSphereMesh = m_sphere.AddComponent<RayTracingSphereComponent>();
+        rtSphereMesh.radius = .5f;
+        rtSphereMesh.material.albedo = m_sphereColor;
 
         scene->OnSceneStart();
     }
@@ -96,6 +91,19 @@ namespace Eklipse
             }
         }
         ImGui::Separator();
+        if (Renderer::GetSettings().PipelineType == Pipeline::Type::RayTracing)
+        {
+            auto rtContext = std::static_pointer_cast<RayTracingContext>(Renderer::GetRendererContext());
+            if (ImGui::Button("Recompile Shader"))
+            {
+                rtContext->RecompileShader();
+            }
+            if (ImGui::Button("Recompile Transform Compute Shader"))
+            {
+                rtContext->RecompileTransformComputeShader();
+            }
+        }
+        ImGui::Separator();
         if (ImGui::ColorEdit3("Plane Color", &m_planeColor[0]))
         {
             m_planeMaterial->SetConstant("uFragConst", "Color", &m_planeColor, sizeof(glm::vec3));
@@ -104,17 +112,11 @@ namespace Eklipse
         {
             m_cubeMaterial->SetConstant("uFragConst", "Color", &m_cubeColor, sizeof(glm::vec3));
         }
-        /*
+        
         if (ImGui::ColorEdit3("Sphere Color", &m_sphereColor[0]))
         {
             m_sphereMaterial->SetConstant("uFragConst", "Color", &m_sphereColor, sizeof(glm::vec3));
         }
-        
-        if (ImGui::ColorEdit3("Teapot Color", &m_teapotColor[0]))
-        {
-            m_teapotMaterial->SetConstant("uFragConst", "Color", &m_teapotColor, sizeof(glm::vec3));
-        }
-        */
 
         bool isHovered = ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered();
         if (m_cursorDisabled && Input::IsKeyDown(Escape))
@@ -142,16 +144,9 @@ namespace Eklipse
         m_cubeMaterial = Material::Create(m_shader3D);
         m_cubeMaterial->SetConstant("uFragConst", "Color", &m_cubeColor, sizeof(glm::vec3));
 
-        /*
         m_sphereMesh = Mesh::Create("Assets/Meshes/sphere.obj");
         m_sphereMaterial = Material::Create(m_shader3D);
         m_sphereMaterial->SetConstant("uFragConst", "Color", &m_sphereColor, sizeof(glm::vec3));
-
-        
-        m_teapotMeshHandle = Mesh::Create("Assets/Meshes/teapot.obj");
-        m_teapotMaterial = Material::Create(m_shader3D);
-        m_teapotMaterial->SetConstant("uFragConst", "Color", &m_teapotColor, sizeof(glm::vec3));
-        */
 
         // Apply new assets to objects on the scene
         // Plane
@@ -162,19 +157,11 @@ namespace Eklipse
         auto& cubeMeshComp = SceneManager::GetActiveScene()->GetEntity(m_cube.GetUUID()).GetComponent<MeshComponent>();
         cubeMeshComp.mesh = m_cubeMeshHandle.get();
         cubeMeshComp.material = m_cubeMaterial.get();
-        /*
+        
         // Sphere
         auto& sphereMeshComp = SceneManager::GetActiveScene()->GetEntity(m_sphere.GetUUID()).GetComponent<MeshComponent>();
         sphereMeshComp.mesh = m_sphereMesh.get();
         sphereMeshComp.material = m_sphereMaterial.get();
-        // Teapot
-        auto& teapotMeshComp = SceneManager::GetActiveScene()->GetEntity(m_teapot.GetUUID()).GetComponent<MeshComponent>();
-        teapotMeshComp.mesh = m_teapotMeshHandle.get();
-        teapotMeshComp.material = m_teapotMaterial.get();
-        */
-
-        // Maximize the window
-        //Application::Get().GetWindow()->Maximize();
 
         // Lock the cursor
         Application::Get().GetWindow()->SetCursorMode(CursorMode::Disabled);
@@ -190,15 +177,8 @@ namespace Eklipse
         m_cubeMeshHandle->Dispose();
         m_cubeMaterial->Dispose();
 
-        /*
         m_sphereMesh->Dispose();
         m_sphereMaterial->Dispose();
-        */
-
-        /*
-        m_teapotMeshHandle->Dispose();
-        m_teapotMaterial->Dispose();
-        */
     }
 
     void SandboxLayer::ControlCamera(float deltaTime)

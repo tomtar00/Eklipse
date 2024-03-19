@@ -15,6 +15,7 @@ namespace Eklipse
         };
         static const uint32_t TYPE_COUNT = 2;
         static const String TypeToString(Type type);
+        static Type StringToType(const String& type);
 
     public:
         GraphicsAPI();

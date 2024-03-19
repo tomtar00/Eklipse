@@ -19,6 +19,15 @@ namespace Eklipse
         return "Unknown";
     }
 
+    GraphicsAPI::Type GraphicsAPI::StringToType(const String& type)
+    {
+        if (type == "Vulkan") return GraphicsAPI::Type::Vulkan;
+        if (type == "OpenGL") return GraphicsAPI::Type::OpenGL;
+
+        EK_ASSERT(false, "Unknown API type: {0}", type);
+        return GraphicsAPI::Type::Vulkan;
+    }
+
     Unique<GraphicsAPI> GraphicsAPI::Create(GraphicsAPI::Type apiType)
     {
         EK_CORE_PROFILE();

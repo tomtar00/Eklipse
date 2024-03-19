@@ -89,13 +89,12 @@ namespace Eklipse
 
         // Shader
         {
-            m_shader = Shader::Create("Assets/Shaders/Compute/RT_mesh.glsl");
+            m_shader = Shader::Create("Assets/Shaders/RT/RayTracing.glsl");
         }
 
         InitMaterial();
 
-        m_transComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_trans.comp");
-        m_boundsComputeShader = ComputeShader::Create("Assets/Shaders/Compute/RT_bounds.comp");
+        m_transComputeShader = ComputeShader::Create("Assets/Shaders/RT/Transform.comp");
 
         ReconstructSceneBuffers();
     }
@@ -106,7 +105,6 @@ namespace Eklipse
         m_material->Dispose();
 
         m_transComputeShader->Dispose();
-        m_boundsComputeShader->Dispose();
     }
     void RayTracingContext::InitSSBOs()
     {
@@ -124,7 +122,6 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6);
         Renderer::CreateStorageBuffer("bMaterials", (maxMeshes + maxSpheres) * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
-        Renderer::CreateStorageBuffer("bBounds", maxMeshes * sizeof(Bounds), 9);
     }
     void RayTracingContext::OnUpdate(float deltaTime)
     {
@@ -188,7 +185,6 @@ namespace Eklipse
     void RayTracingContext::OnCompute(float deltaTime)
     {
         RenderCommand::Dispatch(m_transComputeShader, m_numTotalVertices / 3, 1, 1);
-        RenderCommand::Dispatch(m_boundsComputeShader, m_numTotalMeshes, 1, 1);
     }
     void RayTracingContext::OnWindowResize(uint32_t width, uint32_t height)
     {
@@ -213,11 +209,14 @@ namespace Eklipse
     {
         m_numTotalSpheres++;
     }
+    void RayTracingContext::OnSceneChanged()
+    {
+        Renderer::WaitDeviceIdle();
+        ReconstructSceneBuffers();
+    }
     void RayTracingContext::RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform)
     {
         EK_PROFILE();
-
-        // foreach mesh in the scene, take its pbr material and add it to the ray tracing pipeline
 
         ++m_frameIndex;
 
@@ -230,6 +229,38 @@ namespace Eklipse
         m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };
     }
 
+    void RayTracingContext::SetAccumulate(bool accumulate)
+    {
+        uint32_t value = accumulate ? 1 : 0;
+        m_material->SetConstant("pData", "Accumulate", &value, sizeof(uint32_t));
+        m_frameIndex = 0;
+    }
+    void RayTracingContext::SetRaysPerPixel(uint32_t raysPerPixel)
+    {
+        m_material->SetConstant("pData", "RaysPerPixel", &raysPerPixel, sizeof(uint32_t));
+    }
+    void RayTracingContext::SetMaxBounces(uint32_t maxBounces)
+    {
+        m_material->SetConstant("pData", "MaxBounces", &maxBounces, sizeof(uint32_t));
+    }
+
+    void RayTracingContext::RecompileShader()
+    {
+        Renderer::WaitDeviceIdle();
+        m_frameIndex = 0;
+
+        if (m_shader->Compile("Assets/Shaders/RT/RayTracing.glsl", true))
+            m_material->OnShaderReloaded();
+    }
+    void RayTracingContext::RecompileTransformComputeShader()
+    {
+        Renderer::WaitDeviceIdle();
+        m_frameIndex = 0;
+
+        if (m_transComputeShader->GetShader()->Compile("Assets/Shaders/RT/Transform.comp", true))
+            m_transComputeShader->GetMaterial()->OnShaderReloaded();
+    }
+
     void RayTracingContext::InitMaterial()
     {
         size_t bufferSize = m_viewportSize.x * m_viewportSize.y * 4 * sizeof(float);
@@ -237,26 +268,27 @@ namespace Eklipse
 
         m_material = Material::Create(m_shader);
 
-        m_material->SetConstant("pData", "Resolution", &m_viewportSize, sizeof(glm::vec2));
-        //m_material->SetConstant("pData", "CameraPos", &m_cameraTransform.position, sizeof(glm::vec3));
-        //m_material->SetConstant("pData", "Frames", &m_frameIndex, sizeof(uint32_t));
-        m_material->SetConstant("pData", "RaysPerPixel", &m_rtSettings.raysPerPixel, sizeof(int));
-        m_material->SetConstant("pData", "MaxBounces", &m_rtSettings.maxBounces, sizeof(int));
-        m_material->SetConstant("pData", "Accumulate", &m_rtSettings.accumulate, sizeof(uint32_t));
+        auto& settings = Renderer::GetSettings();
 
-        m_material->SetConstant("pData", "SkyColorHorizon", &m_rtSettings.skyColorHorizon, sizeof(glm::vec3));
-        m_material->SetConstant("pData", "SkyColorZenith", &m_rtSettings.skyColorZenith, sizeof(glm::vec3));
-        m_material->SetConstant("pData", "GroundColor", &m_rtSettings.groundColor, sizeof(glm::vec3));
-        m_material->SetConstant("pData", "SunColor", &m_rtSettings.sunColor, sizeof(glm::vec3));
-        m_material->SetConstant("pData", "SunDirection", &m_rtSettings.sunDirection, sizeof(glm::vec3));
-        m_material->SetConstant("pData", "SunFocus", &m_rtSettings.sunFocus, sizeof(float));
-        m_material->SetConstant("pData", "SunIntensity", &m_rtSettings.sunIntensity, sizeof(float));
+        m_material->SetConstant("pData", "Resolution", &m_viewportSize, sizeof(glm::vec2));
+        m_material->SetConstant("pData", "RaysPerPixel", &settings.raysPerPixel, sizeof(uint32_t));
+        m_material->SetConstant("pData", "MaxBounces", &settings.maxBounces, sizeof(uint32_t));
+        m_material->SetConstant("pData", "Accumulate", &settings.accumulate, sizeof(uint32_t));
+
+        m_material->SetConstant("pData", "SkyColorHorizon", &settings.skyColorHorizon, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SkyColorZenith", &settings.skyColorZenith, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "GroundColor", &settings.groundColor, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunColor", &settings.sunColor, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunDirection", &settings.sunDirection, sizeof(glm::vec3));
+        m_material->SetConstant("pData", "SunFocus", &settings.sunFocus, sizeof(float));
+        m_material->SetConstant("pData", "SunIntensity", &settings.sunIntensity, sizeof(float));
     }
     void RayTracingContext::ReconstructSceneBuffers()
     {
         m_numTotalIndices = 0;
         m_numTotalVertices = 0;
         m_numTotalMeshes = 0;
+        m_numTotalSpheres = 0;
 
         auto scene = SceneManager::GetActiveScene();
         scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)

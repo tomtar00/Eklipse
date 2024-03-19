@@ -52,16 +52,6 @@ HitInfo RayTriangle(Ray ray, Triangle triangle) {
 
     return hitInfo;
 }
-bool RayBounds(Ray ray, vec3 boxMin, vec3 boxMax) {
-	vec3 invDir = 1 / ray.dir;
-	vec3 tMin = (boxMin - ray.origin) * invDir;
-	vec3 tMax = (boxMax - ray.origin) * invDir;
-	vec3 t1 = min(tMin, tMax);
-	vec3 t2 = max(tMin, tMax);
-	float tNear = max(max(t1.x, t1.y), t1.z);
-	float tFar = min(min(t2.x, t2.y), t2.z);
-	return tNear <= tFar;
-};
 
 HitInfo CalculateRayCollision(Ray ray) {
     HitInfo closestHit;
@@ -80,11 +70,6 @@ HitInfo CalculateRayCollision(Ray ray) {
 
     for (int i = 0; i < bMeshes.NumMeshes; i++) {
         MeshInfo meshInfo = bMeshes.Meshes[i];
-        
-        Bounds bounds = bBounds.Bounds[i];
-        if (!RayBounds(ray, bounds.boundMin, bounds.boundMax)) {
-            continue;
-        }
 
         for (uint j = meshInfo.indexOffset; j < meshInfo.indexOffset + meshInfo.indexCount; j += 3) {
             Triangle triangle;

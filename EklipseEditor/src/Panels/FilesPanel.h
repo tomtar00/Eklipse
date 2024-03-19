@@ -16,6 +16,7 @@ namespace Eklipse
         bool OnGUI(float deltaTime) override;
 
     private:
+        bool CreateScene(const String& name) const;
         bool CreateMaterial(const String& materialName, const AssetHandle shaderHandle) const;
         bool CreateShader(const String& shaderName, const uint32_t templateOption) const;
         bool ImportAsset() const;

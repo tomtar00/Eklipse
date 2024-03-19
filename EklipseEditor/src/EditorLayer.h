@@ -85,6 +85,7 @@ namespace Eklipse
 		bool DeserializeSettings();
 
 		// === Scene Events ===
+		void SwitchScene(const Ref<Scene> scene);
 		void OnScenePlay();
 		void OnSceneStop();
 		void OnScenePause();

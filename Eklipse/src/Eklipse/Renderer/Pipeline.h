@@ -39,6 +39,9 @@ namespace Eklipse
 		static Vec<Ref<Pipeline>> GetPipelinesByShader(const AssetHandle shaderHandle);
 
 		static String TypeToString(const Type& type);
+		static String TopologyModeToString(const TopologyMode& topologyMode);
+		static Type StringToType(const String& type);
+		static TopologyMode StringToTopologyMode(const String& topologyMode);
 		static void DeleteUnsused();
 		static void DisposeAll();
 

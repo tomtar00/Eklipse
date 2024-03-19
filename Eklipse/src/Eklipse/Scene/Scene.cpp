@@ -337,6 +337,16 @@ namespace Eklipse
     }
 
     // Serialization
+    static void SerializeRayTracingMaterial(const RayTracingMaterial& material, YAML::Emitter& out)
+    {
+        EK_CORE_PROFILE();
+        out << YAML::Key << "Albedo" << YAML::Value << material.albedo;
+        out << YAML::Key << "Smoothness" << YAML::Value << material.smoothness;
+        out << YAML::Key << "SpecularColor" << YAML::Value << material.specularColor;   
+        out << YAML::Key << "SpecularProb" << YAML::Value << material.specularProb;
+        out << YAML::Key << "EmissionColor" << YAML::Value << material.emissionColor;
+        out << YAML::Key << "EmissionStrength" << YAML::Value << material.emissionStrength;
+    }
     bool Scene::Serialize(const Path& filePath)
     {
         EK_CORE_PROFILE();
@@ -478,11 +488,44 @@ namespace Eklipse
             out << YAML::EndSeq;
             out << YAML::EndMap;
         }
+
+        if (entity.HasComponent<RayTracingMeshComponent>())
+        {
+            out << YAML::Key << "RayTracingMeshComponent";
+            out << YAML::BeginMap;
+
+            auto& rtmc = entity.GetComponent<RayTracingMeshComponent>();
+            out << YAML::Key << "Index" << YAML::Value << rtmc.index;
+            SerializeRayTracingMaterial(rtmc.material, out);
+
+            out << YAML::EndMap;
+        }
+        if (entity.HasComponent<RayTracingSphereComponent>())
+        {
+            out << YAML::Key << "RayTracingSphereComponent";
+            out << YAML::BeginMap;
+
+            auto& rtsc = entity.GetComponent<RayTracingSphereComponent>();
+            out << YAML::Key << "Radius" << YAML::Value << rtsc.radius;
+            SerializeRayTracingMaterial(rtsc.material, out);
+
+            out << YAML::EndMap;
+        }
         out << YAML::EndMap;
 
         EK_CORE_TRACE("Serialized entity with ID = {0}", entity.GetUUID());
 
         return true;
+    }
+    static void DeserializeRayTracingMaterial(YAML::Node& node, RayTracingMaterial& material)
+    {
+        EK_CORE_PROFILE();
+        TryDeserailize<glm::vec3>(node, "Albedo", &material.albedo);
+        TryDeserailize<float>(node, "Smoothness", &material.smoothness);
+        TryDeserailize<glm::vec3>(node, "SpecularColor", &material.specularColor);
+        TryDeserailize<float>(node, "SpecularProb", &material.specularProb);
+        TryDeserailize<glm::vec3>(node, "EmissionColor", &material.emissionColor);
+        TryDeserailize<float>(node, "EmissionStrength", &material.emissionStrength);
     }
     bool Scene::Deserialize(const Path& filePath)
     {
@@ -587,6 +630,24 @@ namespace Eklipse
             {
                 EK_CORE_WARN("Entity {0} has a script component but no script name was provided to instanitiate it!", deserializedEntity.GetUUID());
             }*/
+        }
+
+        auto rtMeshComponent = entityNode["RayTracingMeshComponent"];
+        if (rtMeshComponent)
+        {
+            auto& rtmc = deserializedEntity.AddComponent<RayTracingMeshComponent>();
+
+            TryDeserailize<uint32_t>(rtMeshComponent, "Index", &rtmc.index);
+            DeserializeRayTracingMaterial(rtMeshComponent, rtmc.material);
+        }
+
+        auto rtSphereComponent = entityNode["RayTracingSphereComponent"];
+        if (rtSphereComponent)
+        {
+            auto& rtsc = deserializedEntity.AddComponent<RayTracingSphereComponent>();
+
+            TryDeserailize<float>(rtSphereComponent, "Radius", &rtsc.radius);
+            DeserializeRayTracingMaterial(rtSphereComponent, rtsc.material);
         }
 
         EK_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);

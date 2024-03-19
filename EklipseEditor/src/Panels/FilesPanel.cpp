@@ -139,7 +139,16 @@ namespace Eklipse
                 if (directoryEntry.is_directory())
                     m_currentPath /= path.filename();
 
-                // TODO: open scene
+                if (directoryEntry.is_regular_file())
+                {
+                    AssetHandle assetHandle = EditorLayer::Get().GetAssetLibrary()->GetHandleFromAssetPath(m_currentPath / path);
+                    Ref<Asset> asset = AssetManager::GetAsset<Asset>(assetHandle);
+                    if (asset->GetType() == AssetType::Scene)
+                    {
+                        Ref<Scene> scene = std::static_pointer_cast<Scene>(asset);
+                        EditorLayer::Get().SwitchScene(scene);
+                    }
+                }
             }
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && path.has_extension())
@@ -196,6 +205,7 @@ namespace Eklipse
 
         // Right click menu
         static bool openCreateFolderPopup = false;
+        static bool openCreateScenePopup = false;
         static bool openCreateShaderPopup = false;
         static bool openCreateMaterialPopup = false;
         if (ImGui::BeginPopupContextWindow("Create", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight))
@@ -203,6 +213,10 @@ namespace Eklipse
             if (ImGui::MenuItem("Create Folder"))
             {
                 openCreateFolderPopup = true;
+            }
+            if (ImGui::MenuItem("Create Scene"))
+            {
+                openCreateScenePopup = true;
             }
             if (ImGui::MenuItem("Create Shader"))
             {
@@ -240,6 +254,33 @@ namespace Eklipse
                 if (ImGui::Button("Create") && !folderName.empty())
                 {
                     std::filesystem::create_directory(m_currentPath / folderName);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+
+            // create scene
+            if (openCreateScenePopup)
+            {
+                ImGui::OpenPopup("Create New Scene");
+                openCreateScenePopup = false;
+                ImGui::SetNextWindowSize({ 500, 150 });
+            }
+            if (ImGui::BeginPopupModal("Create New Scene", nullptr, ImGuiWindowFlags_NoResize))
+            {
+                static String sceneName = "NewScene";
+
+                ImGui::DrawProperty("scene_name", "Scene Name", [&]() {
+                    ImGui::InputText("##sceneName", &sceneName);
+                });
+
+                if (ImGui::Button("Create") && CreateScene(sceneName))
+                {
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::SameLine();
@@ -315,6 +356,12 @@ namespace Eklipse
         return true;
     }
     
+    bool FilesPanel::CreateScene(const String& name) const
+    {
+        Ref<Scene> scene = Scene::New(name);
+        Scene::Save(scene, m_currentPath / (name + ".eksc"));
+        return true;
+    }
     bool FilesPanel::CreateMaterial(const String& materialName, const AssetHandle shaderHandle) const
     {
         if (materialName.empty())

@@ -21,8 +21,8 @@ namespace Eklipse
         guiConfig.dockLayouts =
         {
             { "Entities",	ImGuiDir_Left,	Dir_Opposite,	0.7f },
-            { "Settings",	ImGuiDir_Down,	Dir_Same,		1.0f },
-            { "Stats",		ImGuiDir_Down,	Dir_Same,		1.0f },
+            { "Settings",	ImGuiDir_Down,	Dir_Same,		0.5f },
+            { "Stats",		ImGuiDir_Down,	Dir_Same,		0.7f },
             { "Details",	ImGuiDir_Right,	Dir_Opposite,	0.7f },
             { "Files",		ImGuiDir_Down,	Dir_Opposite,	0.8f },
             { "Profiler",	ImGuiDir_Down,	Dir_Stack,	    1.0f },
@@ -755,6 +755,15 @@ namespace Eklipse
         }
     }
     
+    void EditorLayer::SwitchScene(const Ref<Scene> scene)
+    {
+        EK_PROFILE();
+
+        m_editorScene = scene;
+        m_entitiesPanel.SetContext(m_editorScene.get());
+        SceneManager::SetActiveScene(m_editorScene);
+    }
+
     // === Scene Events ===
     void EditorLayer::OnScenePlay()
     {
@@ -860,7 +869,7 @@ namespace Eklipse
 
         ClearSelection();
         m_filesPanel.OnContextChanged();
-        m_editorScene->ApplyAllComponents();
+        //m_editorScene->ApplyAllComponents();
 
         Application::Get().GetWindow()->Maximize();
         m_isWindowMaximized = true;
@@ -1049,6 +1058,19 @@ namespace Eklipse
                 m_scriptManager->RecompileAll();
             }
 
+            ImGui::SeparatorText("Ray Tracing");
+            auto rtContext = std::static_pointer_cast<RayTracingContext>(Renderer::GetRendererContext());
+            if (rtContext)
+            {
+                if (ImGui::Button("Recompile Shader"))
+                {
+                    rtContext->RecompileShader();
+                }
+                if (ImGui::Button("Recompile Transform Compute Shader"))
+                {
+                    rtContext->RecompileTransformComputeShader();
+                }
+            }
         });
     }
 

@@ -20,7 +20,7 @@ vec3 Trace(Ray ray, inout uint seed) {
             ray.dir = mix(diffuseDir, specularDir, hitInfo.material.smoothness * float(isSpecularBounce));
 
             vec3 emittedLight = material.emissionColor * material.emissionStrength;
-            light += color * emittedLight;
+            light += color * emittedLight * 3.0;
             color *= mix(material.albedo, material.specularColor, float(isSpecularBounce));
         }
         else {

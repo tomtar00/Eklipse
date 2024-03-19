@@ -68,21 +68,43 @@ namespace Eklipse
 							Application::Get().SetGraphicsAPIType((GraphicsAPI::Type)(api));
 						}
 					});
+				}
 
-					ImGui::DrawProperty("pipeline_type", "Pipeline Type", [&]() {
-						static const char* Types[]{ "Rasterization", "Ray Tracing" };
-						static int type = (int)Renderer::GetPipelineType();
-						if (ImGui::Combo("##Type", &type, Types, IM_ARRAYSIZE(Types)))
+				ImGui::DrawProperty("pipeline_type", "Pipeline Type", [&]() {
+					static const char* Types[]{ "Rasterization", "Ray Tracing" };
+					static int type = (int)Renderer::GetPipelineType();
+					if (ImGui::Combo("##Type", &type, Types, IM_ARRAYSIZE(Types)))
+					{
+						Renderer::RequestPipelineTypeChange((Pipeline::Type)(type));
+					}
+				});
+
+				if (Renderer::GetPipelineType() == Pipeline::Type::RayTracing)
+				{
+					auto& rtContext = std::static_pointer_cast<RayTracingContext>(Renderer::GetRendererContext());
+
+					ImGui::DrawProperty("accumulate", "Accumulate", [&]() {
+						if (ImGui::Checkbox("##Accumulate", &Renderer::GetSettings().accumulate))
 						{
-							Renderer::SetPipelineType((Pipeline::Type)(type));
+							rtContext->SetAccumulate(Renderer::GetSettings().accumulate);
+						}
+					});
+					ImGui::DrawProperty("rays_per_pixel", "Rays Per Pixel", [&]() {
+						if (ImGui::InputInt("##RaysPerPixel", &Renderer::GetSettings().raysPerPixel))
+						{
+							rtContext->SetRaysPerPixel(Renderer::GetSettings().raysPerPixel);
+						}
+					});
+					ImGui::DrawProperty("max_bounces", "Max Bounces", [&]() {
+						if (ImGui::InputInt("##MaxBounces", &Renderer::GetSettings().maxBounces))
+						{
+							rtContext->SetMaxBounces(Renderer::GetSettings().maxBounces);
 						}
 					});
 				}
 			}
 		}
-
 		ImGui::End();
-
 		return true;
 	}
 }

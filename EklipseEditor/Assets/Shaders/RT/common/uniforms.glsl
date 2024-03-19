@@ -51,6 +51,3 @@ layout (std140, binding = 7) buffer MaterialData {
 layout (std140, binding = 8) buffer TransformData {
     mat4 Transforms[];
 } bTransforms;
-layout (std140, binding = 9) buffer BoundsData {
-    Bounds Bounds[];
-} bBounds;
