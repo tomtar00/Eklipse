@@ -101,6 +101,50 @@ namespace Eklipse
 							rtContext->SetMaxBounces(Renderer::GetSettings().maxBounces);
 						}
 					});
+
+					ImGui::SeparatorText("Sky");
+					ImGui::DrawProperty("sky_color_horizon", "Sky Color Horizon", [&]() {
+						if (ImGui::ColorEdit3("##SkyColorHorizon", &Renderer::GetSettings().skyColorHorizon[0]))
+						{
+							rtContext->SetSkyColorHorizon(Renderer::GetSettings().skyColorHorizon);
+						}
+                    });
+					ImGui::DrawProperty("sky_color_zenith", "Sky Color Zenith", [&]() {
+						if (ImGui::ColorEdit3("##SkyColorZenith", &Renderer::GetSettings().skyColorZenith[0]))
+						{
+                            rtContext->SetSkyColorZenith(Renderer::GetSettings().skyColorZenith);
+                        }
+                    });
+					ImGui::DrawProperty("ground_color", "Ground Color", [&]() {
+						if (ImGui::ColorEdit3("##GroundColor", &Renderer::GetSettings().groundColor[0]))
+						{
+                            rtContext->SetGroundColor(Renderer::GetSettings().groundColor);
+                        }
+                    });
+					ImGui::DrawProperty("sun_color", "Sun Color", [&]() {
+						if (ImGui::ColorEdit3("##SunColor", &Renderer::GetSettings().sunColor[0]))
+						{
+                            rtContext->SetSunColor(Renderer::GetSettings().sunColor);
+                        }
+                    });
+					ImGui::DrawProperty("sun_direction", "Sun Direction", [&]() {
+						if (ImGui::DragFloat3("##SunDirection", &Renderer::GetSettings().sunDirection[0], 0.01f, -1.0f, 1.0f))
+						{
+                            rtContext->SetSunDirection(Renderer::GetSettings().sunDirection);
+                        }
+                    });
+					ImGui::DrawProperty("sun_focus", "Sun Focus", [&]() {
+						if (ImGui::DragFloat("##SunFocus", &Renderer::GetSettings().sunFocus))
+						{
+                            rtContext->SetSunFocus(Renderer::GetSettings().sunFocus);
+                        }
+                    });
+					ImGui::DrawProperty("sun_intensity", "Sun Intensity", [&]() {
+						if (ImGui::DragFloat("##SunIntensity", &Renderer::GetSettings().sunIntensity))
+						{
+							rtContext->SetSunIntensity(Renderer::GetSettings().sunIntensity);
+						}
+                    });
 				}
 			}
 		}

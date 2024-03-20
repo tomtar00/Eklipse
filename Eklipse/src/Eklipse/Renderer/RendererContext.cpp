@@ -244,6 +244,35 @@ namespace Eklipse
         m_material->SetConstant("pData", "MaxBounces", &maxBounces, sizeof(uint32_t));
     }
 
+    void RayTracingContext::SetSkyColorHorizon(const glm::vec3& color)
+    {
+        m_material->SetConstant("pData", "SkyColorHorizon", &color, sizeof(glm::vec3));
+    }
+    void RayTracingContext::SetSkyColorZenith(const glm::vec3& color)
+    {
+        m_material->SetConstant("pData", "SkyColorZenith", &color, sizeof(glm::vec3));
+    }
+    void RayTracingContext::SetGroundColor(const glm::vec3& color)
+    {
+        m_material->SetConstant("pData", "GroundColor", &color, sizeof(glm::vec3));
+    }
+    void RayTracingContext::SetSunColor(const glm::vec3& color)
+    {
+        m_material->SetConstant("pData", "SunColor", &color, sizeof(glm::vec3));
+    }
+    void RayTracingContext::SetSunDirection(const glm::vec3& direction)
+    {
+        m_material->SetConstant("pData", "SunDirection", &direction, sizeof(glm::vec3));
+    }
+    void RayTracingContext::SetSunFocus(float focus)
+    {
+        m_material->SetConstant("pData", "SunFocus", &focus, sizeof(float));
+    }
+    void RayTracingContext::SetSunIntensity(float intensity)
+    {
+        m_material->SetConstant("pData", "SunIntensity", &intensity, sizeof(float));
+    }
+
     void RayTracingContext::RecompileShader()
     {
         Renderer::WaitDeviceIdle();
@@ -296,6 +325,8 @@ namespace Eklipse
             Entity entity = { entityID, scene.get() };
             OnMeshAdded(entity);
         });
+        auto buffer = Renderer::GetStorageBuffer("bMeshes");
+        buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
         scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
         {
             Entity entity = { entityID, scene.get() };

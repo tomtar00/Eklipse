@@ -53,6 +53,14 @@ namespace Eklipse
 		void SetRaysPerPixel(uint32_t raysPerPixel);
 		void SetMaxBounces(uint32_t maxBounces);
 
+		void SetSkyColorHorizon(const glm::vec3& color);
+		void SetSkyColorZenith(const glm::vec3& color);
+		void SetGroundColor(const glm::vec3& color);
+		void SetSunColor(const glm::vec3& color);
+		void SetSunDirection(const glm::vec3& direction);
+		void SetSunFocus(float focus);
+		void SetSunIntensity(float intensity);
+
 		void RecompileShader();
 		void RecompileTransformComputeShader();
 
