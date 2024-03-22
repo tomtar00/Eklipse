@@ -6,7 +6,7 @@ namespace Eklipse
 	namespace Vulkan
 	{
 		VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount,
-			VkFormat& imageFormat, VkExtent2D& extent, Vec<VkImage>& images);
+			VkFormat& imageFormat, VkPresentModeKHR& presentMode, VkExtent2D& extent, Vec<VkImage>& images);
 
 		void CreateImages(Vec<VkImage>& images, Vec<VmaAllocation>& allocations, int numImages, uint32_t width, uint32_t height, uint32_t mipLevels,
 			VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);

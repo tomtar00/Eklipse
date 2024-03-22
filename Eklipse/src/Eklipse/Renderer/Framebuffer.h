@@ -3,6 +3,16 @@
 
 namespace Eklipse
 {
+	enum class PresentMode
+	{
+        IMMEDIATE	= 0,
+        MAILBOX		= 1,
+        FIFO		= 2,
+        FIFO_RELAXED = 3,
+    };
+	String EK_API PresentModeToString(PresentMode mode);
+	PresentMode EK_API PresentModeFromString(const String& mode);
+
 	struct FramebufferAttachmentInfo
 	{
 		ImageFormat textureFormat = ImageFormat::FORMAT_UNDEFINED;

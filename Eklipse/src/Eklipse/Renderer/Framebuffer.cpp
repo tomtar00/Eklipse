@@ -37,4 +37,25 @@ namespace Eklipse
     {
         return m_aspectRatio;
     }
+    String EK_API PresentModeToString(PresentMode mode)
+    {
+        EK_CORE_PROFILE();
+        switch (mode)
+        {
+            case PresentMode::IMMEDIATE: return "Immediate";
+            case PresentMode::MAILBOX: return "Mailbox";
+            case PresentMode::FIFO: return "FIFO";
+            case PresentMode::FIFO_RELAXED: return "FIFO Relaxed";
+        }
+    }
+    PresentMode EK_API PresentModeFromString(const String& mode)
+    {
+        EK_CORE_PROFILE();
+        if (mode == "Immediate") return PresentMode::IMMEDIATE;
+        if (mode == "Mailbox") return PresentMode::MAILBOX;
+        if (mode == "FIFO") return PresentMode::FIFO;
+        if (mode == "FIFO Relaxed") return PresentMode::FIFO_RELAXED;
+        EK_ASSERT(false, "Invalid present mode string");
+        return PresentMode::IMMEDIATE;
+    }
 }

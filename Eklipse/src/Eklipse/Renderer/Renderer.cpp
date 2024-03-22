@@ -44,6 +44,11 @@ namespace Eklipse
         s_settings.GraphicsAPIType = apiType;
         if (RenderCommand::API->Init())
         {
+            AssetManager::ReloadAssets();
+
+            if (SceneManager::GetActiveScene())
+                SceneManager::GetActiveScene()->ApplyAllComponents();
+
             SetPipelineTopologyMode(s_settings.PipelineTopologyMode);
             SetPipelineType(s_settings.PipelineType);
             return true;
@@ -197,30 +202,35 @@ namespace Eklipse
         s_defaultFramebuffer->Resize(width, height);
         s_rendererContext->OnWindowResize(width, height);
     }
-    void Renderer::OnMultiSamplingChanged(uint32_t numSamples)
+    void Renderer::OnMultiSamplingChanged(Framebuffer* framebuffer, uint32_t numSamples)
     {
         EK_CORE_PROFILE();
         if (s_settings.GetMsaaSamples() == numSamples) return;
         s_settings.MsaaSamplesIndex = numSamples >> 1;
 
-        // TODO: Works with Vulkan, but not with OpenGL
+        // TODO: Not working
         // ImGui doesn't work with multisampled GLTexture2Ds as ImGui::Image() input
 
         /*
-        auto& fbInfo = g_sceneFramebuffer->GetInfo();
+        auto& fbInfo = framebuffer->GetInfo();
         fbInfo.numSamples = numSamples;
-        g_sceneFramebuffer->Resize(fbInfo.width, fbInfo.height);
+        framebuffer->Resize(fbInfo.width, fbInfo.height);
         */
     }
-    void Renderer::OnVsyncChanged(bool enabled)
+    void Renderer::OnPresentModeChanged(PresentMode mode)
     {
         EK_CORE_PROFILE();
-        if (s_settings.Vsync) return;
-        s_settings.Vsync = enabled;
+        if (s_settings.presentMode == mode) return;
+        s_settings.presentMode = mode;
 
-#ifdef EK_PLATFORM_WINDOWS
-        glfwSwapInterval(enabled);
-#endif
+        if (s_settings.GraphicsAPIType == GraphicsAPI::Type::OpenGL)
+        {
+            glfwSwapInterval(mode != PresentMode::IMMEDIATE);
+        }
+        else if (s_settings.GraphicsAPIType == GraphicsAPI::Type::Vulkan)
+        {
+            g_defaultFramebuffer->Resize(g_defaultFramebuffer->GetInfo().width, g_defaultFramebuffer->GetInfo().height);
+        }
     }
     void Renderer::OnMeshAdded(Entity entity)
     {
@@ -230,7 +240,6 @@ namespace Eklipse
     {
         s_rendererContext->OnSphereAdded(entity);
     }
-
     void Renderer::OnSceneChanged()
     {
         EK_CORE_PROFILE();
@@ -375,7 +384,7 @@ namespace Eklipse
         out << YAML::Key << "RendererSettings" << YAML::Value;
         {
             out << YAML::BeginMap;
-            out << YAML::Key << "Vsync" << YAML::Value << s_settings.Vsync;
+            out << YAML::Key << "PresentMode" << YAML::Value << PresentModeToString(s_settings.presentMode);
             out << YAML::Key << "MsaaSamplesIndex" << YAML::Value << s_settings.MsaaSamplesIndex;
             out << YAML::Key << "PipelineType" << YAML::Value << Pipeline::TypeToString(s_settings.PipelineType);
             out << YAML::Key << "PipelineTopologyMode" << YAML::Value << Pipeline::TopologyModeToString(s_settings.PipelineTopologyMode);
@@ -397,11 +406,11 @@ namespace Eklipse
     {
         EK_CORE_PROFILE();
 
-        s_settings.Vsync = TryDeserailize<bool>(data, "Vsync", false);
-        OnVsyncChanged(s_settings.Vsync);
+        s_settings.presentMode = PresentModeFromString(TryDeserailize<String>(data, "PresentMode", "Immediate"));
+        OnPresentModeChanged(s_settings.presentMode);
 
         s_settings.MsaaSamplesIndex = TryDeserailize<int>(data, "MsaaSamplesIndex", 0);
-        OnMultiSamplingChanged(s_settings.MsaaSamplesIndex);
+        //OnMultiSamplingChanged(g_defaultFramebuffer, s_settings.MsaaSamplesIndex); // TODO: not default framebuffer
 
         s_settings.skyColorHorizon = TryDeserailize<glm::vec3>(data, "SkyColorHorizon", { 1.0f, 1.0f, 1.0f });
         s_settings.skyColorZenith = TryDeserailize<glm::vec3>(data, "SkyColorZenith", { 0.07f, 0.36f, 0.72f });

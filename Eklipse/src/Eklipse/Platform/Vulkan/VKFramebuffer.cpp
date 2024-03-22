@@ -5,6 +5,8 @@
 #include "VKCommands.h"
 #include "VKSwapChain.h"
 
+#include <Eklipse/Renderer/Renderer.h>
+
 namespace Eklipse
 {
     namespace Vulkan
@@ -88,11 +90,17 @@ namespace Eklipse
                 }
                 VkFormat desiredFormat = ConvertToVKFormat(m_framebufferInfo.colorAttachmentInfos[0].textureFormat);
                 g_swapChainImageFormat = desiredFormat;
+                VkPresentModeKHR desiredPresentMode = ConvertToVKPresentMode(Renderer::GetSettings().presentMode);
+                g_swapChainPresentMode = desiredPresentMode;
                 g_swapChain = CreateSwapChain(m_framebufferInfo.width, m_framebufferInfo.height,
-                    g_swapChainImageCount, g_swapChainImageFormat, g_swapChainExtent, g_swapChainImages);
+                    g_swapChainImageCount, g_swapChainImageFormat, g_swapChainPresentMode, g_swapChainExtent, g_swapChainImages);
                 if (g_swapChainImageFormat != desiredFormat)
                 {
                     EK_CORE_DBG("Desired format not supported by swap chain! Using {0} instead", (int)g_swapChainImageFormat);
+                }
+                if (g_swapChainPresentMode != desiredPresentMode)
+                {
+                    EK_CORE_DBG("Desired present mode not supported by swap chain! Using {0} instead", (int)g_swapChainPresentMode);
                 }
                 CreateImageViews(g_swapChainImageViews, g_swapChainImages, g_swapChainImageFormat);
 

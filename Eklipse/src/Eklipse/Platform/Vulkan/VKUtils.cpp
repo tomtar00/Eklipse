@@ -51,6 +51,17 @@ namespace Eklipse
 			EK_ASSERT(false, "Wrong image layout");
 			return VK_IMAGE_LAYOUT_UNDEFINED;
 		}
+		VkPresentModeKHR ConvertToVKPresentMode(PresentMode mode)
+		{
+			EK_CORE_PROFILE();
+			switch (mode)
+			{
+                case PresentMode::IMMEDIATE:		return VK_PRESENT_MODE_IMMEDIATE_KHR;
+                case PresentMode::MAILBOX:			return VK_PRESENT_MODE_MAILBOX_KHR;
+                case PresentMode::FIFO:				return VK_PRESENT_MODE_FIFO_KHR;
+                case PresentMode::FIFO_RELAXED:		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+            }
+		}
 		ImageFormat ConvertFromVKFormat(VkFormat format)
 		{
 			EK_CORE_PROFILE();
@@ -97,18 +108,18 @@ namespace Eklipse
 
 			return availableFormats[0];
 		}
-		VkPresentModeKHR ChooseSwapPresentMode(const Vec<VkPresentModeKHR>& availablePresentModes)
+		VkPresentModeKHR ChooseSwapPresentMode(const Vec<VkPresentModeKHR>& availablePresentModes, VkPresentModeKHR desiredPresentMode)
 		{
 			EK_CORE_PROFILE();
 			for (const auto& availablePresentMode : availablePresentModes)
 			{
-				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+				if (availablePresentMode == desiredPresentMode)
 				{
 					return availablePresentMode;
 				}
 			}
 
-			return VK_PRESENT_MODE_FIFO_KHR;
+			return VK_PRESENT_MODE_IMMEDIATE_KHR;
 		}
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int frameWidth, int frameHeight)
 		{

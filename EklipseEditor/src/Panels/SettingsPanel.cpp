@@ -44,17 +44,21 @@ namespace Eklipse
 				ImGui::SeparatorText("Renderer");
 
 				ImGui::DrawProperty("vsync", "V-Sync", [&]() {
-					if (ImGui::Checkbox("##V-Sync", &Renderer::GetSettings().Vsync))
+					static bool vsync = Renderer::GetSettings().presentMode != PresentMode::IMMEDIATE;
+					if (ImGui::Checkbox("##V-Sync", &vsync))
 					{
-						Renderer::OnVsyncChanged(Renderer::GetSettings().Vsync);
+						Renderer::OnPresentModeChanged(vsync ? PresentMode::FIFO : PresentMode::IMMEDIATE);
 					}
 				});
 
 				ImGui::DrawProperty("msaa", "MSAA", [&]() {
 					static const char* msaaSamples[]{ "Off","x2","x4","x8" };
-					if (ImGui::Combo("##MSAA", &Renderer::GetSettings().MsaaSamplesIndex, msaaSamples, IM_ARRAYSIZE(msaaSamples)))
+					static int msaa = Renderer::GetSettings().MsaaSamplesIndex;
+					if (ImGui::Combo("##MSAA", &msaa, msaaSamples, IM_ARRAYSIZE(msaaSamples)))
 					{
-						Renderer::OnMultiSamplingChanged(Renderer::GetSettings().GetMsaaSamples());
+						uint32_t samples = 1 << msaa;
+						Framebuffer* framebuffer = EditorLayer::Get().GetViewportFramebuffer();
+						Renderer::OnMultiSamplingChanged(framebuffer, samples);
 					}
 				});
 

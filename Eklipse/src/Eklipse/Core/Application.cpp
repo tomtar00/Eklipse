@@ -61,12 +61,6 @@ namespace Eklipse
         } 
         while (!Renderer::Init(targetAPIType));
 
-        //Renderer::InitSSBOs();
-        AssetManager::ReloadAssets();
-
-        if(SceneManager::GetActiveScene())
-            SceneManager::GetActiveScene()->ApplyAllComponents();
-
         OnAPIHasInitialized(Renderer::GetGraphicsAPIType());
 
         Renderer::OnAPIHasInitialized();

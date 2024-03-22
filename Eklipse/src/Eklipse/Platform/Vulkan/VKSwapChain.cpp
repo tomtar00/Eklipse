@@ -12,19 +12,19 @@ namespace Eklipse
 	{
         VkSwapchainKHR				g_swapChain = VK_NULL_HANDLE;
         VkFormat					g_swapChainImageFormat;
+        VkPresentModeKHR            g_swapChainPresentMode;
         VkExtent2D					g_swapChainExtent;
         uint32_t                    g_swapChainImageCount;
         Vec<VkImage>		g_swapChainImages;
         Vec<VkImageView>	g_swapChainImageViews;
-        //Vec<VkFramebuffer>	g_swapChainFramebuffers;
 
         VkSwapchainKHR CreateSwapChain(int frameWidth, int frameHeight, uint32_t& minImageCount, 
-            VkFormat& imageFormat, VkExtent2D& extent, Vec<VkImage>& images)
+            VkFormat& imageFormat, VkPresentModeKHR& presentMode, VkExtent2D& extent, Vec<VkImage>& images)
         {
             EK_CORE_PROFILE();
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(g_physicalDevice);
             VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats, imageFormat);
-            VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+            VkPresentModeKHR surfacePresentMode = ChooseSwapPresentMode(swapChainSupport.presentModes, presentMode);
             extent = ChooseSwapExtent(swapChainSupport.capabilities, frameWidth, frameHeight);
 
             minImageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -64,7 +64,7 @@ namespace Eklipse
 
             createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
             createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-            createInfo.presentMode = presentMode;
+            createInfo.presentMode = surfacePresentMode;
             createInfo.clipped = VK_TRUE;
             createInfo.oldSwapchain = VK_NULL_HANDLE;
 

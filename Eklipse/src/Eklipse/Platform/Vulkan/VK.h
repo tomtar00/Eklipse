@@ -36,6 +36,7 @@ namespace Eklipse
 		extern uint32_t g_currentFrame;
 		extern VkSwapchainKHR g_swapChain;
 		extern VkFormat g_swapChainImageFormat;
+		extern VkPresentModeKHR g_swapChainPresentMode;
 		extern VkExtent2D g_swapChainExtent;
 		extern uint32_t g_swapChainImageCount;
 		extern Vec<VkImage> g_swapChainImages;

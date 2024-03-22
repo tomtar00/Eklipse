@@ -327,10 +327,13 @@ namespace Eklipse
         });
         auto buffer = Renderer::GetStorageBuffer("bMeshes");
         buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
+
         scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
         {
             Entity entity = { entityID, scene.get() };
             OnSphereAdded(entity);
         });
+        buffer = Renderer::GetStorageBuffer("bSpheres");
+        buffer->SetData(&m_numTotalSpheres, sizeof(uint32_t));
     }
 }

@@ -21,7 +21,7 @@ namespace Eklipse
 		Pipeline::TopologyMode PipelineTopologyMode = Pipeline::TopologyMode::Triangle;
 
 		// Common
-		bool Vsync					= false;
+		PresentMode presentMode		= PresentMode::IMMEDIATE;
 		int MsaaSamplesIndex		= 0;
 		glm::vec3 skyColorHorizon	= { 1.0f, 1.0f, 1.0f };
 		glm::vec3 skyColorZenith	= { 0.07f, 0.36f, 0.72f };
@@ -29,7 +29,7 @@ namespace Eklipse
 		glm::vec3 sunColor			= { 1.0f, 1.0f, 0.8f };
 		glm::vec3 sunDirection		= { 0.0f, 0.3f, -1.0f };
 		float sunFocus				= 500.0f;
-		float sunIntensity			= 200.0f;
+		float sunIntensity			= 100.0f;
 
 		// Rasterization
 		// ...
@@ -72,8 +72,8 @@ namespace Eklipse
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);
-		static void OnMultiSamplingChanged(uint32_t numSamples);
-		static void OnVsyncChanged(bool enabled);
+		static void OnMultiSamplingChanged(Framebuffer* framebuffer, uint32_t numSamples);
+		static void OnPresentModeChanged(PresentMode mode);
 		static void OnMeshAdded(Entity entity);
 		static void OnSphereAdded(Entity entity);
 		static void OnSceneChanged();
