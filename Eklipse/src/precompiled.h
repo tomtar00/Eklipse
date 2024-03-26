@@ -33,6 +33,7 @@
 #include <cstdarg>
 #include <limits>
 #include <mutex>
+#include <numeric> 
 
 #include <Eklipse/Core/Core.h>
 #include <Eklipse/Utils/Log.h>

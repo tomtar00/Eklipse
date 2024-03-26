@@ -126,6 +126,8 @@ namespace Eklipse
 		vertexBuffer->SetLayout(m_meshData.layout);
 		m_vertexArray->AddVertexBuffer(vertexBuffer);
 		m_vertexArray->SetIndexBuffer(indexBuffer);
+
+		m_bvh = CreateRef<SplitBVH>(2.0f, 64, 0, 0.001f, 0);
 	}
 	Mesh::Mesh(const MeshData& data) : m_meshData(data)
 	{
@@ -137,6 +139,8 @@ namespace Eklipse
 		vertexBuffer->SetLayout(data.layout);
 		m_vertexArray->AddVertexBuffer(vertexBuffer);
 		m_vertexArray->SetIndexBuffer(indexBuffer);
+
+		m_bvh = CreateRef<SplitBVH>(2.0f, 64, 0, 0.001f, 0);
 	}
 	Ref<Mesh> Mesh::Create(const Path& filePath, const AssetHandle handle)
 	{
@@ -209,23 +213,24 @@ namespace Eklipse
 		return m_meshData.indices;
 	}
 
-	// TODO: Should take account of the buffer layout
-	Bounds Mesh::GetBounds() const
+	Ref<BVH> Mesh::GetBVH() const
 	{
-		Bounds bounds{};
-		bounds.min = { FLT_MAX, FLT_MAX, FLT_MAX };
-		bounds.max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-		uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
-		for (uint32_t i = 0; i < m_meshData.vertices.size(); i += stride)
+		return m_bvh;
+	}
+	void Mesh::BuildBVH()
+	{
+		Vec<Triangle> triangles = GetTriangles();
+		const int numTris = triangles.size();
+		std::vector<BoundingBox> bounds(numTris);
+
+#pragma omp parallel for
+		for (int i = 0; i < numTris; ++i)
 		{
-			glm::vec3 vertex = {
-                m_meshData.vertices[i + 0],
-                m_meshData.vertices[i + 1],
-                m_meshData.vertices[i + 2]
-            };
-            bounds.min = glm::min(bounds.min, vertex);
-            bounds.max = glm::max(bounds.max, vertex);
-        }
-		return bounds;
+			bounds[i].Grow(triangles[i].a);
+			bounds[i].Grow(triangles[i].b);
+			bounds[i].Grow(triangles[i].c);
+		}
+
+		m_bvh->Build(&bounds[0], numTris);
 	}
 }

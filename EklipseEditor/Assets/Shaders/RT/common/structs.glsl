@@ -36,7 +36,8 @@ struct MeshInfo {
     vec3 boundMax;
     uint materialIndex;
 };
-struct Bounds {
+struct BVHNode {
     vec3 boundMin;
     vec3 boundMax;
+    vec3 data;
 };

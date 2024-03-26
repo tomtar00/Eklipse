@@ -37,15 +37,11 @@ namespace Eklipse
         buffer = Renderer::GetStorageBuffer("bIndices");
         buffer->SetData(indices.data(), indices.size() * sizeof(uint32_t), indexOffset * sizeof(uint32_t));
 
-        Bounds bounds = mesh->GetBounds();
-
         RayTracingMeshInfo meshInfo{};
         meshInfo.vertexOffset = vertOffset;
         meshInfo.vertexCount = vertices.size();
         meshInfo.indexOffset = indexOffset;
         meshInfo.indexCount = indices.size();
-        meshInfo.boundMin = bounds.min;
-        meshInfo.boundMax = bounds.max;
         meshInfo.materialIndex = meshIndex;
 
         uint32_t newMeshCount = meshIndex + 1;
@@ -112,6 +108,7 @@ namespace Eklipse
         const uint32_t maxIndices = 1000000;
         const uint32_t maxMeshes = 100;
         const uint32_t maxSpheres = 100;
+        const uint32_t maxObjects = maxMeshes + maxSpheres;
         glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
         Renderer::CreateStorageBuffer("bPixels", bufferSize, 1);
@@ -120,8 +117,9 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bIndices", maxIndices * sizeof(uint32_t), 4);
         Renderer::CreateStorageBuffer("bSpheres", 4 * sizeof(uint32_t) + maxSpheres * sizeof(RayTracingSphereInfo), 5);
         Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6);
-        Renderer::CreateStorageBuffer("bMaterials", (maxMeshes + maxSpheres) * sizeof(RayTracingMaterial), 7);
+        Renderer::CreateStorageBuffer("bMaterials", maxObjects * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
+        Renderer::CreateStorageBuffer("bBVH", maxObjects * sizeof(BVH::Node), 9);
     }
     void RayTracingContext::OnUpdate(float deltaTime)
     {
