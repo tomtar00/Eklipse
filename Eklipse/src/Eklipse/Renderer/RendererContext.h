@@ -2,10 +2,11 @@
 #include "Shader.h"
 #include "Material.h"
 #include "VertexArray.h"
-#include <Eklipse/Scene/Scene.h>
+//#include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Entity.h>
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Renderer/ComputeShader.h>
+#include <Eklipse/BVH/BVHTranslator.h>
 
 namespace Eklipse
 {
@@ -63,6 +64,7 @@ namespace Eklipse
 
 		void RecompileShader();
 		void RecompileTransformComputeShader();
+		void RebuildBVH();
 
 	private:
 		void InitMaterial();
@@ -75,6 +77,8 @@ namespace Eklipse
 
 		Ref<ComputeShader> m_transComputeShader;
 
+		Unique<BVHTranslator> m_bvhTranslator;
+
 		uint32_t m_frameIndex = 0;
 		uint32_t m_numTotalVertices;
 		uint32_t m_numTotalIndices;
@@ -83,31 +87,5 @@ namespace Eklipse
 
 		glm::vec2 m_viewportSize;
 		glm::vec2 m_lastViewportSize;
-	};
-
-	struct RayTracingMaterial
-	{
-		glm::vec3 albedo;
-		float smoothness;
-		glm::vec3 specularColor;
-		float specularProb;		
-		glm::vec3 emissionColor;
-		float emissionStrength;
-	};
-	struct RayTracingSphereInfo
-	{
-		glm::vec3 position;
-		float radius;
-		uint32_t materialIndex;		float __padding0[3];
-	};
-	struct RayTracingMeshInfo
-	{
-		uint32_t vertexOffset;
-		uint32_t vertexCount;
-		uint32_t indexOffset;
-		uint32_t indexCount;
-		glm::vec3 boundMin;			float __padding0[1];
-		glm::vec3 boundMax;
-		uint32_t materialIndex;
 	};
 }

@@ -30,14 +30,20 @@ namespace Eklipse
 {
     glm::vec3 BoundingBox::Center() const
     {
+        EK_CORE_PROFILE();
+
         return (m_pMax + m_pMin) * 0.5f;
     }
     glm::vec3 BoundingBox::Extents() const
     {
+        EK_CORE_PROFILE();
+
         return m_pMax - m_pMin;
     }
     int BoundingBox::MaxDim() const
     {
+        EK_CORE_PROFILE();
+
         glm::vec3 ext = Extents();
 
         if (ext.x >= ext.y && ext.x >= ext.z)
@@ -51,11 +57,15 @@ namespace Eklipse
     }
     float BoundingBox::SurfaceArea() const
     {
+        EK_CORE_PROFILE();
+
         glm::vec3 ext = Extents();
         return 2.0f * (ext.x * ext.y + ext.x * ext.z + ext.y * ext.z);
     }
     bool BoundingBox::Contains(const glm::vec3& p) const
     {
+        EK_CORE_PROFILE();
+
         glm::vec3 center = Center();
         glm::vec3 radius = Extents() * 0.5f;
         return std::abs(center.x - p.x) <= radius.x &&
@@ -64,17 +74,23 @@ namespace Eklipse
     }
     void BoundingBox::Grow(const glm::vec3& p)
     {
+        EK_CORE_PROFILE();
+
         m_pMin = glm::min(m_pMin, p);
         m_pMax = glm::max(m_pMax, p);
     }
     void BoundingBox::Grow(const BoundingBox& b)
     {
+        EK_CORE_PROFILE();
+
         m_pMin = glm::min(m_pMin, b.m_pMin);
         m_pMax = glm::max(m_pMax, b.m_pMax);
     }
 
     BoundingBox BoundingBox::Union(const BoundingBox& box1, const BoundingBox& box2)
     {
+        EK_CORE_PROFILE();
+
         BoundingBox res;
         res.m_pMin = glm::min(box1.m_pMin, box2.m_pMin);
         res.m_pMax = glm::max(box1.m_pMax, box2.m_pMax);
@@ -82,10 +98,14 @@ namespace Eklipse
     }
     BoundingBox BoundingBox::Intersection(const BoundingBox& box1, const BoundingBox& box2)
     {
+        EK_CORE_PROFILE();
+
         return BoundingBox(glm::max(box1.m_pMin, box2.m_pMin), glm::min(box1.m_pMax, box2.m_pMax));
     }
     void BoundingBox::Intersection(const BoundingBox& box1, const BoundingBox& box2, BoundingBox& box)
     {
+        EK_CORE_PROFILE();
+
         box.m_pMin = glm::max(box1.m_pMin, box2.m_pMin);
         box.m_pMax = glm::min(box1.m_pMax, box2.m_pMax);
     }
@@ -94,6 +114,8 @@ namespace Eklipse
 
     bool BoundingBox::Intersects(const BoundingBox& box1, const BoundingBox& box2)
     {
+        EK_CORE_PROFILE();
+
         glm::vec3 b1c = box1.Center();
         glm::vec3 b1r = box1.Extents() * 0.5f;
         glm::vec3 b2c = box2.Center();
@@ -105,6 +127,8 @@ namespace Eklipse
     }
     bool BoundingBox::Contains(const BoundingBox& box1, const BoundingBox& box2)
     {
+        EK_CORE_PROFILE();
+
         return box1.Contains(box2.m_pMin) && box1.Contains(box2.m_pMax);
     }
 }

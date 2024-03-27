@@ -5,6 +5,8 @@ namespace Eklipse
 {
     void SplitBVH::BuildImpl(BoundingBox const* bounds, int numbounds)
     {
+        EK_CORE_PROFILE();
+
         PrimRefArray primrefs(numbounds);
 
         std::vector<glm::vec3> centroids(numbounds);
@@ -29,6 +31,8 @@ namespace Eklipse
     }
     void SplitBVH::BuildNode(SplitRequest& req, PrimRefArray& primrefs)
     {
+        EK_CORE_PROFILE();
+
         m_height = std::max(m_height, req.level);
 
         Node* node = AllocateNode();
@@ -170,6 +174,8 @@ namespace Eklipse
     }
     BVH::SahSplit SplitBVH::FindObjectSahSplit(SplitRequest const& req, PrimRefArray const& refs) const
     {
+        EK_CORE_PROFILE();
+
         int splitidx = -1;
         auto sah = std::numeric_limits<float>::max();
         SahSplit split;
@@ -264,6 +270,8 @@ namespace Eklipse
     }
     BVH::SahSplit SplitBVH::FindSpatialSahSplit(SplitRequest const& req, PrimRefArray const& refs) const
     {
+        EK_CORE_PROFILE();
+
         int const kNumBins = 128;
         auto sah = std::numeric_limits<float>::max();
         SahSplit split;
@@ -370,6 +378,8 @@ namespace Eklipse
     }
     void SplitBVH::SplitPrimRefs(SahSplit const& split, SplitRequest const& req, PrimRefArray& refs, int& extra_refs)
     {
+        EK_CORE_PROFILE();
+
         int appendprims = req.numprims;
 
         for (int i = req.startidx; i < req.startidx + req.numprims; ++i)
@@ -388,6 +398,8 @@ namespace Eklipse
     }
     bool SplitBVH::SplitPrimRef(PrimRef const& ref, int axis, float split, PrimRef& leftref, PrimRef& rightref) const
     {
+        EK_CORE_PROFILE();
+
         leftref.idx = rightref.idx = ref.idx;
         leftref.bounds = rightref.bounds = ref.bounds;
 
@@ -400,9 +412,10 @@ namespace Eklipse
 
         return false;
     }
-
     BVH::Node* SplitBVH::AllocateNode()
     {
+        EK_CORE_PROFILE();
+
         if (m_nodecnt - m_num_nodes_archived >= m_num_nodes_for_regular)
         {
             m_node_archive.push_back(std::move(m_nodes));
@@ -414,6 +427,8 @@ namespace Eklipse
     }
     void SplitBVH::InitNodeAllocator(size_t maxnum)
     {
+        EK_CORE_PROFILE();
+
         m_node_archive.clear();
         m_nodecnt = 0;
         m_nodes.resize(maxnum);

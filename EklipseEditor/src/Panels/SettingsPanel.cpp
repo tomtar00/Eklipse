@@ -1,5 +1,6 @@
 #include "SettingsPanel.h"
 #include <EditorLayer.h>
+#include <Eklipse/Renderer/RendererContext.h>
 
 namespace Eklipse
 {

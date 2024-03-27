@@ -5,6 +5,7 @@
 #include <tiny_obj_loader.h>
 
 #include <Eklipse/Utils/Hash.h>
+#include <Eklipse/BVH/SplitBVH.h>
 
 namespace Eklipse
 {

@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 #include <Eklipse/Scene/Components.h>
 #include <Eklipse/Project/Project.h>
+#include <Eklipse/Renderer/RendererContext.h>
 
 #include <glm/gtc/quaternion.hpp>
 #include <misc/cpp/imgui_stdlib.h>
@@ -1069,6 +1070,10 @@ namespace Eklipse
                 if (ImGui::Button("Recompile Transform Compute Shader"))
                 {
                     rtContext->RecompileTransformComputeShader();
+                }
+                if (ImGui::Button("Rebuild BVH"))
+                {
+                    rtContext->RebuildBVH();
                 }
             }
         });

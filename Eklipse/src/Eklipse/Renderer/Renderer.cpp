@@ -8,6 +8,7 @@
 #include <Eklipse/Core/Application.h>
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
 #include <Eklipse/Platform/OpenGL/OpenGLAPI.h>
+#include <Eklipse/Renderer/RendererContext.h>
 
 // Force the use of the dedicated GPU on laptops
 #ifdef __cplusplus

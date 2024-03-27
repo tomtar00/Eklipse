@@ -1,6 +1,7 @@
 #include <precompiled.h>
 #include "RendererContext.h"
-#include <Eklipse/Scene/Components.h>
+#include <Eklipse/Renderer/RayTracingStructs.h>
+#include <Eklipse/Renderer/Mesh.h>
 
 namespace Eklipse
 {
@@ -93,6 +94,7 @@ namespace Eklipse
         m_transComputeShader = ComputeShader::Create("Assets/Shaders/RT/Transform.comp");
 
         ReconstructSceneBuffers();
+        RebuildBVH();
     }
     void RayTracingContext::Shutdown()
     {
@@ -119,7 +121,7 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6);
         Renderer::CreateStorageBuffer("bMaterials", maxObjects * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
-        Renderer::CreateStorageBuffer("bBVH", maxObjects * sizeof(BVH::Node), 9);
+        Renderer::CreateStorageBuffer("bBVH", 4 * sizeof(uint32_t) + maxObjects * sizeof(BVHTranslator::Node), 9);
     }
     void RayTracingContext::OnUpdate(float deltaTime)
     {
@@ -286,6 +288,26 @@ namespace Eklipse
 
         if (m_transComputeShader->GetShader()->Compile("Assets/Shaders/RT/Transform.comp", true))
             m_transComputeShader->GetMaterial()->OnShaderReloaded();
+    }
+
+    void RayTracingContext::RebuildBVH()
+    {
+        EK_CORE_PROFILE();
+
+        if (!m_bvhTranslator)
+        {
+            auto scene = SceneManager::GetActiveScene();
+            m_bvhTranslator = CreateUnique<BVHTranslator>(scene.get());
+        }
+
+        m_bvhTranslator->Process();
+
+        auto buffer = Renderer::GetStorageBuffer("bBVH");
+        int topIndex = m_bvhTranslator->GetTopLevelIndex();
+
+        buffer->SetData(&topIndex, sizeof(uint32_t));
+        buffer->SetData(m_bvhTranslator->GetNodes().data(), m_bvhTranslator->GetNodes().size() * sizeof(BVHTranslator::Node), 4 * sizeof(uint32_t));
+
     }
 
     void RayTracingContext::InitMaterial()

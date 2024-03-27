@@ -26,24 +26,30 @@ THE SOFTWARE.
 #include "precompiled.h"
 #include "BVHTranslator.h"
 
+#include <Eklipse/Renderer/Mesh.h>
+
 namespace Eklipse
 {
-    BVHTranslator::BVHTranslator(Scene* scene) : m_scene(scene) {}
+    BVHTranslator::BVHTranslator(Scene* scene) : m_scene(scene), m_topLevelBvh(nullptr) {}
 
-    void BVHTranslator::ProcessBLAS()
+    void BVHTranslator::Process()
     {
-        int nodeCnt = 0;
+        EK_CORE_PROFILE();
+        EK_CORE_TRACE("Processing BVH");
 
-        Vec<Mesh*> meshes;
+        m_meshes.clear();
+        m_meshInstances.clear();
+
+        m_topLevelBvh = CreateUnique<BVH>(10.0f, 64, false);
+
         auto meshInstances = m_scene->GetRegistry().view<RayTracingMeshComponent>();
         meshInstances.each([&](auto entity, RayTracingMeshComponent& mesh)
         {
             Entity e = Entity(entity, m_scene);
             auto meshPtr = e.GetComponent<MeshComponent>().mesh;
-            nodeCnt += meshPtr->GetBVH()->m_nodecnt;
 
             bool found = false;
-            for (auto& m : meshes)
+            for (auto& m : m_meshes)
             {
                 if (m == meshPtr)
                 {
@@ -52,99 +58,122 @@ namespace Eklipse
                 }
             }
             if (!found)
-                meshes.push_back(meshPtr);
+                m_meshes.push_back(meshPtr);
 
-            m_meshInstances[m_meshInstances.size()] = &mesh;
+            m_meshInstances.push_back(mesh.index);
         });
 
-        topLevelIndex = nodeCnt;
+        Vec<BoundingBox> meshBounds;
+        for (auto mesh : m_meshes)
+        {
+            mesh->BuildBVH();
+            meshBounds.push_back(mesh->GetBVH()->GetBounds());
+        }
+        m_topLevelBvh->Build(meshBounds.data(), meshBounds.size());
 
-        nodeCnt += 2 * meshInstances.size();
-        nodes.resize(nodeCnt);
+        ProcessBLAS();
+        ProcessTLAS();
+
+        EK_CORE_DBG("BVH Processed");
+    }
+    Vec<BVHTranslator::Node>& BVHTranslator::GetNodes()
+    {
+        return m_nodes;
+    }
+    int BVHTranslator::GetTopLevelIndex() const
+    {
+        return m_topLevelIndex;
+    }
+
+    void BVHTranslator::ProcessBLAS()
+    {
+        EK_CORE_PROFILE();
+
+        int nodeCnt = 0;
+        for (auto mesh : m_meshes)
+        {
+            nodeCnt += mesh->GetBVH()->m_nodecnt;
+        }
 
         int bvhRootIndex = 0;
-        curTriIndex = 0;
+        nodeCnt += 2 * m_meshInstances.size();
 
-        for (int i = 0; i < meshes.size(); i++)
+        m_topLevelIndex = nodeCnt;
+        m_nodes.resize(nodeCnt);
+        m_curTriIndex = 0;
+
+        for (auto mesh : m_meshes)
         {
-            Mesh* mesh = meshes[i];
-            curNode = bvhRootIndex;
+            m_curNode = bvhRootIndex;
 
-            bvhRootStartIndices.push_back(bvhRootIndex);
+            m_bvhRootStartIndices.push_back(bvhRootIndex);
             bvhRootIndex += mesh->GetBVH()->m_nodecnt;
 
             ProcessBLASNodes(mesh->GetBVH()->m_root);
-            curTriIndex += mesh->GetBVH()->GetNumIndices();
+            m_curTriIndex += mesh->GetBVH()->GetNumIndices();
         }
     }
     void BVHTranslator::ProcessTLAS()
     {
-        curNode = topLevelIndex;
-        ProcessTLASNodes(topLevelBvh->m_root);
-    }
-    void BVHTranslator::UpdateTLAS()
-    {
-        topLevelBvh = topLevelBvh;
-        curNode = topLevelIndex;
-        ProcessTLASNodes(topLevelBvh->m_root);
-    }
-    void BVHTranslator::Process()
-    {
-        topLevelBvh = topLevelBvh;
-        ProcessBLAS();
-        ProcessTLAS();
-    }
+        EK_CORE_PROFILE();
 
+        m_curNode = m_topLevelIndex;
+        ProcessTLASNodes(m_topLevelBvh->m_root);
+    }
     int BVHTranslator::ProcessBLASNodes(const BVH::Node* node)
     {
+        EK_CORE_PROFILE();
+
         BoundingBox box = node->bounds;
 
-        nodes[curNode].boundingBoxMin = box.m_pMin;
-        nodes[curNode].boundingBoxMax = box.m_pMax;
-        nodes[curNode].LRLeaf.z = 0;
+        m_nodes[m_curNode].boundingBoxMin = box.m_pMin;
+        m_nodes[m_curNode].boundingBoxMax = box.m_pMax;
+        m_nodes[m_curNode].LRLeaf.z = 0;
 
-        int index = curNode;
+        int index = m_curNode;
 
         if (node->type == BVH::NodeType::Leaf)
         {
-            nodes[curNode].LRLeaf.x = curTriIndex + node->startidx;
-            nodes[curNode].LRLeaf.y = node->numprims;
-            nodes[curNode].LRLeaf.z = 1;
+            m_nodes[m_curNode].LRLeaf.x = m_curTriIndex + node->startidx;
+            m_nodes[m_curNode].LRLeaf.y = node->numprims;
+            m_nodes[m_curNode].LRLeaf.z = 1;
         }
         else
         {
-            curNode++;
-            nodes[index].LRLeaf.x = ProcessBLASNodes(node->lc);
-            curNode++;
-            nodes[index].LRLeaf.y = ProcessBLASNodes(node->rc);
+            m_curNode++;
+            m_nodes[index].LRLeaf.x = ProcessBLASNodes(node->lc);
+            m_curNode++;
+            m_nodes[index].LRLeaf.y = ProcessBLASNodes(node->rc);
         }
         return index;
     }
     int BVHTranslator::ProcessTLASNodes(const BVH::Node* node)
     {
+        EK_CORE_PROFILE();
+
         BoundingBox box = node->bounds;
 
-        nodes[curNode].boundingBoxMin = box.m_pMin;
-        nodes[curNode].boundingBoxMax = box.m_pMax;
-        nodes[curNode].LRLeaf.z = 0;
+        m_nodes[m_curNode].boundingBoxMin = box.m_pMin;
+        m_nodes[m_curNode].boundingBoxMax = box.m_pMax;
+        m_nodes[m_curNode].LRLeaf.z = 0;
 
-        int index = curNode;
+        int index = m_curNode;
 
         if (node->type == BVH::NodeType::Leaf)
         {
-            int instanceIndex = topLevelBvh->m_packed_indices[node->startidx];
-            int meshIndex = m_meshInstances[instanceIndex]->index;
+            int instanceIndex = m_topLevelBvh->m_packed_indices[node->startidx];
+            int meshIndex = m_meshInstances[instanceIndex];
 
-            nodes[curNode].LRLeaf.x = bvhRootStartIndices[meshIndex];
-            nodes[curNode].LRLeaf.y = 0;
-            nodes[curNode].LRLeaf.z = -instanceIndex - 1;
+            m_nodes[m_curNode].LRLeaf.x = m_bvhRootStartIndices[meshIndex];
+            m_nodes[m_curNode].LRLeaf.y = 0;
+            m_nodes[m_curNode].LRLeaf.z = -instanceIndex - 1;
         }
         else
         {
-            curNode++;
-            nodes[index].LRLeaf.x = ProcessTLASNodes(node->lc);
-            curNode++;
-            nodes[index].LRLeaf.y = ProcessTLASNodes(node->rc);
+            m_curNode++;
+            m_nodes[index].LRLeaf.x = ProcessTLASNodes(node->lc);
+            m_curNode++;
+            m_nodes[index].LRLeaf.y = ProcessTLASNodes(node->rc);
         }
         return index;
     }

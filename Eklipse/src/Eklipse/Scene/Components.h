@@ -4,13 +4,16 @@
 
 #include <glm/glm.hpp>
 #include <Eklipse/Renderer/Material.h>
-#include <Eklipse/Renderer/Mesh.h>
+//#include <Eklipse/Renderer/Mesh.h>
+#include <Eklipse/Renderer/RayTracingStructs.h>
 #include <Eklipse/Core/UUID.h>
 
 #include <EklipseScriptAPI.h>
 
 namespace Eklipse
 {
+	class Mesh;
+
 	struct EK_API IDComponent
 	{
 		UUID ID;

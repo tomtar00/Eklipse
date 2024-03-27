@@ -27,46 +27,47 @@ THE SOFTWARE.
 
 #include "BVH.h"
 
-#include <Eklipse/Renderer/Mesh.h>
 #include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Components.h>
 
 namespace Eklipse
 {
+    class Mesh;
+
     class BVHTranslator
     {
     public:
         struct Node
         {
-            glm::vec3 boundingBoxMin;
-            float __pad0;
-            glm::vec3 boundingBoxMax;
-            float __pad1;
-            glm::vec3 LRLeaf;
-            float __pad2;
+            glm::vec3 boundingBoxMin;   float __pad0;
+            glm::vec3 boundingBoxMax;   float __pad1;
+            glm::vec3 LRLeaf;           float __pad2;
         };
 
+    public:
         BVHTranslator(Scene* scene);
 
-        void ProcessBLAS();
-        void ProcessTLAS();
-        void UpdateTLAS();
         void Process();
+        Vec<Node>& GetNodes();
+        int GetTopLevelIndex() const;
         
     private:
+        void ProcessBLAS();
+        void ProcessTLAS();
         int ProcessBLASNodes(const BVH::Node* node);
         int ProcessTLASNodes(const BVH::Node* node);
 
     private:
-        int topLevelIndex = 0;
-        int nodeTexWidth;
-        int curNode = 0;
-        int curTriIndex = 0;
+        int m_topLevelIndex = 0;
+        int m_curNode = 0;
+        int m_curTriIndex = 0;
 
-        const BVH* topLevelBvh;
-        std::vector<Node> nodes;
-        std::vector<int> bvhRootStartIndices;
-        std::vector<RayTracingMeshComponent*> m_meshInstances;
+        Unique<BVH> m_topLevelBvh;
+        Vec<Node> m_nodes;
+        Vec<int> m_bvhRootStartIndices;
+
+        Vec<Mesh*> m_meshes;
+        Vec<uint32_t> m_meshInstances;
         
         Scene* m_scene;
     };

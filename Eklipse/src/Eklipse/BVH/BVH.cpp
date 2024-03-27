@@ -37,6 +37,8 @@ namespace Eklipse
 {
     void BVH::Build(const BoundingBox* bounds, int numBounds)
     {
+        EK_CORE_PROFILE();
+
         for (int i = 0; i < numBounds; ++i)
         {
             m_bounds.Grow(bounds[i]);
@@ -50,10 +52,20 @@ namespace Eklipse
     }
     int BVH::GetHeight() const
     {
-        return 0;
+        return m_height;
+    }
+    int const* BVH::GetIndices() const
+    {
+        return &m_packed_indices[0];
+    }
+    size_t BVH::GetNumIndices() const
+    {
+        return m_packed_indices.size();
     }
     void BVH::InitNodeAllocator(size_t maxnum)
     {
+        EK_CORE_PROFILE();
+
         m_nodecnt = 0;
         m_nodes.resize(maxnum);
     }
@@ -63,6 +75,8 @@ namespace Eklipse
     }
     void BVH::BuildNode(const SplitRequest & req, const BoundingBox* bounds, const glm::vec3* centroids, int* primindices)
     {
+        EK_CORE_PROFILE();
+
         m_height = std::max(m_height, req.level);
 
         Node* node = AllocateNode();
@@ -232,6 +246,8 @@ namespace Eklipse
     }
     BVH::SahSplit BVH::FindSahSplit(const SplitRequest& req, const BoundingBox* bounds, const glm::vec3* centroids, int* primindices) const
     {
+        EK_CORE_PROFILE();
+
         int splitidx = -1;
         float sah = std::numeric_limits<float>::max();
         SahSplit split;
@@ -321,6 +337,8 @@ namespace Eklipse
     }
     void BVH::BuildImpl(const BoundingBox* bounds, int numbounds)
     {
+        EK_CORE_PROFILE();
+
         InitNodeAllocator(2 * numbounds - 1);
 
         std::vector<glm::vec3> centroids(numbounds);

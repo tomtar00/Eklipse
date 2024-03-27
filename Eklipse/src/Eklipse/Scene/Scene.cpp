@@ -4,6 +4,7 @@
 #include "Components.h"
 
 #include <Eklipse/Assets/AssetManager.h>
+#include <Eklipse/Renderer/Mesh.h>
 #include <dylib.hpp>
 
 namespace Eklipse

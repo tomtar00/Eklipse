@@ -3,6 +3,7 @@
 #include "EditorLayer.h"
 
 #include <Eklipse/Scene/Components.h>
+#include <Eklipse/Renderer/Mesh.h>
 
 #include <misc/cpp/imgui_stdlib.h>
 #include <glm/gtc/type_ptr.hpp>

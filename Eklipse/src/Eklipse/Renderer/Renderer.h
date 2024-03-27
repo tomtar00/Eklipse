@@ -6,14 +6,17 @@
 #include "Shader.h"
 #include "Material.h"
 #include "GraphicsAPI.h"
-#include "RendererContext.h"
+//#include "RendererContext.h"
 
-#include <Eklipse/Scene/Scene.h>
+#include <Eklipse/Scene/Entity.h>
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Utils/Yaml.h>
 
 namespace Eklipse
 {
+    class RendererContext;
+    class Scene;
+
 	struct RendererSettings
 	{
 		GraphicsAPI::Type GraphicsAPIType = GraphicsAPI::Type::Vulkan;
