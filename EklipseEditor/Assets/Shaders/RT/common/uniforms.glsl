@@ -53,6 +53,6 @@ layout (std140, binding = 8) buffer TransformData {
 } bTransforms;
 
 layout (std140, binding = 9) buffer BVHData {
-    uint TopLevelIndex;
-    BVHNode BVH[];
+    int TopLevelIndex;
+    BVHNode Nodes[];
 } bBVH;

@@ -94,12 +94,12 @@ namespace Eklipse
         {
             nodeCnt += mesh->GetBVH()->m_nodecnt;
         }
+        m_topLevelIndex = nodeCnt;
+
+        nodeCnt += 2 * m_meshInstances.size();
+        m_nodes.resize(nodeCnt);
 
         int bvhRootIndex = 0;
-        nodeCnt += 2 * m_meshInstances.size();
-
-        m_topLevelIndex = nodeCnt;
-        m_nodes.resize(nodeCnt);
         m_curTriIndex = 0;
 
         for (auto mesh : m_meshes)
@@ -134,7 +134,7 @@ namespace Eklipse
 
         if (node->type == BVH::NodeType::Leaf)
         {
-            m_nodes[m_curNode].LRLeaf.x = m_curTriIndex + node->startidx;
+            m_nodes[m_curNode].LRLeaf.x = node->startidx + m_curTriIndex;
             m_nodes[m_curNode].LRLeaf.y = node->numprims;
             m_nodes[m_curNode].LRLeaf.z = 1;
         }
