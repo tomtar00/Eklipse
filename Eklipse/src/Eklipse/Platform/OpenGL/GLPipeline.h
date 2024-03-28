@@ -1,10 +1,13 @@
 #pragma once
 #include <Eklipse/Renderer/Pipeline.h>
+#include <glad/glad.h>
 
 namespace Eklipse
 {
     namespace OpenGL
     {
+        extern GLint g_currentTopologyMode;
+
         class GLPipeline : public Pipeline
         {
         public:

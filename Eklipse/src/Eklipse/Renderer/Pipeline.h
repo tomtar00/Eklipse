@@ -14,7 +14,7 @@ namespace Eklipse
 	public:
 		enum class Type
 		{
-			Resterization,
+			Rasterization,
 			RayTracing,
 			RayTracingKHR,
 			Compute

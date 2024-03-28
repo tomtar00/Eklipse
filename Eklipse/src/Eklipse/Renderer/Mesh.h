@@ -1,7 +1,6 @@
 #pragma once
 #include "VertexArray.h"
 #include <Eklipse/Assets/AssetManager.h>
-//#include <Eklipse/BVH/SplitBVH.h>
 
 namespace Eklipse
 {

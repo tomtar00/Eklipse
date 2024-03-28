@@ -24,6 +24,8 @@ namespace Eklipse
             RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
         }
 
+        Renderer::RenderBounds(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
+
         // ...
     }
 
@@ -227,6 +229,16 @@ namespace Eklipse
         RenderCommand::DrawIndexed(m_fullscreenQuad, m_material.get());
 
         m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };
+
+        /*for (auto& node : m_bvhTranslator->GetNodes())
+        {
+            glm::vec3 min = node.boundingBoxMin;
+            glm::vec3 max = node.boundingBoxMax;
+            glm::vec3 color = glm::vec3(1.0f);
+            Renderer::RenderBounds(min, max, color);
+        }*/
+
+        Renderer::RenderBounds(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
     }
 
     void RayTracingContext::SetAccumulate(bool accumulate)

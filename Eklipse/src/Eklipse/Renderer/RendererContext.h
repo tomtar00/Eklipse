@@ -2,7 +2,6 @@
 #include "Shader.h"
 #include "Material.h"
 #include "VertexArray.h"
-//#include <Eklipse/Scene/Scene.h>
 #include <Eklipse/Scene/Entity.h>
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Renderer/ComputeShader.h>

@@ -77,7 +77,7 @@ namespace Eklipse
         {
             switch (renderer)
             {
-                case 0: Renderer::RequestPipelineTypeChange(Pipeline::Type::Resterization);   break;
+                case 0: Renderer::RequestPipelineTypeChange(Pipeline::Type::Rasterization);   break;
                 case 1: Renderer::RequestPipelineTypeChange(Pipeline::Type::RayTracing);      break;
             }
         }

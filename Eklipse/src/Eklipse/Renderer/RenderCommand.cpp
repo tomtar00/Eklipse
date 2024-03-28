@@ -8,6 +8,17 @@ namespace Eklipse
 {
 	Unique<GraphicsAPI> RenderCommand::API;
 
+	void RenderCommand::Draw(Ref<VertexArray> vertexArray)
+	{
+		EK_PROFILE();
+		EK_ASSERT(vertexArray, "Vertex array is null");
+
+		vertexArray->Bind();
+		API->Draw(vertexArray);
+
+		Stats::Get().drawCalls++;
+		Stats::Get().numVertices += vertexArray->GetTotalNumVertices();
+	}
 	void RenderCommand::DrawIndexed(Ref<VertexArray> vertexArray)
 	{
 		EK_PROFILE();
@@ -35,6 +46,23 @@ namespace Eklipse
 
 		material->Bind();
 		DrawIndexed(vertexArray);
+	}
+	void RenderCommand::DrawLines(Ref<VertexArray> vertexArray, Material* material)
+	{
+		EK_PROFILE();
+		EK_ASSERT(material, "Material is null");
+		EK_ASSERT(material->GetShader(), "Material shader is null");
+		EK_ASSERT(g_currentFramebuffer, "Current framebuffer is null");
+
+		Pipeline::Config config{};
+		config.type			= Pipeline::Type::Rasterization;
+		config.topologyMode = Pipeline::TopologyMode::Line;
+		config.shader		= material->GetShader().get();
+		config.framebuffer	= g_currentFramebuffer;
+		Pipeline::Get(config)->Bind();
+
+		material->Bind();
+		Draw(vertexArray);
 	}
 	void RenderCommand::Dispatch(Ref<ComputeShader> computeShader, uint32_t x, uint32_t y, uint32_t z)
 	{

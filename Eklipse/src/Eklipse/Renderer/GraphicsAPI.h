@@ -30,9 +30,7 @@ namespace Eklipse
         virtual void EndComputePass() = 0;
         virtual void Submit() = 0;
 
-        virtual void SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode) = 0;
-        virtual void SetPipelineType(Pipeline::Type type) = 0;
-
+        virtual void Draw(Ref<VertexArray> vertexArray) = 0;
         virtual void DrawIndexed(Ref<VertexArray> vertexArray) = 0;
 
     protected:

@@ -6,7 +6,6 @@
 #include "Shader.h"
 #include "Material.h"
 #include "GraphicsAPI.h"
-//#include "RendererContext.h"
 
 #include <Eklipse/Scene/Entity.h>
 #include <Eklipse/Scene/Camera.h>
@@ -20,7 +19,7 @@ namespace Eklipse
 	struct RendererSettings
 	{
 		GraphicsAPI::Type GraphicsAPIType = GraphicsAPI::Type::Vulkan;
-		Pipeline::Type PipelineType = Pipeline::Type::Resterization;
+		Pipeline::Type PipelineType = Pipeline::Type::Rasterization;
 		Pipeline::TopologyMode PipelineTopologyMode = Pipeline::TopologyMode::Triangle;
 
 		// Common
@@ -72,6 +71,7 @@ namespace Eklipse
 		// Render calls
 		static void RenderScene(Ref<Scene> scene, Camera& camera, Transform& cameraTransform);
 		static void RenderScene(Ref<Scene> scene);
+		static void RenderBounds(glm::vec3 min, glm::vec3 max, glm::vec3 color);
 
 		// Events
 		static void OnWindowResize(uint32_t width, uint32_t height);
@@ -115,5 +115,8 @@ namespace Eklipse
 		static Ref<RendererContext> s_rendererContext;
 		static Ref<UniformBuffer> s_cameraUniformBuffer;
 		static Ref<Framebuffer> s_defaultFramebuffer;
+		static Ref<VertexArray> s_boundsVertexArray;
+		static Ref<Shader> s_lineShader;
+		static Ref<Material> s_lineMaterial;
 	};
 }

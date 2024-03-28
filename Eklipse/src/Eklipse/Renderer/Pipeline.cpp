@@ -57,7 +57,7 @@ namespace Eklipse
     }
     String Pipeline::TypeToString(const Type& type)
     {
-        if (type == Type::Resterization) return "Rasterization";
+        if (type == Type::Rasterization) return "Rasterization";
         if (type == Type::Compute) return "Compute";
         if (type == Type::RayTracing) return "Ray Tracing";
         if (type == Type::RayTracingKHR) return "Ray Tracing (KHR)";
@@ -75,13 +75,13 @@ namespace Eklipse
     }
     Pipeline::Type Pipeline::StringToType(const String& type)
     {
-        if (type == "Rasterization") return Type::Resterization;
+        if (type == "Rasterization") return Type::Rasterization;
         if (type == "Compute") return Type::Compute;
         if (type == "Ray Tracing") return Type::RayTracing;
         if (type == "Ray Tracing (KHR)") return Type::RayTracingKHR;
 
         EK_ASSERT(false, "Unknown pipeline type: {0}", type);
-        return Type::Resterization;
+        return Type::Rasterization;
     }
     Pipeline::TopologyMode Pipeline::StringToTopologyMode(const String& topologyMode)
     {

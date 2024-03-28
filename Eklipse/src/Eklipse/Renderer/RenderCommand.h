@@ -12,8 +12,10 @@ namespace Eklipse
 		friend class Renderer;
 
 	public:
+		static void Draw(Ref<VertexArray> vertexArray);
 		static void DrawIndexed(Ref<VertexArray> vertexArray);
-		static void DrawIndexed(Ref<VertexArray> vertexArray, Material* texture);
+		static void DrawIndexed(Ref<VertexArray> vertexArray, Material* material);
+		static void DrawLines(Ref<VertexArray> vertexArray, Material* material);
 
 		static void Dispatch(Ref<ComputeShader> computeShader, uint32_t x, uint32_t y, uint32_t z);
 

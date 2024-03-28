@@ -4,7 +4,6 @@
 
 #include <glm/glm.hpp>
 #include <Eklipse/Renderer/Material.h>
-//#include <Eklipse/Renderer/Mesh.h>
 #include <Eklipse/Renderer/RayTracingStructs.h>
 #include <Eklipse/Core/UUID.h>
 

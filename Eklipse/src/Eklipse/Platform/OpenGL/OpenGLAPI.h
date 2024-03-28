@@ -21,9 +21,7 @@ namespace Eklipse
 			void EndComputePass() override;
 			void Submit() override;
 
-			virtual void SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode) override;
-			virtual void SetPipelineType(Pipeline::Type type) override;
-
+			virtual void Draw(Ref<VertexArray> vertexArray) override;
 			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
 		private:
@@ -31,8 +29,6 @@ namespace Eklipse
 
 			Ref<VertexArray> m_fullscreenVA;
 			Ref<Shader> m_fullscreenShader;
-
-			GLint m_topologyMode;
 		};
 	}
 }

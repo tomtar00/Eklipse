@@ -14,7 +14,8 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			for (auto& vertexBuffer : m_vertexBuffers)
 				vertexBuffer->Bind();
-			m_indexBuffer->Bind();
+			if (m_indexBuffer)
+				m_indexBuffer->Bind();
 		}
 		void VKVertexArray::Unbind() const
 		{
@@ -24,7 +25,8 @@ namespace Eklipse
 			EK_CORE_PROFILE();
 			for (auto& vertexBuffer : m_vertexBuffers)
 				vertexBuffer->Dispose();
-			m_indexBuffer->Dispose();
+			if (m_indexBuffer)
+				m_indexBuffer->Dispose();
 		}
 		void VKVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		{

@@ -19,12 +19,10 @@ namespace Eklipse
 			void BeginFrame() override;
 			void BeginComputePass() override;
 			void EndComputePass() override;
-			void Submit() override;
+			void Submit() override;;
 
-			virtual void SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode) override;
-			virtual void SetPipelineType(Pipeline::Type type) override;
-
-			void DrawIndexed(Ref<VertexArray> vertexArray) override;
+			virtual void Draw(Ref<VertexArray> vertexArray) override;
+			virtual void DrawIndexed(Ref<VertexArray> vertexArray) override;
 
 		private:
 			void CreateInstance();

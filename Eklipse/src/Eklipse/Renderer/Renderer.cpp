@@ -9,6 +9,7 @@
 #include <Eklipse/Platform/Vulkan/VulkanAPI.h>
 #include <Eklipse/Platform/OpenGL/OpenGLAPI.h>
 #include <Eklipse/Renderer/RendererContext.h>
+#include <glm/gtx/transform.hpp>
 
 // Force the use of the dedicated GPU on laptops
 #ifdef __cplusplus
@@ -36,6 +37,9 @@ namespace Eklipse
     Ref<RendererContext> Renderer::s_rendererContext = nullptr;
     Ref<UniformBuffer> Renderer::s_cameraUniformBuffer = nullptr;
     Ref<Framebuffer> Renderer::s_defaultFramebuffer = nullptr;
+    Ref<VertexArray> Renderer::s_boundsVertexArray = nullptr;
+    Ref<Shader> Renderer::s_lineShader = nullptr;
+    Ref<Material> Renderer::s_lineMaterial = nullptr;
 
     bool Renderer::Init(GraphicsAPI::Type apiType)
     {
@@ -64,8 +68,11 @@ namespace Eklipse
     void Renderer::OnAPIHasInitialized()
     {
         EK_CORE_PROFILE();
+
+        // Camera Uniform Buffer
         s_cameraUniformBuffer = Renderer::CreateUniformBuffer("uCamera", sizeof(glm::mat4), 0);
 
+        // Default framebuffer
         FramebufferInfo framebufferInfo{};
         framebufferInfo.isDefaultFramebuffer = true;
         framebufferInfo.width = Application::Get().GetInfo().windowWidth;
@@ -73,8 +80,87 @@ namespace Eklipse
         framebufferInfo.numSamples = 1;
         framebufferInfo.colorAttachmentInfos = { { ImageFormat::RGBA32F } };
         framebufferInfo.depthAttachmentInfo = { ImageFormat::D24S8 };
-
         s_defaultFramebuffer = Framebuffer::Create(framebufferInfo);
+
+        // Bounds vertex array
+        s_boundsVertexArray = VertexArray::Create();
+        Vec<float> boundsVertices = {
+            // Front face
+            0.5f, 0.5f, 0.5f,  // Top right corner
+            0.5f, -0.5f, 0.5f,  // Bottom right corner
+            -0.5f, -0.5f, 0.5f,  // Bottom left corner
+            -0.5f, 0.5f, 0.5f,  // Top left corner
+
+            // Back face
+            -0.5f, 0.5f, -0.5f,
+            -0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f, 0.5f, -0.5f,
+
+            // Right face
+            0.5f, 0.5f, 0.5f,
+            0.5f, 0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, 0.5f,
+
+            // Left face
+            -0.5f, 0.5f, 0.5f,
+            -0.5f, 0.5f, -0.5f,
+            -0.5f, -0.5f, -0.5f,
+            -0.5f, -0.5f, 0.5f,
+
+            // Top face
+            0.5f, 0.5f, 0.5f,
+            -0.5f, 0.5f, 0.5f,
+            -0.5f, 0.5f, -0.5f,
+            0.5f, 0.5f, -0.5f,
+
+            // Bottom face
+            0.5f, -0.5f, 0.5f,
+            -0.5f, -0.5f, 0.5f,
+            -0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+        };
+        Ref<VertexBuffer> boundsVertexBuffer = VertexBuffer::Create(boundsVertices);
+        BufferLayout boundsLayout = {
+            { "inPosition",	ShaderDataType::FLOAT3, false }
+        };
+        boundsVertexBuffer->SetLayout(boundsLayout);
+        s_boundsVertexArray->AddVertexBuffer(boundsVertexBuffer);
+
+        // Line shader
+        String vertexShader = R"(
+            #version 450
+            layout(binding = 0) uniform Camera 
+            {
+	            mat4 ViewProjection;
+            } uCamera;
+            layout(push_constant) uniform VertexConstants 
+            {
+	            mat4 Model;
+            } uVertConst;
+
+            in vec3 inPosition;
+            void main()
+            {
+                gl_Position = uCamera.ViewProjection * uVertConst.Model * vec4(inPosition, 1.0);
+            }
+        )";
+        String fragmentShader = R"(
+            #version 450
+            layout(push_constant) uniform Color 
+            {
+	            layout(offset = 64) vec3 Color;
+            } pColor;
+
+            out vec4 outColor;
+            void main()
+            {
+                outColor = vec4(pColor.Color, 1.0);
+            }
+        )";
+        s_lineShader = Shader::Create(vertexShader, fragmentShader);
+        s_lineMaterial = Material::Create(s_lineShader);
     }
     void Renderer::Shutdown()
     {
@@ -104,6 +190,10 @@ namespace Eklipse
         s_rendererContext->Shutdown();
         s_rendererContext.reset();
         s_rendererContext = nullptr;
+
+        s_boundsVertexArray->Dispose();
+        s_lineShader->Dispose();
+        s_lineMaterial->Dispose();
 
         RenderCommand::API->Shutdown();
     }
@@ -170,6 +260,21 @@ namespace Eklipse
         }
         else
             RenderScene(scene, *camera, *cameraTransform);
+    }
+    void Renderer::RenderBounds(glm::vec3 min, glm::vec3 max, glm::vec3 color)
+    {
+        EK_PROFILE();
+
+        glm::vec3 center = (min + max) * 0.5f;
+        glm::vec3 scale = max - min;
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, center);
+        model = glm::scale(model, scale);
+
+        s_lineMaterial->SetConstant("uVertConst", "Model", &model[0][0], sizeof(glm::mat4));
+        s_lineMaterial->SetConstant("pColor", "Color", &color, sizeof(glm::vec3));
+        RenderCommand::DrawLines(s_boundsVertexArray, s_lineMaterial.get());
     }
     void Renderer::Submit()
     {
@@ -274,7 +379,6 @@ namespace Eklipse
     void Renderer::SetPipelineTopologyMode(Pipeline::TopologyMode mode)
     {
         EK_CORE_PROFILE();
-        RenderCommand::API->SetPipelineTopologyMode(mode);
         s_settings.PipelineTopologyMode = mode;
     }
     void Renderer::SetPipelineType(Pipeline::Type type)
@@ -297,7 +401,6 @@ namespace Eklipse
         }
         s_storageBufferCache.clear();
 
-        RenderCommand::API->SetPipelineType(type);
         s_settings.PipelineType = type;
 
         if (s_rendererContext)
@@ -306,7 +409,7 @@ namespace Eklipse
         s_rendererContext.reset();
         s_rendererContext = nullptr;
 
-        if (type == Pipeline::Type::Resterization)
+        if (type == Pipeline::Type::Rasterization)
             s_rendererContext = CreateRef<RasterizationContext>();
         else if (type == Pipeline::Type::RayTracing)
             s_rendererContext = CreateRef<RayTracingContext>();

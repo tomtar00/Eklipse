@@ -6,6 +6,7 @@
 #include <Eklipse/Renderer/RenderCommand.h>
 
 #include "GLShader.h"
+#include "GLPipeline.h"
 
 namespace Eklipse
 {
@@ -13,17 +14,6 @@ namespace Eklipse
     {
         GLFramebuffer* g_GLDefaultFramebuffer = nullptr;
         Vec<GLFramebuffer*> g_GLOffScreenFramebuffers{};
-
-        static GLint PipelineModeToGL(Pipeline::TopologyMode mode)
-        {
-            switch (mode)
-            {
-                case Pipeline::TopologyMode::Triangle: return GL_TRIANGLES;
-                case Pipeline::TopologyMode::Line: return GL_LINES;
-            }
-            EK_ASSERT(false, "Unknown pipeline mode!");
-            return 0;
-        }
 
         static void OpenGLMessageCallback(
             unsigned source,
@@ -195,19 +185,19 @@ namespace Eklipse
 
             Application::Get().GetWindow()->SwapBuffers();
         }
-        void OpenGLAPI::SetPipelineTopologyMode(Pipeline::TopologyMode topologyMode)
+
+        void OpenGLAPI::Draw(Ref<VertexArray> vertexArray)
         {
-            m_topologyMode = PipelineModeToGL(topologyMode);
-        }
-        void OpenGLAPI::SetPipelineType(Pipeline::Type type)
-        {
+            EK_CORE_PROFILE();
+
+            glDrawArrays(g_currentTopologyMode, 0, vertexArray->GetTotalNumVertices());
         }
         void OpenGLAPI::DrawIndexed(Ref<VertexArray> vertexArray)
         {	
             EK_CORE_PROFILE();
 
             uint32_t numIndices = vertexArray->GetIndexBuffer()->GetCount();
-            glDrawElements(m_topologyMode, numIndices, GL_UNSIGNED_INT, nullptr);
+            glDrawElements(g_currentTopologyMode, numIndices, GL_UNSIGNED_INT, nullptr);
         }
     }
 }

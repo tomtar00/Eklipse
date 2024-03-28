@@ -184,7 +184,7 @@ namespace Eklipse
                  HANDLE_VK_RESULT(res, "CREATE PIPELINE CACHE");
             }
 
-            if (m_config.type == Pipeline::Type::Resterization || m_config.type == Pipeline::Type::RayTracing)
+            if (m_config.type == Pipeline::Type::Rasterization || m_config.type == Pipeline::Type::RayTracing)
             {
                 VKShader* shader = static_cast<VKShader*>(m_config.shader);
                 VKFramebuffer* framebuffer = static_cast<VKFramebuffer*>(m_config.framebuffer);
