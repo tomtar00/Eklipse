@@ -42,6 +42,7 @@ namespace Eklipse
 		config.topologyMode		= Renderer::GetSettings().PipelineTopologyMode;
 		config.shader			= material->GetShader().get();
 		config.framebuffer		= g_currentFramebuffer;
+		config.depthTest		= true;
 		Pipeline::Get(config)->Bind();
 
 		material->Bind();
@@ -59,6 +60,7 @@ namespace Eklipse
 		config.topologyMode = Pipeline::TopologyMode::Line;
 		config.shader		= material->GetShader().get();
 		config.framebuffer	= g_currentFramebuffer;
+		config.depthTest    = false;
 		Pipeline::Get(config)->Bind();
 
 		material->Bind();

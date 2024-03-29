@@ -30,6 +30,7 @@ namespace Eklipse
             TopologyMode topologyMode;
 			Shader* shader;
 			Framebuffer* framebuffer;
+			bool depthTest = true;
         };
 
 	public:

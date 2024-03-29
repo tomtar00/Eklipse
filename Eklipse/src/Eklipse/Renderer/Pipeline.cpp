@@ -29,6 +29,7 @@ namespace Eklipse
         HashCombine(hash, config.topologyMode);
         HashCombine(hash, config.shader);
         HashCombine(hash, config.framebuffer);
+        HashCombine(hash, config.depthTest);
 
         // check if the pipeline already exists
         auto it = s_pipelines.find(hash);

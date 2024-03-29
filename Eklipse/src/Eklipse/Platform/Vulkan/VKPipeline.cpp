@@ -95,7 +95,7 @@ namespace Eklipse
 
             VkPipelineDepthStencilStateCreateInfo depthStencil{};
             depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depthStencil.depthTestEnable = VK_TRUE;
+            depthStencil.depthTestEnable = createInfo.depthTest ? VK_TRUE : VK_FALSE;
             depthStencil.depthWriteEnable = VK_TRUE;
             depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
             depthStencil.depthBoundsTestEnable = VK_FALSE;
@@ -196,6 +196,7 @@ namespace Eklipse
                 info.pipelineLayout = shader->GetPipelineLayout();
                 info.pipelineCache = s_pipelineCache;
                 info.renderPass = framebuffer->GetRenderPass();
+                info.depthTest = m_config.depthTest;
 
                 if (m_config.topologyMode == Pipeline::TopologyMode::Triangle)
                 {

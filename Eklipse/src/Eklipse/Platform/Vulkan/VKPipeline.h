@@ -20,6 +20,8 @@ namespace Eklipse
 
 			VkPrimitiveTopology topology;
 			VkPolygonMode mode;
+
+			bool depthTest;
 		};
 		VkPipeline CreateGraphicsPipeline(const GraphicsPipelineCreateInfo& createInfo);
 

@@ -5,7 +5,8 @@ namespace Eklipse
     template <typename T>
     void HashCombine(size_t& seed, const T& value) 
     {
-        seed = std::hash<T>()(value) + (seed << 5) + seed;
+        std::hash<T> hasher;
+        seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 
     template <typename T>

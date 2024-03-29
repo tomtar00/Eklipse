@@ -230,15 +230,15 @@ namespace Eklipse
 
         m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };
 
-        /*for (auto& node : m_bvhTranslator->GetNodes())
+        for (auto& node : m_bvhTranslator->GetNodes())
         {
             glm::vec3 min = node.boundingBoxMin;
             glm::vec3 max = node.boundingBoxMax;
             glm::vec3 color = glm::vec3(1.0f);
             Renderer::RenderBounds(min, max, color);
-        }*/
+        }
 
-        Renderer::RenderBounds(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
+        //Renderer::RenderBounds(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
     }
 
     void RayTracingContext::SetAccumulate(bool accumulate)
