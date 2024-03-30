@@ -47,7 +47,6 @@ namespace Eklipse
 
 	private:
 		Ref<VertexArray> m_vertexArray;
-		Ref<BVH> m_bvh;
 		MeshData m_meshData;
 	};
 }

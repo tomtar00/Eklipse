@@ -5,7 +5,7 @@
 #include <Eklipse/Scene/Entity.h>
 #include <Eklipse/Scene/Camera.h>
 #include <Eklipse/Renderer/ComputeShader.h>
-#include <Eklipse/BVH/BVHTranslator.h>
+#include <Eklipse/BVH/SceneBVH.h>
 
 namespace Eklipse
 {
@@ -76,7 +76,7 @@ namespace Eklipse
 
 		Ref<ComputeShader> m_transComputeShader;
 
-		Unique<BVHTranslator> m_bvhTranslator;
+		Unique<SceneBVH> m_bvh;
 
 		uint32_t m_frameIndex = 0;
 		uint32_t m_numTotalVertices;

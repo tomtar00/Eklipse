@@ -2,6 +2,7 @@
 #include "RendererContext.h"
 #include <Eklipse/Renderer/RayTracingStructs.h>
 #include <Eklipse/Renderer/Mesh.h>
+#include <Eklipse/Scene/Components.h>
 
 namespace Eklipse
 {
@@ -23,8 +24,6 @@ namespace Eklipse
             meshComponent.material->SetConstant("uVertConst", "Model", &modelMatrix[0][0], sizeof(glm::mat4));
             RenderCommand::DrawIndexed(meshComponent.mesh->GetVertexArray(), meshComponent.material);
         }
-
-        Renderer::RenderBounds(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
 
         // ...
     }
@@ -123,7 +122,7 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6);
         Renderer::CreateStorageBuffer("bMaterials", maxObjects * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
-        Renderer::CreateStorageBuffer("bBVH", 4 * sizeof(uint32_t) + maxObjects * sizeof(BVHTranslator::Node), 9);
+        Renderer::CreateStorageBuffer("bBVH", 4 * sizeof(uint32_t) + maxObjects * sizeof(SceneBVH::Node), 9);
     }
     void RayTracingContext::OnUpdate(float deltaTime)
     {
@@ -230,15 +229,11 @@ namespace Eklipse
 
         m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };
 
-        for (auto& node : m_bvhTranslator->GetNodes())
+        // TODO: move to editor
+        for (auto& node : m_bvh->GetNodes())
         {
-            glm::vec3 min = node.boundingBoxMin;
-            glm::vec3 max = node.boundingBoxMax;
-            glm::vec3 color = glm::vec3(1.0f);
-            Renderer::RenderBounds(min, max, color);
+            Renderer::RenderBounds(node.min, node.max, glm::vec3(1.0f));
         }
-
-        //Renderer::RenderBounds(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
     }
 
     void RayTracingContext::SetAccumulate(bool accumulate)
@@ -306,19 +301,23 @@ namespace Eklipse
     {
         EK_CORE_PROFILE();
 
-        if (!m_bvhTranslator)
+        /*if (!m_bvh)
         {
             auto scene = SceneManager::GetActiveScene();
-            m_bvhTranslator = CreateUnique<BVHTranslator>(scene.get());
-        }
+            m_bvh = CreateUnique<SceneBVH>(scene.get());
+        }*/
 
-        m_bvhTranslator->Process();
+        auto scene = SceneManager::GetActiveScene();
+        m_bvh = CreateUnique<SceneBVH>(scene.get());
+        m_bvh->Build();
 
+        /*
         auto buffer = Renderer::GetStorageBuffer("bBVH");
         int topIndex = m_bvhTranslator->GetTopLevelIndex();
 
         buffer->SetData(&topIndex, sizeof(uint32_t));
         buffer->SetData(m_bvhTranslator->GetNodes().data(), m_bvhTranslator->GetNodes().size() * sizeof(BVHTranslator::Node), 4 * sizeof(uint32_t));
+        */
 
     }
 
