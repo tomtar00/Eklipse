@@ -107,6 +107,23 @@ namespace Eklipse
 						}
 					});
 
+					ImGui::SeparatorText("Acceleration");
+					ImGui::DrawProperty("draw_bvh", "Draw BVH", [&]() {
+						ImGui::Checkbox("##BVH", &EditorLayer::Get().DrawAccelerationStructure);
+					});
+					ImGui::DrawProperty("bvh_depth", "Depth", [&]() {
+						if (ImGui::SliderInt("##BVHDepth", &Renderer::GetSettings().maxBVHDepth, 1, 15))
+						{
+							rtContext->ReconstructSceneBuffers();
+						}
+					});
+					ImGui::DrawProperty("max_tri_per_node", "Max triangles per bounds", [&]() {
+						if (ImGui::SliderInt("##MaxTriPerNode", &Renderer::GetSettings().maxTrianglesPerLeaf, 1, 100))
+						{
+							rtContext->ReconstructSceneBuffers();
+						}
+					});
+
 					ImGui::SeparatorText("Sky");
 					ImGui::DrawProperty("sky_color_horizon", "Sky Color Horizon", [&]() {
 						if (ImGui::ColorEdit3("##SkyColorHorizon", &Renderer::GetSettings().skyColorHorizon[0]))

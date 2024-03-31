@@ -170,9 +170,9 @@ namespace Eklipse
 	Vec<Triangle> Mesh::GetTriangles() const
 	{
 		Vec<Triangle> triangles;
+		uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
 		for (uint32_t i = 0; i < m_meshData.indices.size(); i += 3)
 		{
-			uint32_t stride = m_meshData.layout.GetStride() / sizeof(float);
 			uint32_t idx1 = m_meshData.indices[i + 0] * stride;
 			uint32_t idx2 = m_meshData.indices[i + 1] * stride;
 			uint32_t idx3 = m_meshData.indices[i + 2] * stride;

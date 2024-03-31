@@ -1,5 +1,5 @@
 #pragma once
-#include "AABB.h"
+#include "BVH.h"
 #include <Eklipse/Renderer/Mesh.h>
 
 namespace Eklipse
@@ -10,25 +10,22 @@ namespace Eklipse
     class SceneBVH
     {
     public:
-        struct Node
-        {
-            glm::vec3 min;
-            glm::vec3 max;
-        };
+        SceneBVH() = default;
 
-    public:
-        SceneBVH(Scene* scene) : m_scene(scene) {}
+        void Build(Scene* scene);
 
-        void Build();
-        Vec<Node>& GetNodes();
+        Vec<BVH::FlatNode>& GetFlatNodes();
+        Vec<Triangle> GetTriangles() const;
 
     private:
-        void BuildRecursive(const Vec<Triangle>& triangles, uint32_t nodeIndex, const AABB& parentAABB, uint32_t depth);
-        int FindSplitAxis(const Vec<Triangle>& triangles, const AABB& aabb);
-        float SceneBVH::FindSplitPosition(const Vec<Triangle>& triangles, int axis, const AABB& aabb);
+        void TraverseRecursive(Ref<BVH::Node> node, uint32_t index);
+        Ref<BVH::Node> BuildRecursive(const Vec<Ref<BVH>>& BVHs, const AABB& parentAABB);
+        int FindSplitAxis(const Vec<Ref<BVH>>& BVHs, const AABB& aabb);
+        float FindSplitPosition(const Vec<Ref<BVH>>& BVHs, int axis, const AABB& aabb);
 
-    private: 
-        Scene* m_scene;
-        Vec<Node> m_nodes;
+    private:
+        Ref<BVH::Node> m_root;
+        Vec<BVH::FlatNode> m_flatNodes;
+        Vec<Triangle> m_triangles;
     };
 }

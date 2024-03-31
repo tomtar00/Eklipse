@@ -38,6 +38,13 @@ struct MeshInfo {
 };
 struct BVHNode {
     vec3 boxMin;
+    int isLeaf;
+
     vec3 boxMax;
-    vec3 data;
+    int meshIndex;
+    
+    int leftChildIndex;
+    int rightChildIndex;
+    int startTriIndex;
+    int endTriIndex;
 };

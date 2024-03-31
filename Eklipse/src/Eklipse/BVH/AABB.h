@@ -6,7 +6,7 @@ namespace Eklipse
     class AABB
     {
     public:
-        AABB() = delete;
+        AABB();
         AABB(const glm::vec3& min, const glm::vec3& max) : m_min(min), m_max(max) {}
 
         const glm::vec3& GetMin() const;

@@ -78,89 +78,38 @@ HitInfo CalculateRayCollision(Ray ray) {
 		}
 	}
 
-    // int index = bBVH.TopLevelIndex;
-    // int currentMeshIndex = -1;
-
-    // int stack[64];
-    // int ptr = 0;
-    // stack[ptr++] = -1;
-    // bool BLAS = false;
-
-    // while (index != -1)
-    // {
-    //     BVHNode node = bBVH.Nodes[index];
-    //     int leftIndex   = int(node.data.x);
-    //     int rightIndex  = int(node.data.y);
-    //     int leaf        = int(node.data.z);
-
-    //     if (leaf > 0) // Bottom level node
-    //     {
-    //         MeshInfo meshInfo = bMeshes.Meshes[currentMeshIndex];
-    //         for (int i = 0; i < rightIndex; i++)
-    //         {
-    //             Triangle triangle;
-
-    //             uint idx1 = bIndices.Indices[meshInfo.indexOffset + i + 0] * 3 + meshInfo.vertexOffset;
-    //             uint idx2 = bIndices.Indices[meshInfo.indexOffset + i + 1] * 3 + meshInfo.vertexOffset;
-    //             uint idx3 = bIndices.Indices[meshInfo.indexOffset + i + 2] * 3 + meshInfo.vertexOffset;
-
-    //             triangle.a = vec3(bTransVertices.Vertices[idx1 + 0], bTransVertices.Vertices[idx1 + 1], bTransVertices.Vertices[idx1 + 2]);
-    //             triangle.b = vec3(bTransVertices.Vertices[idx2 + 0], bTransVertices.Vertices[idx2 + 1], bTransVertices.Vertices[idx2 + 2]);
-    //             triangle.c = vec3(bTransVertices.Vertices[idx3 + 0], bTransVertices.Vertices[idx3 + 1], bTransVertices.Vertices[idx3 + 2]);
-
+    // uint currentNodeIndex = 0;
+    // bool leafFound = false;
+    // int maxIterations = 100;
+    // int iter = 0;
+    // while (!leafFound) {
+    //     BVHNode node = bBVH.Nodes[currentNodeIndex];
+    //     if (node.isLeaf != 0) {
+    //         leafFound = true;
+    //         MeshInfo meshInfo = bMeshes.Meshes[node.meshIndex];
+    //         for (uint i = node.startTriIndex; i < node.endTriIndex; i++) {
+    //             Triangle triangle = bTriangles.Triangles[i];
     //             HitInfo hitInfo = RayTriangle(ray, triangle);
     //             if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
     //                 closestHit = hitInfo;
     //                 closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
     //             }
     //         }
+    //     } else {
+    //         BVHNode left = bBVH.Nodes[node.leftChildIndex];
+    //         BVHNode right = bBVH.Nodes[node.rightChildIndex];
+    //         float t1 = RayBox(ray, left.boxMin, left.boxMax);
+    //         float t2 = RayBox(ray, right.boxMin, right.boxMax);
+    //         if (t1 > 0.0 && t1 < closestHit.dst) {
+    //             currentNodeIndex = node.leftChildIndex;
+    //         } else if (t2 > 0.0 && t2 < closestHit.dst) {
+    //             currentNodeIndex = node.rightChildIndex;
+    //         } else {
+    //             break;
+    //         }
     //     }
-    //     else if (leaf < 0) // Top level node
-    //     {
-    //         stack[ptr++] = -1;
-    //         currentMeshIndex = rightIndex;
-    //         index = leftIndex;
-    //         BLAS = true;
-    //         continue;
-    //     }
-    //     else
-    //     {
-    //         float hitLeft = RayBox(ray, bBVH.Nodes[leftIndex].boxMin, bBVH.Nodes[leftIndex].boxMax);
-    //         float hitRight = RayBox(ray, bBVH.Nodes[rightIndex].boxMin, bBVH.Nodes[rightIndex].boxMax);
-
-    //         if (hitLeft > 0.0 && hitRight > 0.0)
-    //         {
-    //             int deferred = -1;
-    //             if (hitLeft > hitRight)
-    //             {
-    //                 index = rightIndex;
-    //                 deferred = leftIndex;
-    //             }
-    //             else if (hitRight > 0.0)
-    //             {
-    //                 index = leftIndex;
-    //                 deferred = rightIndex;
-    //             }
-    //             stack[ptr++] = deferred;
-    //             continue;
-    //         }
-    //         else if (hitLeft > 0.0)
-    //         {
-    //             index = leftIndex;
-    //             continue;
-    //         }
-    //         else if (hitRight > 0.0)
-    //         {
-    //             index = rightIndex;
-    //             continue;
-    //         }
-    //         index = stack[--ptr];
-
-    //         if (BLAS && index == -1)
-    //         {
-    //             BLAS = false;
-    //             index = stack[--ptr];
-    //         }
+    //     if (iter++ > maxIterations) {
+    //         break;
     //     }
     // }
 

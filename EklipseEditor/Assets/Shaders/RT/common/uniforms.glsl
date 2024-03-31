@@ -52,7 +52,9 @@ layout (std140, binding = 8) buffer TransformData {
     mat4 Transforms[];
 } bTransforms;
 
-layout (std140, binding = 9) buffer BVHData {
-    int TopLevelIndex;
+layout (std140, binding = 9) buffer TriangleData {
+    Triangle Triangles[];
+} bTriangles;
+layout (std140, binding = 10) buffer BVHData {
     BVHNode Nodes[];
 } bBVH;

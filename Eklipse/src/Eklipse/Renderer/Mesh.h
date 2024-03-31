@@ -4,16 +4,11 @@
 
 namespace Eklipse
 {
-	class BVH;
-
 	struct Triangle
 	{
-		glm::vec3 a;
-		float pad0;
-		glm::vec3 b;
-		float pad1;
-		glm::vec3 c;
-		float pad2;
+		glm::vec3 a; float __pad0;
+		glm::vec3 b; float __pad1;
+		glm::vec3 c; float __pad2;
 	};
 
 	struct MeshData
@@ -39,8 +34,6 @@ namespace Eklipse
 		Vec<Triangle> GetTriangles() const;
 		Vec<float> GetVertices() const;
 		Vec<uint32_t> GetIndices() const;
-		Ref<BVH> GetBVH() const;
-		void BuildBVH();
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		virtual AssetType GetType() const override { return GetStaticType(); }

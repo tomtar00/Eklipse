@@ -128,6 +128,7 @@ namespace Eklipse
 	public:
 		Ref<ImGuiLayer> GUI;
 		DetailsSelectionInfo SelectionInfo{};
+		bool DrawAccelerationStructure = false;
 
 	private:
 		inline static EditorLayer* s_instance = nullptr;
@@ -146,6 +147,7 @@ namespace Eklipse
 		bool m_pauseRequested = false;
 		bool m_guiEnabled;
 		bool m_isWindowMaximized;
+
 		EntitiesPanel	m_entitiesPanel;
 		DetailsPanel	m_detailsPanel;
 		ViewPanel		m_viewPanel;

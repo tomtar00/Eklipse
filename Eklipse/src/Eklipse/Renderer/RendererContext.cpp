@@ -58,6 +58,7 @@ namespace Eklipse
     {
         m_viewportSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
         m_lastViewportSize = m_viewportSize;
+        m_bvh = CreateUnique<SceneBVH>();
 
         InitSSBOs();
 
@@ -95,7 +96,6 @@ namespace Eklipse
         m_transComputeShader = ComputeShader::Create("Assets/Shaders/RT/Transform.comp");
 
         ReconstructSceneBuffers();
-        RebuildBVH();
     }
     void RayTracingContext::Shutdown()
     {
@@ -122,7 +122,8 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bMeshes", 4 * sizeof(uint32_t) + maxMeshes * sizeof(RayTracingMeshInfo), 6);
         Renderer::CreateStorageBuffer("bMaterials", maxObjects * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
-        Renderer::CreateStorageBuffer("bBVH", 4 * sizeof(uint32_t) + maxObjects * sizeof(SceneBVH::Node), 9);
+        Renderer::CreateStorageBuffer("bTriangles", maxVerticies * sizeof(Triangle), 9);
+        Renderer::CreateStorageBuffer("bBVH", maxObjects * sizeof(BVH::FlatNode), 10);
     }
     void RayTracingContext::OnUpdate(float deltaTime)
     {
@@ -227,13 +228,7 @@ namespace Eklipse
         Renderer::UpdateViewProjection(camera, cameraTransform);
         RenderCommand::DrawIndexed(m_fullscreenQuad, m_material.get());
 
-        m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };
-
-        // TODO: move to editor
-        for (auto& node : m_bvh->GetNodes())
-        {
-            Renderer::RenderBounds(node.min, node.max, glm::vec3(1.0f));
-        }
+        m_lastViewportSize = { g_currentFramebuffer->GetInfo().width, g_currentFramebuffer->GetInfo().height };        
     }
 
     void RayTracingContext::SetAccumulate(bool accumulate)
@@ -297,28 +292,12 @@ namespace Eklipse
             m_transComputeShader->GetMaterial()->OnShaderReloaded();
     }
 
-    void RayTracingContext::RebuildBVH()
+    void RayTracingContext::DrawBVHNodes()
     {
-        EK_CORE_PROFILE();
-
-        /*if (!m_bvh)
+        for (auto& node : m_bvh->GetFlatNodes())
         {
-            auto scene = SceneManager::GetActiveScene();
-            m_bvh = CreateUnique<SceneBVH>(scene.get());
-        }*/
-
-        auto scene = SceneManager::GetActiveScene();
-        m_bvh = CreateUnique<SceneBVH>(scene.get());
-        m_bvh->Build();
-
-        /*
-        auto buffer = Renderer::GetStorageBuffer("bBVH");
-        int topIndex = m_bvhTranslator->GetTopLevelIndex();
-
-        buffer->SetData(&topIndex, sizeof(uint32_t));
-        buffer->SetData(m_bvhTranslator->GetNodes().data(), m_bvhTranslator->GetNodes().size() * sizeof(BVHTranslator::Node), 4 * sizeof(uint32_t));
-        */
-
+            Renderer::RenderBounds(node.min, node.max, glm::vec3(1.0f));
+        }
     }
 
     void RayTracingContext::InitMaterial()
@@ -351,20 +330,35 @@ namespace Eklipse
         m_numTotalSpheres = 0;
 
         auto scene = SceneManager::GetActiveScene();
-        scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
-        {
-            Entity entity = { entityID, scene.get() };
-            OnMeshAdded(entity);
-        });
-        auto buffer = Renderer::GetStorageBuffer("bMeshes");
-        buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
 
-        scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
         {
-            Entity entity = { entityID, scene.get() };
-            OnSphereAdded(entity);
-        });
-        buffer = Renderer::GetStorageBuffer("bSpheres");
-        buffer->SetData(&m_numTotalSpheres, sizeof(uint32_t));
+            m_bvh->Build(scene.get());
+            Vec<BVH::FlatNode> nodes = m_bvh->GetFlatNodes();
+            Vec<Triangle> triangles = m_bvh->GetTriangles();
+            
+            auto buffer = Renderer::GetStorageBuffer("bBVH");
+            buffer->SetData(nodes.data(), nodes.size() * sizeof(BVH::FlatNode));
+
+            buffer = Renderer::GetStorageBuffer("bTriangles");
+            buffer->SetData(triangles.data(), triangles.size() * sizeof(Triangle));
+        }
+
+        {
+            scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
+            {
+                Entity entity = { entityID, scene.get() };
+                OnMeshAdded(entity);
+            });
+            auto buffer = Renderer::GetStorageBuffer("bMeshes");
+            buffer->SetData(&m_numTotalMeshes, sizeof(uint32_t));
+
+            scene->GetRegistry().view<RayTracingSphereComponent>().each([&](auto entityID, RayTracingSphereComponent& rtComp)
+            {
+                Entity entity = { entityID, scene.get() };
+                OnSphereAdded(entity);
+            });
+            buffer = Renderer::GetStorageBuffer("bSpheres");
+            buffer->SetData(&m_numTotalSpheres, sizeof(uint32_t));
+        }
     }
 }

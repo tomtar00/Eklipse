@@ -63,11 +63,11 @@ namespace Eklipse
 
 		void RecompileShader();
 		void RecompileTransformComputeShader();
-		void RebuildBVH();
+		void ReconstructSceneBuffers();
+		void DrawBVHNodes();
 
 	private:
 		void InitMaterial();
-		void ReconstructSceneBuffers();
 
 	private:
 		Ref<Shader> m_shader;

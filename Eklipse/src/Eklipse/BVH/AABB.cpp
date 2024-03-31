@@ -3,6 +3,11 @@
 
 namespace Eklipse
 {
+    AABB::AABB()
+    {
+        m_min = glm::vec3(FLT_MAX);
+        m_max = glm::vec3(-FLT_MAX);    
+    }
     const glm::vec3& AABB::GetMin() const
     {
         return m_min;
@@ -37,6 +42,7 @@ namespace Eklipse
         if (ext.z >= ext.x && ext.z >= ext.y)
             return 2;
 
+        EK_CORE_CRITICAL("Invalid AABB dimensions");
         return 0;
     }
     float AABB::SurfaceArea() const

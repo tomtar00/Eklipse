@@ -168,6 +168,12 @@ namespace Eklipse
         else
             Renderer::RenderScene(SceneManager::GetActiveScene());
 
+        if (DrawAccelerationStructure && Renderer::GetPipelineType() == Pipeline::Type::RayTracing)
+        {
+            auto& rtContext = std::static_pointer_cast<RayTracingContext>(Renderer::GetRendererContext());
+            rtContext->DrawBVHNodes();
+        }
+
         Renderer::EndRenderPass(m_viewportFramebuffer.get());
 
         // ===================================
@@ -1070,10 +1076,6 @@ namespace Eklipse
                 if (ImGui::Button("Recompile Transform Compute Shader"))
                 {
                     rtContext->RecompileTransformComputeShader();
-                }
-                if (ImGui::Button("Rebuild BVH"))
-                {
-                    rtContext->RebuildBVH();
                 }
             }
         });

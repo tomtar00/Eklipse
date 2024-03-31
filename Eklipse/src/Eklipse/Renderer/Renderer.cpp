@@ -503,6 +503,8 @@ namespace Eklipse
             out << YAML::Key << "Accumulate" << YAML::Value << s_settings.accumulate;
             out << YAML::Key << "RaysPerPixel" << YAML::Value << s_settings.raysPerPixel;
             out << YAML::Key << "MaxBounces" << YAML::Value << s_settings.maxBounces;
+            out << YAML::Key << "MaxBVHDepth" << YAML::Value << s_settings.maxBVHDepth;
+            out << YAML::Key << "MaxTrianglesPerLeaf" << YAML::Value << s_settings.maxTrianglesPerLeaf;
             out << YAML::EndMap;
         }
     }
@@ -527,6 +529,8 @@ namespace Eklipse
         s_settings.accumulate = TryDeserailize<bool>(data, "Accumulate", false);
         s_settings.raysPerPixel = TryDeserailize<int>(data, "RaysPerPixel", 1);
         s_settings.maxBounces = TryDeserailize<int>(data, "MaxBounces", 3);
+        s_settings.maxBVHDepth = TryDeserailize<int>(data, "MaxBVHDepth", 5);
+        s_settings.maxTrianglesPerLeaf = TryDeserailize<int>(data, "MaxTrianglesPerLeaf", 10);
 
         Application::Get().SetGraphicsAPIType(s_settings.GraphicsAPIType);
         RequestPipelineTypeChange(Pipeline::StringToType(TryDeserailize<String>(data, "PipelineType", "Rasterization")));

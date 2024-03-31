@@ -3,105 +3,193 @@
 
 #include <Eklipse/Scene/Components.h>
 
-#define MAX_BVH_NUM_TRI 10
-#define MAX_BVH_DEPTH 10
-
 namespace Eklipse
 {
-    void SceneBVH::Build()
+    void SceneBVH::Build(Scene* scene)
     {
         EK_CORE_PROFILE();
         EK_CORE_TRACE("Building BVH...");
 
-        AABB sceneAABB(glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX));
-        std::vector<Triangle> allTriangles;
-        m_scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtMesh) {
-            Entity entity = { entityID, m_scene };
+        AABB sceneAABB;
+        Vec<Ref<BVH>> meshBVH;
+
+        scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtMesh) 
+        {
+            Entity entity = { entityID, scene };
             auto mesh = entity.GetComponent<MeshComponent>().mesh;
             auto& transformMat = entity.GetComponent<TransformComponent>().GetTransformMatrix();
-            auto& triangles = mesh->GetTriangles();
-            for (auto& triangle : triangles) {
-                triangle.a = glm::vec3(transformMat * glm::vec4(triangle.a, 1.0f));
-                triangle.b = glm::vec3(transformMat * glm::vec4(triangle.b, 1.0f));
-                triangle.c = glm::vec3(transformMat * glm::vec4(triangle.c, 1.0f));
-            }
-            allTriangles.insert(allTriangles.end(), triangles.begin(), triangles.end());
-            for (const auto& triangle : triangles) {
-                sceneAABB.Expand(triangle.a);
-                sceneAABB.Expand(triangle.b);
-                sceneAABB.Expand(triangle.c);
-            }
+
+            Ref<BVH> bvh = CreateRef<BVH>();
+            Vec<Triangle> triangles = mesh->GetTriangles();
+            bvh->Build(triangles, transformMat, rtMesh.index);
+            meshBVH.push_back(bvh);
+
+            AABB meshAABB = bvh->GetAABB();
+            sceneAABB.Expand(meshAABB.GetMin());
+            sceneAABB.Expand(meshAABB.GetMax());
         });
 
-        m_nodes.clear();
-        BuildRecursive(allTriangles, 0, sceneAABB, 0);
+        m_root = BuildRecursive(meshBVH, sceneAABB);
+        TraverseRecursive(m_root, 0);
 
-        EK_CORE_DBG("BVH built with {0} nodes", m_nodes.size());
+        EK_CORE_DBG("BVH built");
     }
-    Vec<SceneBVH::Node>& SceneBVH::GetNodes()
+    Vec<BVH::FlatNode>& SceneBVH::GetFlatNodes()
     {
-        return m_nodes;
+        return m_flatNodes;
+    }
+    Vec<Triangle> SceneBVH::GetTriangles() const
+    {
+        return m_triangles;
     }
 
-    void SceneBVH::BuildRecursive(const Vec<Triangle>& triangles, uint32_t nodeIndex, const AABB& parentAABB, uint32_t depth)
+    void SceneBVH::TraverseRecursive(Ref<BVH::Node> node, uint32_t index)
     {
         EK_CORE_PROFILE();
 
-        if (triangles.size() <= MAX_BVH_NUM_TRI || depth >= MAX_BVH_DEPTH) 
+        BVH::FlatNode flatNode{};
+        flatNode.min = node->min;
+        flatNode.max = node->max;
+        flatNode.isLeaf = node->isLeaf;
+        flatNode.meshIndex = node->meshIndex;
+        flatNode.startTriIndex = node->startTriIndex;
+        flatNode.endTriIndex = node->endTriIndex;
+        flatNode.leftChildIndex = index + 1;
+        flatNode.rightChildIndex = index + 2;
+        m_flatNodes.push_back(flatNode);
+
+        if (node->triangles.size() > 0)
         {
-            m_nodes.push_back(Node{ parentAABB.GetMin(), parentAABB.GetMax() });
-            return;
+            m_triangles.insert(m_triangles.end(), node->triangles.begin(), node->triangles.end());
         }
 
-        int axis = FindSplitAxis(triangles, parentAABB);
-        float splitPos = FindSplitPosition(triangles, axis, parentAABB);
-
-        std::vector<Triangle> leftTriangles, rightTriangles;
-        AABB leftAABB(glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX));
-        AABB rightAABB(glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX));
-        for (const auto& triangle : triangles) 
+        if (node->isLeaf)
         {
-            AABB triangleAABB(glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX));
-            triangleAABB.Expand(triangle.a);
-            triangleAABB.Expand(triangle.b);
-            triangleAABB.Expand(triangle.c);
-            if (triangleAABB.GetMax()[axis] < splitPos) 
+            return;
+        }
+        TraverseRecursive(node->left, index * 2);
+        TraverseRecursive(node->right, index * 2);
+    }
+    Ref<BVH::Node> SceneBVH::BuildRecursive(const Vec<Ref<BVH>>& BVHs, const AABB& parentAABB)
+    {
+        EK_CORE_PROFILE();
+
+        if (BVHs.size() == 0)
+        {
+            return nullptr;
+        }
+
+        Ref<BVH::Node> node = CreateRef<BVH::Node>();
+        node->min = parentAABB.GetMin();
+        node->max = parentAABB.GetMax();
+        node->meshIndex = -1;
+        node->isLeaf = 0;
+        
+        if (BVHs.size() == 1)
+        {
+            return BVHs[0]->GetRoot();
+        }
+
+        int axis = FindSplitAxis(BVHs, parentAABB);
+        float splitPos = FindSplitPosition(BVHs, axis, parentAABB);
+
+        Vec<Ref<BVH>> leftBVH, rightBVH;
+        AABB leftAABB, rightAABB;
+        for (const auto& BVH : BVHs)
+        {
+            if (BVH->GetAABB().Center()[axis] < splitPos)
             {
-                leftTriangles.push_back(triangle);
-                leftAABB.Expand(triangle.a);
-                leftAABB.Expand(triangle.b);
-                leftAABB.Expand(triangle.c);
+                leftBVH.push_back(BVH);
+                leftAABB.Expand(BVH->GetAABB().GetMin());
+                leftAABB.Expand(BVH->GetAABB().GetMax());
             }
             else 
             {
-                rightTriangles.push_back(triangle);
-                rightAABB.Expand(triangle.a);
-                rightAABB.Expand(triangle.b);
-                rightAABB.Expand(triangle.c);
+                rightBVH.push_back(BVH);
+                rightAABB.Expand(BVH->GetAABB().GetMin());
+                rightAABB.Expand(BVH->GetAABB().GetMax());
             }
         }
 
-        m_nodes.push_back(Node{ parentAABB.GetMin(), parentAABB.GetMax() });
-        BuildRecursive(leftTriangles, nodeIndex * 2 + 1, leftAABB, depth + 1);
-        BuildRecursive(rightTriangles, nodeIndex * 2 + 2, rightAABB, depth + 1);
+        node->left = BuildRecursive(leftBVH, leftAABB);
+        node->right = BuildRecursive(rightBVH, rightAABB);
+        return node;
     }
 
-    int SceneBVH::FindSplitAxis(const Vec<Triangle>& triangles, const AABB& aabb)
+    static float SplitCost(const std::vector<AABB>& boxes, int axis, float splitPos) 
+    {
+        AABB leftBounds;
+        AABB rightBounds;
+
+        for (const auto& box : boxes) 
+        {
+            if (box.GetMin()[axis] < splitPos) 
+            {
+                for (int i = 0; i < 3; ++i) 
+                {
+                    leftBounds.Expand(box.GetMin());
+                    leftBounds.Expand(box.GetMax());
+                }
+            }
+            else 
+            {
+                for (int i = 0; i < 3; ++i) 
+                {
+                    rightBounds.Expand(box.GetMin());
+                    rightBounds.Expand(box.GetMax());
+                }
+            }
+        }
+
+        return leftBounds.SurfaceArea() * boxes.size() + rightBounds.SurfaceArea() * boxes.size();
+    }
+    int SceneBVH::FindSplitAxis(const Vec<Ref<BVH>>& BVHs, const AABB& aabb)
     {
         EK_CORE_PROFILE();
 
-        return aabb.MaxDim();
+        float bestCost = std::numeric_limits<float>::max();
+        int bestAxis = 0;
+
+        for (int axis = 0; axis < 3; ++axis) 
+        {
+            std::vector<float> centers;
+            Vec<AABB> boxes;
+            for (const auto& bvh : BVHs) 
+            {
+                boxes.push_back(bvh->GetAABB());
+                centers.push_back(bvh->GetAABB().Center()[axis]);
+            }
+            std::sort(centers.begin(), centers.end());
+
+            for (size_t i = 1; i < centers.size(); ++i) 
+            {
+                float splitPos = (centers[i - 1] + centers[i]) / 2.0f;
+                float cost = SplitCost(boxes, axis, splitPos);
+
+                if (cost < bestCost) 
+                {
+                    bestCost = cost;
+                    bestAxis = axis;
+                }
+            }
+        }
+
+        return bestAxis;
     }
 
-    float SceneBVH::FindSplitPosition(const Vec<Triangle>& triangles, int axis, const AABB& aabb) 
+    float SceneBVH::FindSplitPosition(const Vec<Ref<BVH>>& BVHs, int axis, const AABB& aabb)
     {
         EK_CORE_PROFILE();
 
         std::vector<float> centerPoints;
-        for (const auto& triangle : triangles) {
-            centerPoints.push_back((triangle.a[axis] + triangle.b[axis] + triangle.c[axis]) / 3.0f);
+        for (const auto& BVH : BVHs) 
+        {
+            centerPoints.push_back(BVH->GetAABB().Center()[axis]);
         }
+
         std::sort(centerPoints.begin(), centerPoints.end());
-        return centerPoints[centerPoints.size() / 2];
+
+        int medianIndex = centerPoints.size() / 2;
+        return centerPoints[medianIndex];
     }
 }
