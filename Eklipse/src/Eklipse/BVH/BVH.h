@@ -27,8 +27,6 @@ namespace Eklipse
 
             int isLeaf;
             int meshIndex;
-            int startTriIndex;
-            int endTriIndex;
 
             Ref<Node> left;
             Ref<Node> right;
@@ -51,7 +49,6 @@ namespace Eklipse
     private:
         Ref<Node> m_root;
         AABB m_aabb;
-        uint32_t m_numTriangles = 0;
         uint32_t m_meshIndex = 0;
     };
 }

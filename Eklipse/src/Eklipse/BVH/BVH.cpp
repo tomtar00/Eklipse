@@ -20,7 +20,6 @@ namespace Eklipse
             m_aabb.Expand(triangle.c);
         }
 
-        m_numTriangles = 0;
         m_root = BuildRecursive(triangles, m_aabb, 0);
     }
     Ref<BVH::Node> BVH::GetRoot()
@@ -46,9 +45,6 @@ namespace Eklipse
         {
             node->isLeaf = 1;
             node->triangles = triangles;
-            node->startTriIndex = m_numTriangles;
-            m_numTriangles += triangles.size();
-            node->endTriIndex = m_numTriangles;
             return node;
         }
 
@@ -63,7 +59,7 @@ namespace Eklipse
             triangleAABB.Expand(triangle.a);
             triangleAABB.Expand(triangle.b);
             triangleAABB.Expand(triangle.c);
-            if (triangleAABB.GetMax()[axis] < splitPos)
+            if (triangleAABB.Center()[axis] < splitPos)
             {
                 leftTriangles.push_back(triangle);
                 leftAABB.Expand(triangle.a);
@@ -83,11 +79,70 @@ namespace Eklipse
         node->right = BuildRecursive(rightTriangles, rightAABB, depth + 1);
         return node;
     }
+
+    static float SplitCost(const std::vector<AABB>& boxes, int axis, float splitPos)
+    {
+        AABB leftBounds;
+        AABB rightBounds;
+
+        for (const auto& box : boxes)
+        {
+            if (box.GetMin()[axis] < splitPos)
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    leftBounds.Expand(box.GetMin());
+                    leftBounds.Expand(box.GetMax());
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    rightBounds.Expand(box.GetMin());
+                    rightBounds.Expand(box.GetMax());
+                }
+            }
+        }
+
+        return leftBounds.SurfaceArea() * boxes.size() + rightBounds.SurfaceArea() * boxes.size();
+    }
     int BVH::FindSplitAxis(const Vec<Triangle>& triangles, const AABB& aabb)
     {
         EK_CORE_PROFILE();
 
-        return aabb.MaxDim();
+        float bestCost = FLT_MAX;
+        int bestAxis = 0;
+
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            std::vector<float> centers;
+            Vec<AABB> boxes;
+            for (const auto& triangle : triangles)
+            {
+                AABB triangleAABB;
+                triangleAABB.Expand(triangle.a);
+                triangleAABB.Expand(triangle.b);
+                triangleAABB.Expand(triangle.c);
+                boxes.push_back(triangleAABB);
+                centers.push_back(triangleAABB.Center()[axis]);
+            }
+            std::sort(centers.begin(), centers.end());
+
+            for (size_t i = 1; i < centers.size(); ++i)
+            {
+                float splitPos = (centers[i - 1] + centers[i]) / 2.0f;
+                float cost = SplitCost(boxes, axis, splitPos);
+
+                if (cost < bestCost)
+                {
+                    bestCost = cost;
+                    bestAxis = axis;
+                }
+            }
+        }
+
+        return bestAxis;
     }
     float BVH::FindSplitPosition(const Vec<Triangle>& triangles, int axis, const AABB& aabb)
     {

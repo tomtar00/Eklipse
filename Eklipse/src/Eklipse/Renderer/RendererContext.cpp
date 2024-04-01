@@ -336,11 +336,17 @@ namespace Eklipse
             Vec<BVH::FlatNode> nodes = m_bvh->GetFlatNodes();
             Vec<Triangle> triangles = m_bvh->GetTriangles();
             
-            auto buffer = Renderer::GetStorageBuffer("bBVH");
-            buffer->SetData(nodes.data(), nodes.size() * sizeof(BVH::FlatNode));
+            if (!nodes.empty())
+            {
+                auto buffer = Renderer::GetStorageBuffer("bBVH");
+                buffer->SetData(nodes.data(), nodes.size() * sizeof(BVH::FlatNode));
+            }
 
-            buffer = Renderer::GetStorageBuffer("bTriangles");
-            buffer->SetData(triangles.data(), triangles.size() * sizeof(Triangle));
+            if (!triangles.empty())
+            {
+                auto buffer = Renderer::GetStorageBuffer("bTriangles");
+                buffer->SetData(triangles.data(), triangles.size() * sizeof(Triangle));
+            }
         }
 
         {

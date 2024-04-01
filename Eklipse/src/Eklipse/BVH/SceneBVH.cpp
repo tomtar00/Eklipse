@@ -10,6 +10,11 @@ namespace Eklipse
         EK_CORE_PROFILE();
         EK_CORE_TRACE("Building BVH...");
 
+        m_trianglesCounter = 0;
+        m_root = nullptr;
+        m_flatNodes.clear();
+        m_triangles.clear();
+
         AABB sceneAABB;
         Vec<Ref<BVH>> meshBVH;
 
@@ -29,10 +34,16 @@ namespace Eklipse
             sceneAABB.Expand(meshAABB.GetMax());
         });
 
-        m_root = BuildRecursive(meshBVH, sceneAABB);
-        TraverseRecursive(m_root, 0);
+        if (!meshBVH.empty())
+        {
+            m_root = BuildRecursive(meshBVH, sceneAABB);
+            if (m_root)
+            {
+                TraverseRecursive(m_root, 0);
+            }
+        }
 
-        EK_CORE_DBG("BVH built");
+        EK_CORE_DBG("BVH built with {} nodes and {} triangles", m_flatNodes.size(), m_triangles.size());
     }
     Vec<BVH::FlatNode>& SceneBVH::GetFlatNodes()
     {
@@ -52,32 +63,29 @@ namespace Eklipse
         flatNode.max = node->max;
         flatNode.isLeaf = node->isLeaf;
         flatNode.meshIndex = node->meshIndex;
-        flatNode.startTriIndex = node->startTriIndex;
-        flatNode.endTriIndex = node->endTriIndex;
-        flatNode.leftChildIndex = index + 1;
-        flatNode.rightChildIndex = index + 2;
+        flatNode.startTriIndex = m_trianglesCounter;
+        flatNode.endTriIndex = m_trianglesCounter + node->triangles.size();
+        flatNode.leftChildIndex = 2 * index + 1;
+        flatNode.rightChildIndex = 2 * index + 2;
         m_flatNodes.push_back(flatNode);
 
         if (node->triangles.size() > 0)
         {
             m_triangles.insert(m_triangles.end(), node->triangles.begin(), node->triangles.end());
+            m_trianglesCounter += node->triangles.size();
         }
 
         if (node->isLeaf)
         {
             return;
         }
-        TraverseRecursive(node->left, index * 2);
-        TraverseRecursive(node->right, index * 2);
+
+        TraverseRecursive(node->left, flatNode.leftChildIndex);
+        TraverseRecursive(node->right, flatNode.rightChildIndex);
     }
     Ref<BVH::Node> SceneBVH::BuildRecursive(const Vec<Ref<BVH>>& BVHs, const AABB& parentAABB)
     {
         EK_CORE_PROFILE();
-
-        if (BVHs.size() == 0)
-        {
-            return nullptr;
-        }
 
         Ref<BVH::Node> node = CreateRef<BVH::Node>();
         node->min = parentAABB.GetMin();
@@ -147,7 +155,7 @@ namespace Eklipse
     {
         EK_CORE_PROFILE();
 
-        float bestCost = std::numeric_limits<float>::max();
+        float bestCost = FLT_MAX;
         int bestAxis = 0;
 
         for (int axis = 0; axis < 3; ++axis) 

@@ -24,6 +24,7 @@ namespace Eklipse
         float FindSplitPosition(const Vec<Ref<BVH>>& BVHs, int axis, const AABB& aabb);
 
     private:
+        uint32_t m_trianglesCounter;
         Ref<BVH::Node> m_root;
         Vec<BVH::FlatNode> m_flatNodes;
         Vec<Triangle> m_triangles;

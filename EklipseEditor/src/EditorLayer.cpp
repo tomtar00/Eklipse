@@ -1077,6 +1077,10 @@ namespace Eklipse
                 {
                     rtContext->RecompileTransformComputeShader();
                 }
+                if (ImGui::Button("Reconstruct BVH"))
+                {
+                    rtContext->ReconstructSceneBuffers();
+                }
             }
         });
     }
