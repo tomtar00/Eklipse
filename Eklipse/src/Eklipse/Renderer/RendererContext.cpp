@@ -109,6 +109,7 @@ namespace Eklipse
     {
         const uint32_t maxVerticies = 1000000;
         const uint32_t maxIndices = 1000000;
+        const uint32_t maxBVHNodes = 10000;
         const uint32_t maxMeshes = 100;
         const uint32_t maxSpheres = 100;
         const uint32_t maxObjects = maxMeshes + maxSpheres;
@@ -123,7 +124,7 @@ namespace Eklipse
         Renderer::CreateStorageBuffer("bMaterials", maxObjects * sizeof(RayTracingMaterial), 7);
         Renderer::CreateStorageBuffer("bTransforms", maxMeshes * sizeof(glm::mat4), 8);
         Renderer::CreateStorageBuffer("bTriangles", maxVerticies * sizeof(Triangle), 9);
-        Renderer::CreateStorageBuffer("bBVH", maxObjects * sizeof(BVH::FlatNode), 10);
+        Renderer::CreateStorageBuffer("bBVH", maxBVHNodes * sizeof(BVH::FlatNode), 10);
     }
     void RayTracingContext::OnUpdate(float deltaTime)
     {
@@ -292,14 +293,6 @@ namespace Eklipse
             m_transComputeShader->GetMaterial()->OnShaderReloaded();
     }
 
-    void RayTracingContext::DrawBVHNodes()
-    {
-        for (auto& node : m_bvh->GetFlatNodes())
-        {
-            Renderer::RenderBounds(node.min, node.max, glm::vec3(1.0f));
-        }
-    }
-
     void RayTracingContext::InitMaterial()
     {
         size_t bufferSize = m_viewportSize.x * m_viewportSize.y * 4 * sizeof(float);
@@ -332,24 +325,6 @@ namespace Eklipse
         auto scene = SceneManager::GetActiveScene();
 
         {
-            m_bvh->Build(scene.get());
-            Vec<BVH::FlatNode> nodes = m_bvh->GetFlatNodes();
-            Vec<Triangle> triangles = m_bvh->GetTriangles();
-            
-            if (!nodes.empty())
-            {
-                auto buffer = Renderer::GetStorageBuffer("bBVH");
-                buffer->SetData(nodes.data(), nodes.size() * sizeof(BVH::FlatNode));
-            }
-
-            if (!triangles.empty())
-            {
-                auto buffer = Renderer::GetStorageBuffer("bTriangles");
-                buffer->SetData(triangles.data(), triangles.size() * sizeof(Triangle));
-            }
-        }
-
-        {
             scene->GetRegistry().view<RayTracingMeshComponent>().each([&](auto entityID, RayTracingMeshComponent& rtComp)
             {
                 Entity entity = { entityID, scene.get() };
@@ -365,6 +340,35 @@ namespace Eklipse
             });
             buffer = Renderer::GetStorageBuffer("bSpheres");
             buffer->SetData(&m_numTotalSpheres, sizeof(uint32_t));
+        }
+
+        RebuildBVH();
+    }
+    void RayTracingContext::RebuildBVH()
+    {
+        auto scene = SceneManager::GetActiveScene();
+
+        m_bvh->Build(scene.get());
+        Vec<BVH::FlatNode> nodes = m_bvh->GetFlatNodes();
+        Vec<Triangle> triangles = m_bvh->GetTriangles();
+
+        if (!nodes.empty())
+        {
+            auto buffer = Renderer::GetStorageBuffer("bBVH");
+            buffer->SetData(nodes.data(), nodes.size() * sizeof(BVH::FlatNode));
+        }
+
+        if (!triangles.empty())
+        {
+            auto buffer = Renderer::GetStorageBuffer("bTriangles");
+            buffer->SetData(triangles.data(), triangles.size() * sizeof(Triangle));
+        }
+    }
+    void RayTracingContext::DrawBVHNodes()
+    {
+        for (auto& node : m_bvh->GetFlatNodes())
+        {
+            Renderer::RenderBounds(node.min, node.max, glm::vec3(node.isLeaf));
         }
     }
 }

@@ -114,13 +114,13 @@ namespace Eklipse
 					ImGui::DrawProperty("bvh_depth", "Depth", [&]() {
 						if (ImGui::SliderInt("##BVHDepth", &Renderer::GetSettings().maxBVHDepth, 1, 15))
 						{
-							rtContext->ReconstructSceneBuffers();
+							rtContext->RebuildBVH();
 						}
 					});
 					ImGui::DrawProperty("max_tri_per_node", "Max triangles per bounds", [&]() {
 						if (ImGui::SliderInt("##MaxTriPerNode", &Renderer::GetSettings().maxTrianglesPerLeaf, 1, 100))
 						{
-							rtContext->ReconstructSceneBuffers();
+							rtContext->RebuildBVH();
 						}
 					});
 

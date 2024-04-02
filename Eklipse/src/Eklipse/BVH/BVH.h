@@ -41,10 +41,15 @@ namespace Eklipse
         Ref<Node> GetRoot();
         AABB& GetAABB();
 
+    public:
+        static float SplitCost(const std::vector<AABB>& boxes, int axis, float splitPos);
+        static int FindSplitAxis(const Vec<AABB>& boxes);
+        static float FindSplitPosition(const Vec<AABB>& boxes, int axis);
+
     private:
         Ref<Node> BuildRecursive(const Vec<Triangle>& triangles, const AABB& parentAABB, uint32_t depth);
-        int FindSplitAxis(const Vec<Triangle>& triangles, const AABB& aabb);
-        float FindSplitPosition(const Vec<Triangle>& triangles, int axis, const AABB& aabb);
+        int FindSplitAxis(const Vec<Triangle>& triangles);
+        float FindSplitPosition(const Vec<Triangle>& triangles, int axis);
 
     private:
         Ref<Node> m_root;

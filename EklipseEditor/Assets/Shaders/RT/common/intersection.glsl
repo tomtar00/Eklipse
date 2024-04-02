@@ -60,14 +60,14 @@ float RayBox(Ray ray, vec3 boxMin, vec3 boxMax) {
 	vec3 t2 = max(tMin, tMax);
 	float tFar = min(min(t2.x, t2.y), t2.z);
 	float tNear = max(max(t1.x, t1.y), t1.z);
-	return (tFar >= tNear) ? (tNear > 0.f ? tNear : tFar) : -1.0;
+    return (tFar >= tNear) ? (tNear > 0.0 ? tNear : tFar) : -1.0;
 }
 
 HitInfo CalculateRayCollision(Ray ray) {
     HitInfo closestHit;
     closestHit.dst = 1000000.0;
     closestHit.didHit = false;
-    closestHit.material = Material(vec3(0.0), 0.0, vec3(0.0), 0.0, vec3(0.0), 0.0);
+    closestHit.material = Material(vec3(1.0), 0.0, vec3(0.0), 0.0, vec3(0.0), 0.0);
 
     for (int i = 0; i < bSpheres.NumSpheres; i++) {
 		Sphere sphere = bSpheres.Spheres[i];
@@ -78,86 +78,68 @@ HitInfo CalculateRayCollision(Ray ray) {
 		}
 	}
 
-    // int maxIterations = 100;
-    // int iter = 0;
-    // int stack[100];
-    // int stackPtr = 1;
-    // stack[0] = -1;
+    int maxIterations = 100;
+    int iter = 0;
 
-    // int index = 0;
-    // BVHNode currentNode = bBVH.Nodes[0];
-    // BVHNode leftNode, rightNode;
-    // float dstLeft, dstRight;
-
-    // if (RayBox(ray, currentNode.boxMin, currentNode.boxMax) > 0.0) {
-    //     while (index != -1 && iter++ < maxIterations) {
-    //         currentNode = bBVH.Nodes[index];
-    //         if (currentNode.isLeaf != 0) {
-    //             bool didHit = false;
-    //             MeshInfo meshInfo = bMeshes.Meshes[currentNode.meshIndex];
-    //             for (uint i = currentNode.startTriIndex; i < currentNode.endTriIndex; i++) {
-    //                 Triangle triangle = bTriangles.Triangles[i];
-    //                 HitInfo hitInfo = RayTriangle(ray, triangle);
-    //                 if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
-    //                     didHit = true;
-    //                     closestHit = hitInfo;
-    //                     closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
-    //                 }
-    //             }
-    //             if (!didHit && RayBox(ray, bBVH.Nodes[stack[stackPtr - 1]].boxMin, bBVH.Nodes[stack[stackPtr - 1]].boxMax) > 0.0) {
-    //                 index = stack[--stackPtr];
-    //             }
-    //             else {
-    //                 break;
-    //             }
-    //         } else {
-    //             leftNode    = bBVH.Nodes[currentNode.leftChildIndex];
-    //             rightNode   = bBVH.Nodes[currentNode.rightChildIndex];
-    //             dstLeft     = RayBox(ray, leftNode.boxMin, leftNode.boxMax);
-    //             dstRight    = RayBox(ray, rightNode.boxMin, rightNode.boxMax);
-    //             if (dstLeft > 0.0 && dstLeft < dstRight) {
-    //                 index = currentNode.leftChildIndex;
-    //                 stack[stackPtr++] = currentNode.rightChildIndex;
-    //             } else if (dstRight > 0.0) {
-    //                 index = currentNode.rightChildIndex;
-    //                 stack[stackPtr++] = currentNode.leftChildIndex;
-    //             } else {
-    //                 index = stack[--stackPtr];
-    //             }
-    //         }
-    //     }
-    // }
-
-    int stack[100];
+    int stack[64];
     int stackPtr = 0;
-    stack[stackPtr++] = 0;
+    stack[stackPtr++] = -1;
 
-    if (RayBox(ray, currentNode.boxMin, currentNode.boxMax) > 0.0) {
-        while (stackPtr > 0) {
-            int currentNodeIndex = stack[--stackPtr];
-            BVHNode currentNode = bBVH.Nodes[currentNodeIndex];
-    
-            if (currentNode.isLeaf != 0) {
+    int currentNodeIndex = 0;
+    BVHNode currentNode = bBVH.Nodes[currentNodeIndex];
+
+    if (RayBox(ray, currentNode.boxMin, currentNode.boxMax) > 0.0) 
+    {
+        while(currentNodeIndex != -1 && iter++ < maxIterations)
+        {
+            currentNode = bBVH.Nodes[currentNodeIndex];
+
+            if (currentNode.isLeaf != 0) 
+            {
                 MeshInfo meshInfo = bMeshes.Meshes[currentNode.meshIndex];
-                for (uint i = currentNode.startTriIndex; i < currentNode.endTriIndex; i++) {
+                for (uint i = currentNode.startTriIndex; i < currentNode.endTriIndex; i++) 
+                {
                     Triangle triangle = bTriangles.Triangles[i];
                     HitInfo hitInfo = RayTriangle(ray, triangle);
-                    if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
+                    if (hitInfo.didHit && hitInfo.dst < closestHit.dst) 
+                    {
+                        stack[stackPtr++] = -1;
                         closestHit = hitInfo;
                         closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
                     }
                 }
-            } else {
-                BVHNode leftNode    = bBVH.Nodes[currentNode.leftChildIndex];
-                BVHNode rightNode   = bBVH.Nodes[currentNode.rightChildIndex];
-                float dstLeft       = RayBox(ray, leftNode.boxMin, leftNode.boxMax);
-                float dstRight      = RayBox(ray, rightNode.boxMin, rightNode.boxMax);
-    
-                if (dstLeft > 0.0 && dstLeft < closestHit.dst) {
-                    stack[stackPtr++] = currentNode.leftChildIndex;
+
+                currentNodeIndex = stack[--stackPtr];
+            }
+            else
+            {
+                float dstLeft = RayBox(ray, bBVH.Nodes[currentNode.leftChildIndex].boxMin, bBVH.Nodes[currentNode.leftChildIndex].boxMax);
+                float dstRight = RayBox(ray, bBVH.Nodes[currentNode.rightChildIndex].boxMin, bBVH.Nodes[currentNode.rightChildIndex].boxMax);
+
+                if (dstLeft > 0.0 && dstRight > 0.0)
+                {
+                    if (dstLeft < dstRight)
+                    {
+                        stack[stackPtr++] = currentNode.rightChildIndex;
+                        currentNodeIndex = currentNode.leftChildIndex;
+                    }
+                    else
+                    {
+                        stack[stackPtr++] = currentNode.leftChildIndex;
+                        currentNodeIndex = currentNode.rightChildIndex;
+                    }
                 }
-                if (dstRight > 0.0 && dstRight < closestHit.dst) {
-                    stack[stackPtr++] = currentNode.rightChildIndex;
+                else if (dstLeft > 0.0)
+                {
+                    currentNodeIndex = currentNode.leftChildIndex;
+                }
+                else if (dstRight > 0.0)
+                {
+                    currentNodeIndex = currentNode.rightChildIndex;
+                }
+                else
+                {
+                    currentNodeIndex = stack[--stackPtr];
                 }
             }
         }
