@@ -78,15 +78,22 @@ HitInfo CalculateRayCollision(Ray ray) {
 		}
 	}
 
-    int maxIterations = 100;
+    int maxIterations = 500;
     int iter = 0;
 
     int stack[64];
     int stackPtr = 0;
     stack[stackPtr++] = -1;
 
+    BVHNode currentNode = bBVH.Nodes[0];
+    MeshInfo meshInfo;
+    Triangle triangle;
+    HitInfo hitInfo;
+
     int currentNodeIndex = 0;
-    BVHNode currentNode = bBVH.Nodes[currentNodeIndex];
+    // bool didHitAnyTriangle = false;
+    float dstLeft; 
+    float dstRight;
 
     if (RayBox(ray, currentNode.boxMin, currentNode.boxMax) > 0.0) 
     {
@@ -96,25 +103,33 @@ HitInfo CalculateRayCollision(Ray ray) {
 
             if (currentNode.isLeaf != 0) 
             {
-                MeshInfo meshInfo = bMeshes.Meshes[currentNode.meshIndex];
-                for (uint i = currentNode.startTriIndex; i < currentNode.endTriIndex; i++) 
+                meshInfo = bMeshes.Meshes[currentNode.meshIndex];
+                for (uint i = currentNode.startTriIndex; i < currentNode.endTriIndex; ++i) 
                 {
-                    Triangle triangle = bTriangles.Triangles[i];
-                    HitInfo hitInfo = RayTriangle(ray, triangle);
+                    triangle = bTriangles.Triangles[i];
+                    hitInfo = RayTriangle(ray, triangle);
                     if (hitInfo.didHit && hitInfo.dst < closestHit.dst) 
                     {
-                        stack[stackPtr++] = -1;
+                        // didHitAnyTriangle = true;
                         closestHit = hitInfo;
                         closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
                     }
                 }
 
+                // if (didHitAnyTriangle)
+                // {
+                //     didHitAnyTriangle = false;
+                //     stack[stackPtr++] = -1;
+                // }
                 currentNodeIndex = stack[--stackPtr];
             }
             else
             {
-                float dstLeft = RayBox(ray, bBVH.Nodes[currentNode.leftChildIndex].boxMin, bBVH.Nodes[currentNode.leftChildIndex].boxMax);
-                float dstRight = RayBox(ray, bBVH.Nodes[currentNode.rightChildIndex].boxMin, bBVH.Nodes[currentNode.rightChildIndex].boxMax);
+                BVHNode left = bBVH.Nodes[currentNode.leftChildIndex];
+                BVHNode right = bBVH.Nodes[currentNode.rightChildIndex];
+
+                dstLeft = RayBox(ray, left.boxMin, left.boxMax);
+                dstRight = RayBox(ray, right.boxMin, right.boxMax);
 
                 if (dstLeft > 0.0 && dstRight > 0.0)
                 {

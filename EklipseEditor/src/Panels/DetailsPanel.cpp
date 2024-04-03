@@ -263,6 +263,12 @@ namespace Eklipse
             auto* rtMeshComp = entity.TryGetComponent<RayTracingMeshComponent>();
             if (rtMeshComp != nullptr && ImGui::CollapsingHeader("RT Mesh"))
             {
+            #ifdef EK_DEBUG
+                ImGui::DrawProperty("idx", "index", [&]() {
+                    ImGui::TextUnformatted("##index", std::to_string(rtMeshComp->index).c_str());
+                });
+            #endif
+
                 DrawRayTracingMaterial(rtMeshComp->material);
             }
         }

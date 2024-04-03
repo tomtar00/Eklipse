@@ -18,6 +18,9 @@ namespace Eklipse
         float SurfaceArea() const;
         bool Contains(const glm::vec3& p) const;
         void Expand(const glm::vec3& point);
+        void Expand(const AABB& aabb);
+
+        AABB operator+(const float value) const;
 
     private:
         glm::vec3 m_min;

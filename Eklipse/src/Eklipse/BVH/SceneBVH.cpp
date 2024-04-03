@@ -30,9 +30,7 @@ namespace Eklipse
             bvh->Build(triangles, transformMat, rtMesh.index);
             meshBVH.push_back(bvh);
 
-            AABB meshAABB = bvh->GetAABB();
-            sceneAABB.Expand(meshAABB.GetMin());
-            sceneAABB.Expand(meshAABB.GetMax());
+            sceneAABB.Expand(bvh->GetAABB());
         });
 
         if (!meshBVH.empty())
@@ -89,8 +87,10 @@ namespace Eklipse
                     m_trianglesCounter += node->triangles.size();
                 }
 
-                /*EK_CORE_INFO("FlatNode: index: {}, isLeaf: {}, meshIndex: {}, startTriIndex: {}, endTriIndex: {}, leftChildIndex: {}, rightChildIndex: {}",
-                    m_flatNodes.size() - 1, flatNode.isLeaf, flatNode.meshIndex, flatNode.startTriIndex, flatNode.endTriIndex, flatNode.leftChildIndex, flatNode.rightChildIndex);*/
+                
+                EK_CORE_INFO("FlatNode: index: {}, isLeaf: {}, meshIndex: {}, startTriIndex: {}, endTriIndex: {}, leftChildIndex: {}, rightChildIndex: {}",
+                    m_flatNodes.size() - 1, flatNode.isLeaf, flatNode.meshIndex, flatNode.startTriIndex, flatNode.endTriIndex, flatNode.leftChildIndex, flatNode.rightChildIndex);
+                
 
                 if (node->left)
                     q.push(node->left);
@@ -124,14 +124,12 @@ namespace Eklipse
             if (BVH->GetAABB().Center()[axis] < splitPos)
             {
                 leftBVH.push_back(BVH);
-                leftAABB.Expand(BVH->GetAABB().GetMin());
-                leftAABB.Expand(BVH->GetAABB().GetMax());
+                leftAABB.Expand(BVH->GetAABB());
             }
             else 
             {
                 rightBVH.push_back(BVH);
-                rightAABB.Expand(BVH->GetAABB().GetMin());
-                rightAABB.Expand(BVH->GetAABB().GetMax());
+                rightAABB.Expand(BVH->GetAABB());
             }
         }
 

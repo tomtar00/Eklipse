@@ -22,14 +22,14 @@ namespace Eklipse
         guiConfig.dockLayouts =
         {
             { "Entities",	ImGuiDir_Left,	Dir_Opposite,	0.7f },
-            { "Settings",	ImGuiDir_Down,	Dir_Same,		0.5f },
-            { "Stats",		ImGuiDir_Down,	Dir_Same,		0.7f },
+            { "Settings",	ImGuiDir_Down,	Dir_Same,		0.8f },
+            { "Stats",		ImGuiDir_Down,	Dir_Same,		0.3f },
             { "Details",	ImGuiDir_Right,	Dir_Opposite,	0.7f },
+            { "Debug",		ImGuiDir_Down,	Dir_Same,		0.6f },
             { "Files",		ImGuiDir_Down,	Dir_Opposite,	0.8f },
             { "Profiler",	ImGuiDir_Down,	Dir_Stack,	    1.0f },
             { "Terminal",	ImGuiDir_Right,	Dir_Same,		0.5f },
             { "View",		ImGuiDir_Up,	Dir_Rest,		1.0f },
-            { "Debug",		ImGuiDir_Down,	Dir_Stack,		1.0f }
         };
         guiConfig.panels =
         {

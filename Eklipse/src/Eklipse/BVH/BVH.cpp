@@ -130,19 +130,16 @@ namespace Eklipse
             triangleAABB.Expand(triangle.a);
             triangleAABB.Expand(triangle.b);
             triangleAABB.Expand(triangle.c);
+
             if (triangleAABB.Center()[axis] < splitPos)
             {
                 leftTriangles.push_back(triangle);
-                leftAABB.Expand(triangle.a);
-                leftAABB.Expand(triangle.b);
-                leftAABB.Expand(triangle.c);
+                leftAABB.Expand(triangleAABB);
             }
             else
             {
                 rightTriangles.push_back(triangle);
-                rightAABB.Expand(triangle.a);
-                rightAABB.Expand(triangle.b);
-                rightAABB.Expand(triangle.c);
+                rightAABB.Expand(triangleAABB);
             }
         }
 

@@ -67,4 +67,14 @@ namespace Eklipse
         m_min = glm::min(m_min, point);
         m_max = glm::max(m_max, point);
     }
+    void AABB::Expand(const AABB& aabb)
+    {
+        m_min = glm::min(m_min, aabb.GetMin());
+        m_max = glm::max(m_max, aabb.GetMax());
+    }
+    AABB AABB::operator+(const float value) const
+    {
+        glm::vec3 v(value);
+        return AABB(m_min - v, m_max +v);
+    }
 }
