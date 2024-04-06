@@ -125,11 +125,25 @@ HitInfo CalculateRayCollision(Ray ray) {
             }
             else
             {
-                BVHNode left = bBVH.Nodes[currentNode.leftChildIndex];
-                BVHNode right = bBVH.Nodes[currentNode.rightChildIndex];
+                if (currentNode.leftChildIndex > 0)
+                {
+                    BVHNode left = bBVH.Nodes[currentNode.leftChildIndex];
+                    dstLeft = RayBox(ray, left.boxMin, left.boxMax);
+                }
+                else
+                {
+                    dstLeft = -1.0;
+                }
 
-                dstLeft = RayBox(ray, left.boxMin, left.boxMax);
-                dstRight = RayBox(ray, right.boxMin, right.boxMax);
+                if (currentNode.rightChildIndex > 0)
+                {
+                    BVHNode right = bBVH.Nodes[currentNode.rightChildIndex];
+                    dstRight = RayBox(ray, right.boxMin, right.boxMax);
+                }
+                else
+                {
+                    dstRight = -1.0;
+                }
 
                 if (dstLeft > 0.0 && dstRight > 0.0)
                 {

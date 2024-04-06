@@ -3,13 +3,12 @@
 
 namespace Eklipse
 {
-    void BVH::Build(Vec<Triangle>& triangles, const glm::mat4& transform, uint32_t meshIndex)
+    BVH::BVH(Vec<Triangle>& triangles, const glm::mat4& transform, uint32_t meshIndex)
     {
-        EK_CORE_PROFILE();
-
         m_meshIndex = meshIndex;
         m_aabb = AABB();
-        for (auto& triangle : triangles) 
+
+        for (auto& triangle : triangles)
         {
             triangle.a = glm::vec3(transform * glm::vec4(triangle.a, 1.0f));
             triangle.b = glm::vec3(transform * glm::vec4(triangle.b, 1.0f));
@@ -20,7 +19,15 @@ namespace Eklipse
             m_aabb.Expand(triangle.c);
         }
 
-        m_root = BuildRecursive(triangles, m_aabb, 0);
+        m_triangles = triangles;
+    }
+    Ref<BVH::Node> BVH::Build(uint32_t* startIndex)
+    {
+        EK_CORE_PROFILE();
+
+        m_indexCounterPtr = startIndex;
+        m_root = BuildRecursive(m_triangles, m_aabb, 0);
+        return m_root;
     }
     Ref<BVH::Node> BVH::GetRoot()
     {
@@ -40,30 +47,22 @@ namespace Eklipse
         {
             if (box.Center()[axis] < splitPos)
             {
-                for (int i = 0; i < 3; ++i)
-                {
-                    leftBounds.Expand(box.GetMin());
-                    leftBounds.Expand(box.GetMax());
-                }
+                leftBounds.Expand(box);
             }
             else
             {
-                for (int i = 0; i < 3; ++i)
-                {
-                    rightBounds.Expand(box.GetMin());
-                    rightBounds.Expand(box.GetMax());
-                }
+                rightBounds.Expand(box);
             }
         }
 
         return leftBounds.SurfaceArea() * boxes.size() + rightBounds.SurfaceArea() * boxes.size();
     }
-    int BVH::FindSplitAxis(const Vec<AABB>& boxes)
+    BVH::SplitResponse BVH::FindSplit(const Vec<AABB>& boxes)
     {
         EK_CORE_PROFILE();
 
         float bestCost = FLT_MAX;
-        int bestAxis = 0;
+        SplitResponse response{};
 
         for (int axis = 0; axis < 3; ++axis)
         {
@@ -82,35 +81,29 @@ namespace Eklipse
                 if (cost < bestCost)
                 {
                     bestCost = cost;
-                    bestAxis = axis;
+                    response.axis = axis;
+                    response.splitPos = splitPos;
                 }
             }
         }
 
-        return bestAxis;
-    }
-    float BVH::FindSplitPosition(const Vec<AABB>& boxes, int axis)
-    {
-        EK_CORE_PROFILE();
-
-        std::vector<float> centerPoints;
-        for (const auto& box : boxes)
-        {
-            centerPoints.push_back(box.Center()[axis]);
-        }
-        std::sort(centerPoints.begin(), centerPoints.end());
-        return centerPoints[centerPoints.size() / 2];
+        EK_CORE_TRACE("Splitting on axis: {0}, at position: {1}", response.axis, response.splitPos);
+        return response;
     }
 
     Ref<BVH::Node> BVH::BuildRecursive(const Vec<Triangle>& triangles, const AABB& parentAABB, uint32_t depth)
     {
         EK_CORE_PROFILE();
 
+        if (triangles.empty())
+            return nullptr;
+
         Ref<BVH::Node> node = CreateRef<BVH::Node>();
         node->min = parentAABB.GetMin();
         node->max = parentAABB.GetMax();
         node->meshIndex = m_meshIndex;
         node->isLeaf = 0;
+        node->index = (*m_indexCounterPtr)++;
 
         if (triangles.size() <= Renderer::GetSettings().maxTrianglesPerLeaf || depth >= Renderer::GetSettings().maxBVHDepth)
         {
@@ -119,8 +112,7 @@ namespace Eklipse
             return node;
         }
 
-        int axis = FindSplitAxis(triangles);
-        float splitPos = FindSplitPosition(triangles, axis);
+        SplitResponse response = FindSplit(triangles);
 
         Vec<Triangle> leftTriangles, rightTriangles;
         AABB leftAABB, rightAABB;
@@ -131,7 +123,7 @@ namespace Eklipse
             triangleAABB.Expand(triangle.b);
             triangleAABB.Expand(triangle.c);
 
-            if (triangleAABB.Center()[axis] < splitPos)
+            if (triangleAABB.Center()[response.axis] < response.splitPos)
             {
                 leftTriangles.push_back(triangle);
                 leftAABB.Expand(triangleAABB);
@@ -147,7 +139,7 @@ namespace Eklipse
         node->right = BuildRecursive(rightTriangles, rightAABB, depth + 1);
         return node;
     }
-    int BVH::FindSplitAxis(const Vec<Triangle>& triangles)
+    BVH::SplitResponse BVH::FindSplit(const Vec<Triangle>& triangles)
     {
         EK_CORE_PROFILE();
 
@@ -161,22 +153,16 @@ namespace Eklipse
             boxes.push_back(triangleAABB);
         }
 
-        return BVH::FindSplitAxis(boxes);
-    }
-    float BVH::FindSplitPosition(const Vec<Triangle>& triangles, int axis)
-    {
-        EK_CORE_PROFILE();
+        auto response = BVH::FindSplit(boxes);
 
-        Vec<AABB> boxes;
-        for (const auto& triangle : triangles)
+        std::vector<float> centerPoints;
+        for (const auto& box : boxes)
         {
-            AABB triangleAABB;
-            triangleAABB.Expand(triangle.a);
-            triangleAABB.Expand(triangle.b);
-            triangleAABB.Expand(triangle.c);
-            boxes.push_back(triangleAABB);
+            centerPoints.push_back(box.Center()[response.axis]);
         }
+        std::sort(centerPoints.begin(), centerPoints.end());
+        response.splitPos = centerPoints[centerPoints.size() / 2];
 
-        return BVH::FindSplitPosition(boxes, axis);
+        return response;
     }
 }

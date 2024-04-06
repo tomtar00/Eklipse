@@ -19,12 +19,13 @@ namespace Eklipse
 
     private:
         void FlattenLevels();
+        void Traverse(Ref<BVH::Node> node);
         Ref<BVH::Node> BuildRecursive(const Vec<Ref<BVH>>& BVHs, const AABB& parentAABB);
-        int FindSplitAxis(const Vec<Ref<BVH>>& BVHs);
-        float FindSplitPosition(const Vec<Ref<BVH>>& BVHs, int axis);
+        BVH::SplitResponse FindSplit(const Vec<Ref<BVH>>& BVHs);
 
     private:
         uint32_t m_trianglesCounter;
+        uint32_t m_indexCounter;
         Ref<BVH::Node> m_root;
         Vec<BVH::FlatNode> m_flatNodes;
         Vec<Triangle> m_triangles;

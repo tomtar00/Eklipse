@@ -265,7 +265,7 @@ namespace Eklipse
             {
             #ifdef EK_DEBUG
                 ImGui::DrawProperty("idx", "index", [&]() {
-                    ImGui::TextUnformatted("##index", std::to_string(rtMeshComp->index).c_str());
+                    ImGui::Text("%d", rtMeshComp->index);
                 });
             #endif
 

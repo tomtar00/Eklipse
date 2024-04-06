@@ -118,7 +118,7 @@ namespace Eklipse
 						}
 					});
 					ImGui::DrawProperty("max_tri_per_node", "Max triangles per bounds", [&]() {
-						if (ImGui::SliderInt("##MaxTriPerNode", &Renderer::GetSettings().maxTrianglesPerLeaf, 1, 100))
+						if (ImGui::SliderInt("##MaxTriPerNode", &Renderer::GetSettings().maxTrianglesPerLeaf, 2, 100))
 						{
 							rtContext->RebuildBVH();
 						}
