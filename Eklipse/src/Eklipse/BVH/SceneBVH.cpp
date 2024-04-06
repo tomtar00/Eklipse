@@ -35,9 +35,6 @@ namespace Eklipse
 
         if (!meshBVH.empty())
         {
-            auto& min = sceneAABB.GetMin();
-            auto& max = sceneAABB.GetMax();
-            EK_CORE_TRACE("Scene AABB: min: x={} y={} z={}, max: x={} y={} z={}", min.x, min.y, min.z, max.x, max.y, max.z);
             m_root = BuildRecursive(meshBVH, sceneAABB);
             if (m_root)
             {
@@ -82,8 +79,8 @@ namespace Eklipse
             m_trianglesCounter += node->triangles.size();
         }
 
-        EK_CORE_INFO("FlatNode: index: {}, isLeaf: {}, meshIndex: {}, startTriIndex: {}, endTriIndex: {}, leftChildIndex: {}, rightChildIndex: {}",
-            node->index, flatNode.isLeaf, flatNode.meshIndex, flatNode.startTriIndex, flatNode.endTriIndex, flatNode.leftChildIndex, flatNode.rightChildIndex);
+        /*EK_CORE_INFO("FlatNode: index: {}, isLeaf: {}, meshIndex: {}, startTriIndex: {}, endTriIndex: {}, leftChildIndex: {}, rightChildIndex: {}",
+            node->index, flatNode.isLeaf, flatNode.meshIndex, flatNode.startTriIndex, flatNode.endTriIndex, flatNode.leftChildIndex, flatNode.rightChildIndex);*/
 
         if (node->left)
             Traverse(node->left);

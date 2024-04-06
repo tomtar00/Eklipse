@@ -78,9 +78,6 @@ HitInfo CalculateRayCollision(Ray ray) {
 		}
 	}
 
-    int maxIterations = 500;
-    int iter = 0;
-
     int stack[64];
     int stackPtr = 0;
     stack[stackPtr++] = -1;
@@ -97,7 +94,7 @@ HitInfo CalculateRayCollision(Ray ray) {
 
     if (RayBox(ray, currentNode.boxMin, currentNode.boxMax) > 0.0) 
     {
-        while(currentNodeIndex != -1 && iter++ < maxIterations)
+        while(currentNodeIndex != -1)
         {
             currentNode = bBVH.Nodes[currentNodeIndex];
 

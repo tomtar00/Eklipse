@@ -72,8 +72,10 @@ namespace Eklipse
                 centers.push_back(box.Center()[axis]);
             }
             std::sort(centers.begin(), centers.end());
+            int splitIndex = centers.size() / 2;
+            float mainSplitPos = (centers[splitIndex - 1] + centers[splitIndex]) / 2.0f;
 
-            for (size_t i = 1; i < centers.size(); ++i)
+        for (size_t i = 1; i < centers.size(); ++i)
             {
                 float splitPos = (centers[i - 1] + centers[i]) / 2.0f;
                 float cost = SplitCost(boxes, axis, splitPos);
@@ -82,12 +84,11 @@ namespace Eklipse
                 {
                     bestCost = cost;
                     response.axis = axis;
-                    response.splitPos = splitPos;
+                    response.splitPos = mainSplitPos;
                 }
             }
         }
 
-        EK_CORE_TRACE("Splitting on axis: {0}, at position: {1}", response.axis, response.splitPos);
         return response;
     }
 
@@ -153,16 +154,6 @@ namespace Eklipse
             boxes.push_back(triangleAABB);
         }
 
-        auto response = BVH::FindSplit(boxes);
-
-        std::vector<float> centerPoints;
-        for (const auto& box : boxes)
-        {
-            centerPoints.push_back(box.Center()[response.axis]);
-        }
-        std::sort(centerPoints.begin(), centerPoints.end());
-        response.splitPos = centerPoints[centerPoints.size() / 2];
-
-        return response;
+        return BVH::FindSplit(boxes);
     }
 }

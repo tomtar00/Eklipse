@@ -112,7 +112,7 @@ namespace Eklipse
 						ImGui::Checkbox("##BVH", &EditorLayer::Get().DrawAccelerationStructure);
 					});
 					ImGui::DrawProperty("bvh_depth", "Depth", [&]() {
-						if (ImGui::SliderInt("##BVHDepth", &Renderer::GetSettings().maxBVHDepth, 1, 15))
+						if (ImGui::SliderInt("##BVHDepth", &Renderer::GetSettings().maxBVHDepth, 1, 25))
 						{
 							rtContext->RebuildBVH();
 						}

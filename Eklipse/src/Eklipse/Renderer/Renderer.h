@@ -40,7 +40,7 @@ namespace Eklipse
 		bool accumulate;
 		int raysPerPixel	= 1;
 		int maxBounces		= 4;
-		int maxBVHDepth		= 5;
+		int maxBVHDepth		= 10;
 		int maxTrianglesPerLeaf = 10;
 
 		// Functions
