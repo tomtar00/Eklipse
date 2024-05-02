@@ -6,6 +6,7 @@ layout(push_constant) uniform Data {
     uint RaysPerPixel;
     uint MaxBounces;
     uint Accumulate;
+    uint UseBVH;
 
     vec3 SkyColorHorizon;
     vec3 SkyColorZenith;
@@ -51,3 +52,10 @@ layout (std140, binding = 7) buffer MaterialData {
 layout (std140, binding = 8) buffer TransformData {
     mat4 Transforms[];
 } bTransforms;
+
+layout (std140, binding = 9) buffer TriangleData {
+    Triangle Triangles[];
+} bTriangles;
+layout (std140, binding = 10) buffer BVHData {
+    BVHNode Nodes[];
+} bBVH;

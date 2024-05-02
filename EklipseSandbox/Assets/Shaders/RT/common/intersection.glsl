@@ -52,12 +52,22 @@ HitInfo RayTriangle(Ray ray, Triangle triangle) {
 
     return hitInfo;
 }
+float RayBox(Ray ray, vec3 boxMin, vec3 boxMax) {
+    vec3 invDir = 1 / ray.dir;
+	vec3 tMin = (boxMin - ray.origin) * invDir;
+	vec3 tMax = (boxMax - ray.origin) * invDir;
+	vec3 t1 = min(tMin, tMax);
+	vec3 t2 = max(tMin, tMax);
+	float tFar = min(min(t2.x, t2.y), t2.z);
+	float tNear = max(max(t1.x, t1.y), t1.z);
+    return (tFar >= tNear) ? (tNear > 0.0 ? tNear : tFar) : -1.0;
+}
 
 HitInfo CalculateRayCollision(Ray ray) {
     HitInfo closestHit;
     closestHit.dst = 1000000.0;
     closestHit.didHit = false;
-    closestHit.material = Material(vec3(0.0), 0.0, vec3(0.0), 0.0, vec3(0.0), 0.0);
+    closestHit.material = Material(vec3(1.0), 0.0, vec3(0.0), 0.0, vec3(0.0), 0.0);
 
     for (int i = 0; i < bSpheres.NumSpheres; i++) {
 		Sphere sphere = bSpheres.Spheres[i];
@@ -68,24 +78,120 @@ HitInfo CalculateRayCollision(Ray ray) {
 		}
 	}
 
-    for (int i = 0; i < bMeshes.NumMeshes; i++) {
-        MeshInfo meshInfo = bMeshes.Meshes[i];
+    if (pData.UseBVH != 0) {
+        int stack[64];
+        int stackPtr = 0;
+        stack[stackPtr++] = -1;
 
-        for (uint j = meshInfo.indexOffset; j < meshInfo.indexOffset + meshInfo.indexCount; j += 3) {
-            Triangle triangle;
+        BVHNode currentNode = bBVH.Nodes[0];
+        MeshInfo meshInfo;
+        Triangle triangle;
+        HitInfo hitInfo;
 
-            uint idx1 = bIndices.Indices[j + 0] * 3 + meshInfo.vertexOffset;
-            uint idx2 = bIndices.Indices[j + 1] * 3 + meshInfo.vertexOffset;
-            uint idx3 = bIndices.Indices[j + 2] * 3 + meshInfo.vertexOffset;
+        int currentNodeIndex = 0;
+        // bool didHitAnyTriangle = false;
+        float dstLeft; 
+        float dstRight;
 
-            triangle.a = vec3(bTransVertices.Vertices[idx1 + 0], bTransVertices.Vertices[idx1 + 1], bTransVertices.Vertices[idx1 + 2]);
-            triangle.b = vec3(bTransVertices.Vertices[idx2 + 0], bTransVertices.Vertices[idx2 + 1], bTransVertices.Vertices[idx2 + 2]);
-            triangle.c = vec3(bTransVertices.Vertices[idx3 + 0], bTransVertices.Vertices[idx3 + 1], bTransVertices.Vertices[idx3 + 2]);
-        
-            HitInfo hitInfo = RayTriangle(ray, triangle);
-            if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
-                closestHit = hitInfo;
-                closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
+        if (RayBox(ray, currentNode.boxMin, currentNode.boxMax) > 0.0) 
+        {
+            while(currentNodeIndex != -1)
+            {
+                currentNode = bBVH.Nodes[currentNodeIndex];
+
+                if (currentNode.isLeaf != 0) 
+                {
+                    meshInfo = bMeshes.Meshes[currentNode.meshIndex];
+                    for (uint i = currentNode.startTriIndex; i < currentNode.endTriIndex; ++i) 
+                    {
+                        triangle = bTriangles.Triangles[i];
+                        hitInfo = RayTriangle(ray, triangle);
+                        if (hitInfo.didHit && hitInfo.dst < closestHit.dst) 
+                        {
+                            // didHitAnyTriangle = true;
+                            closestHit = hitInfo;
+                            closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
+                        }
+                    }
+
+                    // if (didHitAnyTriangle)
+                    // {
+                    //     didHitAnyTriangle = false;
+                    //     stack[stackPtr++] = -1;
+                    // }
+                    currentNodeIndex = stack[--stackPtr];
+                }
+                else
+                {
+                    if (currentNode.leftChildIndex > 0)
+                    {
+                        BVHNode left = bBVH.Nodes[currentNode.leftChildIndex];
+                        dstLeft = RayBox(ray, left.boxMin, left.boxMax);
+                    }
+                    else
+                    {
+                        dstLeft = -1.0;
+                    }
+
+                    if (currentNode.rightChildIndex > 0)
+                    {
+                        BVHNode right = bBVH.Nodes[currentNode.rightChildIndex];
+                        dstRight = RayBox(ray, right.boxMin, right.boxMax);
+                    }
+                    else
+                    {
+                        dstRight = -1.0;
+                    }
+
+                    if (dstLeft > 0.0 && dstRight > 0.0)
+                    {
+                        if (dstLeft < dstRight)
+                        {
+                            stack[stackPtr++] = currentNode.rightChildIndex;
+                            currentNodeIndex = currentNode.leftChildIndex;
+                        }
+                        else
+                        {
+                            stack[stackPtr++] = currentNode.leftChildIndex;
+                            currentNodeIndex = currentNode.rightChildIndex;
+                        }
+                    }
+                    else if (dstLeft > 0.0)
+                    {
+                        currentNodeIndex = currentNode.leftChildIndex;
+                    }
+                    else if (dstRight > 0.0)
+                    {
+                        currentNodeIndex = currentNode.rightChildIndex;
+                    }
+                    else
+                    {
+                        currentNodeIndex = stack[--stackPtr];
+                    }
+                }
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < bMeshes.NumMeshes; i++) {
+            MeshInfo meshInfo = bMeshes.Meshes[i];
+
+            for (uint j = meshInfo.indexOffset; j < meshInfo.indexOffset + meshInfo.indexCount; j += 3) {
+                Triangle triangle;
+
+                uint idx1 = bIndices.Indices[j + 0] * 3 + meshInfo.vertexOffset;
+                uint idx2 = bIndices.Indices[j + 1] * 3 + meshInfo.vertexOffset;
+                uint idx3 = bIndices.Indices[j + 2] * 3 + meshInfo.vertexOffset;
+
+                triangle.a = vec3(bTransVertices.Vertices[idx1 + 0], bTransVertices.Vertices[idx1 + 1], bTransVertices.Vertices[idx1 + 2]);
+                triangle.b = vec3(bTransVertices.Vertices[idx2 + 0], bTransVertices.Vertices[idx2 + 1], bTransVertices.Vertices[idx2 + 2]);
+                triangle.c = vec3(bTransVertices.Vertices[idx3 + 0], bTransVertices.Vertices[idx3 + 1], bTransVertices.Vertices[idx3 + 2]);
+         
+                HitInfo hitInfo = RayTriangle(ray, triangle);
+                if (hitInfo.didHit && hitInfo.dst < closestHit.dst) {
+                    closestHit = hitInfo;
+                    closestHit.material = bMaterials.Materials[meshInfo.materialIndex];
+                }
             }
         }
     }

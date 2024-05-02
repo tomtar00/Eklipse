@@ -52,6 +52,7 @@ namespace Eklipse
 		void SetAccumulate(bool accumulate);
 		void SetRaysPerPixel(uint32_t raysPerPixel);
 		void SetMaxBounces(uint32_t maxBounces);
+		void SetUseBVH(uint32_t useBVH);
 
 		void SetSkyColorHorizon(const glm::vec3& color);
 		void SetSkyColorZenith(const glm::vec3& color);

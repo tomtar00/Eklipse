@@ -42,6 +42,7 @@ namespace Eklipse
 		int maxBounces		= 4;
 		int maxBVHDepth		= 10;
 		int maxTrianglesPerLeaf = 10;
+		bool useBVH			= 1;
 
 		// Functions
 		int GetMsaaSamples() const { return 1 << MsaaSamplesIndex; }

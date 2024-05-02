@@ -36,7 +36,15 @@ struct MeshInfo {
     vec3 boundMax;
     uint materialIndex;
 };
-struct Bounds {
-    vec3 boundMin;
-    vec3 boundMax;
+struct BVHNode {
+    vec3 boxMin;
+    int isLeaf;
+
+    vec3 boxMax;
+    int meshIndex;
+    
+    int leftChildIndex;
+    int rightChildIndex;
+    int startTriIndex;
+    int endTriIndex;
 };

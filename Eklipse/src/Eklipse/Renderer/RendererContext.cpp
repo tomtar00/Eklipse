@@ -110,8 +110,8 @@ namespace Eklipse
         const uint32_t maxVerticies = 1000000;
         const uint32_t maxIndices = 1000000;
         const uint32_t maxBVHNodes = 10000;
-        const uint32_t maxMeshes = 100;
-        const uint32_t maxSpheres = 100;
+        const uint32_t maxMeshes = 5000;
+        const uint32_t maxSpheres = 5000;
         const uint32_t maxObjects = maxMeshes + maxSpheres;
         glm::vec2 screenSize = { Application::Get().GetInfo().windowWidth, Application::Get().GetInfo().windowHeight };
         size_t bufferSize = screenSize.x * screenSize.y * 4 * sizeof(float);
@@ -246,6 +246,10 @@ namespace Eklipse
     {
         m_material->SetConstant("pData", "MaxBounces", &maxBounces, sizeof(uint32_t));
     }
+    void RayTracingContext::SetUseBVH(uint32_t useBVH)
+    {
+        m_material->SetConstant("pData", "UseBVH", &useBVH, sizeof(uint32_t));
+    }
 
     void RayTracingContext::SetSkyColorHorizon(const glm::vec3& color)
     {
@@ -306,6 +310,7 @@ namespace Eklipse
         m_material->SetConstant("pData", "RaysPerPixel", &settings.raysPerPixel, sizeof(uint32_t));
         m_material->SetConstant("pData", "MaxBounces", &settings.maxBounces, sizeof(uint32_t));
         m_material->SetConstant("pData", "Accumulate", &settings.accumulate, sizeof(uint32_t));
+        m_material->SetConstant("pData", "UseBVH", &settings.useBVH, sizeof(uint32_t));
 
         m_material->SetConstant("pData", "SkyColorHorizon", &settings.skyColorHorizon, sizeof(glm::vec3));
         m_material->SetConstant("pData", "SkyColorZenith", &settings.skyColorZenith, sizeof(glm::vec3));

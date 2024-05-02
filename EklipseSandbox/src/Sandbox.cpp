@@ -49,8 +49,8 @@ Eklipse::Ref<Eklipse::Application> Eklipse::CreateApplication()
 {
     Eklipse::ApplicationInfo info{};
     info.appName = "Eklipse Sandbox";
-    info.windowWidth = 1600;
-    info.windowHeight = 900;
+    info.windowWidth = 1280;
+    info.windowHeight = 720;
 
     return Eklipse::CreateRef<Eklipse::Sandbox>(info);
 }

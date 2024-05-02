@@ -75,7 +75,7 @@ namespace Eklipse
             int splitIndex = centers.size() / 2;
             float mainSplitPos = (centers[splitIndex - 1] + centers[splitIndex]) / 2.0f;
 
-        for (size_t i = 1; i < centers.size(); ++i)
+            for (size_t i = 1; i < centers.size(); ++i)
             {
                 float splitPos = (centers[i - 1] + centers[i]) / 2.0f;
                 float cost = SplitCost(boxes, axis, splitPos);
