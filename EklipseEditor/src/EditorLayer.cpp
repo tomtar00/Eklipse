@@ -720,7 +720,7 @@ namespace Eklipse
         auto preferencesNode = data["Preferences"];
         if (preferencesNode)
         {
-            m_settings.theme = StringToTheme(TryDeserailize<String>(preferencesNode, "Theme", "Unknown"));
+            m_settings.theme = StringToTheme(TryDeserailize<String>(preferencesNode, "Theme", "DarkBlue"));
             TryDeserailize<Path>(preferencesNode, "ProjectsPath", &m_settings.projectsPath);
             TryDeserailize<bool>(preferencesNode, "ProfilerEnabled", &Profiler::Enabled);
             TryDeserailize<float>(preferencesNode, "EditorCameraRotationSpeed", &m_settings.editorCameraRotationSpeed);
