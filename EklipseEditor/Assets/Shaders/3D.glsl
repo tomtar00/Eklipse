@@ -24,9 +24,14 @@ void main()
 #stage fragment
 #version 460 core
 
+layout(push_constant) uniform FragmentConstants 
+{
+	layout(offset = 64) vec3 Color;
+} uFragConst;
+
 out vec4 outColor;
 
 void main()
 {
-    outColor = vec4(1.0, 1.0, 1.0, 1.0);
+    outColor = vec4(uFragConst.Color, 1.0);
 }

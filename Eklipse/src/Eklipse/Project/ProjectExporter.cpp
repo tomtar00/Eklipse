@@ -57,6 +57,14 @@ namespace Eklipse
             runtimeRegistry[handle] = runtimeMetadata;
         }
 
+        // copy rt shaders
+        std::error_code ec;
+        fs::copy(fs::path() / "Assets" / "Shaders" / "RT", destinationAssetsDir / "Shaders" / "RT", fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+        if (ec)
+        {
+            EK_CORE_WARN("Failed to copy RT shaders! {0}", ec.message());
+        }
+
         return EditorAssetLibrary::SerializeAssetRegistry(runtimeRegistry, destinationAssetsDir / ("assets" + String(EK_REGISTRY_EXTENSION)));
     }
 

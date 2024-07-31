@@ -29,14 +29,6 @@ namespace Eklipse
 		{
 			EK_INFO("Scripts library not found. No scripts will be attached");
 		}
-
-		// Load assets
-		m_runtimeAssetLibrary = CreateRef<RuntimeAssetLibrary>(m_runtimeConfig->assetsDirectoryPath);
-		AssetManager::SetLibrary(m_runtimeAssetLibrary);
-
-		// Load start scene
-		auto scene = AssetManager::GetAsset<Scene>(m_runtimeConfig->startSceneHandle);
-		SceneManager::SetActiveScene(scene);
 	}
 	void RuntimeLayer::OnDetach()
 	{
@@ -64,6 +56,14 @@ namespace Eklipse
 	{
 		if (!started)
 		{
+			// Load assets
+			m_runtimeAssetLibrary = CreateRef<RuntimeAssetLibrary>(m_runtimeConfig->assetsDirectoryPath);
+			AssetManager::SetLibrary(m_runtimeAssetLibrary);
+
+			// Load start scene
+			auto scene = AssetManager::GetAsset<Scene>(m_runtimeConfig->startSceneHandle);
+			SceneManager::SetActiveScene(scene);
+
 			// Start scene
 			SceneManager::GetActiveScene()->OnSceneStart();
 			started = true;

@@ -51,13 +51,12 @@ namespace Eklipse
 
         ImGui::Text("FPS: %f", Stats::Get().fps);
 
-        /*
+        
         auto& transform = m_cameraEntity.GetComponent<TransformComponent>().transform;
         ImGui::Text("Camera pos: x=%f y=%f z=%f ms", transform.position.x, transform.position.y, transform.position.z);
         ImGui::Text("Camera rot: x=%f y=%f z=%f ms", transform.rotation.x, transform.rotation.y, transform.rotation.z);
-        */
-
-        if (ImGui::Combo("Scene", &m_currentScene, "Tensor 2x2x2\0Tensor 3x3x3\0Tensor 4x4x4\0Tensor 5x5x5\0Tensor 6x6x6\0Tensor 7x7x7\0Tensor 8x8x8\0TeaCow\0RandomLights"))
+        
+        if (ImGui::Combo("Scene", &m_currentScene, "Tensor 2x2x2\0Tensor 3x3x3\0Tensor 4x4x4\0Tensor 5x5x5\0Tensor 6x6x6\0Tensor 7x7x7\0Tensor 8x8x8\0TeaCow\0Teapot"))
         {
             SwitchScene(m_currentScene);
         }
@@ -312,11 +311,13 @@ namespace Eklipse
     {
         auto scene = CreateRef<Scene>();
 
-        CreateCamera(scene, 45.0f, glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0));
+        CreateCamera(scene, 45.0f, glm::vec3(4.8f, 5.2f, -6.15f), glm::vec3(-19.0f, 137.0f, 0.0f));
 
-        CreateCube(scene, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.1f, 10.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-        CreateCube(scene, glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(10.0f, 10.0f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
-        CreateCube(scene, glm::vec3(-5.0f, 0.0f, 0.0f), glm::vec3(0.1f, 10.0f, 30.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        CreateCube(scene, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.1f, 30.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        CreateCube(scene, glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(30.0f, 10.0f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f)/*, 1.0f, 1.0f*/);
+        CreateCube(scene, glm::vec3(-3.2f, 0.0f, 0.0f), glm::vec3(0.1f, 10.0f, 30.0f), glm::vec3(1.0f, 1.0f, 1.0f)/*, 1.0f, 1.0f*/);
+
+        CreateTeapot(scene, glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.9f, 0.5f);
 
         return scene;
     }

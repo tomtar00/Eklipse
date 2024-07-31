@@ -6,6 +6,7 @@ layout(push_constant) uniform Data {
     uint RaysPerPixel;
     uint MaxBounces;
     uint Accumulate;
+    uint UseBVH;
 
     vec3 SkyColorHorizon;
     vec3 SkyColorZenith;
