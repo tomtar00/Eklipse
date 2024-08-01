@@ -1,19 +1,17 @@
 # Eklipse Engine
 
-Eklipse is a game engine whose main goal is to provide proof-of-concept solutions to the most important problems of a more complex game engine (which this engine is not).
+Eklipse is a game engine which tries to provide proof-of-concept solutions to the most important problems of a complex game engine (which this engine is not).
 
 ## How it works
-**Editor** - allows to import assets, view the scene, scene hierarchy and export the project to a precompiled executable. Editor supports managing multiple projects.
+**Editor** - allows you to import assets, view the scene, scene hierarchy and export the project to a precompiled executable. Editor supports managing multiple projects.
 
 
-<!-- ![editor](.github/images/prj-pick-window.jpg) -->
 ![editor](.github/images/editor.jpg)
 
 
 **Engine** - uses OpenGL or Vulkan (can switch between them at runtime). Supports simple rasterization pipeline and custom *Ray Tracing* algorithm that uses BVH trees to optimize triangle intersection checks. 
 
 
-<!-- ![editor](.github/images/tea.jpg) -->
 <img src=".github/images/tea.jpg" width="98%">
 <p float="left">
   <img src=".github/images/tea1.jpg" width="49%"/>
