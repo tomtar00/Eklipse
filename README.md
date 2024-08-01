@@ -1,28 +1,97 @@
 # Eklipse Engine
 
-Eklipse is a game engine which main goal is to provide proof-of-concept solutions to the most important problems of a full fleged game engine (which this engine is not).
+Eklipse is a game engine whose main goal is to provide proof-of-concept solutions to the most important problems of a more complex game engine (which this engine is not).
 
 ## How it works
-- **Editor** - allows to import assets, view the scene and scene hierarchy in real-time and export the project to a precompiled executable. Editor supports managing multiple projects.
+**Editor** - allows to import assets, view the scene, scene hierarchy and export the project to a precompiled executable. Editor supports managing multiple projects.
 
 
-![editor](.github/images/prj-pick-window.jpg)
+<!-- ![editor](.github/images/prj-pick-window.jpg) -->
 ![editor](.github/images/editor.jpg)
 
 
-- **Engine** - uses OpenGL or Vulkan (can switch between them at runtime). Supports simple rasterization pipeline and custom *Ray Tracing* algorithm that uses BVH trees to optimize triangle intersection checks. 
+**Engine** - uses OpenGL or Vulkan (can switch between them at runtime). Supports simple rasterization pipeline and custom *Ray Tracing* algorithm that uses BVH trees to optimize triangle intersection checks. 
 
 
-![editor](.github/images/ref-2min.jpg)
+<!-- ![editor](.github/images/tea.jpg) -->
+<img src=".github/images/tea.jpg" width="98%">
+<p float="left">
+  <img src=".github/images/tea1.jpg" width="49%"/>
+  <img src=".github/images/tea2.jpg" width="49%"/> 
+</p>
 
 
-- **Scritps API** - all scripts are written in C++ and provide a simple custom logic injection system. Scripts are a part of a separate C++ project that is automatically created with editor project. Creating a new script is as simple as writing new class that derives the base *Script* class. All scripts are compiled into a shared library that is then linked to a given executable (Editor or Runtime). 
+**Scritps API** - all scripts are written in C++ and provide a simple custom logic injection system. Scripts are part of a separate C++ project that is automatically created with an editor project. Creating a new script is as simple as writing a new class that derives from the base *Script* class. All scripts are compiled into a shared library that is then linked to a given executable (Editor or Runtime). 
 
 
-![editor](.github/images/script.jpg)
+```cpp
+#pragma once
+#include <EklipseEngine.h>
+
+class CameraController : public EklipseEngine::Script
+{
+public:
+    void OnCreate();
+    void OnUpdate(float deltaTime);
+
+    float speed = 5.0f;
+    float rotationSpeed = 5.0f;
+};
+```
+
+```cpp
+#include "CameraController.h"
+using namespace EklipseEngine;
+
+void CameraController::OnCreate()
+{
+    SetCursorMode(CursorMode::Disabled);
+}
+
+void CameraController::OnUpdate(float deltaTime)
+{
+    // movement
+    auto& transform = GetComponent<Transform>();
+    if (Input::IsKeyDown(KeyCode::W))
+    {
+        transform.Translate(transform.GetForward() * speed * deltaTime);
+    }
+    if (Input::IsKeyDown(KeyCode::S))
+    {
+        transform.Translate(transform.GetForward() * -speed * deltaTime);
+    }
+    if (Input::IsKeyDown(KeyCode::A))
+    {
+        transform.Translate(transform.GetRight() * -speed * deltaTime);
+    }
+    if (Input::IsKeyDown(KeyCode::D))
+    {
+        transform.Translate(transform.GetRight() * speed * deltaTime);
+    }
+    if (Input::IsKeyDown(KeyCode::Space))
+    {
+        transform.Translate(transform.GetUp() * speed * deltaTime);
+    }
+    if (Input::IsKeyDown(KeyCode::LeftShift))
+    {
+        transform.Translate(transform.GetUp() * -speed * deltaTime);
+    }
+
+    // rotation
+    glm::vec2 mouseDelta = Input::GetMouseDelta();
+    auto mouseDeltaX = mouseDelta.x;
+    auto mouseDeltaY = mouseDelta.y;
+
+    if (mouseDeltaX != 0 || mouseDeltaY != 0)
+    {
+        transform.Rotate(glm::vec3{ 0, -mouseDeltaX * rotationSpeed * deltaTime, 0 });
+        transform.Rotate(glm::vec3{ -mouseDeltaY * rotationSpeed * deltaTime, 0, 0 });
+    }
+}
+```
 
 
-- **Runtime** - editor can build every project as a standalone app. Runtime is the precompiled executable that links to engine library, scripts API library and project library containing all scripts. It copies all the assets from editor project and loads them as raw files (no binary archive).
+**Runtime** - editor can build every project as a standalone app. Runtime is the precompiled executable that links to engine library, scripts API library and project library containing all scripts. It copies all the assets from editor project and loads them as raw files (no binary archive).
 
 ![room](.github/images/room.jpg)
 
@@ -32,17 +101,20 @@ This engine has been written in Visual Studio 2022 on Windows and this is the on
 
 ## How to build
 
-1. Clone the repo with all of it's submodules using:
+1. Clone the repo with all of it's submodules
 
-```git clone --recursive https://github.com/tomtar00/Eklipse.git```
+```
+git clone --recursive https://github.com/tomtar00/Eklipse.git
+```
 
 2. Go to Eklipse directory
 
-```cd Eklipse```
+```
+cd Eklipse
+```
 
 3. Go to `Eklipse\vendor\_projects\spirv_tools` and uncomment the `prebuildcommands` section of the `spirv_tools.lua` file.
 
-```cd Eklipse\vendor\_projects\spirv_tools```
 
 ```cpp
 prebuildcommands
@@ -78,15 +150,17 @@ prebuildcommands
 }
 ```
 
-Again, **after the first build of glslang comment out this section again to prevent the compiler from recompiling the glslang library on every build.**
+Again, **after the first build of glslang comment out this section to prevent the compiler from recompiling the glslang library on every build.**
 
 5. Create project files using [premake5](https://premake.github.io/download/)
 
-```premake5 vs2022```
+```
+premake5 vs2022
+```
 
 6. In Visual Studio 2022 press `F5` to compile the editor. The `prebuildcommands` from premake scripts will try to run `python3` scripts on your machine. For that to work, make sure that you have installed [python](https://www.python.org/downloads/).
 
-## Credits
+## Dependencies
 
 - [GLFW](https://github.com/glfw/glfw)
 - [GLM](https://github.com/g-truc/glm.git)
@@ -107,5 +181,7 @@ Again, **after the first build of glslang comment out this section again to prev
 - [dylib](https://github.com/martin-olivier/dylib)
 - [stb_image](https://github.com/nothings/stb)
 - [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)
+
+---
 
 Huge thanks to [@TheCherno](https://github.com/TheCherno) for creating his [Game Engine Series](https://www.youtube.com/playlist?list=PLlrATfBNZ98dC-V-N3m0Go4deliWHPFwT) on YouTube, which this project is based upon.
