@@ -82,7 +82,7 @@ namespace Eklipse
 			}
 			catch (const std::exception& e) 
 			{
-				EK_CORE_ERROR("Failed to fetch script class: {0}. {1}", scriptClassName, e.what());
+				EK_CORE_ERROR("Failed to fetch script class: '{0}'. {1}", scriptClassName, e.what());
 			}
 		}
 

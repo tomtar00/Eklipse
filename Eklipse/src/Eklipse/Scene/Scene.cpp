@@ -616,9 +616,12 @@ namespace Eklipse
         if (scriptComponent)
         {
             auto scriptName = TryDeserailize<String>(scriptComponent, "Name", "");
-            auto& scriptComponent = deserializedEntity.AddComponent<ScriptComponent>();
-            scriptComponent.scriptName = scriptName;
-            ScriptLinker::Get().FetchScriptClasses({ scriptName });
+            if (!scriptName.empty())
+            {
+                auto& scriptComponent = deserializedEntity.AddComponent<ScriptComponent>();
+                scriptComponent.scriptName = scriptName;
+                ScriptLinker::Get().FetchScriptClasses({ scriptName });
+            }
             /*if (!scriptName.empty())
             {
                 EklipseEngine::Reflections::ClassInfo info{};
@@ -685,7 +688,7 @@ namespace Eklipse
             if (scriptComponent)
             {
                 auto properties = scriptComponent["Properties"];
-                if (properties)
+                if (properties && entity.HasComponent<ScriptComponent>())
                     DeserializeScriptProperties(entity, properties);
             }
         }

@@ -73,6 +73,7 @@ namespace Eklipse
         EK_CORE_PROFILE();
         EK_ASSERT(project, "Project is null!");
 
+        std::error_code ec;
         auto& config = project->GetConfig();
         EK_CORE_INFO("Exporting project '{0}' to '{1}'", config.name, settings.path.string());
 
@@ -109,7 +110,6 @@ namespace Eklipse
         else
         {
             EK_CORE_WARN("Script library not found at path '{0}'!", scriptLibraryPath.string());
-            return false;
         }
 
         // Copy the engine library
@@ -130,7 +130,12 @@ namespace Eklipse
         if (FileUtilities::IsPathValid(scriptApiLibraryPath))
         { 
             Path destinationScriptApiLibraryPath = destinationDir / (String("EklipseScriptAPI") + EK_SCRIPT_LIBRARY_EXTENSION);
-            fs::copy_file(scriptApiLibraryPath, destinationScriptApiLibraryPath, fs::copy_options::overwrite_existing);
+            fs::copy_file(scriptApiLibraryPath, destinationScriptApiLibraryPath, fs::copy_options::overwrite_existing, ec);
+            if (ec)
+            {
+                EK_CORE_ERROR("Failed to copy script API library! {0}", ec.message());
+                return false;
+            }
         }
         else
         {

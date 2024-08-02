@@ -649,6 +649,11 @@ namespace Eklipse
         if (EK_CURRENT_CONFIG != exportSettings.buildType && ScriptLinker::Get().HasAnyScriptClasses())
         {
             m_scriptManager->CompileScripts(Project::GetActive()->GetConfig().scriptsSourceDirectoryPath, exportSettings.buildType);
+            if (m_scriptManager->GetScriptsState() == ScriptsState::COMPILATION_FAILED)
+            {
+                EK_ERROR("Failed to compile scripts!");
+                return;
+            }
         }
         if (!ProjectExporter::Export(m_editorAssetLibrary, Project::GetActive(), exportSettings))
         {

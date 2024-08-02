@@ -80,13 +80,13 @@ project "__PRJ_NAME__"
             }
     end
 
-    configs = { "Debug", "Developement", "Release" }
-    for _, config in ipairs(configs) do
+    configs = { Debug="Debug", Developement="Release", Release="Dist" }
+    for name, config in pairs(configs) do
         for system, ext in pairs(extensions) do
             filter { "system:" .. system, "configurations:" .. config }
                 postbuildcommands
                 {
-                    "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Scripts/Build/" .. config
+                    "{COPY} %{cfg.targetdir}/%{prj.name}" .. ext .. " ./Scripts/Build/" .. name
                 }
         end
     end

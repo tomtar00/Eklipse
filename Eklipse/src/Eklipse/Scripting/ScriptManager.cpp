@@ -18,6 +18,16 @@ namespace Eklipse
             default:									return "Unknown";
         }
     }
+    static String BuildTypeToFolderName(ProjectExportBuildType type)
+    {
+        switch (type)
+        {
+        case ProjectExportBuildType::DEBUG:			return "Debug";
+        case ProjectExportBuildType::Developement:	return "Developement";
+        case ProjectExportBuildType::Release:		return "Release";
+        default:									return "Unknown";
+        }
+    }
 
     ScriptManager::ScriptManager(ScriptManagerSettings* settings) 
         : m_settings(settings), m_state(ScriptsState::NONE) 
@@ -35,7 +45,7 @@ namespace Eklipse
 
         SetState(ScriptsState::NONE);
 
-        auto& libraryPath = config.scriptBuildDirectoryPath / BuildTypeToString(EK_CURRENT_CONFIG) / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+        auto& libraryPath = config.scriptBuildDirectoryPath / BuildTypeToFolderName(EK_CURRENT_CONFIG) / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
         if (fs::exists(libraryPath) && m_scriptLinker->LinkScriptLibrary(libraryPath))
         {
             auto& classReflections = ScriptParser::ParseDirectory(config.scriptsSourceDirectoryPath);
@@ -247,7 +257,7 @@ namespace Eklipse
             RunPremake(config.scriptPremakeDirectoryPath);
             CompileScripts(config.scriptsSourceDirectoryPath, EK_CURRENT_CONFIG);
 
-            auto& libraryPath = config.scriptBuildDirectoryPath / BuildTypeToString(EK_CURRENT_CONFIG) / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
+            auto& libraryPath = config.scriptBuildDirectoryPath / BuildTypeToFolderName(EK_CURRENT_CONFIG) / (config.name + EK_SCRIPT_LIBRARY_EXTENSION);
             if (FileUtilities::IsPathValid(libraryPath))
             {
                 if (m_scriptLinker->LinkScriptLibrary(libraryPath))

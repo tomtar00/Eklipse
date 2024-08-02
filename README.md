@@ -1,8 +1,8 @@
-# Eklipse Engine
+# Eklipse Engine 
 
 Eklipse is a game engine which tries to provide proof-of-concept solutions to the most important problems of a complex game engine (which this engine is not).
 
-## How it works
+## How it works ⚙
 **Editor** - allows you to import assets, view the scene, scene hierarchy and export the project to a precompiled executable. Editor supports managing multiple projects.
 
 
@@ -19,7 +19,7 @@ Eklipse is a game engine which tries to provide proof-of-concept solutions to th
 </p>
 
 
-**Scritps API** - all scripts are written in C++ and provide a simple custom logic injection system. Scripts are part of a separate C++ project that is automatically created with an editor project. Creating a new script is as simple as writing a new class that derives from the base *Script* class. All scripts are compiled into a shared library that is then linked to a given executable (Editor or Runtime). 
+**Script API** - all scripts are written in C++ and provide a simple custom logic injection system. Scripts are part of a separate C++ project that is automatically created with an editor project. Creating a new script is as simple as writing a new class that derives from the base *Script* class. All scripts are compiled into a shared library that is then linked to a given executable (Editor or Runtime). 
 
 
 ```cpp
@@ -32,8 +32,8 @@ public:
     void OnCreate();
     void OnUpdate(float deltaTime);
 
-    float speed = 5.0f;
-    float rotationSpeed = 5.0f;
+    EK_FLOAT speed = 5.0f;
+    EK_FLOAT rotationSpeed = 5.0f;
 };
 ```
 
@@ -95,9 +95,9 @@ void CameraController::OnUpdate(float deltaTime)
 
 ## Disclaimer ⚠
 
-This engine has been written in Visual Studio 2022 on Windows and this is the only target setup that is supported for now.
+This project has been written in Visual Studio 2022 on Windows and this is the only target setup that is supported for now.
 
-## How to build
+## How to build 🛠
 
 1. Clone the repo with all of it's submodules
 
