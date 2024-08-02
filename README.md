@@ -9,7 +9,7 @@ Eklipse is a game engine which tries to provide proof-of-concept solutions to th
 ![editor](.github/images/editor.jpg)
 
 
-**Engine** - uses OpenGL or Vulkan (can switch between them at runtime). Supports simple rasterization pipeline and custom *Ray Tracing* algorithm that uses BVH trees to optimize triangle intersection checks. 
+**Engine** - uses OpenGL or Vulkan (can switch between them at runtime). Supports simple rasterization pipeline and custom *Ray Tracing* algorithm that uses BVH to optimize triangle intersection checks. 
 
 
 <img src=".github/images/tea.jpg" width="98%">
@@ -19,7 +19,7 @@ Eklipse is a game engine which tries to provide proof-of-concept solutions to th
 </p>
 
 
-**Script API** - all scripts are written in C++ and provide a simple custom logic injection system. Scripts are part of a separate C++ project that is automatically created with an editor project. Creating a new script is as simple as writing a new class that derives from the base *Script* class. All scripts are compiled into a shared library that is then linked to a given executable (Editor or Runtime). 
+**Script API** - scriting system is a simple custom logic injection system. All scripts are written in C++. Scripts are part of a separate project that is automatically created with an editor project. Creating a new script is as simple as writing a new class that derives from the base *Script* class. Scripts are compiled into a shared library that is then being linked to a given executable (Editor or Runtime). 
 
 
 ```cpp
@@ -156,7 +156,7 @@ Again, **after the first build of glslang comment out this section to prevent th
 premake5 vs2022
 ```
 
-6. In Visual Studio 2022 press `F5` to compile the editor. The `prebuildcommands` from premake scripts will try to run `python3` scripts on your machine. For that to work, make sure that you have installed [python](https://www.python.org/downloads/).
+6. Open the project with Visual Studio 2022 and press `F5` to compile the editor. The `prebuildcommands` from premake scripts will try to run `python3` scripts on your machine. For that to work, make sure that you have installed [python](https://www.python.org/downloads/).
 
 ## Dependencies
 
