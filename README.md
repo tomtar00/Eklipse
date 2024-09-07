@@ -9,6 +9,9 @@ Eklipse is a game engine which tries to provide proof-of-concept solutions to th
 ![editor](.github/images/editor.jpg)
 
 
+https://github.com/user-attachments/assets/2bda3b96-8476-463a-8621-03ba5dbe317d
+
+
 **Engine** - uses OpenGL or Vulkan (can switch between them at runtime). Supports simple rasterization pipeline and custom *Ray Tracing* algorithm that uses BVH to optimize triangle intersection checks. 
 
 
